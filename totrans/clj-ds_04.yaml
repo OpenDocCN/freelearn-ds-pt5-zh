@@ -3292,6 +3292,7 @@
   id: totrans-498
   prefs: []
   type: TYPE_NORMAL
+  zh: 过拟合是机器学习算法中常见的问题，虽然算法能够在训练数据集上产生非常准确的结果，但却无法很好地从所学知识中推广到新的数据。我们说，过拟合数据的模型具有非常高的方差。当我们在包含乘客年龄这一数值数据的情况下训练我们的决策树时，我们就出现了过拟合。
 - en: Conversely, certain models may have very high bias. This is a situation where
     the model has a strong tendency towards a certain outcome irrespective of the
     training examples to the contrary. Recall our example of a classifier that always
@@ -3300,39 +3301,46 @@
   id: totrans-499
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反，某些模型可能会有非常高的偏差。这是一种模型强烈倾向于某一特定结果的情况，无论训练示例如何与之相反。回想一下我们的例子——一个总是预测幸存者会死亡的分类器。这个分类器在幸存者比例较低的数据集上表现良好，但在其他数据集上表现则很差。
 - en: In the case of high bias, the model is unlikely to perform well on diverse inputs
     at the training stage. In the case of high variance, the model is unlikely to
     perform well on data that differs from that which it was trained on.
   id: totrans-500
   prefs: []
   type: TYPE_NORMAL
+  zh: 在高偏差的情况下，模型在训练阶段很可能无法在多样化的输入上表现良好；在高方差的情况下，模型在与训练数据不同的数据上也很可能表现不佳。
 - en: Note
   id: totrans-501
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Like the balance to be struck between Type I and Type II errors in hypothesis
     testing, balancing bias and variance is critical for producing good results from
     machine learning.
   id: totrans-502
   prefs: []
   type: TYPE_NORMAL
+  zh: 就像在假设检验中需要平衡第一类错误和第二类错误一样，在机器学习中平衡偏差和方差对于获得良好的结果至关重要。
 - en: If we have too many features, the learned hypothesis may fit the training set
     very well but fail to generalize to new examples very well.
   id: totrans-503
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们有太多的特征，学习到的假设可能会非常好地拟合训练集，但却无法很好地推广到新的样本。
 - en: Overfitting
   id: totrans-504
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 过拟合
 - en: The secret to identifying overfitting, then, is to test the classifier on examples
     that it has not been trained on. If the classifier performs poorly on these examples
     then there is a possibility that the model is overfitting.
   id: totrans-505
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，识别过拟合的关键在于对分类器进行未见过的样本测试。如果分类器在这些示例上表现不佳，则可能存在过拟合的情况。
 - en: 'The usual approach is to divide the dataset into two groups: a training set
     and a test set. The training set is used to train the classifier, and the test
     set is used to determine whether the classifier is able to generalize well from
@@ -3340,6 +3348,7 @@
   id: totrans-506
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常的做法是将数据集分为两组：训练集和测试集。训练集用于训练分类器，而测试集用于判断分类器是否能够很好地从已学的知识中进行推广。
 - en: 'The test set should be large enough that it will be a representative sample
     from the dataset, but should still leave the majority of records for training.
     Test sets are often around 10-30 percent of the overall dataset. Let''s use `clj-ml.data/do-split-dataset`
@@ -3348,6 +3357,7 @@
   id: totrans-507
   prefs: []
   type: TYPE_NORMAL
+  zh: 测试集应该足够大，以确保它能够代表数据集中的样本，但仍然应保留大部分记录用于训练。测试集通常占整个数据集的10%到30%。让我们使用`clj-ml.data/do-split-dataset`返回两个实例集。较小的将是我们的测试集，较大的将是我们的训练集：
 - en: '[PRE78]'
   id: totrans-508
   prefs: []
@@ -3361,6 +3371,7 @@
   id: totrans-509
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你将这个Kappa统计量与之前的进行比较，你会看到其实我们的准确率在未见过的数据上有所提高。虽然这看起来表明我们的分类器没有过拟合训练集，但它似乎并不现实，因为我们的分类器竟然能对新数据做出比我们提供给它的训练数据更准确的预测。
 - en: 'This suggests that we may have been fortunate with the values that were returned
     in our test set. Perhaps this just happened to contain some of the easier-to-classify
     passengers compared to the training set. Let''s see what happens if we take the
@@ -3368,6 +3379,7 @@
   id: totrans-510
   prefs: []
   type: TYPE_NORMAL
+  zh: 这表明我们可能在测试集中运气很好。也许测试集恰好包含了一些相对容易分类的乘客，而这些乘客在训练集中并不常见。让我们看看如果我们从最后的30%数据中取测试集会发生什么：
 - en: '[PRE79]'
   id: totrans-511
   prefs: []
@@ -3380,11 +3392,13 @@
   id: totrans-512
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类器在数据集最后30%的测试数据上表现不佳。因此，为了公平地反映分类器的整体实际表现，我们需要确保在数据的多个随机子集上进行测试，以平衡分类器的表现。
 - en: Cross-validation
   id: totrans-513
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 交叉验证
 - en: 'The process of splitting a dataset into complementary subsets of training and
     test data is called cross-validation. To reduce the variability in output we''ve
     just seen, with a lower error rate on the test set compared to the training set,
@@ -3395,6 +3409,7 @@
   id: totrans-514
   prefs: []
   type: TYPE_NORMAL
+  zh: 将数据集划分为互补的训练数据和测试数据的过程称为交叉验证。为了减少我们刚才看到的输出中的波动——即在测试集上比在训练集上的误差率更低——通常会在数据的不同划分上运行多轮交叉验证。通过对所有运行结果进行平均，我们能够更准确地了解模型的真实准确性。这是一个如此常见的做法，以至于clj-ml包含了一个专门用于此目的的函数：
 - en: '[PRE80]'
   id: totrans-515
   prefs: []
@@ -3408,6 +3423,7 @@
   id: totrans-516
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面的代码中，我们使用`cl/classifier-evaluate`对我们的数据集进行10次交叉验证。结果会以一个映射的形式返回，包含有关模型性能的有用信息——例如，混淆矩阵和一系列总结统计数据——包括我们一直在追踪的kappa统计值。我们打印出clj-ml提供的混淆矩阵和总结字符串，如下所示：
 - en: '[PRE81]'
   id: totrans-517
   prefs: []
@@ -3419,17 +3435,20 @@
   id: totrans-518
   prefs: []
   type: TYPE_NORMAL
+  zh: 经过10次交叉验证后的kappa值为0.56，仅比我们在训练数据上验证的模型稍低。这似乎是我们能达到的最高水平。
 - en: Addressing high bias
   id: totrans-519
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 解决高偏差
 - en: Whereas overfitting can be caused by including too many features in our model—such
     as when we included age as a categorical variable in our decision tree—high bias
     can be caused by other factors including not having enough data.
   id: totrans-520
   prefs: []
   type: TYPE_NORMAL
+  zh: 过拟合可能是由于在模型中包含了过多特征造成的——例如，当我们在决策树中将年龄作为分类变量时——而高偏差则可能由其他因素引起，包括数据量不足。
 - en: One simple way of increasing the accuracy of the model is to ensure that there
     are no missing values in the training set. Missing values are necessarily discarded
     by the model, limiting the number of training examples from which the model can
@@ -3439,6 +3458,7 @@
   id: totrans-521
   prefs: []
   type: TYPE_NORMAL
+  zh: 提高模型准确性的一个简单方法是确保训练集中的缺失值被处理掉。模型会丢弃缺失的值，这限制了模型可以学习的训练样本数量。像这样的相对较小的数据集中的每一个样本都可能对结果产生实质性的影响，并且数据集中有多个年龄值和一个票价值缺失。
 - en: We could simply substitute the mean value for a missing value in numeric columns.
     This is a reasonable default value and a fair tradeoff—in return for slightly
     lowering the variance of the field, we are potentially gaining several more training
@@ -3446,6 +3466,7 @@
   id: totrans-522
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以简单地用数值列中的均值替代缺失值。这是一个合理的默认值，且是一种公平的折衷——通过略微降低字段的方差，我们有可能获得更多的训练样本。
 - en: Clj-ml contains numerous filters in the `clj-ml.filters` namespace that are
     able to alter the dataset in some way. A useful filter is `:replace-missing-values`,
     which will substitute any missing numeric values with the means from the dataset.
@@ -3453,6 +3474,7 @@
   id: totrans-523
   prefs: []
   type: TYPE_NORMAL
+  zh: clj-ml在`clj-ml.filters`命名空间中包含了众多能够以某种方式修改数据集的过滤器。一个有用的过滤器是`:replace-missing-values`，它会将任何缺失的数值替换为数据集中的均值。对于分类数据，则会替换为众数类别。
 - en: '[PRE82]'
   id: totrans-524
   prefs: []
@@ -3556,6 +3578,7 @@
   id: totrans-537
   prefs: []
   type: TYPE_NORMAL
+  zh: Bagging是“自助聚合”（bootstrap aggregating）的缩写，是一种常用于决策树学习器的元算法，但也可以应用于其他学习器。在单棵树可能会过拟合训练数据的情况下，bagging有助于减少组合模型的方差。它通过带替代地抽样训练数据来实现这一点，就像我们在本章开头使用的自助标准误一样。因此，集成中的每个模型对世界的理解都是不完全的，这使得组合模型更不容易在训练数据上学习到过于具体的假设。随机森林就是一种bagging算法的例子。
 - en: '[PRE83]'
   id: totrans-538
   prefs: []
@@ -3567,6 +3590,7 @@
   id: totrans-539
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用随机森林分类器时，你应该观察到一个大约为0.55的卡帕值，略低于我们一直在优化的决策树。随机森林的实现牺牲了一些模型的方差。
 - en: Whilst this might seem disappointing, it is actually part of the reason for
     random forests' appeal. Their ability to strike a balance between bias and variance
     makes them flexible and general-purpose classifiers suitable for a wide variety
@@ -3574,15 +3598,18 @@
   id: totrans-540
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管这可能看起来令人失望，但实际上这正是随机森林受欢迎的原因之一。它们在偏差和方差之间取得平衡的能力，使它们成为灵活且通用的分类器，适用于各种问题。
 - en: Saving the classifier to a file
   id: totrans-541
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 保存分类器到文件
 - en: 'Finally, we can write out our classifier to a file using `clj-ml.utils/serialize-to-file`:'
   id: totrans-542
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们可以使用`clj-ml.utils/serialize-to-file`将分类器写入文件：
 - en: '[PRE84]'
   id: totrans-543
   prefs: []
@@ -3593,16 +3620,19 @@
   id: totrans-544
   prefs: []
   type: TYPE_NORMAL
+  zh: 在稍后的某个时刻，我们可以使用`clj-ml.utils/deserialize-from-file`加载已训练的分类器，并立即开始对新数据进行分类。
 - en: Summary
   id: totrans-545
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: In this chapter, we've learned about how to make use of categorical variables
     to group data into classes.
   id: totrans-546
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们学习了如何利用分类变量将数据分组为类别。
 - en: 'We''ve seen how quantify the difference between groups using the odds ratio
     and relative risk, and how to perform statistical significance tests on groups
     using the *X*² test. We''ve learned about how to build machine learning models
@@ -3616,6 +3646,7 @@
   id: totrans-547
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经学习了如何使用赔率比和相对风险量化组间差异，并且如何使用*X*²检验对组进行统计显著性检验。我们了解了如何构建适合分类任务的机器学习模型，使用了多种技术：逻辑回归、朴素贝叶斯、决策树和随机森林，并学习了几种评估方法；混淆矩阵和卡帕统计量。我们还了解了机器学习中高偏差和过拟合的相对风险，以及如何通过交叉验证来确保你的模型没有过拟合。最后，我们看到了clj-ml库如何帮助准备数据、构建多种类型的分类器，并将它们保存以备将来使用。
 - en: In the next chapter, we'll learn about how to adapt some of the techniques we've
     learned about so far to the task of processing very large datasets that exceed
     the storage and processing capabilities of any single computer—so-called **Big
@@ -3625,3 +3656,4 @@
   id: totrans-548
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一章，我们将学习如何将目前为止学到的一些技术应用于处理超出任何单一计算机存储和处理能力的大型数据集——所谓的**大数据**。我们将看到，本章中我们遇到的技术之一——梯度下降——特别适用于大规模参数优化。

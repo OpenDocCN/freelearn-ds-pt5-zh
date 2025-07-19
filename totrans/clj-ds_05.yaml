@@ -2525,17 +2525,21 @@
   id: totrans-371
   prefs: []
   type: TYPE_NORMAL
+  zh: 前面的例子中，`map` 函数中的 `parse-m`（按照惯例，Parkour 映射器的后缀是 `-m`）负责将输入的单行数据转换成特征表示。我们重新使用了本章前面定义的许多函数：`parse-line`、`format-record`、`scale-features`
+    和 `extract-features`。Parkour 将以可简化集合的形式向映射器函数提供输入数据，因此我们将函数通过 `r/map` 进行链式调用。
 - en: Stochastic gradient descent expects to process data in mini-batches, so our
     mapper is responsible for partitioning the data into groups of 250 rows. We `shuffle`
     before calling `partition` to ensure that the ordering of the data is random.
   id: totrans-372
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机梯度下降需要按小批量处理数据，因此我们的映射器负责将数据划分为 250 行的小组。在调用 `partition` 之前，我们进行 `shuffle`，以确保数据的顺序是随机的。
 - en: Parkour shaping functions
   id: totrans-373
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Parkour 造型函数
 - en: We're also supplying metadata to the `parse-m` function in the form of the `{::mr/source-as
     :vals ::mr/sink-as :vals}` map. These are two namespaced keywords referencing
     `parkour.mapreduce/source-as` and `parkour.mapreduce/sink-as`, and are instructions
@@ -2544,10 +2548,13 @@
   id: totrans-374
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还向 `parse-m` 函数提供了元数据，形式为 `{::mr/source-as :vals ::mr/sink-as :vals}` 的映射。这两个命名空间关键字分别引用
+    `parkour.mapreduce/source-as` 和 `parkour.mapreduce/sink-as`，它们是指示 Parkour 在将数据提供给函数之前应该如何构造数据以及它可以期望返回的数据的结构。
 - en: '![Parkour shaping functions](img/7180OS_05_210.jpg)'
   id: totrans-375
   prefs: []
   type: TYPE_IMG
+  zh: '![Parkour 造型函数](img/7180OS_05_210.jpg)'
 - en: Valid options for a Parkour mapper are `:keyvals`, `:keys`, and `:vals`. The
     preceding diagram shows the effect for a short sequence of three key/value pairs.
     By requesting to source our data as `:vals`, we get a sequence containing only
@@ -2555,11 +2562,14 @@
   id: totrans-376
   prefs: []
   type: TYPE_NORMAL
+  zh: Parkour 映射器的有效选项有 `:keyvals`、`:keys` 和 `:vals`。前面的图示展示了三个键/值对的短序列的效果。通过请求将数据源作为
+    `:vals`，我们得到一个仅包含键/值对中值部分的序列。
 - en: Defining a reducer
   id: totrans-377
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 定义一个归约器
 - en: 'Defining a reducer in Parkour is the same as defining a mapper. Again, the
     last argument must be the input (now, the input from a prior map step), but additional
     arguments can be provided. Our Parkour reducer for stochastic gradient descent
@@ -2567,6 +2577,8 @@
   id: totrans-378
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Parkour 中定义一个归约器与定义映射器相同。最后一个参数必须是输入（现在是来自先前映射步骤的输入），但可以提供额外的参数。我们的随机梯度下降的
+    Parkour 归约器如下所示：
 - en: '[PRE72]'
   id: totrans-379
   prefs: []
@@ -2582,11 +2594,14 @@
   id: totrans-380
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的输入数据与之前一样作为可简化集合提供，因此我们使用 Clojure 的 reducers 库来进行迭代。我们使用 `r/reduce` 而不是 `r/fold`，因为我们不想对数据进行并行的归约处理。实际上，使用
+    Hadoop 的原因是我们可以独立控制映射阶段和归约阶段的并行度。现在，我们已经定义了映射和归约步骤，可以通过使用 `parkour.graph` 命名空间中的函数将它们组合成一个作业。
 - en: Specifying Hadoop jobs with Parkour graph
   id: totrans-381
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用 Parkour 图定义 Hadoop 作业
 - en: 'The `graph` namespace is Parkour''s main API to define Hadoop jobs. Each job
     must have at a minimum an input, a mapper, and an output, and we can chain these
     specifications with Clojure''s `->` macro. Let''s first define a very simple job,
@@ -2594,6 +2609,8 @@
   id: totrans-382
   prefs: []
   type: TYPE_NORMAL
+  zh: '`graph` 命名空间是 Parkour 用来定义 Hadoop 作业的主要 API。每个作业至少需要一个输入、一个映射器和一个输出，我们可以通过
+    Clojure 的 `->` 宏将这些规格链式连接。首先定义一个非常简单的作业，它从我们的映射器获取输出并立即写入磁盘：'
 - en: '[PRE73]'
   id: totrans-383
   prefs: []
@@ -2608,6 +2625,8 @@
   id: totrans-384
   prefs: []
   type: TYPE_NORMAL
+  zh: 前面的示例返回的响应应该是项目 `tmp` 目录中的一个子目录，Hadoop 会将文件写入该目录。如果你进入该目录，你应该会看到几个文件。在我的电脑上，我看到了四个文件——`_SUCCESS`、`part-m-00000`、`part-m-00001`
+    和 `part-m-00002`。`_SUCCESS` 文件的存在表示我们的作业已成功完成。`part-m-xxxxx` 文件是输入文件的块。
 - en: The fact that there are three files indicates that Hadoop created three mappers
     to process our input data. If we were running in distributed mode, these could
     have been created in parallel. If you open one of the files, you should see a
@@ -2616,17 +2635,21 @@
   id: totrans-385
   prefs: []
   type: TYPE_NORMAL
+  zh: 文件数量为三，说明 Hadoop 创建了三个映射器来处理我们的输入数据。如果我们以分布式模式运行，可能会并行创建这些文件。如果你打开其中一个文件，你应该看到一长串
+    `clojure.lang.LazySeq@657d118e`。由于我们写入的是文本文件，所以这是我们映射器输出的文本表示。
 - en: Chaining mappers and reducers with Parkour graph
   id: totrans-386
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用 Parkour 图链式连接映射器和 reducers
 - en: What we really want to do is to its chain our map and reduce steps to happen
     one after the other. For this, we will have to insert an intermediate step, the
     **partitioner**, and tell the partitioner how to serialize our `clojure.lang.LazySeqs`.
   id: totrans-387
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们真正想做的是将映射和减少步骤链式连接，使它们一个接一个地执行。为此，我们必须插入一个中间步骤，**分区器**，并告诉分区器如何序列化我们的 `clojure.lang.LazySeqs`。
 - en: The latter can be accomplished by borrowing from Tesser, which implements the
     serialization and deserialization of arbitrary Clojure data structures using **Fressian**.
     In the next chapter, we'll look closer, at the support Parkour provides to create
@@ -2635,22 +2658,29 @@
   id: totrans-388
   prefs: []
   type: TYPE_NORMAL
+  zh: 后者可以通过借用 Tesser 来实现，Tesser 实现了使用 **Fressian** 对任意 Clojure 数据结构进行序列化和反序列化的功能。在下一章中，我们将更深入地了解
+    Parkour 如何提供支持，帮助我们为分区数据创建良定义的架构，但现在仅仅让分区器通过编码后的数据就足够了。
 - en: Note
   id: totrans-389
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Fressian is an extensible binary data format. You can learn more about it from
     the documentation at [https://github.com/clojure/data.fressian](https://github.com/clojure/data.fressian).
   id: totrans-390
   prefs: []
   type: TYPE_NORMAL
+  zh: Fressian 是一种可扩展的二进制数据格式。你可以通过 [https://github.com/clojure/data.fressian](https://github.com/clojure/data.fressian)
+    的文档了解更多信息。
 - en: 'Our keys will be encoded as `FressianWritable`, while our keys are not specified
     at all (we sink our map data just as `vals`). Hadoop''s representation of nil
     is a `NullWritable` type. We import both in our namespace with:'
   id: totrans-391
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的键将编码为 `FressianWritable`，而我们的键没有明确指定（我们像处理 `vals` 一样处理我们的映射数据）。Hadoop 对 `nil`
+    的表示是 `NullWritable` 类型。我们通过以下方式将两者导入到我们的命名空间中：
 - en: '[PRE74]'
   id: totrans-392
   prefs: []
@@ -2660,6 +2690,7 @@
   id: totrans-393
   prefs: []
   type: TYPE_NORMAL
+  zh: 在导入完成后，我们可以完全指定我们的作业：
 - en: '[PRE75]'
   id: totrans-394
   prefs: []
@@ -2673,12 +2704,15 @@
   id: totrans-395
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要确保只有一个 reducer 来处理我们的迷你批次（尽管 SGD 有一些变种允许我们平均多个随机梯度下降的结果，但我们希望得到一组接近最优的系数）。我们将使用
+    Parkour 的 `conf` 命名空间，通过 `assoc! mapred.reduce.tasks` 设置为 `1`。
 - en: 'Between the map and reduce steps, we specify the partitioner and pass the `kv-classes`
     function defined at the top of the function. The final example simply runs this
     job:'
   id: totrans-396
   prefs: []
   type: TYPE_NORMAL
+  zh: 在映射和减少步骤之间，我们指定分区器并传递在函数顶部定义的 `kv-classes` 函数。最后的示例仅仅运行这个作业：
 - en: '[PRE76]'
   id: totrans-397
   prefs: []
@@ -2692,11 +2726,14 @@
   id: totrans-398
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你进入作业返回的目录，你应该现在看到一个只包含两个文件的目录——`_SUCCESS` 和 `part-r-00000`。每个文件是一个 reducer
+    的输出，因此在只有一个 reducer 的情况下，我们最终得到了一个 `part-r-xxxxx` 文件。这个文件内部包含了使用随机梯度下降计算的线性模型系数。
 - en: Summary
   id: totrans-399
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: In this chapter, we learned some of the fundamental techniques of distributed
     data processing and saw how the functions used locally for data processing, map
     and reduce, are powerful ways of processing even very large quantities of data.

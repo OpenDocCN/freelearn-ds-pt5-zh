@@ -738,6 +738,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 生成Facebook社交网络的图形表示，将我们网络中的人物显示为节点，并将他们的友谊作为连接线（称为*边*）连接到这些节点之间。为此，我们将使用D3 JavaScript图形库。此库期望以JSON格式呈现网络数据。
 - en: Calculate some metrics about the social network, such as the size of the network
     (known as the *degree* of the network) and the shortest path between two people
     our network. To do this, we will use the `networkx` package in Python. This package
@@ -746,6 +747,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算社交网络的一些指标，如网络的大小（称为*度*）和网络中两个人之间的最短路径。为此，我们将使用Python中的`networkx`包。此包期望以文本格式呈现数据，称为**Pajek**格式。
 - en: The primary goal of this project will be to show how to reconcile all these
     different expected formats (GDF, Pajek, and JSON) and perform conversions from
     one format to another. Our secondary goal will be to actually provide enough sample
@@ -753,17 +755,20 @@
   id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 该项目的主要目标将是展示如何调和所有这些不同的期望格式（GDF、Pajek和JSON），并执行从一种格式到另一种格式的转换。我们的次要目标将是确实提供足够的示例代码和指导，以执行对我们社交网络的小规模分析。
 - en: Step one – download Facebook data as GDF
   id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 步骤一 - 下载Facebook数据为GDF
 - en: 'For this step, you will need to be logged into your Facebook account. Use Facebook''s
     search box to find the netvizz app, or use this URL to directly link to the netvizz
     app: [https://apps.facebook.com/netvizz/](https://apps.facebook.com/netvizz/).'
   id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 在此步骤中，您需要登录您的Facebook账户。使用Facebook的搜索框找到netvizz应用程序，或使用此URL直接链接到netvizz应用程序：[https://apps.facebook.com/netvizz/](https://apps.facebook.com/netvizz/)。
 - en: 'Once on the netvizz page, click on **personal network**. The page that follows
     explains that clicking on the **start** button will provide a downloadable file
     with two items in it: a GDF format file that lists all your friends and the connections
@@ -774,34 +779,41 @@
   id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦进入netvizz页面，请点击**个人网络**。随后的页面将解释，点击**开始**按钮将提供一个可下载的文件，其中包含两个项目：列出所有您的朋友及其之间连接的GDF格式文件，以及一个制表符分隔值（TSV）统计文件。对于本项目，我们主要感兴趣的是GDF文件。点击**开始**按钮，并在随后的页面上右键单击GDF文件以将其保存到您的本地磁盘，如下截图所示：
 - en: '![Step one – download Facebook data as GDF](img/image00271.jpeg)'
   id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![步骤一 - 下载Facebook数据为GDF](img/image00271.jpeg)'
 - en: The netvizz Facebook app allows us to download our social network as a GDF file
   id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用netvizz Facebook应用程序可以将我们的社交网络下载为GDF文件。
 - en: It may be helpful to also give the file a shorter name at this point. (I called
     my file `personal.gdf` and saved it in a directory created just for this project.)
   id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时给文件起一个更短的名字可能会有帮助。（我称我的文件为`personal.gdf`，并将其保存在专门为此项目创建的目录中。）
 - en: Step two – look at the GDF file format in a text editor
   id: totrans-111
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 步骤二 - 查看文本编辑器中的GDF文件格式
 - en: 'Open the file in your text editor (I am using Text Wrangler for this), and
     note a few things about the format of this file:'
   id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 在你的文本编辑器中打开文件（我在这里使用Text Wrangler），并注意该文件的格式的几个要点：
 - en: 'The file is divided into two parts: nodes and edges.'
   id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 文件分为两部分：节点和边。
 - en: The nodes are found in the first part of the file, preceded by the word `nodedef`.
     The list of nodes is a list of all my friends and some basic facts about them
     (their gender and their internal Facebook identification number). The nodes are
@@ -810,6 +822,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 节点位于文件的第一部分，以`nodedef`一词为前缀。节点列表是关于我所有朋友及其一些基本信息的列表（它们的性别和其内部Facebook标识号）。节点按照人们加入Facebook的日期顺序列出。
 - en: The second part of the file shows the edges or connections between my friends.
     Sometimes, these are also called links. This section of the file is preceded by
     the word `edgedef`. The edges describe which of my friends are linked to which
@@ -818,10 +831,12 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 文件的第二部分显示了我的朋友之间的边或连接。有时，这些也称为链接。文件的这一部分以`edgedef`一词为前缀。边描述了哪些我的朋友与其他朋友相连。
 - en: 'Here is an excerpt of what a nodes section looks like:'
   id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是节点部分的摘录示例：
 - en: '[PRE17]'
   id: totrans-117
   prefs: []
@@ -954,6 +969,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用`csvcut`工具（前面讨论的csvkit的一部分）从`nodes.gdf`文件中提取第一列和第二列，并将输出重定向到一个名为`nodesCut.gdf`的新文件：
 - en: '[PRE21]'
   id: totrans-135
   prefs:
@@ -969,6 +985,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 现在，我们需要给每个边对分配一个索引值，而不是使用完整的Facebook ID值。这个索引仅通过节点在节点列表中的位置来标识该节点。我们需要执行这个转换，以便数据能够尽可能少地重构地输入到我们的D3力导向网络代码示例中。我们需要将其转换为：
 - en: '[PRE22]'
   id: totrans-137
   prefs:
@@ -980,6 +997,7 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 变成这样：
 - en: '[PRE23]'
   id: totrans-139
   prefs:
@@ -991,6 +1009,7 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 这是一个小的Python脚本，它将自动创建这些索引值：
 - en: '[PRE24]'
   id: totrans-141
   prefs:
@@ -1002,6 +1021,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 现在，返回到`nodesCut.csv`文件，并删除`id`列：
 - en: '[PRE25]'
   id: totrans-143
   prefs:
@@ -1014,6 +1034,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 构建一个小的Python脚本，将这些文件逐一处理，并将它们写入一个完整的JSON文件，准备好进行D3处理：
 - en: '[PRE26]'
   id: totrans-145
   prefs:
@@ -1025,6 +1046,7 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第四步 – 构建D3图表
 - en: 'This section shows how to feed our JSON file of nodes and links into a boilerplate
     example of building a force-directed graph in D3\. This code example came from
     the D3 website and builds a simple graph using the JSON file provided. Each node
@@ -1033,6 +1055,7 @@
   id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一部分展示了如何将我们的节点和链接的JSON文件输入到一个构建力导向图的D3基础示例中。这个代码示例来自D3网站，使用提供的JSON文件构建一个简单的图表。每个节点都显示为一个圆圈，当你将鼠标悬停在节点上时，节点的名称会以工具提示的形式显示出来：
 - en: '[PRE27]'
   id: totrans-148
   prefs: []
@@ -1043,19 +1066,23 @@
   id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下截图显示了这个社交网络的示例。一个节点已经被悬停，显示了该节点的工具提示（名称）。
 - en: '![Step four – build a D3 diagram](img/image00272.jpeg)'
   id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![第四步 – 构建D3图表](img/image00272.jpeg)'
 - en: Social network built with D3
   id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用D3构建的社交网络
 - en: Step five – convert data to the Pajek file format
   id: totrans-152
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第五步 – 将数据转换为Pajek文件格式
 - en: So far, we have converted a GDF file to CSV, and then to JSON, and built a D3
     diagram of it. In the next two steps, we will continue to pursue our goal of getting
     the data in such a format that we can calculate some social network metrics on
@@ -1063,26 +1090,31 @@
   id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经将GDF文件转换为CSV文件，然后转换为JSON文件，并构建了一个D3图表。在接下来的两步中，我们将继续实现目标，把数据转换成可以用来计算社交网络指标的格式。
 - en: For this step, we will take the original GDF file and tweak it to become a valid
     `Pajek` file, which is the format that is needed by the social network tool called
     networkx.
   id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一步中，我们将原始的GDF文件稍作调整，使其成为一个有效的`Pajek`文件，这是社交网络工具networkx所需要的格式。
 - en: Note
   id: totrans-155
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: The word *pajek* means *spider* in Slovenian. A social network can be thought
     of as a web made up of nodes and the links between them.
   id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 单词*pajek*在斯洛文尼亚语中意味着*蜘蛛*。社交网络可以被看作是由节点及其之间的链接组成的网络。
 - en: 'The format of our Facebook GDF file converted to a Pajek file looks like this:'
   id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的Facebook GDF文件转换为Pajek文件后的格式如下：
 - en: '[PRE28]'
   id: totrans-158
   prefs: []
@@ -1093,11 +1125,13 @@
   id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是关于这个Pajek文件格式需要注意的几件重要事情：
 - en: It is space-delimited, not comma-delimited.
   id: totrans-160
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它是以空格分隔的，而不是以逗号分隔的。
 - en: Just like in the GDF file, there are two main sections of data, and these are
     labeled, starting with an asterisk `*`. The two sections are the vertices (another
     word for nodes) and the edges.
@@ -1105,39 +1139,46 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 就像在GDF文件中一样，数据分为两个主要部分，并且这些部分有标签，标签以星号`*`开头。这两个部分分别是顶点（另一个单词是节点）和边。
 - en: There is a count of how many total vertices (nodes) there are in the file, and
     this count goes next to the word vertices on the top line.
   id: totrans-162
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 文件中有一个计数，显示总共有多少个顶点（节点），这个计数会显示在顶部一行的“vertices”旁边。
 - en: Each person's name has spaces removed and replaced with underscores.
   id: totrans-163
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个人的姓名去掉了空格并用下划线替换。
 - en: The other columns are optional in the node section.
   id: totrans-164
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在节点部分，其他列是可选的。
 - en: 'To convert our GDF file into Pajek format, let''s use the text editor, as these
     changes are fairly straightforward and our file is not very large. We will perform
     the data cleaning tasks as follows:'
   id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了将我们的GDF文件转换为Pajek格式，让我们使用文本编辑器，因为这些更改相当简单，而且我们的文件也不大。我们将执行以下数据清理任务：
 - en: Save a copy of your GDF file as a new file and call it something like `fbPajek.net`
     (the `.net` extension is commonly used for Pajek network files).
   id: totrans-166
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将你的 GDF 文件保存为一个新的文件，并将其命名为类似 `fbPajek.net`（`.net` 扩展名通常用于 Pajek 网络文件）。
 - en: 'Replace the top line in your file. Currently, it looks like this:'
   id: totrans-167
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 替换文件中的顶部行。当前它看起来像这样：
 - en: '[PRE29]'
   id: totrans-168
   prefs:
@@ -1149,6 +1190,7 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 你需要将其更改为类似以下的形式：
 - en: '[PRE30]'
   id: totrans-170
   prefs:
@@ -1161,11 +1203,13 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 确保顶点的数量与实际文件中对应的数量相匹配。这是节点的数量。每行应当有一个节点，出现在你的 GDF 文件中。
 - en: 'Replace the edges line in your file. Currently, it looks like this:'
   id: totrans-172
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 替换文件中的边缘行。当前它看起来像这样：
 - en: '[PRE31]'
   id: totrans-173
   prefs:
@@ -1177,6 +1221,7 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 你需要将其更改为如下形式：
 - en: '[PRE32]'
   id: totrans-175
   prefs:
@@ -1189,6 +1234,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从第二行开始，替换文件中每个空格为下划线。这是可行的，因为此文件中唯一的空格出现在名字中。看一下这个：
 - en: '[PRE33]'
   id: totrans-177
   prefs:
@@ -1200,6 +1246,7 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 这个操作将把前面的内容变成这样：
 - en: '[PRE34]'
   id: totrans-179
   prefs:
@@ -1212,6 +1259,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 现在，使用查找和替换将所有逗号替换为空格。节点部分的结果将是：
 - en: '[PRE35]'
   id: totrans-181
   prefs:
@@ -1223,6 +1271,7 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 边缘部分的结果将是：
 - en: '[PRE36]'
   id: totrans-183
   prefs:
@@ -1236,6 +1285,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最后一步；使用文本编辑器的查找功能，定位所有在名字中有撇号的 Facebook 朋友。将这些撇号替换为空字符。因此，`Cap'n_Crunch` 变为：
 - en: '[PRE37]'
   id: totrans-185
   prefs:
@@ -1247,11 +1297,13 @@
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 现在这是一个完全清理过的、Pajek 格式化的文件。
 - en: Step six – calculate simple network metrics
   id: totrans-187
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第六步——计算简单的网络指标
 - en: At this point, we are ready to run some simple social network metrics using
     a Python package like networkx. Even though **Social Network Analysis** (**SNA**)
     is beyond the scope of this book, we can still perform a few calculations quite
@@ -1259,18 +1311,22 @@
   id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 到此为止，我们已经准备好使用 Python 包如 networkx 来运行一些简单的社交网络指标。尽管**社交网络分析**（**SNA**）超出了本书的范围，但我们仍然可以轻松地进行一些计算，而无需深入探索
+    SNA 的奥秘。
 - en: First, we should make sure that we have the `networkx` package installed. I
     am using Canopy for my Python editor, so I will use the Package Manager to search
     for networkx and install it.
   id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们应该确保已安装 `networkx` 包。我正在使用 Canopy 作为我的 Python 编辑器，所以我将使用包管理器搜索并安装 networkx。
 - en: 'Then, once networkx is installed, we can write some quick Python code to read
     our Pajek file and output a few interesting facts about the structure of my Facebook
     network:'
   id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，一旦安装了 networkx，我们可以编写一些简单的 Python 代码来读取我们的 Pajek 文件，并输出一些关于我的 Facebook 网络结构的有趣信息：
 - en: '[PRE38]'
   id: totrans-191
   prefs: []
@@ -1282,6 +1338,7 @@
   id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的网络的结果如下所示。列出了前十个节点，以及这些节点分别连接到我其他节点的数量：
 - en: '[PRE39]'
   id: totrans-193
   prefs: []
@@ -1292,11 +1349,13 @@
   id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 这表明 `Bambi` 与我的 134 个其他朋友连接，而 `Prince_Charming` 只与我的 42 个其他朋友连接。
 - en: Tip
   id: totrans-195
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 提示
 - en: If you get any Python errors about missing quotations, double-check your Pajek
     format file to ensure that all node labels are free of spaces and other special
     characters. In the cleaning procedure explained in the preceding example, we removed
@@ -1305,6 +1364,7 @@
   id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你遇到任何关于缺少引号的 Python 错误，请仔细检查你的 Pajek 格式文件，确保所有节点标签中没有空格或其他特殊字符。在前面示例中的清理过程中，我们去除了空格和引号字符，但你的朋友可能在名字中使用了更多特殊字符！
 - en: Of course, there are many more interesting things you can do with networkx and
     D3 visualizations, but this sample project was designed to give us a sense of
     how critical data-cleaning processes are to the successful outcome of any larger
@@ -1312,11 +1372,13 @@
   id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，你可以使用 networkx 和 D3 可视化做更多有趣的事情，但这个示例项目的目的是让我们理解数据清洗过程对任何大规模分析成功结果的重要性。
 - en: Summary
   id: totrans-198
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: In this chapter, we learned many different ways to convert data from one format
     to another. Some of these techniques are simple, such as just saving a file in
     the format you want or looking for a menu option to output the correct format.
@@ -1324,6 +1386,7 @@
   id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们学习了许多不同的数据格式转换方法。其中一些技巧很简单，比如直接将文件保存为你想要的格式，或者寻找菜单选项来输出正确的格式。其他时候，我们需要编写自己的程序化解决方案。
 - en: Many projects, such as the sample project we implemented in this chapter, will
     require several different cleaning steps, and we will have to carefully plan out
     our cleaning steps and write down what we did. Both networkx and D3 are really
@@ -1334,11 +1397,13 @@
   id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 很多项目，比如我们在本章实现的示例项目，都需要进行多个不同的清理步骤，我们必须仔细规划清理步骤并记录下我们所做的事情。networkx和D3都是非常棒的工具，但在使用它们之前，数据必须是特定格式的。同样，通过netvizz可以轻松获取Facebook数据，但它也有自己的数据格式。在不同文件格式之间找到简单的转换方法是数据科学中的一项关键技能。
 - en: In this chapter, we performed a lot of conversions between structured and semistructured
     data. But what about cleaning messy data, such as unstructured text?
   id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们进行了很多结构化数据和半结构化数据之间的转换。但清理混乱数据呢，比如非结构化文本？
 - en: In [Chapter 5](part0033.xhtml#aid-VF2I1 "Chapter 5. Collecting and Cleaning
     Data from the Web"), *Collecting and Cleaning Data from the Web*, we will continue
     to fill up our data science cleaning toolbox by learning some of the ways in which
@@ -1346,3 +1411,4 @@
   id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[第5章](part0033.xhtml#aid-VF2I1 "第5章. 从网页收集和清理数据")，*从网页收集和清理数据*中，我们将继续充实我们的数据科学清理工具箱，学习一些清理我们在网页上找到的页面的方法。

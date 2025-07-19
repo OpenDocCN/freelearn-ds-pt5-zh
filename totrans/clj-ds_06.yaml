@@ -1734,10 +1734,12 @@
   id: totrans-255
   prefs: []
   type: TYPE_NORMAL
+  zh: 提供给`::mr/source-as`的关键字是我们之前没有遇到过的。在上一章中，我们看到了如何通过`：keyvals`、`:keys`和`:vals`等塑形选项，让Parkour知道我们希望如何提供数据，以及我们将返回的数据结构。对于聚合器，Parkour描述了一个更全面的塑形函数集，考虑到输入可能是分组的。下图展示了可用的选项：
 - en: '![Distributed unique IDs with Hadoop](img/7180OS_06_175.jpg)'
   id: totrans-256
   prefs: []
   type: TYPE_IMG
+  zh: '![分布式唯一ID与Hadoop](img/7180OS_06_175.jpg)'
 - en: 'The option provided to `::mr/sink-as` is not one we''ve encountered before
     either. The `parkour.io.dux` namespace provides options for de-multiplexing outputs.
     In practice this means that, by sinking as `dux/named-keyvals`, a single reducer
@@ -1746,6 +1748,7 @@
   id: totrans-257
   prefs: []
   type: TYPE_NORMAL
+  zh: 提供给`::mr/sink-as`的选项我们也没有遇到过。`parkour.io.dux`命名空间提供了输出去多路复用的选项。实际上，这意味着通过将sink指定为`dux/named-keyvals`，单个聚合器可以写入多个不同的输出。换句话说，我们在数据管道中引入了一个分支：部分数据写入一个分支，其余数据写入另一个分支。
 - en: Having set a sink specification of `dux/named-keyvals`, the first element of
     our tuple will be interpreted as the destination to write to; the second element
     of our tuple will be treated as the key/value pair to be written. As a result,
@@ -1754,12 +1757,14 @@
   id: totrans-258
   prefs: []
   type: TYPE_NORMAL
+  zh: 设置了`dux/named-keyvals`的sink规范后，我们元组的第一个元素将被解释为写入的目标；元组的第二个元素将被视为要写入的键值对。因此，我们可以将`:data`（本地和全局偏移量）写入一个目标，将`:counts`（每个映射器处理的术语数量）写入另一个目标。
 - en: The job that makes use of the mapper and reducer that we've defined is presented
     next. As with the Parkour job we specified in the previous chapter, we chain together
     an input, map, partition, reduce, and output step.
   id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来展示的是使用我们定义的映射器和聚合器的作业。与上一章中指定的Parkour作业类似，我们将输入、映射、分区、归约和输出步骤串联起来。
 - en: '[PRE46]'
   id: totrans-260
   prefs: []
@@ -1773,6 +1778,8 @@
   id: totrans-261
   prefs: []
   type: TYPE_NORMAL
+  zh: 前面的代码和我们之前看到的作业规范之间有两个主要区别。首先，我们的输出指定了两个命名的sink：每个聚合器的输出各一个。其次，我们使用`parkour.io.avro`命名空间作为`mra`来为我们的数据指定模式，使用`(mra/dsink
+    [:string long-pair])`。
 - en: 'In the previous chapter we made use of Tesser''s `FressianWritable` to serialize
     arbitrary Clojure data structures to disk. This worked because the contents of
     the `FressianWritable` did not need to be interpreted by Hadoop: the value was
@@ -1785,6 +1792,7 @@
   id: totrans-262
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一章中，我们使用了Tesser的`FressianWritable`将任意Clojure数据结构序列化到磁盘。这是因为`FressianWritable`的内容不需要Hadoop解析：该值是完全不透明的。使用Parkour时，我们可以定义自定义的键/值对类型。由于Hadoop需要将键和值作为独立实体进行解析（用于读取、分区和写入序列文件），Parkour允许我们使用`parkour.io.avro`命名空间定义“元组模式”，该模式明确地定义了键和值的类型。`long-pair`是一个自定义模式，用于将本地和全局偏移量存储在单个元组中。
 - en: '[PRE47]'
   id: totrans-263
   prefs: []
@@ -1795,17 +1803,20 @@
   id: totrans-264
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于模式是可组合的，我们可以在定义输出模式时引用`long-pair`模式：`(mra/dsink [:string long-pair])`。
 - en: Note
   id: totrans-265
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Parkour uses the library `Acbracad` to serialize Clojure data structures using
     Avro. For more information about serialization options consult the documentation
     for Abracad at [https://github.com/damballa/abracad](https://github.com/damballa/abracad).
   id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: Parkour使用`Acbracad`库来通过Avro序列化Clojure数据结构。有关序列化选项的更多信息，请参考Abracad文档，网址：[https://github.com/damballa/abracad](https://github.com/damballa/abracad)。
 - en: 'Let''s look at another feature of Hadoop that Parkour exposes which allows
     our term ID job to be more efficient than it would otherwise be: the distributed
     cache.'
@@ -2286,6 +2297,8 @@
   id: totrans-337
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个父目录（例如 `data/reuters-kmeans/kmeans-10`），以下函数将使用 Parkour 的 `seqf/dseq` 函数从序列文件加载键/值对，并将点加载到按聚类
+    ID 索引的向量映射中。在这种情况下，键是聚类 ID（整数），值是 TF-IDF 向量。
 - en: '[PRE62]'
   id: totrans-338
   prefs: []
@@ -2298,6 +2311,8 @@
   id: totrans-339
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述函数的输出是一个按聚类 ID 索引的映射，其值是聚类点的序列。同样，以下函数将把每个聚类转换为一个按聚类 ID 索引的映射，其值是包含 `:id`
+    和 `:centroid` 键的映射。
 - en: '[PRE63]'
   id: totrans-340
   prefs: []
@@ -2310,6 +2325,8 @@
   id: totrans-341
   prefs: []
   type: TYPE_NORMAL
+  zh: 拥有两个按聚类 ID 索引的映射意味着将聚类的点与聚类中心结合起来，只需对映射调用 `merge-with` 并提供一个自定义的合并函数即可。在以下代码中，我们将聚类的点合并到包含聚类
+    `:id` 和 `:centroid` 的映射中。
 - en: '[PRE64]'
   id: totrans-342
   prefs: []
@@ -2321,11 +2338,14 @@
   id: totrans-343
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终输出是一个单一的映射，按聚类 ID 索引，其中每个值都是一个包含 `:id`、`:centroid` 和 `:points` 的映射。我们将在下一节中使用这个映射来计算聚类的
+    RMSE。
 - en: Calculating the cluster RMSE
   id: totrans-344
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 计算聚类 RMSE
 - en: To calculate the RMSE, we need to be able to establish the distance between
     every point and its associated cluster centroid. Since we used Mahout's `CosineDistanceMeasure`
     to perform the initial clustering, we should use the cosine distance to evaluate
@@ -2333,6 +2353,8 @@
   id: totrans-345
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了计算 RMSE，我们需要能够确定每个点与其关联的聚类中心之间的距离。由于我们使用了 Mahout 的 `CosineDistanceMeasure`
+    来执行初始聚类，因此我们也应该使用余弦距离来评估聚类。事实上，我们可以直接利用 Mahout 的实现。
 - en: '[PRE65]'
   id: totrans-346
   prefs: []
@@ -2349,23 +2371,29 @@
   id: totrans-347
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果将 RMSE 与聚类数绘制成图，你会发现随着聚类数的增加，RMSE 会逐渐下降。单一聚类将具有最高的 RMSE 错误（原始数据集与均值的方差），而最低的
+    RMSE 将是每个点都在自己的聚类中的退化情况（RMSE 为零）。显然，这两个极端都无法很好地解释数据的结构。然而，RMSE 不是线性下降的。当聚类数从 1
+    增加时，它会急剧下降，但一旦超过“自然”聚类数后，下降的速度就会变慢。
 - en: Therefore, one way of judging the ideal number of clusters is to plot how the
     RMSE changes with respect to the number of clusters. This is called the **elbow
     method**.
   id: totrans-348
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，判断理想聚类数的一种方法是绘制 RMSE 随聚类数变化的图表。这就是所谓的 **肘部法**。
 - en: Determining optimal k with the elbow method
   id: totrans-349
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用肘部法确定最佳的 k 值
 - en: In order to determine the value of *k* using the elbow method, we're going to
     have to re-run *k*-means a number of times. The following code accomplishes this
     for all *k* between `2` and `21`.
   id: totrans-350
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使用肘部法确定 *k* 的值，我们需要多次重新运行 *k*-均值聚类。以下代码实现了对 `2` 到 `21` 之间的所有 *k* 值进行聚类。
 - en: '[PRE66]'
   id: totrans-351
   prefs: []
@@ -2378,11 +2406,14 @@
   id: totrans-352
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可能需要一些时间，所以不妨去泡杯热饮：`println` 语句会记录每次聚类的运行情况，让你知道进展如何。在我的笔记本电脑上，整个过程大约需要 15
+    分钟。
 - en: 'Once it''s complete, you should be able to run the example to generate a scatter
     plot of the RMSE for each of the clustered values:'
   id: totrans-353
   prefs: []
   type: TYPE_NORMAL
+  zh: 完成后，你应该能够运行示例，生成每个聚类值的 RMSE 散点图：
 - en: '[PRE67]'
   id: totrans-354
   prefs: []
@@ -2392,10 +2423,12 @@
   id: totrans-355
   prefs: []
   type: TYPE_NORMAL
+  zh: 这应该返回一个类似于以下的图表：
 - en: '![Determining optimal k with the elbow method](img/7180OS_06_220.jpg)'
   id: totrans-356
   prefs: []
   type: TYPE_IMG
+  zh: '![使用肘部法确定最佳 k 值](img/7180OS_06_220.jpg)'
 - en: The preceding scatter plot shows the RMSE plotted against the number of clusters.
     It should be clear how the rate of RMSE change slows as *k* exceeds around 13
     clusters and increasing the number of clusters further yields diminishing returns.
@@ -2404,6 +2437,7 @@
   id: totrans-357
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的散点图展示了RMSE与簇数之间的关系。应该能看出，当*k*超过大约13个簇时，RMSE的变化速率放慢，进一步增加簇数会带来递减的收益。因此，上图表明对于我们的路透社数据，约13个簇是一个不错的选择。
 - en: The elbow method provides an intuitive means to determine the ideal number of
     clusters, but it is sometimes hard to apply in practice. This is because we must
     interpret the shape of the curve defined by the RMSE for each *k*. If *k* is small,
@@ -2412,11 +2446,13 @@
   id: totrans-358
   prefs: []
   type: TYPE_NORMAL
+  zh: 肘部法则提供了一种直观的方式来确定理想的簇数，但在实践中有时难以应用。这是因为我们必须解释每个*k*对应的RMSE曲线的形状。如果*k*很小，或者RMSE包含较多噪声，可能不容易看出肘部在哪里，甚至是否存在肘部。
 - en: Note
   id: totrans-359
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Since clustering is an unsupervised learning algorithm, we assume here that
     the internal structure of the clusters is the only means of validating the quality
     of clustering. If true cluster labels are known then it's possible to use external
@@ -2426,6 +2462,8 @@
   id: totrans-360
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于聚类是一种无监督学习算法，我们在此假设簇的内部结构是验证聚类质量的唯一手段。如果已知真实的簇标签，则可以使用外部验证度量（例如熵）来验证模型的成功，这在[第4章](ch04.xhtml
+    "第4章. 分类")，*分类*中我们曾遇到过。
 - en: Other clustering evaluation schemes aim to provide a clearer means of determining
     the precise number of clusters. The two we'll cover are the Dunn index and the
     Davies-Bouldin index. Both are internal evaluation schemes, meaning that they
@@ -2434,11 +2472,13 @@
   id: totrans-361
   prefs: []
   type: TYPE_NORMAL
+  zh: 其他聚类评估方案旨在提供更清晰的方式来确定精确的簇数。我们将讨论的两种方法是邓恩指数和戴维斯-鲍尔丁指数。它们都是内部评估方案，意味着它们只关注聚类数据的结构。每种方法都旨在以不同的方式识别产生最紧凑、最分离的簇的聚类。
 - en: Determining optimal k with the Dunn index
   id: totrans-362
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用邓恩指数确定最优k
 - en: 'The Dunn index offers an alternative way to choose the optimal number of *k*.
     Rather than considering the average error remaining in the clustered data, the
     Dunn index instead considers the ratio of two "worst-case" situations: the minimum
@@ -2448,20 +2488,24 @@
   id: totrans-363
   prefs: []
   type: TYPE_NORMAL
+  zh: 邓恩指数提供了另一种选择最优*k*的方式。邓恩指数不考虑聚类数据中的平均误差，而是考虑两种“最坏情况”的比率：两个簇中心之间的最小距离，除以最大簇直径。因此，较高的邓恩指数表示更好的聚类，因为通常我们希望簇间距离较大，而簇内距离较小。
 - en: 'For *k* clusters we can express the Dunn index in the following way:'
   id: totrans-364
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于*k*个簇，我们可以通过以下方式表达邓恩指数：
 - en: '![Determining optimal k with the Dunn index](img/7180OS_06_12.jpg)'
   id: totrans-365
   prefs: []
   type: TYPE_IMG
+  zh: '![使用邓恩指数确定最优k](img/7180OS_06_12.jpg)'
 - en: where *δ(C[i],C[j])* distance between the two clusters *C*[i] and *C*[j] and
     ![Determining optimal k with the Dunn index](img/7180OS_06_13.jpg) represents
     the size (or scatter) of the largest cluster.
   id: totrans-366
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中，*δ(C[i],C[j])*是两个簇*C*[i]和*C*[j]之间的距离，而![使用邓恩指数确定最优k](img/7180OS_06_13.jpg)表示最大簇的大小（或散布）。
 - en: There are several possible ways to calculate the scatter of a cluster. We could
     take the distance between the furthest two points inside a cluster, or the mean
     of all the pairwise distances between data points inside the cluster, or the mean
@@ -2470,6 +2514,7 @@
   id: totrans-367
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算一个簇的散布有几种可能的方法。我们可以计算簇内最远两个点之间的距离，或者计算簇内所有数据点之间成对距离的平均值，或者计算每个数据点到簇中心的距离的平均值。在以下代码中，我们通过计算从簇中心到各点的中位距离来确定大小。
 - en: '[PRE68]'
   id: totrans-368
   prefs: []
@@ -2481,6 +2526,7 @@
   id: totrans-369
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的代码使用了 `clojure.math.combinatorics` 中的 `combinations` 函数（[https://github.com/clojure/math.combinatorics/](https://github.com/clojure/math.combinatorics/)）来生成所有聚类的懒序列对。
 - en: '[PRE69]'
   id: totrans-370
   prefs: []
@@ -2491,10 +2537,12 @@
   id: totrans-371
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在上面的代码中使用了 `dunn-index` 函数来为 *k=2* 到 *k=20* 的聚类生成散点图：
 - en: '![Determining optimal k with the Dunn index](img/7180OS_06_230.jpg)'
   id: totrans-372
   prefs: []
   type: TYPE_IMG
+  zh: '![使用 Dunn 指数确定最优的 k 值](img/7180OS_06_230.jpg)'
 - en: A higher Dunn index indicates a better clustering. Thus, it appears that the
     best clustering is for *k=2*, followed by *k=6*, with *k=12* and *k=13* following
     closely behind. Let's try an alternative cluster evaluation scheme and compare
@@ -2502,11 +2550,13 @@
   id: totrans-373
   prefs: []
   type: TYPE_NORMAL
+  zh: 更高的 Dunn 指数表示更好的聚类效果。因此，最佳聚类似乎是 *k=2*，接下来是 *k=6*，然后是 *k=12* 和 *k=13*，它们紧随其后。我们来尝试一种替代的聚类评估方案，并比较结果。
 - en: Determining optimal k with the Davies-Bouldin index
   id: totrans-374
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 Davies-Bouldin 指数确定最优的 k 值
 - en: 'The Davies-Bouldin index is an alternative evaluation scheme that measures
     the mean ratio of size and separation for all values in the cluster. For each
     cluster, an alternative cluster is found that maximizes the ratio of the sum of
@@ -2515,17 +2565,23 @@
   id: totrans-375
   prefs: []
   type: TYPE_NORMAL
+  zh: Davies-Bouldin 指数是一种替代的评估方案，用于衡量聚类中所有值的大小和分离度的平均比率。对于每个聚类，找到一个替代聚类，使得聚类大小之和与聚类间距离的比率最大化。Davies-Bouldin
+    指数被定义为所有聚类的此值的平均值：
 - en: '![Determining optimal k with the Davies-Bouldin index](img/7180OS_06_14.jpg)![Determining
     optimal k with the Davies-Bouldin index](img/7180OS_06_15.jpg)'
   id: totrans-376
   prefs: []
   type: TYPE_IMG
+  zh: '![使用 Davies-Bouldin 指数确定最优的 k 值](img/7180OS_06_14.jpg)![使用 Davies-Bouldin 指数确定最优的
+    k 值](img/7180OS_06_15.jpg)'
 - en: 'where *δ(C[i],C[j])* is the distance between the two cluster centroids *C*[i]
     and *C*[j], and *S*[i] and *S*[j] are the scatter. We can calculate the Davies-Bouldin
     index using the following code:'
   id: totrans-377
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 *δ(C[i],C[j])* 是两个聚类中心 *C*[i] 和 *C*[j]* 之间的距离，*S*[i] 和 *S*[j]* 是散布度。我们可以使用以下代码计算
+    Davies-Bouldin 指数：
 - en: '[PRE70]'
   id: totrans-378
   prefs: []
@@ -2536,6 +2592,7 @@
   id: totrans-379
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们在散点图中绘制 *k=2* 到 *k=20* 的 Davies-Bouldin 指数：
 - en: '[PRE71]'
   id: totrans-380
   prefs: []
@@ -2545,10 +2602,12 @@
   id: totrans-381
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将生成以下图表：
 - en: '![Determining optimal k with the Davies-Bouldin index](img/7180OS_06_240.jpg)'
   id: totrans-382
   prefs: []
   type: TYPE_IMG
+  zh: '![使用 Davies-Bouldin 指数确定最优的 k 值](img/7180OS_06_240.jpg)'
 - en: Unlike the Dunn index, the Davies-Bouldin index is minimized for good clustering
     schemes since in general we seek out clusters that are compact in size and have
     high inter-cluster distances. The preceding chart suggests that *k=2* is the ideal
@@ -2556,17 +2615,21 @@
   id: totrans-383
   prefs: []
   type: TYPE_NORMAL
+  zh: 与 Dunn 指数不同，Davies-Bouldin 指数对于良好的聚类方案是最小化的，因为一般来说，我们寻找的是紧凑的聚类，并且聚类间的距离较大。前面的图表表明，*k=2*
+    是理想的聚类大小，其次是 *k=13*。
 - en: The drawbacks of k-means
   id: totrans-384
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '*k*-均值算法的缺点'
 - en: '*k*-means is one of the most popular clustering algorithms due to its relative
     ease of implementation and the fact that it can be made to scale well to very
     large datasets. In spite of its popularity, there are several drawbacks.'
   id: totrans-385
   prefs: []
   type: TYPE_NORMAL
+  zh: '*k*-均值算法是最流行的聚类算法之一，因为它相对易于实现，并且可以很好地扩展到非常大的数据集。尽管它很受欢迎，但也有一些缺点。'
 - en: '*k*-means is stochastic, and does not guarantee to find the global optimum
     solution for clustering. In fact, the algorithm can be very sensitive to outliers
     and noisy data: the quality of the final clustering can be highly dependent on
@@ -2575,10 +2638,12 @@
   id: totrans-386
   prefs: []
   type: TYPE_NORMAL
+  zh: '*k*-均值算法是随机的，并不能保证找到全局最优的聚类解。事实上，该算法对离群点和噪声数据非常敏感：最终聚类的质量可能高度依赖于初始聚类中心的位置。换句话说，*k*-均值算法通常会发现局部最优解，而非全局最优解。'
 - en: '![The drawbacks of k-means](img/7180OS_06_250.jpg)'
   id: totrans-387
   prefs: []
   type: TYPE_IMG
+  zh: '![k-means 算法的缺点](img/7180OS_06_250.jpg)'
 - en: 'The preceding diagram illustrates how *k*-means may converge to a local minimum
     based on poor initial cluster centroids. Non-optimal clustering may even occur
     if the initial cluster centroids are well-placed, since *k*-means prefers clusters
@@ -2587,15 +2652,19 @@
   id: totrans-388
   prefs: []
   type: TYPE_NORMAL
+  zh: 上图说明了如何根据不良的初始聚类质心，*k*均值可能会收敛到局部最小值。如果初始聚类质心的位置合适，非最优聚类仍然可能发生，因为 *k* 均值倾向于选择具有相似大小和密度的聚类。在聚类大小和密度不大致相等时，*k*
+    均值可能无法收敛到最自然的聚类：
 - en: '![The drawbacks of k-means](img/7180OS_06_260.jpg)'
   id: totrans-389
   prefs: []
   type: TYPE_IMG
+  zh: '![k-means的缺点](img/7180OS_06_260.jpg)'
 - en: Also, *k*-means strongly prefers clusters that are "globular" in shape. Clusters
     with more intricate shapes are not well-identified by the *k*-means algorithm.
   id: totrans-390
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，*k* 均值算法强烈倾向于选择“球形”的聚类。形状较为复杂的聚类往往不能被 *k* 均值算法很好地识别。
 - en: 'In the next chapter, we''ll see how a variety of dimensionality reduction techniques
     can help work around these problems. But before we get there, let''s develop an
     intuition for an alternative way of defining distance: as a measure of how far
@@ -2603,11 +2672,13 @@
   id: totrans-391
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一章，我们将看到各种降维技术如何帮助解决这些问题。但在那之前，我们先来培养一种直觉，理解另一种定义距离的方式：作为衡量某个元素距离一“组”物体的远近。
 - en: The Mahalanobis distance measure
   id: totrans-392
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 马哈拉诺比斯距离度量
 - en: 'We saw at the beginning of the chapter how some distance measures may be more
     appropriate than others, given your data, by showing how the Jaccard, Euclidean,
     and cosine measures relate to data representation. Another factor to consider
@@ -2616,10 +2687,12 @@
   id: totrans-393
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章开始时，我们通过展示 Jaccard、欧几里得和余弦距离如何与数据表示相关，看到了一些距离度量在特定数据下可能比其他度量更合适。选择距离度量和聚类算法时需要考虑的另一个因素是数据的内部结构。请考虑以下散点图：
 - en: '![The Mahalanobis distance measure](img/7180OS_06_270.jpg)'
   id: totrans-394
   prefs: []
   type: TYPE_IMG
+  zh: '![马哈拉诺比斯距离度量](img/7180OS_06_270.jpg)'
 - en: 'It''s "obvious" that the point indicated by the arrow is distinct from the
     other points. We can clearly see that it''s far from the distribution of the others
     and therefore represents an anomaly. Yet, if we calculate the Euclidean distance
@@ -2628,6 +2701,7 @@
   id: totrans-395
   prefs: []
   type: TYPE_NORMAL
+  zh: 很“显然”，箭头所指的点与其他点不同。我们可以清楚地看到它远离其他点的分布，因此代表了一个异常点。然而，如果我们计算所有点到均值（“质心”）的欧几里得距离，这个点将被其他距离相等或更远的点所掩盖：
 - en: '[PRE72]'
   id: totrans-396
   prefs: []
@@ -2637,10 +2711,12 @@
   id: totrans-397
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述代码生成了以下图表：
 - en: '![The Mahalanobis distance measure](img/7180OS_06_280.jpg)'
   id: totrans-398
   prefs: []
   type: TYPE_IMG
+  zh: '![马哈拉诺比斯距离度量](img/7180OS_06_280.jpg)'
 - en: 'The Mahalanobis distance takes into account the covariance among the variables
     in calculating distances. In two dimensions, we can imagine the Euclidean distance
     as a circle growing out from the centroid: all points at the edge of the circle
@@ -2651,6 +2727,7 @@
   id: totrans-399
   prefs: []
   type: TYPE_NORMAL
+  zh: 马哈拉诺比斯距离在计算距离时考虑了变量之间的协方差。在二维空间中，我们可以将欧几里得距离想象成一个从质心发出的圆：圆上所有的点与质心的距离相等。马哈拉诺比斯距离将这个圆拉伸并扭曲，以纠正不同变量的尺度差异，并考虑它们之间的相关性。我们可以在以下示例中看到这种效果：
 - en: '[PRE73]'
   id: totrans-400
   prefs: []
@@ -2662,21 +2739,25 @@
   id: totrans-401
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述代码使用了 `incanter.stats` 提供的函数来绘制相同数据点的马哈拉诺比斯距离。结果显示在下图中：
 - en: '![The Mahalanobis distance measure](img/7180OS_06_290.jpg)'
   id: totrans-402
   prefs: []
   type: TYPE_IMG
+  zh: '![马哈拉诺比斯距离度量](img/7180OS_06_290.jpg)'
 - en: This chart clearly identifies one point in particular as being much more distant
     than the other points. This matches our perception that this point in particular
     should be considered as being further away from the others.
   id: totrans-403
   prefs: []
   type: TYPE_NORMAL
+  zh: 该图清晰地标识出一个点与其他点相比，距离要远得多。这与我们对这个点应该被认为比其他点更远的看法一致。
 - en: The curse of dimensionality
   id: totrans-404
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 维度灾难
 - en: 'There is one fact that the Mahalanobis distance measure is unable to overcome,
     though, and this is known as the curse of dimensionality. As the number of dimensions
     in a dataset rises, every point tends to become equally far from every other point.
@@ -2684,6 +2765,7 @@
   id: totrans-405
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，马哈拉诺比斯距离度量无法克服一个事实，这就是所谓的维度灾难。随着数据集中的维度数量增加，每个点都趋向于和其他点一样远。我们可以通过下面的代码简单地演示这一点：
 - en: '[PRE74]'
   id: totrans-406
   prefs: []
@@ -2697,10 +2779,12 @@
   id: totrans-407
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的代码找出了在一个合成生成的100个点的数据集中，任意两个点对之间的最小距离和最大距离。随着维度数接近数据集中的元素数量，我们可以看到每对元素之间的最小距离和最大距离逐渐接近：
 - en: '![The curse of dimensionality](img/7180OS_06_300.jpg)'
   id: totrans-408
   prefs: []
   type: TYPE_IMG
+  zh: '![维度灾难](img/7180OS_06_300.jpg)'
 - en: 'The effect is striking: as the number of dimensions increases, the distance
     between the closest two points rises too. The distance between the furthest two
     points rises as well, but at a slower rate. Finally, with 100 dimensions and 100
@@ -2708,6 +2792,7 @@
   id: totrans-409
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一效果非常显著：随着维度数量的增加，最接近的两个点之间的距离也在增加。最远的两个点之间的距离也增加，但增长速度较慢。最后，当维度为100，数据点为100时，每个点似乎与其他每个点的距离都相等。
 - en: Of course, this is synthetic, randomly generated data. If we're attempting to
     cluster our data, we implicitly hope that it will have a discernible internal
     structure that we can tease out. Nonetheless, this structure will become more
@@ -2715,16 +2800,19 @@
   id: totrans-410
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，这是合成的随机生成数据。如果我们尝试对数据进行聚类，我们隐含地希望数据中会有一个可识别的内部结构，我们可以将其提取出来。然而，随着维度数量的增加，这种结构会变得越来越难以识别。
 - en: Summary
   id: totrans-411
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: In this chapter, we've learned about the process of clustering and covered the
     popular *k*-means clustering algorithm to cluster large numbers of text documents.
   id: totrans-412
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们学习了聚类的过程，并介绍了流行的*k*-均值聚类算法，用于聚类大量的文本文件。
 - en: This provided an opportunity to cover the specific challenges presented by text
     processing where data is often messy, ambiguous, and high-dimensional. We saw
     how both stop words and stemming can help to reduce the number of dimensions and
@@ -2734,6 +2822,7 @@
   id: totrans-413
   prefs: []
   type: TYPE_NORMAL
+  zh: 这为我们提供了一个机会，探讨文本处理所带来的具体挑战，其中数据通常是杂乱的、模糊的，并且是高维的。我们看到停用词和词干提取如何帮助减少维度的数量，以及TF-IDF如何帮助识别最重要的维度。我们还看到如何通过*n*-gram和shingling技术提取每个词的上下文，代价是大量的术语扩展。
 - en: We've explored Parkour in greater detail and seen how it can be used to write
     sophisticated, scalable, Hadoop jobs. In particular, we've seen how to make use
     of the distributed cache and custom tuple schemas to write Hadoop job process
@@ -2742,6 +2831,7 @@
   id: totrans-414
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经更详细地探讨了Parkour，并且看到了它如何用来编写复杂的、可扩展的Hadoop作业。特别是，我们看到了如何利用分布式缓存和自定义元组模式来编写处理Clojure数据结构表示的数据的Hadoop作业。我们用这两者实现了生成唯一的、跨集群的术语ID的方法。
 - en: 'Finally, we witnessed the challenge presented by very high-dimensional spaces:
     the so-called "curse of dimensionality". In the next chapter, we''ll cover this
     topic in more detail and describe a variety of techniques to combat it. We''ll
@@ -2750,3 +2840,4 @@
   id: totrans-415
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们见证了高维空间带来的挑战：所谓的“维度灾难”。在下一章，我们将更详细地探讨这个话题，并描述一系列应对技术。我们将继续探索“相似性”和“差异性”的概念，同时考虑推荐问题：我们如何将用户与物品匹配起来。

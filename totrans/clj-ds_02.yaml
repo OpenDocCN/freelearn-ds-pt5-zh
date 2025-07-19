@@ -1,27 +1,38 @@
 - en: Chapter 2. Inference
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第二章 推断
 - en: '|   | *"I can see nothing," said I, handing it back to my friend.**"On the
     contrary, Watson, you can see everything. You fail, however, to reason from what
     you see. You are too timid in drawing your inferences."* |   |'
+  id: totrans-1
   prefs: []
   type: TYPE_TB
+  zh: '|   | *“我什么也看不见，”我说着，把它递还给我的朋友。**“相反，沃森，你什么都看得见。你只是没有从你所见的事物中推理出来。然而，你在得出结论时过于胆怯。”*
+    |   |'
 - en: '|   | --*Sir Arthur Conan Doyle, The Adventure of the Blue Carbuncle* |'
+  id: totrans-2
   prefs: []
   type: TYPE_TB
+  zh: '|   | --*阿瑟·柯南·道尔，《蓝宝石冒险》* |'
 - en: In the previous chapter, we introduced a variety of numerical and visual approaches
     to understand the normal distribution. We discussed descriptive statistics, such
     as the mean and standard deviation, and how they can be used to summarize large
     amounts of data succinctly.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一章中，我们介绍了多种数值和视觉方法来理解正态分布。我们讨论了描述性统计量，例如均值和标准差，以及它们如何用于简洁地总结大量数据。
 - en: A dataset is usually a sample of some larger population. Sometimes, this population
     is too large to be measured in its entirety. Sometimes, it is intrinsically unmeasurable,
     either because it is infinite in size or it otherwise cannot be accessed directly.
     In either case, we are forced to generalize from the data that we have.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集通常是某个更大总体的样本。有时，这个总体过于庞大，无法完全测量。有时，它本质上是无法测量的，可能是因为它的大小是无限的，或因为其他原因无法直接访问。无论是哪种情况，我们都不得不从已有的数据中进行概括。
 - en: 'In this chapter, we consider statistical inference: how we can go beyond simply
     describing the samples of data and instead describe the population from which
     they were sampled. We''ll look in detail at how confident we can be about the
@@ -29,117 +40,172 @@
     a robust approach to data analysis that puts the science in data science. We''ll
     also implement an interactive web page with ClojureScript to simulate the relationship
     between samples and the population from which they are taken.'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们将讨论统计推断：如何超越仅仅描述数据样本，而是描述它们来自的总体。我们将详细探讨我们对从数据样本中得出的推断的置信度。我们还将讨论假设检验：一种强健的数据分析方法，它将科学带入数据科学。我们还将使用ClojureScript实现一个交互式网页，以模拟样本与它们所来自总体之间的关系。
 - en: To help illustrate the principles, we'll invent a fictional company, AcmeContent,
     that has recently hired us as a data scientist.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了帮助说明这些原理，我们将虚构一个公司——AcmeContent，假设它最近聘请我们作为数据科学家。
 - en: Introducing AcmeContent
+  id: totrans-7
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍AcmeContent
 - en: To help illustrate the concepts in this chapter, let's imagine that we've recently
     been appointed for the data scientist role at AcmeContent. The company runs a
     website that lets visitors share video clips that they've enjoyed online.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了帮助说明本章的概念，假设我们最近被聘为AcmeContent公司的数据科学家。该公司运营着一个网站，让访问者分享他们在网上喜欢的视频片段。
 - en: One of the metrics AcmeContent tracks through its web analytics is **dwell time**.
     This is a measure of how long a visitor stays on the site. Clearly, visitors who
     spend a long time on the site are enjoying themselves and AcmeContent wants its
     visitors to stay as long as possible. If the mean dwell time increases, our CEO
     will be very happy.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: AcmeContent通过其网站分析跟踪的一个指标是**停留时间**。这是衡量访问者在网站上停留多久的指标。显然，花费较长时间在网站上的访问者通常是在享受网站的内容，AcmeContent希望访问者尽可能长时间停留。如果平均停留时间增加，我们的首席执行官将非常高兴。
 - en: Note
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Dwell time is the length of time between the time a visitor first arrives at
     a website and the time they make their last request to your site.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 停留时间是指访问者第一次到达网站和他们做出最后一次请求之间的时间长度。
 - en: A **bounce** is a visitor who makes only one request—their dwell time is zero.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '**跳出率**是指只做出一次请求的访问者——他们的停留时间为零。'
 - en: As the company's new data scientist, it falls to us to analyze the dwell time
     reported by the website's analytics and measure the success of AcmeContent's site.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为公司的新数据科学家，我们的任务是分析网站分析报告中的停留时间，并衡量AcmeContent网站的成功程度。
 - en: Download the sample code
+  id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 下载示例代码
 - en: The code for this chapter is available at [https://github.com/clojuredatascience/ch2-inference](https://github.com/clojuredatascience/ch2-inference)
     or from the Packt Publishing's website.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章的代码可以在[https://github.com/clojuredatascience/ch2-inference](https://github.com/clojuredatascience/ch2-inference)上找到，也可以从Packt
+    Publishing的网站获取。
 - en: The example data has been generated specifically for this chapter. It's small
     enough that it has been included with the book's sample code inside the data directory.
     Consult the book's wiki at [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com)
     for links to further read about dwell time analysis.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个示例数据是专门为本章生成的。它足够小，因此已与书中的示例代码一起包含在数据目录中。请查阅本书的 wiki：[http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com)以获取关于停留时间分析的进一步阅读链接。
 - en: Load and inspect the data
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 加载并检查数据
 - en: In the previous chapter, we used Incanter to load Excel spreadsheets with the
     `incanter.excel/load-xls` function. In this chapter, we will load a dataset from
     a tab-separated text file. For this, we'll make use of `incanter.io/read-dataset`
     that expects to receive either a URL object or a file path represented as a string.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一章中，我们使用 Incanter 的`incanter.excel/load-xls`函数加载了 Excel 电子表格。在本章中，我们将从一个以制表符分隔的文本文件中加载数据集。为此，我们将使用`incanter.io/read-dataset`，它期望接收一个
+    URL 对象或一个表示文件路径的字符串。
 - en: 'The file has been helpfully reformatted by AcmeContent''s web team to contain
     just two columns—the date of the request and the dwell time in seconds. There
     are column headings in the first row, so we pass `:header true` to `read-dataset`:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 该文件已由 AcmeContent 的网页团队进行了有益的重新格式化，包含了两列——请求日期和停留时间（单位：秒）。第一行是列标题，因此我们向`read-dataset`传递`:header
+    true`：
 - en: '[PRE0]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'If you run this code (either in the REPL or on the command line with `lein
     run –e 2.1`), you should see an output similar to the following:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你运行这段代码（无论是在 REPL 中还是通过命令行使用`lein run –e 2.1`），你应该会看到类似如下的输出：
 - en: '![Load and inspect the data](img/7180OS_02_100.jpg)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![加载并检查数据](img/7180OS_02_100.jpg)'
 - en: Let's see what the dwell times look like as a histogram.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看停留时间以直方图的形式呈现出来是什么样的。
 - en: Visualizing the dwell times
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 可视化停留时间
 - en: 'We can plot a histogram of dwell times by simply extracting the `:dwell-time`
     column with `i/$`:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过简单地使用`i/$`提取`:dwell-time`列来绘制停留时间的直方图：
 - en: '[PRE1]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'The earlier code generates the following histogram:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前的代码生成了以下的直方图：
 - en: '![Visualizing the dwell times](img/7180OS_02_110.jpg)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![可视化停留时间](img/7180OS_02_110.jpg)'
 - en: This is clearly not a normally distributed data, nor even a very skewed normal
     distribution. There is no tail to the left of the peak (a visitor clearly can't
     be on our site for less than zero seconds). While the data tails off steeply to
     the right at first, it extends much further along the *x* axis than we would expect
     from normally distributed data.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，这不是一个正态分布的数据，甚至也不是一个非常偏斜的正态分布。峰值左侧没有尾部（访客显然不可能在我们的网站停留不到零秒）。虽然数据开始时右侧急剧下降，但它沿着*x*轴延伸得比我们从正态分布数据中预期的要远得多。
 - en: When confronted with distributions like this, where values are mostly small
     but occasionally extreme, it can be useful to plot the *y* axis as a **log scale**.
     Log scales are used to represent events that cover a very large range. Chart axes
     are ordinarily linear and they partition a range into equally sized steps like
     the "number line" we learned at school. Log scales partition the range into steps
     that get larger and larger as they go further away from the origin.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 当遇到像这样的分布时，其中大部分值都很小，但偶尔出现极端值，使用**对数尺度**绘制*y*轴可能会很有用。对数尺度用于表示覆盖非常大范围的事件。通常，图表的坐标轴是线性的，它们将一个范围分割成相等大小的步骤，就像我们在学校学过的“数字线”。对数尺度则将范围分割成随着离原点越来越远而逐渐增大的步骤。
 - en: Some systems of measurement for natural phenomena that cover a very large range
     are represented on a log scale. For example, the Richter magnitude scale for earthquakes
     is a base-10 logarithmic scale, which means that an earthquake measuring 5 on
@@ -148,109 +214,154 @@
     30 decibels has 10 times the magnitude of a sound wave of 20 decibels. In each
     case, the principle is the same—the use of a log scale allows a very large range
     of values to be compressed into a much smaller range.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些测量自然现象的系统，涵盖了非常大的范围，通常会使用对数尺度表示。例如，地震的里氏震级就是一个以 10 为底的对数尺度，这意味着震级为 5 的地震是震级为
+    4 的地震的 10 倍。分贝尺度也是一个对数尺度，但它有不同的底数——30 分贝的声波的强度是 20 分贝声波的 10 倍。在每种情况下，原理都是一样的——使用对数尺度可以将一个非常大的值范围压缩到一个更小的范围内。
 - en: 'Plotting our *y* axis on `log-axis` is simple with Incanter with `c/set-axis`:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Incanter 中，通过`c/set-axis`将我们的*y*轴绘制为`log-axis`非常简单：
 - en: '[PRE2]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: By default Incanter will use a base-10 log scale, meaning that each tick on
     the axis represents a range that is 10 times the previous step. A chart like this—where
     only one axis is shown on a log scale—is called **log-linear**. Unsurprisingly,
     a chart showing two log axes is called a **log-log chart**.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，Incanter将使用以10为底的对数尺度，这意味着轴上的每一个刻度代表的范围是前一步的10倍。像这样的图表——只有一个轴是对数尺度——称为**对数-线性**图。毫不奇怪，显示两个对数轴的图表称为**对数-对数图**。
 - en: '![Visualizing the dwell times](img/7180OS_02_120.jpg)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
+  zh: '![可视化停留时间](img/7180OS_02_120.jpg)'
 - en: Plotting dwell times on a log-linear plot shows hidden consistency in the data—there
     is a linear relationship between the dwell time and the logarithm of the frequency.
     The clarity of the relationship breaks down to the right of the plot where there
     are fewer than 10 visitors but, aside from this, the relationship is remarkably
     consistent.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在对数-线性图上绘制停留时间能够显示数据中的隐藏一致性——停留时间与频率的对数之间存在线性关系。除了图表右侧（那里的访问者少于10个）出现关系不再清晰外，其他部分该关系非常一致。
 - en: A straight line on a log-linear plot is a clear indicator of an exponential
     distribution.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 在对数-线性图上，直线是指数分布的明显指示。
 - en: The exponential distribution
+  id: totrans-38
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 指数分布
 - en: The exponential distribution occurs frequently when considering situations where
     there are many small positive quantities and much fewer larger quantities. Given
     what we have learned about the Richter scale, it won't be a surprise to learn
     that the magnitude of earthquakes follows an exponential distribution.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 指数分布通常出现在考虑有许多小的正量和较少的较大量的情况时。根据我们对里氏震级的了解，地震的震级遵循指数分布这一点应该不会令人惊讶。
 - en: The distribution also frequently occurs in waiting times—the time until the
     next earthquake of any magnitude roughly follows an exponential distribution as
     well. The distribution is often used to model failure rates, which is essentially
     the waiting time until a machine breaks down. Our exponential distribution models
     a process similar to failure—the waiting time until a visitor gets bored and leaves
     our site.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 该分布也经常出现在等待时间中——直到下一次任何震级的地震发生的时间大致也遵循指数分布。该分布常用于建模故障率，本质上是指机器故障的等待时间。我们的指数分布模型类似于故障过程——即访问者厌倦并离开我们网站的等待时间。
 - en: 'The exponential distribution has a number of interesting properties. One relates
     to the mean and standard deviation:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 指数分布具有许多有趣的性质。其中之一与均值和标准差有关：
 - en: '[PRE3]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The mean and standard deviations are very similar. In fact, for an ideal exponential
     distribution, they are exactly the same. This property holds true for all the
     exponential distributions—as the mean increases, so does the standard deviation.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 均值和标准差非常相似。实际上，对于理想的指数分布，它们是完全相同的。这个特性适用于所有的指数分布——均值越大，标准差也越大。
 - en: Note
+  id: totrans-44
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: For exponential distributions, the mean and standard deviations are equal.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于指数分布，均值和标准差相等。
 - en: A second property of the exponential distribution is that it is **memoryless**.
     This is a counterintuitive property best illustrated by an example. We expect
     that as a visitor continues to browse our site, the probability of them getting
     bored and leaving increases. Since the mean dwell time is 93 seconds, it might
     appear that beyond 93 seconds, they are less and less likely to continue browsing.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 指数分布的第二个特性是它是**无记忆**的。这是一个与直觉相反的特性，最好的说明方法是通过一个例子来展示。我们通常认为，随着访问者继续浏览我们的网站，他们厌倦并离开的概率会增加。由于平均停留时间为93秒，因此可能会出现这样的想法：超过93秒后，他们继续浏览的可能性会越来越小。
 - en: The memoryless property of exponential distributions tells us that the probability
     of a visitor staying on our site for another 93 seconds is exactly the same whether
     they have already been browsing the site for 93 seconds, 5 minutes, an hour, or
     they have just arrived.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 指数分布的无记忆特性告诉我们，访问者在我们的网站上停留额外93秒的概率，与他们已经浏览了93秒、5分钟、1小时，还是刚刚到达网站时的浏览时间无关。
 - en: Note
+  id: totrans-48
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: For a memoryless distribution, the probability of continuing for an additional
     *x* minutes is not affected by how much time has already elapsed.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于无记忆分布，继续再等额外的*x*分钟的概率与已经经过的时间无关。
 - en: The memoryless property of exponential distributions goes some way towards explaining
     why it is so difficult to predict when an earthquake will occur next. We must
     rely on other evidence (such as a disturbance in geomagnetism) rather than the
     elapsed time.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 指数分布的记忆无关特性在一定程度上解释了为何如此难以预测地震何时发生。我们必须依赖其他证据（例如地磁扰动），而非时间的流逝。
 - en: Since the median dwell time is 64 seconds, about half of our visitors are staying
     on the site for only around a minute. A mean of 93 seconds shows that some visitors
     are staying much longer than that. These statistics have been calculated on all
     the visitors over the last 6 months. It might be interesting to see how these
     statistics vary per day. Let's calculate this now.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于中位数停留时间为64秒，大约一半的访客只在网站停留约一分钟。平均值93秒表明，有些访客停留的时间要长得多。这些统计数据是基于过去6个月所有访客计算的。可能有趣的是，看看这些统计数据在每天的变化。让我们现在计算一下。
 - en: The distribution of daily means
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 日均值分布
 - en: The file provided by the web team includes the timestamp of the visit. In order
     to aggregate by day, it's necessary to remove the time portion from the date.
     While we could do this with string manipulation, a more flexible approach would
@@ -258,156 +369,225 @@
     to parse the string. This will allow us to not only remove the time, but also
     perform arbitrarily complex filters (such as filtering to particular days of the
     week or the first or last day of the month, for example).
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 网络团队提供的文件包含了访问的时间戳。为了按天汇总数据，我们需要从日期中移除时间部分。虽然我们可以通过字符串操作来完成这一任务，但更灵活的方法是使用日期和时间库，如`clj-time`（[https://github.com/clj-time/clj-time](https://github.com/clj-time/clj-time)）来解析字符串。这将不仅使我们能够移除时间，还能执行任意复杂的过滤操作（例如，筛选特定的星期几，或每月的第一天或最后一天）。
 - en: 'The `clj-time.predicates` namespace contains a variety of useful predicates
     and the `clj-time.format` namespace contains parsing functions that will attempt
     to convert the string to a date-time object using predefined standard formats.
     If our timestamp wasn''t already in a standard format, we could use the same namespace
     to build a custom formatter. Consult the `clj-time` documentation for more information
     and many usage examples:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '`clj-time.predicates` 命名空间包含了多种有用的谓词，而 `clj-time.format` 命名空间包含了尝试使用预定义的标准格式将字符串转换为日期时间对象的解析函数。如果我们的时间戳不是标准格式，我们可以使用相同的命名空间构建自定义格式化器。更多信息和使用示例，请参考
+    `clj-time` 文档：'
 - en: '[PRE4]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Combining the previous functions allows us to calculate the mean, median, and
     standard deviation for the daily mean dwell times:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 将前面的函数结合起来，我们可以计算日均停留时间的平均值、中位数和标准差：
 - en: '[PRE5]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The mean value of our daily means is 90.2 seconds. This is close to the mean
     value we calculated previously on the whole dataset, including weekends. The standard
     deviation is much lower though, just 3.7 seconds. In other words, the distribution
     of daily means has a much lower standard deviation than the entire dataset. Let''s
     plot the daily mean dwell times on a chart:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的日均值的平均值是90.2秒。这个值接近我们之前计算的整个数据集（包括周末）的平均值。然而，标准差要低得多，仅为3.7秒。换句话说，日均值的分布比整个数据集的标准差要小得多。接下来，让我们在图表上绘制日均停留时间：
 - en: '[PRE6]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'This code generates the following histogram:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码生成了以下的直方图：
 - en: '![The distribution of daily means](img/7180OS_02_130.jpg)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![日均值分布](img/7180OS_02_130.jpg)'
 - en: The distribution of sample means is distributed symmetrically around the overall
     grand mean value of 90 seconds with a standard deviation of 3.7 seconds. Unlike
     the distribution from which these means were sampled—the exponential distribution—the
     distribution of sample means is normally distributed.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 样本均值的分布围绕整体总均值90秒对称，标准差为3.7秒。与这些均值抽样的分布——指数分布不同，样本均值的分布呈正态分布。
 - en: The central limit theorem
+  id: totrans-63
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 中心极限定理
 - en: We encountered the central limit theorem in the previous chapter when we took
     samples from a uniform distribution and averaged them. In fact, the central limit
     theorem works for any distribution of values, provided the distribution has a
     finite standard deviation.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在上一章中遇到了中心极限定理，当时我们从均匀分布中取样并对其求平均。实际上，中心极限定理适用于任何值的分布，只要该分布的标准差是有限的。
 - en: Note
+  id: totrans-65
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: The central limit theorem states that the distribution of sample means will
     be normally distributed irrespective of the distribution from which they were
     calculated.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 中心极限定理指出，不管样本是从哪种分布中计算出来的，样本均值的分布将是正态分布。
 - en: It doesn't matter that the underlying distribution is exponential—the central
     limit theorem shows that the mean of random samples taken from any distribution
     will closely approximate a normal distribution. Let's plot a normal curve over
     our histogram to see how closely it matches.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论基础分布是否为指数分布，都不重要——中心极限定理表明，从任何分布中随机抽取的样本的均值将接近正态分布。让我们在直方图上绘制正态曲线，看看它与实际数据的匹配程度。
 - en: 'To plot a normal curve over our histogram, we have to plot our histogram as
     a density histogram. This plots the proportion of all the points that have been
     put in each bucket rather than the frequency. We can then overlay the normal probability
     density with the same mean and standard deviation:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在我们的直方图上绘制正态曲线，我们必须将直方图绘制为密度直方图。这样绘制的是每个桶中所有数据点的比例，而不是频率。然后，我们可以叠加具有相同均值和标准差的正态概率密度：
 - en: '[PRE7]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'This code generates the following chart:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 该代码生成了以下图表：
 - en: '![The central limit theorem](img/7180OS_02_140.jpg)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![中心极限定理](img/7180OS_02_140.jpg)'
 - en: The normal curve plotted over the histogram has a standard deviation of approximately
     3.7 seconds. In other words, this quantifies the variation of each daily mean
     being relative to the grand mean of 90 seconds. We can think of each day's mean
     as a sample from the overall population with the earlier curve representing the
     distribution of the sample means. Because 3.7 seconds is the amount that the sample's
     mean differs from the grand mean, it's referred to as the **standard error**.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 绘制在直方图上的正态曲线的标准差大约是3.7秒。换句话说，这量化了每天均值相对于90秒总体均值的变异。我们可以将每天的均值看作是来自总体的样本，而前面提到的曲线表示的是样本均值的分布。因为3.7秒是样本均值与总体均值的差异，所以它被称为**标准误差**。
 - en: Standard error
+  id: totrans-73
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 标准误差
 - en: While the standard deviation measures the amount of variation there is within
     a sample, the standard error measures the amount of variation there is between
     the means of samples taken from the same population.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 标准差衡量样本内部的变异量，而标准误差衡量从同一总体中抽取样本的均值之间的变异量。
 - en: Note
+  id: totrans-75
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: The standard error is the standard deviation of the distribution of the sample
     means.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 标准误差是样本均值分布的标准差。
 - en: 'We have calculated the standard error of dwell time empirically by looking
     at the previous 6 months of data. But there is an equation that allows us to calculate
     it from only a single sample:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过查看过去6个月的数据经验性地计算了停留时间的标准误差。但也有一个方程式，允许我们仅通过一个样本来计算它：
 - en: '![Standard error](img/7180OS_02_01.jpg)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![标准误差](img/7180OS_02_01.jpg)'
 - en: 'Here, *σ[x]* is the standard deviation and *n* is the sample size. This is
     unlike the descriptive statistics that we studied in the previous chapter. While
     they described a single sample, the standard error attempts to describe a property
     of samples in general—the amount of variation in the sample means that variations
     can be expected for samples of a given size:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里，*σ[x]* 是标准差，*n* 是样本大小。这与我们在上一章中学习的描述性统计不同。描述性统计描述的是单个样本，而标准误差试图描述样本的一般特性——即样本均值的变异量，可以预期给定大小的样本会有变异：
 - en: '[PRE8]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'The standard error of the mean is thus related to two factors:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 均值的标准误差与两个因素有关：
 - en: The size of the sample
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 样本大小
 - en: The population standard deviation
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 总体标准差
 - en: The size of the sample has the largest impact on the standard error. Since we
     take the square root of the sample size, we have to increase the size of the sample
     by four to halve the size of the standard error.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 样本大小对标准误差的影响最大。由于我们需要对样本大小取平方根，因此必须将样本大小增加四倍才能使标准误差减半。
 - en: It may seem curious that the proportion of the population sampled has no effect
     on the size of the standard error. This is just as well, since some populations
     could be infinite in size.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 可能会让人感到奇怪的是，总体样本的比例对标准误差的大小没有影响。这其实是好事，因为某些总体的大小可能是无限的。
 - en: Samples and populations
+  id: totrans-86
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 样本与总体
 - en: The words "sample" and "population" mean something very particular to statisticians.
     A population is the entire collection of entities that a researcher wishes to
     understand or draw conclusions about. For example, in the second half of the 19th
@@ -415,57 +595,86 @@
     about pea plants. Although he was studying specific plants in a laboratory, his
     objective was to understand the underlying mechanisms behind heredity in all possible
     pea plants.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '"样本"和"总体"这两个词对统计学家来说有着非常特殊的含义。总体是研究者希望理解或从中得出结论的所有实体的集合。例如，在19世纪下半叶，遗传学的奠基人格雷戈尔·约翰·孟德尔记录了豌豆植物的观察数据。尽管他是在实验室中研究特定的植物，但他的目标是理解所有可能的豌豆植物中的遗传机制。'
 - en: Note
+  id: totrans-88
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Statisticians refer to the group of entities from which a sample is drawn as
     the population, whether or not the objects being studied are people.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 统计学家将从中抽取样本的实体群体称为总体，无论被研究的对象是否为人类。
 - en: Since populations may be large—or in the case of Mendel's pea plants, infinite—we
     must study representative samples and draw inferences about the population from
     them. To distinguish the measurable attributes of our samples from the inaccessible
     attributes of the population, we use the word *statistics* to refer to the *sample*
     attributes and parameters to refer to the population attributes.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于总体可能非常大——或像孟德尔研究的豌豆植物那样是无限的——我们必须研究具有代表性的样本，并从中推断总体。为了区分样本的可测量属性和总体的不可得属性，我们使用"统计量"一词来指代*样本*属性，使用"参数"一词来指代总体属性。
 - en: Note
+  id: totrans-91
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Statistics are the attributes we can measure from our samples. Parameters are
     the attributes of the population we are trying to infer.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 统计量是我们可以从样本中测量的属性。参数是我们试图推断的总体属性。
 - en: 'In fact, statistics and parameters are distinguished through the use of different
     symbols in mathematical formulae:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实上，统计量和参数通过在数学公式中使用不同的符号来区分：
 - en: '| Measure | Sample statistic | Population parameter |'
+  id: totrans-94
   prefs: []
   type: TYPE_TB
+  zh: '| 测量 | 样本统计量 | 总体参数 |'
 - en: '| --- | --- | --- |'
+  id: totrans-95
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '| Number of items | *n* | *N* |'
+  id: totrans-96
   prefs: []
   type: TYPE_TB
+  zh: '| 项目数量 | *n* | *N* |'
 - en: '| Mean | ![Samples and populations](img/7180OS_02_02.jpg) | *µ[x]* |'
+  id: totrans-97
   prefs: []
   type: TYPE_TB
+  zh: '| 均值 | ![样本与总体](img/7180OS_02_02.jpg) | *µ[x]* |'
 - en: '| Standard deviation | *S[x]* | *σ[x]* |'
+  id: totrans-98
   prefs: []
   type: TYPE_TB
+  zh: '| 标准差 | *S[x]* | *σ[x]* |'
 - en: '| Standard error | ![Samples and populations](img/7180OS_02_03.jpg) |   |'
+  id: totrans-99
   prefs: []
   type: TYPE_TB
+  zh: '| 标准误差 | ![样本与总体](img/7180OS_02_03.jpg) |   |'
 - en: Here, ![Samples and populations](img/7180OS_02_02.jpg) is pronounced as "x-bar,"
     *µ[x]* is pronounced as "mu x," and *σ[x]* is pronounced as "sigma x."
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里， ![样本与总体](img/7180OS_02_02.jpg) 发音为"x-bar"，*µ[x]* 发音为"mu x"，*σ[x]* 发音为"sigma
+    x"。
 - en: If you refer back to the equation for the standard error, you'll notice that
     it is calculated from the population standard deviation *σ[x]*, not the sample
     standard deviation *S[x]*. This presents us with a paradox—we can't calculate
@@ -473,124 +682,176 @@
     are precisely the values we are trying to infer. In practice, though, the sample
     and population standard deviations are assumed to be the same above a sample size
     of about 30.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你回顾标准误差的公式，你会注意到它是从总体标准差*σ[x]*而不是样本标准差*S[x]*中计算得出的。这给我们带来了一个悖论——我们无法在总体参数正是我们试图推断的值时，使用总体参数来计算样本统计量。然而，实际上，当样本量大约在30以上时，样本标准差和总体标准差通常假设是相同的。
 - en: 'Let''s calculate the standard error from a particular day''s means. For example,
     let''s take a particular day, say May 1:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从某一天的均值来计算标准误差。例如，假设我们选择某一天，比如5月1日：
 - en: '[PRE9]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Although we have only taken a sample from one day, the standard error we calculate
     is very close to the standard deviation of all the sample means—3.6 compared to
     3.7s. It's as if, like a cell containing DNA, each sample encodes information
     about the entire population within it.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管我们只从一天的数据中抽取了一个样本，但我们计算出的标准误差与所有样本均值的标准差非常接近——3.6与3.7。就像一个包含DNA的细胞一样，每个样本都编码了关于整个总体的信息。
 - en: Confidence intervals
+  id: totrans-105
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 置信区间
 - en: Since the standard error of our sample measures how closely we expect our sample
     mean to match the population mean, we could also consider the inverse—the standard
     error measures how closely we expect the population mean to match our measured
     sample mean. In other words, based on our standard error, we can infer that the
     population mean lies within some expected range of the sample mean with a certain
     degree of confidence.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们的样本的标准误差衡量了我们预期样本均值与总体均值之间的匹配程度，我们也可以考虑其逆向——标准误差衡量了我们预期总体均值与我们测得的样本均值之间的匹配程度。换句话说，基于我们的标准误差，我们可以推断总体均值在某个预期的样本均值范围内，并且具有一定的置信度。
 - en: Taken together, the "degree of confidence" and the "expected range" define a
     **confidence interval**. While stating confidence intervals, it is fairly standard
     to state the 95 percent interval—we are 95 percent sure that the population parameter
     lies within the interval. Of course, there remains a 5 percent possibility that
     it does not.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，“置信度”和“预期范围”共同定义了**置信区间**。在陈述置信区间时，通常会陈述 95% 置信区间——我们有 95% 的信心认为总体参数位于该区间内。当然，仍然有
+    5% 的可能性它不在其中。
 - en: '![Confidence intervals](img/7180OS_02_150.jpg)'
+  id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![Confidence intervals](img/7180OS_02_150.jpg)'
 - en: Whatever the standard error, 95 percent of the population mean will lie between
     -1.96 and 1.96 standard deviations of the sample mean. 1.96 is therefore the *critical
     z-value* for a 95 percent confidence interval.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论标准误差是多少，95% 的总体均值将位于样本均值的 -1.96 和 1.96 个标准差之间。因此，1.96 是 95% 置信区间的*临界 z 值*。
 - en: Note
+  id: totrans-110
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: The name *z*-value comes from the fact that the normal distribution is also
     called the *z*-distribution.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '*z*-值这个名字来源于正态分布也被称为*z*-分布的事实。'
 - en: 'The number 1.96 is so commonly used that it''s a number worth remembering,
     but we can also calculate the critical value using the `s/quantile-normal` function.
     Our `confidence-interval` function that follows expects a value for `p` between
     zero and one. This will be 0.95 for our 95 percent confidence interval. We need
     to subtract it from one and divide it by two to calculate the site of each of
     the two tails (2.5 percent for the 95 percent confidence interval):'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 数字 1.96 使用得非常广泛，是一个值得记住的数字，但我们也可以使用 `s/quantile-normal` 函数来计算临界值。我们接下来的 `confidence-interval`
+    函数期望输入一个在零到一之间的 `p` 值。对于我们的 95% 置信区间，这个值为 0.95。我们需要从 1 中减去它并除以 2，以计算两个尾部的大小（95%
+    置信区间的 2.5%）：
 - en: '[PRE10]'
+  id: totrans-113
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: The result tells us that we can be 95 percent confident that the population
     mean lies between 83.53 and 97.75 seconds. Indeed, the population mean we calculated
     previously lies well within this range.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果告诉我们，我们可以有 95% 的信心认为总体均值位于 83.53 秒到 97.75 秒之间。事实上，我们之前计算的总体均值正好位于这个范围之内。
 - en: Sample comparisons
+  id: totrans-115
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 样本比较
 - en: After a viral marketing campaign, the web team at AcmeContent take a sample
     of dwell times for us to analyze from a single day. They'd like to know whether
     their latest campaign has brought more engaged visitors to the site. Confidence
     intervals provide us with an intuitive way to compare the two samples.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一次病毒式营销活动之后，AcmeContent 的网络团队从单一天的数据中为我们提供了一个停留时间的样本以供分析。他们想知道他们最新的营销活动是否吸引了更多互动的访客。置信区间为我们提供了一种直观的方式来比较这两个样本。
 - en: 'We load the dwell times from the campaign as we did earlier and summarize them
     in the same way:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们像之前一样加载来自活动的停留时间，并以相同的方式对其进行总结：
 - en: '[PRE11]'
+  id: totrans-118
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'The mean seems to be much larger than the means we have been looking at previously—130s
     compared to 90s. It could be that there is some significant difference here, although
     the standard error is over twice the size of our previous one day sample, owing
     to a smaller sample size and larger standard deviation. We can calculate the 95
     percent confidence interval for the population mean based on this data using the
     same `confidence-interval` function like before:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个均值似乎比我们之前看到的均值要大得多——130 秒对比 90 秒。这里可能存在显著差异，尽管标准误差是我们之前一天样本的两倍多，这是由于样本量较小且标准差较大。我们可以使用和之前相同的
+    `confidence-interval` 函数基于这些数据计算总体均值的 95% 置信区间：
 - en: '[PRE12]'
+  id: totrans-120
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: The 95 percent confidence interval for the population mean is 114.8s to 145.6s.
     This doesn't overlap with the 90s population mean we calculated previously at
     all. There appears to be a large underlying population difference that is unlikely
     to have occurred just through a sampling error alone. Our task now is to find
     out why.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体均值的95%置信区间是114.8秒到145.6秒。这与我们之前计算的90年代的总体均值完全不重合。看起来存在一个很大的基础群体差异，单纯通过抽样误差是不太可能产生的。现在我们的任务是找出原因。
 - en: Bias
+  id: totrans-122
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 偏差
 - en: A sample should be representative of the population from which it is drawn.
     In other words, it should avoid bias that would result in certain kinds of population
     members being systematically excluded (or included) over others.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 样本应当能够代表其所抽取的总体。换句话说，它应当避免产生偏差，使得某些种类的群体成员在系统性地被排除（或包含）时，相较于其他群体而言，受到不公正的影响。
 - en: A famous example of sample bias is the 1936 Literary Digest poll for the US
     Presidential Election. It was one of the largest and most expensive polls ever
     conducted with 2.4 million people being surveyed by mail. The results were decisive—Republican
     governor of Kansas Alfred Landon would defeat Franklin D. Roosevelt, taking 57
     percent of the vote. In the event, Roosevelt won the election with 62 percent
     of the vote.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个著名的样本偏差例子是1936年《文学文摘》对美国总统选举的民调。这是历史上最大、最昂贵的民调之一，共有240万人通过邮件接受调查。结果非常明确——堪萨斯州的共和党州长阿尔弗雷德·兰登将击败富兰克林·D·罗斯福，获得57%的选票。然而，最终罗斯福以62%的选票赢得了选举。
 - en: The primary cause of the magazine's huge sampling error was sample selection
     bias. In their attempt to gather as many voter addresses as possible, the Literary
     Digest scoured telephone directories, magazine subscription lists, and club membership
@@ -600,90 +861,126 @@
     bias**—less than a quarter of those who were approached actually responded to
     the survey. This is a kind of selection bias that favors only those respondents
     who actually wish to participate.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 该杂志巨大的抽样误差的主要原因是样本选择偏差。在试图收集尽可能多的选民地址时，《文学文摘》翻阅了电话簿、杂志订阅名单和俱乐部会员名单。在那个电话是奢侈品的时代，这一过程必然会偏向上层和中产阶级选民，无法代表整个选民群体。偏差的次要原因是**无应答偏差**——不到四分之一的受访者回应了调查。这是一种选择偏差，只偏向那些真正愿意参与的受访者。
 - en: A common way to avoid sample selection bias is to ensure that the sampling is
     randomized in some way. Introducing chance into the process makes it less likely
     that experimental factors will unfairly influence the quality of the sample. The
     Literary Digest poll was focused on getting the largest sample possible, but an
     unbiased small sample is much more useful than a badly chosen large sample.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 避免样本选择偏差的常见方法是确保采样在某种程度上是随机的。将随机性引入过程可以减少实验因素不公平地影响样本质量的可能性。《文学文摘》民调的重点是尽可能获得最大的样本，但一个无偏的小样本比一个错误选择的大样本更有用。
 - en: 'If we open up the `campaign-sample.tsv` file, we''ll discover that our sample
     has come exclusively from June 6, 2015\. This was a weekend, a fact we can easily
     confirm with `clj-time`:'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们打开`campaign-sample.tsv`文件，我们会发现我们的样本完全来自2015年6月6日。这一天是周末，我们可以通过`clj-time`轻松确认这一点：
 - en: '[PRE13]'
+  id: totrans-128
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Our summary statistics so far have all been based on the data we filtered just
     to include weekdays. This is a bias in our sample, and if the weekend visitor
     behavior turns out to be different from the weekday behavior—a very likely scenario—then
     we would say that the samples represent two different populations.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们的汇总统计数据都是基于我们只筛选了工作日数据的结果。这是样本中的一种偏差，如果周末的访问者行为与工作日的行为有所不同——这是一种非常可能的情况——那么我们可以说，这些样本代表了两个不同的群体。
 - en: Visualizing different populations
+  id: totrans-130
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 可视化不同群体
 - en: 'Let''s remove the filter for weekdays and plot the daily mean dwell time for
     both week days and weekends:'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们去掉工作日的筛选条件，绘制工作日和周末的日均停留时间：
 - en: '[PRE14]'
+  id: totrans-132
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'The code generates the following histogram:'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码生成了以下直方图：
 - en: '![Visualizing different populations](img/7180OS_02_160.jpg)'
+  id: totrans-134
   prefs: []
   type: TYPE_IMG
+  zh: '![可视化不同群体](img/7180OS_02_160.jpg)'
 - en: The distribution is no longer a normal distribution. In fact, the distribution
     is **bimodal**—there are two peaks. The second smaller peak, which corresponds
     to the newly added weekend data, is lower both because there are not as many weekend
     days as weekdays and because the distribution has a larger standard error.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 这时的分布不再是正态分布。事实上，分布是**双峰分布**——有两个峰值。第二个较小的峰值，代表新加入的周末数据，相对较低，这既是因为周末天数少于工作日，也因为分布的标准误差较大。
 - en: Note
+  id: totrans-136
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: In general, distributions with more than one peak are referred to as **multimodal**.
     They can be an indicator that two or more normal distributions have been combined,
     and therefore, that two or more populations may have been combined. A classic
     example of bimodality is the distribution of people's heights, since the modal
     height for men is larger than that for women.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，具有多个峰值的分布称为**多峰分布**。它们可能表示两个或更多的正态分布被合并，因此，可能表示两个或更多的人群被合并。一个经典的双峰分布的例子是人的身高分布，因为男性的常见身高大于女性的常见身高。
 - en: 'The weekend data has different characteristics than the weekday data. We should
     make sure that we''re comparing like with like. Let''s filter our original dataset
     just to weekends:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 周末数据与工作日数据具有不同的特征。我们应确保在比较时是“对比相同的事物”。让我们将原始数据集过滤，仅保留周末数据：
 - en: '[PRE15]'
+  id: totrans-139
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: The grand mean value at weekends (based on 6 months of data) is 117.8s, which
     falls within the 95 percent confidence interval of the marketing sample. In other
     words, although 130s is a high mean dwell time, even for a weekend, the difference
     is not so big that it couldn't simply be attributed to chance variation within
     the sample.
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 周末的总体均值（基于6个月的数据）为117.8秒，落在市场样本的95%置信区间内。换句话说，虽然130秒是较高的均值，甚至对于周末来说，但这一差异并不大到无法仅归因于样本内的随机波动。
 - en: The approach we have just taken to establish a genuine difference in populations
     (between the visitors to our site on weekends compared to the visitors during
     the week) is not the way statistical testing would conventionally proceed. A more
     usual approach is to begin with a theory, and then to test that theory against
     the data. The statistical method defines a rigorous approach for this called **hypothesis
     testing**.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们刚才采取的建立人群差异（即周末访问者与工作日访问者之间的差异）的方法，并不是统计检验常规的做法。更常见的方法是从一个理论开始，然后用数据检验这个理论。统计方法为此定义了一种严格的流程，称为**假设检验**。
 - en: Hypothesis testing
+  id: totrans-142
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 假设检验
 - en: Hypothesis testing is a formal process for statisticians and data scientists.
     The standard approach to hypothesis testing is to define an area of research,
     decide which variables are necessary to measure what is being studied, and then
@@ -691,30 +988,39 @@
     that confirms our biases, researchers will state their hypothesis clearly ahead
     of time. Statistics can then be used to confirm or refute this hypothesis, based
     on the data.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设检验是统计学家和数据科学家的正式过程。假设检验的标准方法是定义一个研究领域，决定哪些变量是必要的以测量所研究的内容，然后提出两个竞争的假设。为了避免只看符合我们偏见的数据，研究人员会事先明确陈述他们的假设。然后，统计数据可以用来根据数据确认或否定这个假设。
 - en: In order to help retain our visitors, designers go to work on a variation of
     our home page that uses all the latest techniques to keep the attention of our
     audience. We'd like to be sure that our effort isn't in vain, so we will look
     for an increase in dwell time on the new site.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了帮助留住我们的访客，设计师开始修改主页，采用所有最新的技术来吸引观众的注意力。我们希望确保我们的努力不会白费，因此我们将关注新网站上的停留时间是否有所增加。
 - en: Therefore, our research question is "does the new site cause the visitor's dwell
     time to increase"? We decide that this should be tested with reference to the
     mean dwell time. Now, we need to set out our two hypotheses. By convention, the
     data is assumed not to contain what the researcher is looking for. The conservative
     opinion is that the data would not show anything unusual. This is called the **null
     hypothesis** and is normally denoted *H[0]*.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们的研究问题是“新网站是否导致访客的停留时间增加”？我们决定用均值停留时间来进行检验。现在，我们需要列出两个假设。按惯例，数据被假设不包含研究者所寻找的内容。保守的观点是，数据不会显示任何异常。这就是**零假设**，通常用*H[0]*表示。
 - en: Note
+  id: totrans-146
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Hypothesis testing assumes that the null hypothesis is true until the weight
     of the evidence makes this proposition unlikely. This "back to front" way of looking
     for proof is driven partly by the simple psychological fact that when people go
     looking for something, they tend to find it.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
 - en: 'The researcher then forms an alternate hypothesis, denoted by *H[1]*. This
@@ -722,15 +1028,18 @@
     could be that the population mean is greater or lesser than the baseline, or even
     greater or lesser by some specified value. We''d like to test whether the new
     site increases dwell time, so these will be our null and alternate hypotheses:'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
 - en: '*H[0]*: The dwell time for the new site is no different than the dwell time
     of the existing site'
+  id: totrans-149
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '*H[1]*: The dwell time is greater for the new site compared to the existing
     site'
+  id: totrans-150
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -741,13 +1050,16 @@
     differs from its prediction by a margin too large to be by chance alone), then
     we will reject the null hypothesis and propose the alternative hypothesis as the
     best alternative explanation.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
 - en: Having set out the null and alternative hypotheses, we must set a significance
     level at which we are looking for an effect.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
 - en: Significance
+  id: totrans-153
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -755,34 +1067,43 @@
     but the two approaches are now very often used in concert together. The purpose
     of significance testing is to set the threshold beyond which we determine that
     the observed data no longer supports the null hypothesis.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
 - en: 'There are therefore two risks:'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
 - en: We may accept a difference as significant when in fact, it arose by chance
+  id: totrans-156
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: We may attribute a difference to chance when, in fact, it indicates a true population
     difference
+  id: totrans-157
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: 'These two possibilities are respectively referred to as Type I and Type II
     errors:'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
 - en: '|   | *H[0]* false | *H[0]* true |'
+  id: totrans-159
   prefs: []
   type: TYPE_TB
 - en: '| --- | --- | --- |'
+  id: totrans-160
   prefs: []
   type: TYPE_TB
 - en: '| **Reject H[0]** | True negative | Type I error |'
+  id: totrans-161
   prefs: []
   type: TYPE_TB
 - en: '| **Accept** *H[0]* | Type II error | True positive |'
+  id: totrans-162
   prefs: []
   type: TYPE_TB
 - en: The more we reduce our risk of making Type I errors, the more we increase our
@@ -790,6 +1111,7 @@
     to not claim a real difference when there is none, the bigger the difference we'll
     demand between our samples to claim statistical significance. This increases the
     probability that we'll disregard a genuine difference when we encounter it.
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
 - en: Two significance thresholds are commonly used by statisticians. These are the
@@ -801,9 +1123,11 @@
     textbook approach to significance testing requires us to set a significance level
     before we look at our data. A level of 5 percent is often chosen, so let's go
     with it.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
 - en: Testing a new site design
+  id: totrans-165
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -811,6 +1135,7 @@
     encourage visitors to stick around for an extended period of time. They've used
     all the latest techniques and, as a result, we're pretty confident that the site
     will show a marked improvement in dwell time.
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
 - en: Rather than launching it to all users at once, AcmeContent would like to test
@@ -820,82 +1145,104 @@
     containing all the day's traffic. Each row shows the dwell time for a visitor
     who is given a value of either "0" if they used the original site design, or "1"
     if they saw the new (and hopefully improved) site.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
 - en: Performing a z-test
+  id: totrans-168
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: While testing with the confidence intervals previously, we had a single population
     mean to compare to.
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
 - en: With *z*-testing, we have the option of comparing two samples. The people who
     saw the new site were randomized, and the data for both groups was collected on
     the same day to rule out other time-dependent factors.
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
 - en: 'Since we have two samples, we also have two standard errors. The *z*-test is
     performed against the pooled standard error, which is simply the square root of
     the sum of the variances divided by the sample sizes. This is the same as the
     result we would get if we took the standard error of the samples combined:'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
 - en: '![Performing a z-test](img/7180OS_02_04.jpg)'
+  id: totrans-172
   prefs: []
   type: TYPE_IMG
 - en: 'Here, ![Performing a z-test](img/7180OS_02_05.jpg) is the variance of sample
     *a* and ![Performing a z-test](img/7180OS_02_06.jpg) is the variance of sample
     *b*. *n[a]* and *n[b]* are the sample sizes of *a* and *b*, respectively. The
     pooled standard error can be calculated in Clojure like this:'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE16]'
+  id: totrans-174
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'To determine if the difference we''re seeing is unexpectedly large, we can
     take the ratio of the observed difference between the means over the pooled standard
     error. This quantity is given the variable name *z*:'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
 - en: '![Performing a z-test](img/7180OS_02_07.jpg)'
+  id: totrans-176
   prefs: []
   type: TYPE_IMG
 - en: 'Using our `pooled-standard-error` function, the *z*-statistic can be calculated
     like this:'
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE17]'
+  id: totrans-178
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'The ratio *z* captures how much the means differ relative to the amount we
     would expect given the standard error. The *z*-statistic therefore tells us how
     many standard errors apart the means are. Since the standard error has a normal
     probability distribution, we can associate this difference with a probability
     by looking up the *z*-statistic in the normal CDF:'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE18]'
+  id: totrans-180
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'The following example uses the *z*-test to compare the performance of the two
     sites. We do this by grouping the rows by site, returning a map that indexes the
     site to the collection of rows for the site. We call `map-vals` with `(partial
     map :dwell-time)` to convert the collection of rows into a collection of dwell
     times. `map-vals` is a function defined in Medley ([https://github.com/weavejester/medley](https://github.com/weavejester/medley)),
     a library of lightweight utility functions:'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE19]'
+  id: totrans-182
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: Setting a significance level of 5 percent is much like setting a confidence
     interval of 95 percent. In essence, we're looking to see if the observed difference
     falls outside the 95 percent confidence interval. If it does, we can claim to
     have found a result that's significant at the 5 percent level.
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-184
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -903,27 +1250,33 @@
     the null hypothesis if it is, in fact, true. The smaller the *p*-value, the more
     certainty we have that the null hypothesis is false, and that we have found a
     genuine effect.
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
 - en: This code returns a value of 0.0498, equating to 4.98 percent. As it is just
     less than our significance threshold of 5 percent, we can claim to have found
     something significant.
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
 - en: 'Let''s remind ourselves of the null and alternative hypotheses:'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
 - en: '*H[0]*: The dwell time for the new site is no different from the dwell time
     of the existing site'
+  id: totrans-188
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '*H[1]*: The dwell time is greater for the new site compared to the existing
     site'
+  id: totrans-189
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Our alternate hypothesis is that the dwell time is greater for the new site.
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
 - en: We are ready to claim statistical significance, and that the dwell time is greater
@@ -932,28 +1285,34 @@
     the population standard deviation. Our new site sample has only 16 visitors, as
     shown in the output of the previous example. Samples as small as this invalidate
     the assumption that the standard error is normally distributed.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
 - en: Fortunately, there is a statistical test and an associated distribution which
     models the increased uncertainty of standard errors for smaller sample sizes.
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
 - en: Student's t-distribution
+  id: totrans-193
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: The *t*-distribution was popularized by William Sealy Gossett, a chemist working
     for the Guinness Brewery in Ireland, who incorporated it into his analysis of
     Stout.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-195
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: William Gosset published the test in Biometrika in 1908, but was forced to use
     a pen name by his employer, who regarded the fact that they were using statistics
     as a trade secret. The pen name he chose was "Student".
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
 - en: While the normal distribution is completely described by two parameters—the
@@ -962,30 +1321,36 @@
     the *t*-distribution resembles the normal distribution with a mean of zero and
     a standard deviation of one. As the degrees of freedom decreases, the distribution
     becomes wider with tails that are fatter than the normal distribution.
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
 - en: '![Student''s t-distribution](img/7180OS_02_170.jpg)'
+  id: totrans-198
   prefs: []
   type: TYPE_IMG
 - en: The earlier chart shows how the *t*-distribution varies with respect to the
     normal distribution for different degrees of freedom. Fatter tails for smaller
     sample sizes correspond to an increased chance of observing larger deviations
     from the mean.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
 - en: Degrees of freedom
+  id: totrans-200
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: The degrees of freedom, often abbreviated to *df*, is closely related to the
     sample size. It is a useful statistic and an intuitive property of the series
     that can be demonstrated simply by example.
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
 - en: If you were told that the mean of two values is 10 and that one of the values
     is 8, you would not need any additional information to be able to infer that the
     other value is 12\. In other words, for a sample size of two and a given mean,
     one of the values is constrained if the other is known.
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
 - en: If instead you're told that the mean of three values is 10 and the first value
@@ -993,49 +1358,60 @@
     Since there are an infinite number of sets of three numbers beginning with 10
     whose mean is 10, the second value must also be specified before you can infer
     the value of the third.
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
 - en: 'For any set of three numbers, the constraint is simple: you can freely pick
     the first two numbers, but the final number is constrained. The degrees of freedom
     can thus be generalized in the following way: for any single sample, the degrees
     of freedom is one less than the sample size.'
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
 - en: When comparing two samples of data, the degrees of freedom is two less than
     the sum of the sample sizes, which is the same as the sum of their individual
     degrees of freedom.
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
 - en: The t-statistic
+  id: totrans-206
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'While using the *t*-distribution, we look up the *t*-statistic. Like the *z*-statistic,
     this value quantifies how unlikely a particular observed deviation is. For a dual
     sample *t*-test, the *t*-statistic is calculated in the following way:'
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
 - en: '![The t-statistic](img/7180OS_02_08.jpg)'
+  id: totrans-208
   prefs: []
   type: TYPE_IMG
 - en: 'Here, ![The t-statistic](img/7180OS_02_09.jpg) is the pooled standard error.
     We could calculate the pooled standard error in the same way as we did earlier:'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
 - en: '![The t-statistic](img/7180OS_02_10.jpg)'
+  id: totrans-210
   prefs: []
   type: TYPE_IMG
 - en: However, the equation assumes knowledge of the population parameters *σ[a]*
     and *σ[b]*, which can only be approximated from large samples. The *t*-test is
     designed for small samples and does not require us to make assumptions about population
     variance.
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
 - en: 'As a result, for the *t*-test, we write the pooled standard error as the square
     root of the sum of the standard errors:'
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
 - en: '![The t-statistic](img/7180OS_02_11.jpg)'
+  id: totrans-213
   prefs: []
   type: TYPE_IMG
 - en: 'In practice, the earlier two equations for the pooled standard error yield
@@ -1043,23 +1419,31 @@
     just serves to illustrate that with the *t*-test, we depend only on sample statistics
     as input. The pooled standard error ![The t-statistic](img/7180OS_02_09.jpg) can
     be calculated in the following way:'
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE20]'
+  id: totrans-215
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: 'Although they are represented differently in mathematical notation, in practice,
     the calculation of *t*-statistic is identical to *z*-statistic:'
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE21]'
+  id: totrans-217
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: The difference between the two statistics is conceptual rather than algorithmic—the
     *z*-statistic is only applicable when the samples follow a normal distribution.
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
 - en: Performing the t-test
+  id: totrans-219
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1067,44 +1451,57 @@
     from which our *p*-value is calculated. Having calculated our *t*-statistic, we
     need to look up the value in the *t*-distribution parameterized by the degrees
     of freedom of our data:'
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE22]'
+  id: totrans-221
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: The degrees of freedom are two less than the sizes of the samples combined,
     which is 298 for our samples.
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
 - en: '![Performing the t-test](img/7180OS_02_180.jpg)'
+  id: totrans-223
   prefs: []
   type: TYPE_IMG
 - en: 'Recall that we are performing a hypothesis test. So, let''s state our null
     and alternate hypotheses:'
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
 - en: '*H[0]*: This sample is drawn from a population with a supplied mean'
+  id: totrans-225
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '*H[1]*: This sample is drawn from a population with a greater mean'
+  id: totrans-226
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: 'Let''s run the example:'
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE23]'
+  id: totrans-228
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: This returns a *p*-value of over 0.05\. Since this is greater than the *α* of
     5% we set for our hypothesis test, we are not able to reject the null hypothesis.
     Our test for the difference between the means has not discovered a significant
     difference using the *t*-test. Our barely significant result of the *z*-test was
     therefore partly due to it having such a small sample.
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
 - en: Two-tailed tests
+  id: totrans-230
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1112,6 +1509,7 @@
     site would perform better than the previous site. The process of hypothesis testing
     goes to great lengths to ensure that we don't encode hidden assumptions while
     looking for statistical significance.
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
 - en: Tests where we look only for a significant increase or decrease in quantity
@@ -1121,15 +1519,18 @@
     of the distribution. By not testing in the other direction, the test has more
     power to reject the null hypothesis in a particular direction and, in essence,
     lowers the threshold by which we would judge a result as significant.
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-233
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: Statistical power is the probability of correctly accepting the alternative
     hypothesis. This can be thought of as the ability of the test to detect an effect,
     where there is an effect to be detected.
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
 - en: While higher statistical power sounds desirable, it comes at the cost of there
@@ -1138,9 +1539,11 @@
     worse than the existing site. This allocates our *α* equally to both tails of
     the distribution and ensures a significant outcome that is not biased by a prior
     assumption of improvement.
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
 - en: '![Two-tailed tests](img/7180OS_02_190.jpg)'
+  id: totrans-236
   prefs: []
   type: TYPE_IMG
 - en: In fact, Incanter already provides functions to perform two-sample *t*-tests
@@ -1149,11 +1552,14 @@
     assume that we want to perform a two-tailed test, unless we pass the `:alternative`
     keyword with a value of `:greater` or `:lower`, in which case a one-tailed test
     will be performed.
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE24]'
+  id: totrans-238
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: Incanter's *t*-test returns a lot of information, including the *p*-value. The
     *p*-value is around twice what we calculated for the one-tailed test. In fact,
     the only reason it's not exactly double is because Incanter implements a slight
@@ -1161,9 +1567,11 @@
     when two samples have different standard deviations. Since we know that, for exponential
     distributions, the mean and the variance are intimately related, the test is slightly
     more rigorous to apply and returns an even lower significance.
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
 - en: One-sample t-test
+  id: totrans-240
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1171,23 +1579,29 @@
     which provide a very flexible and generic way of comparing whether two samples
     represent the same or different population. However, in cases where the population
     mean is already known, there is an even simpler test represented by `s/simple-t-test`.
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
 - en: 'We pass a sample and a population mean to test against with the `:mu` keyword.
     So, if we simply want to see whether our new site is significantly different from
     the previous population mean dwell time of 90s, we can run a test like this:'
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE25]'
+  id: totrans-243
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: The `simple-t-test` function returns not only the *p*-value for the test, but
     also the confidence interval for the population mean. It is wide, running from
     78.5s to 165.5s, certainly overlapping with the 90s of our test. This explains
     why we were not able to reject the null hypothesis.
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
 - en: Resampling
+  id: totrans-245
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1198,6 +1612,7 @@
     nature of what these other samples could have been, and therefore have a better
     understanding of the underlying population, by taking many new samples from our
     existing sample.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
 - en: There are actually several resampling techniques, and we'll discuss one of the
@@ -1208,6 +1623,7 @@
     in the new sample. It is as if we were drawing a random card from a deck of playing
     cards repeatedly, but replacing the card after each draw. Occasionally, we will
     pick a card that we have previously selected.
+  id: totrans-247
   prefs: []
   type: TYPE_NORMAL
 - en: 'We can bootstrap our sample easily in Incanter to generate many resamples with
@@ -1217,15 +1633,20 @@
     to be calculated on, each sample being the size of the original sample), `:smooth`
     (whether to smooth the output of discrete statistics such as the median), `:smooth-sd`,
     and `:replacement`, which defaults to true:'
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE26]'
+  id: totrans-249
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: 'Let''s visualize the output in a histogram:'
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
 - en: '![Resampling](img/7180OS_02_200.jpg)'
+  id: totrans-251
   prefs: []
   type: TYPE_IMG
 - en: The histogram shows how the values of the mean value have changed with repeated
@@ -1233,14 +1654,17 @@
     sample of 16 visitors, the bootstrapped samples have simulated the standard error
     of our original sample very clearly and visualized the confidence interval (78s
     to 165s) calculated earlier by our single sample *t*-test.
+  id: totrans-252
   prefs: []
   type: TYPE_NORMAL
 - en: Through bootstrapping, we simulated by taking multiple samples, even though
     we only had one sample as our input. It's a generally useful technique to estimate
     parameters that we cannot or do not know to calculate analytically.
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
 - en: Testing multiple designs
+  id: totrans-254
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1248,81 +1672,103 @@
     behind the increased dwell time of users on the new site design. Better that we
     discovered this on a small sample of users before we rolled it out to the world
     though.
+  id: totrans-255
   prefs: []
   type: TYPE_NORMAL
 - en: Not to be discouraged, AcmeContent's web team works overtime and devises a suite
     of alternative site designs. Taking the best elements from the other designs,
     they devise 19 variations to be tested. Together with our original site, which
     will act as a control, there are 20 different sites to direct visitors to.
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
 - en: Calculating sample means
+  id: totrans-257
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: The web team deploys the 19 new site designs alongside the original site. As
     mentioned earlier, each receives a random 5 percent of the visitors. We let the
     test run for 24 hours.
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
 - en: 'The next day, we receive a file that shows the dwell times for visitors to
     each of the site designs. Each has been labeled with a number, with site `0` corresponding
     to the original unaltered design, and numbers `1` to `19` representing the other
     designs:'
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE27]'
+  id: totrans-260
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: 'This code generates the following table:'
+  id: totrans-261
   prefs: []
   type: TYPE_NORMAL
 - en: '![Calculating sample means](img/7180OS_02_210.jpg)'
+  id: totrans-262
   prefs: []
   type: TYPE_IMG
 - en: 'We would like to test out each of the site designs to see if any generate a
     statistically significant result. To do so, we could compare the sites with each
     other as follows:'
+  id: totrans-263
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE28]'
+  id: totrans-264
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: However, this would be a bad idea. We are very likely to see a statistical difference
     between the pages that performed particularly well against the pages that performed
     particularly poorly, even if these differences were by chance. If you run the
     earlier example, you'll see that many of the pages are statistically different
     from each other.
+  id: totrans-265
   prefs: []
   type: TYPE_NORMAL
 - en: 'Alternatively, we could compare each site against our current baseline—the
     mean dwell time of 90 seconds currently measured for our site:'
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE29]'
+  id: totrans-267
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: 'This test determines two sites as being significantly different from the baseline:'
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE30]'
+  id: totrans-269
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: The small *p*-values (smaller than 1 percent) indicate that there is a very
     statistically significant difference. This looks very promising, but we have an
     issue. We have performed a *t*-test on 20 samples of data with an *α* of 0.05\.
     The definition of *α* is that it is the probability of wrongly rejecting the null
     hypothesis. By running a *t*-test 20 times, it actually becomes probable that
     we would wrongly reject the null hypothesis for at least one of the pages.
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
 - en: By comparing multiple pages at once like this, we invalidate the results of
     the *t*-test. There exist a variety of alternative techniques to address the problem
     of making multiple comparisons in statistical tests, which we'll introduce in
     a later section.
+  id: totrans-271
   prefs: []
   type: TYPE_NORMAL
 - en: Multiple comparisons
+  id: totrans-272
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1332,6 +1778,7 @@
     samples. There is no straightforward solution to this issue though; even with
     an *α* of 0.01, we will make a Type I error on an average of 1 percent of the
     time.
+  id: totrans-273
   prefs: []
   type: TYPE_NORMAL
 - en: To develop our intuition about how multiple comparisons and statistical significance
@@ -1339,6 +1786,7 @@
     of taking multiple samples. It's one of the advantages of using a powerful and
     general-purpose programming language like Clojure for data analysis that we can
     run our data processing code in a diverse array of environments.
+  id: totrans-274
   prefs: []
   type: TYPE_NORMAL
 - en: 'The code we''ve written and run so far for this chapter has been compiled for
@@ -1346,9 +1794,11 @@
     environment for our compiled code: the web browser. ClojureScript extends the
     reach of Clojure even further to any computer that has a JavaScript-enabled web
     browser.'
+  id: totrans-275
   prefs: []
   type: TYPE_NORMAL
 - en: Introducing the simulation
+  id: totrans-276
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1358,15 +1808,18 @@
     distributions. To see how other factors relate to our hypothesis testing, our
     simulation will allow us to change the underlying population mean for each of
     the two distributions, as well as set the sample size and desired confidence level.
+  id: totrans-277
   prefs: []
   type: TYPE_NORMAL
 - en: If you have downloaded the sample code for this chapter, you will see, in the
     resources directory, an `index.html` file. If you open this code in a web browser,
     you should see a message prompting you to compile the JavaScript. We can do this
     with the Leiningen plugin called `cljsbuild`.
+  id: totrans-278
   prefs: []
   type: TYPE_NORMAL
 - en: Compile the simulation
+  id: totrans-279
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1376,40 +1829,52 @@
     Archive), ClojureScript outputs to a single `.js` file. We specify the name of
     the output file and the compiler settings to use with the `:cljsbuilds` section
     of `project.clj`.'
+  id: totrans-280
   prefs: []
   type: TYPE_NORMAL
 - en: 'The plugin is accessible on the command line as `lein cljsbuild`. In the root
     of the project directory, run the following command:'
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE31]'
+  id: totrans-282
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: 'This command will compile a JavaScript file for us. An alternative command
     is as follows:'
+  id: totrans-283
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE32]'
+  id: totrans-284
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: The preceding will compile the code, but will remain active, monitoring changes
     to the source files. If any of these files are updated, the output will be recompiled.
+  id: totrans-285
   prefs: []
   type: TYPE_NORMAL
 - en: Open the file `resources/index.html` in a web browser now to see the effect
     of the JavaScript.
+  id: totrans-286
   prefs: []
   type: TYPE_NORMAL
 - en: The browser simulation
+  id: totrans-287
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'An HTML page has been supplied in the resources directory of the sample project.
     Open the page in any modern browser and you should see something similar to the
     following image:'
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
 - en: '![The browser simulation](img/7180OS_02_220.jpg)'
+  id: totrans-289
   prefs: []
   type: TYPE_IMG
 - en: The left of the page shows a dual histogram with the distribution of two samples,
@@ -1429,14 +1894,17 @@
     the sample means fluctuate with each new pair of samples being generated. Keep
     generating samples and you'll occasionally observe significant differences between
     sample means, even when the underlying population means are identical.
+  id: totrans-290
   prefs: []
   type: TYPE_NORMAL
 - en: While we explore the effects of changing the sample size and the confidence
     for different population means, let's look at how the simulation was constructed
     with the libraries `jStat`, `Reagent`, and `B1`.
+  id: totrans-291
   prefs: []
   type: TYPE_NORMAL
 - en: jStat
+  id: totrans-292
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1444,20 +1912,24 @@
     that have Java dependencies. Incanter is heavily reliant on several underlying
     Java libraries, so we have to find an alternative to Incanter for our browser-based
     statistical analysis.
+  id: totrans-293
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-294
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: While building ClojureScript applications, we can't make use of the libraries
     that depend on Java libraries, as they won't be available in the JavaScript engine
     which executes our code.
+  id: totrans-295
   prefs: []
   type: TYPE_NORMAL
 - en: '`jStat` ([https://github.com/jstat/jstat](https://github.com/jstat/jstat))
     is a JavaScript statistical library. It provides functions to generate sequences
     according to specific distributions, including the exponential and *t*-distributions.'
+  id: totrans-296
   prefs: []
   type: TYPE_NORMAL
 - en: To use it, we have to make sure it's available on our webpage. We can do this
@@ -1466,15 +1938,18 @@
     who previously downloaded `jStat` for another website, can make use of their cached
     version. However, since our simulation is for local use, we've included the file
     so that the page works even when our browser is offline.
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
 - en: The `jstat.min.js` file has been downloaded in the `resources/js/vendor` directory.
     The file is loaded in the main body of `index.html` with a standard HTML tag.
+  id: totrans-298
   prefs: []
   type: TYPE_NORMAL
 - en: To make use of jStat's distribution generating functions, we have to interact
     with the JavaScript library from ClojureScript. As with the Java interop, Clojure
     provides pragmatic syntax to interact with the libraries written in the host language.
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
 - en: '`jStat` provides a variety of distributions documented at [https://jstat.github.io/distributions.html](https://jstat.github.io/distributions.html).
@@ -1482,25 +1957,33 @@
     function. The JavaScript interop for it is very straightforward; we prefix the
     expression with `js/` to ensure that we access JavaScript''s namespace and move
     the position of the brackets:'
+  id: totrans-300
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE33]'
+  id: totrans-301
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: 'Once we have the ability to generate samples from an exponential distribution,
     creating a lazy sequence of samples will be as simple as calling the function
     repeatedly:'
+  id: totrans-302
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE34]'
+  id: totrans-303
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: ClojureScript exposes almost all of Clojure, including lazy sequences. Refer
     to the book's wiki at [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com)
     for links to resources on the JavaScript interop.
+  id: totrans-304
   prefs: []
   type: TYPE_NORMAL
 - en: B1
+  id: totrans-305
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1510,6 +1993,7 @@
     provides just this functionality. The name is derived from the fact that it is
     adapted and simplified from the ClojureScript library `C2`, which in turn is a
     simplification of the popular JavaScript data visualization framework `D3`.
+  id: totrans-306
   prefs: []
   type: TYPE_NORMAL
 - en: We'll be using B1's simple utility functions in `b1.charts` to build histograms
@@ -1517,9 +2001,11 @@
     we could use it to draw on a canvas element or even to build diagrams directly
     out of the HTML elements. However, B1 does contain functions to convert charts
     to SVG in `b1.svg` and these can be displayed in all modern web browsers.
+  id: totrans-307
   prefs: []
   type: TYPE_NORMAL
 - en: Scalable Vector Graphics
+  id: totrans-308
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1529,6 +2015,7 @@
     are scaled up. An additional benefit is that modern browsers know how to render
     SVG drawing instructions to produce images directly in the web page and can style
     and animate the images with CSS.
+  id: totrans-309
   prefs: []
   type: TYPE_NORMAL
 - en: 'Although a detailed discussion of SVG and CSS is beyond the scope of this book,
@@ -1537,16 +2024,21 @@
     to convert it into an internal representation of the data structure. We can add
     additional histograms with the `c/add-histogram` function and call `svg/as-svg`
     to render the chart to an SVG representation:'
+  id: totrans-310
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE35]'
+  id: totrans-311
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: Unlike Incanter, when we choose to render our histogram, we must also specify
     the desired width and height of the chart.
+  id: totrans-312
   prefs: []
   type: TYPE_NORMAL
 - en: Plotting probability densities
+  id: totrans-313
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1555,22 +2047,29 @@
     We can construct a simple function to wrap the `jStat.studentt.pdf(t, df)` function,
     providing the correct *t*-statistic and degrees of freedom to parameterize the
     distribution:'
+  id: totrans-314
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE36]'
+  id: totrans-315
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE36]'
 - en: 'An advantage of using ClojureScript is that we have already written the code
     to calculate the *t*-statistic from a sample. The code, which worked in Clojure,
     can be compiled to ClojureScript with no changes whatsoever:'
+  id: totrans-316
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE37]'
+  id: totrans-317
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE37]'
 - en: To render the probability density, we can use B1's `c/function-area-plot`. This
     will generate an area plot from the line described by a function. The provided
     function simply needs to accept an *x* and return the corresponding *y*.
+  id: totrans-318
   prefs: []
   type: TYPE_NORMAL
 - en: 'A slight complication is that the value of *y* we return will be different
@@ -1578,31 +2077,40 @@
     (corresponding to a *t*-statistic of zero). Because of this, we''ll need to generate
     a different function for each sample to be passed to `function-area-plot`. This
     is accomplished by the `probability-density` function, as follows:'
+  id: totrans-319
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE38]'
+  id: totrans-320
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE38]'
 - en: Here, we're defining a higher-order function called `probability-density` that
     accepts a single value, `sample`. We calculate some simple summary statistics
     and then return an anonymous function that calculates the probability density
     for a given value in the distribution.
+  id: totrans-321
   prefs: []
   type: TYPE_NORMAL
 - en: 'This anonymous function is what will be passed to `function-area-plot`. It
     accepts an *x* and calculates a *t*-statistic for the given sample from it. The
     *y* value returned is the probability of the *t*-distribution associated with
     the *t*-statistic:'
+  id: totrans-322
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE39]'
+  id: totrans-323
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE39]'
 - en: As with histograms, generating multiple plots is as straightforward as calling
     `add-function` with the chart, and the new function we'd like to add.
+  id: totrans-324
   prefs: []
   type: TYPE_NORMAL
 - en: State and Reagent
+  id: totrans-325
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1611,20 +2119,24 @@
     to a single identity and are an excellent choice for storing the application state.
     Using an atom ensures that the application always sees a single, consistent view
     of the data.
+  id: totrans-326
   prefs: []
   type: TYPE_NORMAL
 - en: Reagent is a ClojureScript library that provides a mechanism to update the content
     of a web page in response to changing the value of an atom. Markup and state are
     bound together, so that markup is regenerated whenever the application state is
     updated.
+  id: totrans-327
   prefs: []
   type: TYPE_NORMAL
 - en: Reagent also provides syntax to render HTML in an idiomatic way using Clojure
     data structures. This means that both the content and the interactivity of the
     page can be handled in one language.
+  id: totrans-328
   prefs: []
   type: TYPE_NORMAL
 - en: Updating state
+  id: totrans-329
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1635,20 +2147,25 @@
     that the function has side effects and, in this case, the side effects are desirable;
     in addition to updating the atom, Reagent will ensure that relevant sections of
     our HTML page are updated.
+  id: totrans-330
   prefs: []
   type: TYPE_NORMAL
 - en: 'The exponential distribution has a single parameter—the rate symbolized by
     lambda, *λ*. The rate of an exponential distribution is the reciprocal of the
     mean, so we calculate `(/ 1 mean-a)` to pass it as the argument to the exponential
     distribution function:'
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE40]'
+  id: totrans-332
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE40]'
 - en: In the preceding code, we have defined an `update-sample` function that accepts
     a map containing `:sample-size`, `:mean-a`, and `:mean-b`, and returns a new map
     with the associated new samples and sample means.
+  id: totrans-333
   prefs: []
   type: TYPE_NORMAL
 - en: The `update-sample` function is pure in the sense that it doesn't have side
@@ -1656,33 +2173,41 @@
     with a call to `swap!`. Reagent ensures that any code that depends on the value
     contained in this atom will be executed when the value in the atom changes. This
     causes our interface to be re-rendered in response to the new samples.
+  id: totrans-334
   prefs: []
   type: TYPE_NORMAL
 - en: Binding the interface
+  id: totrans-335
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'To bind the interface to the state, Reagent defines a `render-component` function.
     This links a particular function (in this case, our `layout-interface` function)
     with a particular HTML node (the element with the ID `root` on our page):'
+  id: totrans-336
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE41]'
+  id: totrans-337
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE41]'
 - en: Our `layout-interface` function contains an HTML markup expressed as nested
     Clojure data structures. Amongst the calls to `:div` and `:h1`, elements are calls
     to our two `sample-histograms` and `sample-means` functions. They will be substituted
     with their return values—the SVG representations of the histograms and the probability
     densities of the means.
+  id: totrans-338
   prefs: []
   type: TYPE_NORMAL
 - en: For the sake of brevity, we have omitted the implementation of the `controllers`
     function, which handles the rendering of the sliders and the **New Sample** button.
     Consult the `cljds.ch2.app` namespace in the sample code to see how this is implemented.
+  id: totrans-339
   prefs: []
   type: TYPE_NORMAL
 - en: Simulating multiple tests
+  id: totrans-340
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1692,6 +2217,7 @@
     function is drawn showing the standard error for the sample. As the confidence
     intervals are changed, observe how the acceptable deviation of the standard error
     changes as well.
+  id: totrans-341
   prefs: []
   type: TYPE_NORMAL
 - en: Each time the button is pressed, we could think of it as a significance test
@@ -1699,6 +2225,7 @@
     if the probability distributions for the sample means overlap at the 95 percent
     confidence interval, we cannot reject the null hypothesis at the 5 percent significance
     level.
+  id: totrans-342
   prefs: []
   type: TYPE_NORMAL
 - en: Observe how, even when the population means are identical, occasional large
@@ -1707,16 +2234,20 @@
     we will discover a significant result around one in 20 trials, even when the population
     means of the distributions are identical. When this happens, we are making a Type
     1 error in mistaking a sampling error for a real population difference.
+  id: totrans-343
   prefs: []
   type: TYPE_NORMAL
 - en: '![Simulating multiple tests](img/7180OS_02_230.jpg)'
+  id: totrans-344
   prefs: []
   type: TYPE_IMG
 - en: Despite the identical population parameters, large sample differences are occasionally
     observed.
+  id: totrans-345
   prefs: []
   type: TYPE_NORMAL
 - en: The Bonferroni correction
+  id: totrans-346
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1725,41 +2256,51 @@
     through repeated trials. The Bonferroni correction is a very simple adjustment
     that ensures we are unlikely to make Type I errors. It does this by adjusting
     the alpha for our tests.
+  id: totrans-347
   prefs: []
   type: TYPE_NORMAL
 - en: 'The adjustment is a simple one—the Bonferroni correction simply divides our
     desired alpha by the number of tests we are performing. For example, if we had
     *k* site designs to test and an experimental alpha of *0.05*, the Bonferroni correction
     is expressed as:'
+  id: totrans-348
   prefs: []
   type: TYPE_NORMAL
 - en: '![The Bonferroni correction](img/7180OS_02_12.jpg)'
+  id: totrans-349
   prefs: []
   type: TYPE_IMG
 - en: 'This is a safe way to mitigate the increased probability of making a Type I
     error in multiple testing. The following example is identical to `ex-2-22`, except
     the alpha value has been divided by the number of groups:'
+  id: totrans-350
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE42]'
+  id: totrans-351
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE42]'
 - en: If you run the preceding example, you'll see that none of the pages count as
     statistically significant any longer using the Bonferroni correction.
+  id: totrans-352
   prefs: []
   type: TYPE_NORMAL
 - en: Significance testing is a balancing act—the lower our chances of making a Type
     I error, the greater our risk of making a Type II error. The Bonferroni correction
     is very conservative and it's possible that we're missing a genuine difference
     due to being so cautious.
+  id: totrans-353
   prefs: []
   type: TYPE_NORMAL
 - en: In the final part of this chapter, we'll investigate an alternative approach
     to significance testing that strikes a balance between making Type I and Type
     II errors while allowing us to test all the 20 pages simultaneously.
+  id: totrans-354
   prefs: []
   type: TYPE_NORMAL
 - en: Analysis of variance
+  id: totrans-355
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1767,20 +2308,24 @@
     methods used to measure the statistical significance of the difference between
     groups. It was developed by Ronald Fisher, an extremely gifted statistician, who
     also popularized significance testing through his work on biological testing.
+  id: totrans-356
   prefs: []
   type: TYPE_NORMAL
 - en: Our tests, using the *z*-statistic and *t*-statistic, have focused on sample
     means as the primary mechanism to draw a distinction between the two samples.
     In each case, we looked for a difference in the means divided by the level of
     difference we could reasonably expect and quantified by the standard error.
+  id: totrans-357
   prefs: []
   type: TYPE_NORMAL
 - en: The mean isn't the only statistic that might indicate a difference between samples.
     In fact, it is also possible to use the sample variance as an indicator of statistical
     difference.
+  id: totrans-358
   prefs: []
   type: TYPE_NORMAL
 - en: '![Analysis of variance](img/7180OS_02_240.jpg)'
+  id: totrans-359
   prefs: []
   type: TYPE_IMG
 - en: To illustrate how this might work, consider the preceding diagram. Each of the
@@ -1788,6 +2333,7 @@
     page with its own mean and standard deviation. If the dwell times for all the
     three groups are combined into one, the variance is larger than the average variance
     for the groups taken individually.
+  id: totrans-360
   prefs: []
   type: TYPE_NORMAL
 - en: The statistical significance of an ANOVA test is derived from the ratio of two
@@ -1797,35 +2343,44 @@
     of the variance between the groups. Conversely, if the variance within the groups
     is identical to the variance between the groups, the groups are not statistically
     different from one another.
+  id: totrans-361
   prefs: []
   type: TYPE_NORMAL
 - en: The F-distribution
+  id: totrans-362
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: The *F*-distribution is parameterized by two degrees of freedom—those of the
     sample size and those of the number of groups.
+  id: totrans-363
   prefs: []
   type: TYPE_NORMAL
 - en: 'The first degree of freedom is the count of groups less one and the second
     degree of freedom is the size of the sample less the number of groups. If *k*
     represents the number of groups, and *n* represents the sample size:'
+  id: totrans-364
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-distribution](img/7180OS_02_13.jpg)![The F-distribution](img/7180OS_02_14.jpg)'
+  id: totrans-365
   prefs: []
   type: TYPE_IMG
 - en: 'We can visualize different *F*-distributions with an Incanter function plot:'
+  id: totrans-366
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-distribution](img/7180OS_02_250.jpg)'
+  id: totrans-367
   prefs: []
   type: TYPE_IMG
 - en: The lines of the preceding diagram show various *F*-distributions for a sample
     of 100 points split into 5, 10, and 50 groups.
+  id: totrans-368
   prefs: []
   type: TYPE_NORMAL
 - en: The F-statistic
+  id: totrans-369
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1833,14 +2388,17 @@
     the groups is called the *F*-statistic. The closer *F*-statistic is to one, the
     more alike the two variances are. The *F*-statistic is calculated very simply
     as follows:'
+  id: totrans-370
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-statistic](img/7180OS_02_15.jpg)'
+  id: totrans-371
   prefs: []
   type: TYPE_IMG
 - en: Here, ![The F-statistic](img/7180OS_02_16.jpg) is the *variance between* the
     groups and ![The F-statistic](img/7180OS_02_17.jpg) is the *variance within* the
     groups.
+  id: totrans-372
   prefs: []
   type: TYPE_NORMAL
 - en: As the ratio *F* gets larger, the larger the variance between the groups is
@@ -1848,14 +2406,17 @@
     doing a good job in explaining the variance observed in the sample as a whole.
     Where this ratio exceeds a critical threshold, we can say that the difference
     is statistically significant.
+  id: totrans-373
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-374
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: The *F*-test is always a one-tailed test, because any variance among the groups
     tends to make *F* large. It is impossible for *F* to decrease below zero.
+  id: totrans-375
   prefs: []
   type: TYPE_NORMAL
 - en: 'The *variance within* for an *F*-test is calculated as the mean squared deviation
@@ -1863,68 +2424,88 @@
     divided by the first degree of freedom. For example, if there are *k* groups,
     each with a mean of ![The F-statistic](img/7180OS_02_18.jpg), we could calculate
     the variance within like this:'
+  id: totrans-376
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-statistic](img/7180OS_02_19.jpg)'
+  id: totrans-377
   prefs: []
   type: TYPE_IMG
 - en: Here, *SSW* represents the *sum of squares within* and *x[jk]* represents the
     value of the *j^(th)* element in group *k*.
+  id: totrans-378
   prefs: []
   type: TYPE_NORMAL
 - en: 'The preceding formula for calculating the *SSW* looks intimidating. But, in
     fact, Incanter defines a useful `s/sum-of-square-devs-from-mean` function that
     makes calculating the sum of squares within as trivial as:'
+  id: totrans-379
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE43]'
+  id: totrans-380
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE43]'
 - en: 'The *variance between* for an *F*-test has a similar formula:'
+  id: totrans-381
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-statistic](img/7180OS_02_20.jpg)'
+  id: totrans-382
   prefs: []
   type: TYPE_IMG
 - en: 'Here, *SST* is the *total sum of squares* and *SSW* is the value we just calculated.
     The total sum of the squares is the sum of squared differences from the "grand"
     mean that can be calculated like this:'
+  id: totrans-383
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-statistic](img/7180OS_02_21.jpg)'
+  id: totrans-384
   prefs: []
   type: TYPE_IMG
 - en: 'Thus, *SST* is simply the overall sum of the squares without any grouping.
     We can calculate both the SST and SSW in Clojure, like this:'
+  id: totrans-385
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE44]'
+  id: totrans-386
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE44]'
 - en: The *F*-statistic is calculated as the ratio of the variance between and the
     variance within the groups. Combining both our `ssb` and `ssw` functions defined
     previously and the two degrees of freedom, we can calculate the *F*-statistic
     in Clojure as follows.
+  id: totrans-387
   prefs: []
   type: TYPE_NORMAL
 - en: 'Thus, we can calculate the *F*-statistic from our groups and our two degrees
     of freedom as follows:'
+  id: totrans-388
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE45]'
+  id: totrans-389
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE45]'
 - en: Now that we can calculate the *F*-statistic from our groups, we're ready to
     use it in an *F*-test.
+  id: totrans-390
   prefs: []
   type: TYPE_NORMAL
 - en: The F-test
+  id: totrans-391
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: As with all of the hypothesis tests we have looked at in this chapter, once
     we have a statistic and a distribution, we simply need to pick a value of *α*
     and see if our data has exceeded the critical value for the test.
+  id: totrans-392
   prefs: []
   type: TYPE_NORMAL
 - en: 'Incanter provides an `s/f-test` function, but this only measures the variance
@@ -1935,67 +2516,88 @@
     parameterized with the correct degrees of freedom. In the following code, we will
     write an `f-test` function, which uses this to perform the test on an arbitrary
     number of groups:'
+  id: totrans-393
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE46]'
+  id: totrans-394
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE46]'
 - en: 'In the last line of the preceding function, we convert the value of the *F*-statistic
     into a *p*-value using Incanter''s `s/cdf-f` function parameterized by the correct
     degrees of freedom. This *p*-value is a measure of the whole model, how well the
     different pages explain the variance of the dwell times overall. All that remains
     for us to do is to choose a significance level and run the test. Let''s stick
     with a 5 percent significance level:'
+  id: totrans-395
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE47]'
+  id: totrans-396
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE47]'
 - en: The test returns a *p*-value of 0.014, which is a significant result. The different
     pages indeed have different variances that cannot simply be explained away by
     random sampling error alone.
+  id: totrans-397
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-test](img/7180OS_02_260.jpg)'
+  id: totrans-398
   prefs: []
   type: TYPE_IMG
 - en: 'We could use a box plot to visualize the distributions of each site together
     in one chart to compare them side by side:'
+  id: totrans-399
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE48]'
+  id: totrans-400
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE48]'
 - en: In the preceding code, we reduce over the groups, calling `c/add-box-plot` for
     each group. The groups are sorted by their site ID before plotting, so our original
     page 0 is to the extreme left of the chart.
+  id: totrans-401
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-test](img/7180OS_02_270.jpg)'
+  id: totrans-402
   prefs: []
   type: TYPE_IMG
 - en: 'It might appear that site ID `10` has the longest dwell times, since its interquartile
     range extends furthest up the chart. However, if you look closely, you''ll see
     its mean value is lower than site 6, having a mean dwell time of over 144 seconds:'
+  id: totrans-403
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE49]'
+  id: totrans-404
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE49]'
 - en: 'Now that we have confirmed a statistically significant effect using the *F*-test,
     we''re justified in claiming that site ID `6` is statistically different from
     the baseline:'
+  id: totrans-405
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE50]'
+  id: totrans-406
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE50]'
 - en: Finally, we have evidence to suggest that page ID 6 is a genuine improvement
     over the current site. As a result of our analysis, the AcmeContent CEO authorizes
     the launch of a new look website. The web team is delighted!
+  id: totrans-407
   prefs: []
   type: TYPE_NORMAL
 - en: Effect size
+  id: totrans-408
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -2006,42 +2608,54 @@
     a tiny difference in sample means will count as significant. To get a better sense
     of whether our discovery is both significant and important, we should state the
     effect size as well.
+  id: totrans-409
   prefs: []
   type: TYPE_NORMAL
 - en: Cohen's d
+  id: totrans-410
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Cohen''s d is an adjustment that can be applied to see whether the difference
     we have observed is not just statistically significant, but actually large. Like
     the Bonferroni correction, the adjustment is a straightforward one:'
+  id: totrans-411
   prefs: []
   type: TYPE_NORMAL
 - en: '![Cohen''s d](img/7180OS_02_22.jpg)'
+  id: totrans-412
   prefs: []
   type: TYPE_IMG
 - en: 'Here, *S[ab]* is the pooled standard deviation (not the pooled standard error)
     of the samples. It can be calculated in a way similar to the pooled standard error:'
+  id: totrans-413
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE51]'
+  id: totrans-414
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE51]'
 - en: 'Thus, we can calculate Cohen''s d for our page 6, as follows:'
+  id: totrans-415
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE52]'
+  id: totrans-416
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE52]'
 - en: In contrast with the *p*-values, there is no absolute threshold for Cohen's
     d. Whether an effect can be considered large is partly dependent on the context,
     but it does provide a useful, normalized measure of the effect size. Values above
     0.5 are typically considered large, so 0.38 is a moderate effect. It certainly
     represents a meaningful increase in the dwell time on our site and is certainly
     worth the effort of a site upgrade.
+  id: totrans-417
   prefs: []
   type: TYPE_NORMAL
 - en: Summary
+  id: totrans-418
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -2049,6 +2663,7 @@
     inferential statistics. Once again, we've seen the importance of normal distribution
     and the central limit theorem, and learned how to quantify population differences
     with *z*-tests, *t*-tests, and *F*-tests.
+  id: totrans-419
   prefs: []
   type: TYPE_NORMAL
 - en: We've learned about how the techniques of inferential statistics analyze the
@@ -2058,10 +2673,12 @@
     repeated tests with ClojureScript, we've also gained an insight into the difficulty
     of significance testing with multiple comparisons and seen how the *F*-test attempts
     to address the issue and strike a balance between Type I and Type II errors.
+  id: totrans-420
   prefs: []
   type: TYPE_NORMAL
 - en: In the next chapter, we'll apply the lessons we've learned on variance and *F*-testing
     to single samples. We'll introduce the technique of regression analysis and use
     it to find correlations among variables within a sample of Olympic athletes.
+  id: totrans-421
   prefs: []
   type: TYPE_NORMAL

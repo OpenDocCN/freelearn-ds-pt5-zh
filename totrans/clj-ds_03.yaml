@@ -1,11 +1,14 @@
 - en: Chapter 3. Correlation
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: '|   | *"The more I learn about people, the better I like my dog."* |   |'
+  id: totrans-1
   prefs: []
   type: TYPE_TB
 - en: '|   | --*Mark Twain* |'
+  id: totrans-2
   prefs: []
   type: TYPE_TB
 - en: 'In previous chapters, we''ve considered how to describe samples in terms of
@@ -14,6 +17,7 @@
     but it doesn''t allow us to make very precise statements about individual elements.
     This is because so much information has been lost by reducing the data to just
     two statistics: the mean and standard deviation.'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: We often want to go further and establish a relationship between two or more
@@ -21,6 +25,7 @@
     of correlation and regression. Correlation concerns the strength and direction
     of the relationship between two or more variables. Regression determines the nature
     of this relationship and enables us to make predictions from it.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: Linear regression is our first machine learning algorithm. Given a sample of
@@ -28,177 +33,227 @@
     about new, unseen data. To do this, we'll return to Incanter and study the relationship
     between height and weight for Olympic athletes. We'll introduce the concept of
     matrices and show how Incanter can be used to manipulate them.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: About the data
+  id: totrans-6
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: This chapter will make use of data on athletes in the London 2012 Olympic Games,
     courtesy of Guardian News and Media Ltd. The data was originally sourced from
     the Guardian's excellent data blog at [http://www.theguardian.com/data](http://www.theguardian.com/data).
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: Download the example code for this chapter from the publisher's website or from
     [https://github.com/clojuredatascience/ch3-correlation](https://github.com/clojuredatascience/ch3-correlation).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: Consult the `Readme` file in this chapter's sample code or the book's wiki at
     [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com) for more
     information on the data.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: Inspecting the data
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: The first task when confronted with a new dataset is to study it to ensure that
     we understand what it contains.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
 - en: 'The `all-london-2012-athletes.xlsx` file is small enough that it''s been provided
     with the sample code for this chapter. We can inspect the data with Incanter,
     as we did in [Chapter 1](ch01.xhtml "Chapter 1. Statistics"), *Statistics* using
     the `incanter.excel/read-xls` and `incanter.core/view` functions:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'If you run this code (either in the REPL or on the command line with `lein
     run –e 3.1`), you should see the following output:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: '![Inspecting the data](img/7180OS_03_100.jpg)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
 - en: 'We''re fortunate that the data is clearly labeled in the columns and contains
     the following information:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
 - en: Name of the athlete
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Country for which they are competing
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Age in years
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Height in centimeters
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Weight in kilograms
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Sex as the string "M" or "F"
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Date of birth as a string
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Place of birth as a string (with country)
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Gold medals won
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Silver medals won
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Bronze medals won
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Total gold, silver, and bronze medals won
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Sport in which they competed
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Event as a comma-separated list
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Even though the data is clearly labeled, gaps are evident in the data for height,
     weight, and place of birth. We'll have to be careful to make sure these don't
     trip us up.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: Visualizing the data
+  id: totrans-33
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'First, we''ll consider the spread of the heights of the London 2012 athletes.
     Let''s plot our height values as a histogram to see how the data is distributed,
     remembering to filter the nil values first:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'This code generates the following histogram:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: '![Visualizing the data](img/7180OS_03_110.jpg)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
 - en: 'The data is approximately normally distributed, as we have come to expect.
     The mean height of our athletes is around 177 cm. Let''s take a look at the distribution
     of weights of swimmers from the 2012 Olympics:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'This code generates the following histogram:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: '![Visualizing the data](img/7180OS_03_120.jpg)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
 - en: 'This data shows a pronounced skew. The tail is much longer to the right of
     the peak than to the left, so we say the skew is positive. We can quantify the
     skewness of the data with Incanter''s `incanter.stats/skewness` function:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Fortunately, this skew can be effectively mitigated by taking the logarithm
     of the weight using Incanter''s `incanter.core/log` function:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'This code results in the following histogram:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: '![Visualizing the data](img/7180OS_03_130.jpg)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
 - en: This is much closer to the normal distribution. This suggests that weight is
     distributed according to a **log-normal distribution**.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: The log-normal distribution
+  id: totrans-49
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -206,6 +261,7 @@
     logarithm is normally distributed. The base of the logarithm can be any positive
     number except for one. Like the normal distribution, the log-normal distribution
     is important in the description of many naturally occurring phenomena.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: 'A logarithm represents the power to which a fixed number (the base) must be
@@ -215,6 +271,7 @@
     to approximately 2.718\. Incanter''s `log` function and its inverse `exp` both
     use base *e*. *log[e]* is also called the **natural logarithm** or *ln*, because
     of the properties that make it particularly suitable in calculus.'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: The log-normal distribution tends to occur in processes of growth where the
@@ -222,52 +279,65 @@
     defined in 1931 by Robert Gibrat, who noticed that it applied to the growth of
     firms. Since the growth rate is a proportion of the size, larger firms tend to
     grow more quickly than smaller firms.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-53
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: The normal distribution occurs in situations where many small variations have
     an additive effect, whereas the log-normal distribution occurs in situations where
     many small variations have a multiplicative effect.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: Gibrat's law has since been found to be applicable to lots of situations, including
     the sizes of cities and, according to Wolfram MathWorld, the numbers of words
     in sentences by George Bernard Shaw.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: For the rest of this chapter, we'll be using the natural logarithm of the weight
     data so that our data is approximately normally distributed. We'll choose a population
     of athletes with roughly similar body types, say Olympic swimmers.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: Visualizing correlation
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'One of the quickest and simplest ways of determining if two variables are correlated
     is to view them on a scatter plot. We''ll filter our data to select only swimmers
     and then plot the heights against the weights:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'This code yields the following plot:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
 - en: '![Visualizing correlation](img/7180OS_03_140.jpg)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
 - en: 'The output clearly shows a relationship between the two variables. The chart
     has the characteristically skewed elliptical shape of two correlated, normally
     distributed variables centered on the means. The following diagram compares the
     scatter plot against probability distributions of the height and log weight:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
 - en: '![Visualizing correlation](img/7180OS_03_150.jpg)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
 - en: Points close to the tail of one distribution also tend to be close to the same
@@ -280,9 +350,11 @@
     the relationship clearer. Without jittering, it could be that what appears to
     be one point is actually many points that share exactly the same pair of values.
     Introducing some random noise makes this possibility less likely.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
 - en: Jittering
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -290,41 +362,52 @@
     could actually have been anywhere between 179.5 cm and 180.5 cm. To unwind this
     effect, we can add random noise in the -0.5 to 0.5 range to each of the height
     data points.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
 - en: 'The weight data point was captured to the nearest kilogram, so a value of 80
     could actually have been anywhere between 79.5 kg and 80.5 kg. We can add random
     noise in the same range to unwind this effect (though clearly, this must be done
     before we take the logarithm):'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE6]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The jittered graph appears as follows:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: '![Jittering](img/7180OS_03_160.jpg)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
 - en: As with introducing transparency to the scatter plot in [Chapter 1](ch01.xhtml
     "Chapter 1. Statistics"), *Statistics*, jittering is a mechanism to ensure that
     we don't let incidental factors—such as data volume or rounding artifacts—obscure
     our ability to see patterns in the data.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
 - en: Covariance
+  id: totrans-72
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: One way of quantifying the strength of the relationship between two variables
     is their covariance. This measures the tendency of two variables to change together.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
 - en: 'If we have two series, *X* and *Y*, their deviations from the mean are:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
 - en: '![Covariance](img/7180OS_03_01.jpg)![Covariance](img/7180OS_03_02.jpg)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
 - en: 'Where *x[i]* is the value of *X* at index *i*, *y[i]* is the value of *Y* at
@@ -335,23 +418,30 @@
     when they have the same sign and negative when they have different signs. Adding
     up the products gives a measure of the tendency of the two variables to deviate
     from the mean in the same direction for each given sample.'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
 - en: 'Covariance is defined as the mean of these products:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
 - en: '![Covariance](img/7180OS_03_05.jpg)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
 - en: 'Covariance can be calculated in Clojure using the following code:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE7]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Alternatively, we could use the `incanter.stats/covariance` function. The covariance
     of height and log-weight for our Olympic swimmers is `1.354`, but this is a hard
     number to interpret. The units are the product of the units of the inputs.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: Because of this, covariance is rarely reported as a summary statistic on its
@@ -359,54 +449,68 @@
     by the product of the standard deviations. This transforms the units to standard
     scores and constrains the output to a number between `-1` and `+1`. The result
     is called **Pearson's correlation**.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
 - en: Pearson's correlation
+  id: totrans-83
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'Pearson''s correlation is often given the variable name *r* and is calculated
     in the following way, where *dx[i]* and *dy[i]* are calculated as before:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
 - en: '![Pearson''s correlation](img/7180OS_03_06.jpg)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
 - en: 'Since the standard deviations are constant values for the variables *X* and
     *Y* the equation can be simplified to the following, where *σ[x]* and *σ[y]* are
     the standard deviations of *X* and *Y* respectively:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
 - en: '![Pearson''s correlation](img/7180OS_03_07.jpg)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
 - en: This is sometimes referred to as Pearson's product-moment correlation coefficient
     or simply just the *correlation coefficient* and is usually denoted by the letter
     *r*.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
 - en: 'We have previously written functions to calculate the standard deviation. Combining
     with our function to calculate covariance yields the following implementation
     of Pearson''s correlation:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE8]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Alternately, we can make use of the `incanter.stats/correlation` function.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
 - en: Because standard scores are dimensionless, so is *r*. If *r* is -1.0 or 1.0,
     the variables are perfectly negatively or perfectly positively correlated.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: 'If *r* is zero though, it doesn''t necessarily follow that the variables are
     uncorrelated. Pearson''s correlation only measures linear relationships. There
     could still be some nonlinear relationship between variables that isn''t captured
     by *r*, as demonstrated by the following plots:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: '![Pearson''s correlation](img/7180OS_03_170.jpg)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
 - en: Note that the correlation of the central example is undefined because the standard
@@ -414,108 +518,148 @@
     covariance by zero, the result is meaningless. In this case, there can't be any
     correlation between the variables; the value for *y* is always the mean. A simple
     inspection of standard deviations would confirm this.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，由于*y*的标准差为零，中心示例的相关性是未定义的。由于我们的*r*方程会涉及将协方差除以零，因此结果是没有意义的。在这种情况下，变量之间不能存在任何相关性；*y*的值始终是均值。通过简单检查标准差可以确认这一点。
 - en: 'The correlation coefficient can be calculated for the height and log-weight
     data for our swimmers:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以为我们游泳选手的身高和对数体重数据计算相关系数：
 - en: '[PRE9]'
+  id: totrans-97
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: This yields the answer `0.867`, which quantifies the strong, positive correlation
     we already observed on the scatter plot.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 这得出了答案`0.867`，它量化了我们在散点图中已经观察到的强正相关。
 - en: Sample r and population rho
+  id: totrans-99
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 样本r与总体rho
 - en: 'Like the mean or standard deviation, the correlation coefficient is a statistic.
     It describes a sample; in this case, a sample of paired values: height and weight.
     While our known sample correlation coefficient is given the letter *r*, the unknown
     population correlation coefficient is given the Greek letter rho: ![Sample r and
     population rho](img/7180OS_03_08.jpg).'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 就像均值或标准差一样，相关系数是一种统计量。它描述了一个样本；在这种情况下，是一组配对值：身高和体重。虽然我们已知的样本相关系数用字母*r*表示，但未知的总体相关系数用希腊字母rho表示：![样本r与总体rho](img/7180OS_03_08.jpg)。
 - en: As we discovered in the last chapter, we should not assume that what we measured
     in our sample applies to the population as a whole. In this case, our population
     might be all swimmers from all recent Olympic Games. It would not be appropriate
     to generalize, for example, to other Olympic sports such as weightlifting or to
     noncompetitive swimmers.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在上一章中发现的，我们不应假设在样本中测得的内容适用于整个总体。在这种情况下，我们的总体可能是所有最近奥运会的游泳选手。例如，不应将结论推广到其他奥林匹克项目，如举重，或者非竞技游泳选手。
 - en: 'Even within an appropriate population—such as swimmers from the recent Olympic
     Games—our sample is just one of many potential samples of different correlation
     coefficients. How far we can trust our *r* as an estimate of ![Sample r and population
     rho](img/7180OS_03_08.jpg) will depend on two factors:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使在一个适当的群体中——例如最近奥运会的游泳选手——我们的样本只是众多潜在样本中的一个，具有不同的相关系数。我们能多大程度上信任我们的*r*作为![样本r与总体rho](img/7180OS_03_08.jpg)的估计，将取决于两个因素：
 - en: The size of the sample
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 样本的大小
 - en: The magnitude of *r*
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*r*的大小'
 - en: Clearly, for a fair sample, the larger it is the more we can trust it to be
     a representative of the population as a whole. It may not be intuitively obvious
     to you that the magnitude of *r* also affects how confident we can be of it representing
     ![Sample r and population rho](img/7180OS_03_08.jpg). The reason is that large
     coefficients are less likely to have arisen by chance or by random sampling error.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，对于一个公平的样本，它越大，我们就越能信任它代表整个总体。也许你不会直观地意识到*r*的大小也会影响我们有多大信心它代表![样本r与总体rho](img/7180OS_03_08.jpg)。原因是，大的相关系数较不可能是偶然或随机抽样误差造成的。
 - en: Hypothesis testing
+  id: totrans-106
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 假设检验
 - en: In the previous chapter, we introduced hypothesis testing as a means to quantify
     the probability that a given hypothesis (such as that the two samples were from
     a single population) is true. We will use the same process to quantify the probability
     that a correlation exists in the wider population based on our sample.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一章中，我们介绍了假设检验作为量化给定假设（例如两个样本来自同一人群）为真的概率的方法。我们将使用相同的过程来量化基于我们样本的相关性在更广泛人群中存在的概率。
 - en: 'First, we must formulate two hypotheses, a null hypothesis and an alternate
     hypothesis:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们必须提出两个假设：一个零假设和一个备择假设：
 - en: '![Hypothesis testing](img/7180OS_03_09.jpg)![Hypothesis testing](img/7180OS_03_10.jpg)'
+  id: totrans-109
   prefs: []
   type: TYPE_IMG
+  zh: '![假设检验](img/7180OS_03_09.jpg)![假设检验](img/7180OS_03_10.jpg)'
 - en: '*H[0]* is the hypothesis that the population correlation is zero. In other
     words, our conservative view is that the measured correlation is purely due to
     chance sampling error.'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '*H[0]*是假设人群相关性为零。换句话说，我们的保守观点是测得的相关性纯粹是由于随机抽样误差。'
 - en: '*H[1]* is the alternative possibility that the population correlation is not
     zero. Notice that we don''t specify the direction of the correlation, only that
     there is one. This means we are performing a two-tailed test.'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
 - en: 'The standard error of the sample *r* is given by:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
 - en: '![Hypothesis testing](img/7180OS_03_11.jpg)'
+  id: totrans-113
   prefs: []
   type: TYPE_IMG
 - en: This formula is only accurate when ![Hypothesis testing](img/7180OS_03_08.jpg)
     is close to zero (recall that the magnitude of *r* influences our confidence),
     but fortunately, this is exactly what we're assuming under our null hypothesis.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
 - en: 'Once again, we can make use of the *t*-distribution and calculate our *t*-statistic:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
 - en: '![Hypothesis testing](img/7180OS_03_12.jpg)'
+  id: totrans-116
   prefs: []
   type: TYPE_IMG
 - en: 'The term *df* is the degree of freedom of our data. For correlation testing,
     the degree of freedom is *n - 2* where *n* is the size of the sample. Putting
     this value into the formula, we obtain:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
 - en: '![Hypothesis testing](img/7180OS_03_13.jpg)'
+  id: totrans-118
   prefs: []
   type: TYPE_IMG
 - en: 'This gives us a *t*-value of `102.21`. To convert this into a *p* value, we
@@ -523,17 +667,22 @@
     function** (**CDF**) for the *t*-distribution with the `incanter.stats/cdf-t`
     function. The value of the CDF corresponds to the *p*-value for a one-tailed test.
     We multiply the value by two because we''re performing a two-tailed test:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE10]'
+  id: totrans-120
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: The *p*-value is so small as to be essentially zero, meaning that the chances
     of the null hypothesis being true is essentially non-existent. We are forced to
     accept the alternate hypothesis.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
 - en: Confidence intervals
+  id: totrans-122
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -543,41 +692,51 @@
     with the mean, the confidence interval of *r* expresses the probability (expressed
     as a percentage) that the population parameter ![Confidence intervals](img/7180OS_03_08.jpg)
     lies between two specific values.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
 - en: However, a complication arises when trying to calculate the standard error of
     the correlation coefficient that didn't exist for the mean. Because the absolute
     value of *r* cannot exceed **1**, the distribution of possible samples of *r*
     is skewed as *r* approaches the limit of its range.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
 - en: '![Confidence intervals](img/7180OS_03_180.jpg)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
 - en: The previous graph shows the negatively skewed distribution of *r* samples for
     a ![Confidence intervals](img/7180OS_03_08.jpg) of 0.6.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
 - en: Fortunately, a transformation called the **Fisher z-transformation** will stabilize
     the variance of *r* throughout its range. This is analogous to how our weight
     data became normally distributed when we took the logarithm.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
 - en: 'The equation for the *z*-transformation is:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
 - en: '![Confidence intervals](img/7180OS_03_14.jpg)'
+  id: totrans-129
   prefs: []
   type: TYPE_IMG
 - en: 'The standard error of *z* is:'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
 - en: '![Confidence intervals](img/7180OS_03_15.jpg)'
+  id: totrans-131
   prefs: []
   type: TYPE_IMG
 - en: Thus, the process to calculate confidence intervals is to convert *r* to *z*
     using the *z*-transformation, compute a confidence interval in terms of *SE[z]*,
     and then convert the confidence interval back to *r*.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
 - en: To calculate a confidence interval in terms of *SE[z]*, we can take the number
@@ -586,14 +745,17 @@
     away from the mean that contains 95 percent of the area. In other words, 1.96
     standard errors from the mean of the sample *r* contains the true population correlation
     *ρ* with 95 percent certainty.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
 - en: '![Confidence intervals](img/7180OS_03_190.jpg)'
+  id: totrans-134
   prefs: []
   type: TYPE_IMG
 - en: We can verify this using Incanter's `incanter.stats/quantile-normal` function.
     This will return the standard score associated with a given cumulative probability,
     assuming a one-tailed test.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
 - en: 'However, as shown in the previous diagram, we''d like to subtract the same
@@ -601,46 +763,60 @@
     is centered on zero. A simple translation is to halve the difference to 100 percent
     while performing a two-tailed test. So, a desired confidence of 95 percent means
     we look up the critical value of 97.5 percent:'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE11]'
+  id: totrans-137
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'So, our 95 percent confidence interval in *z*-space for ![Confidence intervals](img/7180OS_03_08.jpg)
     is given by:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
 - en: '![Confidence intervals](img/7180OS_03_16.jpg)'
+  id: totrans-139
   prefs: []
   type: TYPE_IMG
 - en: 'Substituting our formulae for *z[r]* and *SE[z]* gives:'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
 - en: '![Confidence intervals](img/7180OS_03_17.jpg)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
 - en: 'For `r = 0.867` and `n = 859`, this gives a lower and upper bound of `1.137`
     and `1.722`, respectively. To convert these from *z*-scores back to *r*-values,
     we use the following equation, the inverse of the *z*-transformation:'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
 - en: '![Confidence intervals](img/7180OS_03_18.jpg)'
+  id: totrans-143
   prefs: []
   type: TYPE_IMG
 - en: 'The transformations and confidence interval can be calculated with the following
     code:'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE12]'
+  id: totrans-145
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: This gives a 95 percent confidence interval for ![Confidence intervals](img/7180OS_03_08.jpg)
     being between `0.850` and `0.883`. We can be very confident that there is a strong
     positive correlation between the height and weight in the wider population of
     Olympic-class swimmers.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
 - en: Regression
+  id: totrans-147
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -650,6 +826,7 @@
     and sign of a relationship, but not the slope. Knowing the expected rate of change
     for one variable given a unit change in the other is required in order to make
     predictions.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
 - en: What we'd like to determine is an equation that relates the specific value of
@@ -657,9 +834,11 @@
     the other, the **dependent** **variable**. For example, if our linear equation
     predicts the weight given the height, then the height is our independent variable
     and the weight is our dependent variable.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-150
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -668,6 +847,7 @@
     and his student Karl Pearson (who defined the correlation coefficient) developed
     a variety of methods to study linear relationships in the 19th century and these
     collectively became known as regression techniques.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
 - en: Remember that correlation does not imply causation and there is no implied causation
@@ -681,9 +861,11 @@
     In the previous example, this might be the *size of fire*. Such hidden causes
     are called **confounding** **variables**, because they confound our ability to
     determine the relationship between their dependent variables.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
 - en: Linear equations
+  id: totrans-153
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -691,9 +873,11 @@
     other exactly or inexactly. The simplest relationship between an independent variable
     labeled *x* and a dependent variable labeled *y* is a straight line expressed
     in the formula:'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
 - en: '![Linear equations](img/7180OS_03_19.jpg)'
+  id: totrans-155
   prefs: []
   type: TYPE_IMG
 - en: 'Here, the values of the parameters *a* and *b* determine respectively the precise
@@ -701,60 +885,76 @@
     or constant and *b* as the gradient or slope. For example, in the mapping between
     Celsius and Fahrenheit temperature scales, *a = 32* and *b = 1.8*. Substituting
     these values of *a* and *b* into our equation yields:'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
 - en: '![Linear equations](img/7180OS_03_20.jpg)'
+  id: totrans-157
   prefs: []
   type: TYPE_IMG
 - en: 'To calculate 10 degrees Celsius in Fahrenheit, we substitute 10 for *x*:'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
 - en: '![Linear equations](img/7180OS_03_21.jpg)'
+  id: totrans-159
   prefs: []
   type: TYPE_IMG
 - en: 'Thus, our equation tells us that 10 degrees Celsius is 50 degrees Fahrenheit,
     which is indeed the case. Using Incanter, we can easily write a function that
     maps Celsius to Fahrenheit and plot it as a graph using `incanter.charts/function-plot`:'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE13]'
+  id: totrans-161
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'This code yields the following line graph:'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
 - en: '![Linear equations](img/7180OS_03_200.jpg)'
+  id: totrans-163
   prefs: []
   type: TYPE_IMG
 - en: Notice how the red line crosses zero on the Celsius scale at 32 on the Fahrenheit
     scale. The intercept *a* is the value of *y*, where *x* is zero.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
 - en: The slope of the line is determined by *b*; it is close to 2 for this equation.
     See how the range of the Fahrenheit scale is almost double the range of the Celsius
     scale. In other words, the line sweeps almost twice as fast vertically as it does
     horizontally.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
 - en: Residuals
+  id: totrans-166
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Unfortunately few relationships we will study are as tidy as the mapping between
     Celsius and Fahrenheit. The straight-line equation rarely allows us to specify
     *y* exactly in terms of *x*. There will ordinarily be an error, thus:'
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
 - en: '![Residuals](img/7180OS_03_22.jpg)'
+  id: totrans-168
   prefs: []
   type: TYPE_IMG
 - en: 'Here, *ε* is an error term standing for the difference between the value calculated
     by the parameters *a* and *b* for a given value of *x* and the actual value of
     *y*. If our predicted value of *y* is ![Residuals](img/7180OS_03_23.jpg) (pronounced
     "y-hat"), then the error is the difference between the two:'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
 - en: '![Residuals](img/7180OS_03_24.jpg)'
+  id: totrans-170
   prefs: []
   type: TYPE_IMG
 - en: This error is referred to as the residual. The residual might be due to random
@@ -762,15 +962,18 @@
     if we are trying to predict weight as a function of height, unknown factors might
     include diet, level of fitness, and body type (or simply the effect of rounding
     to the nearest kilogram).
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
 - en: If we select parameters for *a* and *b* that are not ideal, then the residual
     for each *x* will be larger than it needs to be. Therefore, it follows that the
     parameters we'd like to find are the ones that minimize the residuals across all
     values of *x* and *y*.
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
 - en: Ordinary least squares
+  id: totrans-173
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -779,59 +982,74 @@
     our predictions fit the data. We cannot simply sum up the residuals, positive
     and negative, because even large residuals will cancel each other out if their
     signs are in opposite directions.
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
 - en: We could square the values before calculating the sum so that positive and negative
     residuals both count towards the cost. This also has the effect of penalizing
     large errors more than smaller errors, but not so much that the largest residual
     always dominates.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
 - en: 'Expressed as an optimization problem, we seek to identify the coefficients
     that minimize the sum of the residual squares. This is called **Ordinary Least
     Squares** (**OLS**), and the formula to calculate the slope of the regression
     line using OLS is:'
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
 - en: '![Ordinary least squares](img/7180OS_03_25.jpg)'
+  id: totrans-177
   prefs: []
   type: TYPE_IMG
 - en: 'Although this looks more complicated than the previous equations, it''s really
     just the sum of squared residuals divided by the sum of squared differences from
     the mean. This shares a number of terms from the equations we have already looked
     at and can be simplified to:'
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
 - en: '![Ordinary least squares](img/7180OS_03_26.jpg)'
+  id: totrans-179
   prefs: []
   type: TYPE_IMG
 - en: 'The intercept is the term that allows a line of this slope to pass through
     the mean of both *X* and *Y*:'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
 - en: '![Ordinary least squares](img/7180OS_03_27.jpg)'
+  id: totrans-181
   prefs: []
   type: TYPE_IMG
 - en: These values of *a* and *b* are the coefficients of our least squares estimates.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
 - en: Slope and intercept
+  id: totrans-183
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'We''ve already written the `covariance`, `variance`, and `mean` functions we
     need to calculate the slope and intercept for the swimming height and weight data.
     Therefore, the slope and intercept calculations are trivial:'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE14]'
+  id: totrans-185
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: The output gives a slope of approximately `0.0143` and an intercept of approximately
     `1.6910`.
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
 - en: Interpretation
+  id: totrans-187
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -842,6 +1060,7 @@
     the best guess for the weight of an Olympic swimmer of zero height is 5.42 kg.
     This is meaningless, and it is unwise to extrapolate beyond the bounds of your
     training data.
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
 - en: The slope value shows how much *y* changes for each unit change in *x*. Our
@@ -849,41 +1068,53 @@
     1.014 kg to the weight of our Olympic swimmers. Since our model is based on all
     Olympic swimmers, this is the average effect of a unit increase in height without
     taking into account any other factor, such as age, gender, or body type.
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
 - en: Visualization
+  id: totrans-190
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: We can visualize the output of our linear equation with `incanter.charts/function-plot`
     and a simple function of *x* that calculates ![Visualization](img/7180OS_03_23.jpg)
     based on the coefficients *a* and *b*.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE15]'
+  id: totrans-192
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: The `regression-line` function returns a function of *x* that calculates ![Visualization](img/7180OS_03_28.jpg).
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
 - en: '![Visualization](img/7180OS_03_210.jpg)'
+  id: totrans-194
   prefs: []
   type: TYPE_IMG
 - en: We can also use the `regression-line` function to calculate each residual, showing
     how far our estimate ![Visualization](img/7180OS_03_23.jpg) deviates from each
     measured *y*.
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE16]'
+  id: totrans-196
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'A **residual plot** is a graph that shows the residuals on the *y*-axis and
     the independent variable on the *x*-axis. If the points in the residual plot are
     randomly dispersed around the horizontal axis, a linear model is a good fit for
     the data:'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
 - en: '![Visualization](img/7180OS_03_220.jpg)'
+  id: totrans-198
   prefs: []
   type: TYPE_IMG
 - en: With the exception of some outliers on the left side of the chart, the residual
@@ -891,9 +1122,11 @@
     the residuals is important to verify that the linear model is appropriate. There
     are certain assumptions that a linear model makes about your data that will, if
     violated, invalidate models you build.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
 - en: Assumptions
+  id: totrans-200
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -903,6 +1136,7 @@
     In other words, we expect the errors to have a zero mean and constant variance
     versus the dependent and independent variable. A residual plot allows us to quickly
     determine if this is the case.
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
 - en: The left side of our residual plot has greater residuals than the right side.
@@ -911,6 +1145,7 @@
     respect to another. This is a concern in regression analysis, because it invalidates
     the assumption that modeling errors are uncorrelated and normally distributed
     and that their variances do not vary with the effects being modeled.
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
 - en: The heteroscedasticity of our residuals are fairly small and should not influence
@@ -918,9 +1153,11 @@
     were more pronounced, it would cause the least squares estimate of variance to
     be incorrect, which in turn would affect inferences we make based on the standard
     error.
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
 - en: Goodness-of-fit and R-square
+  id: totrans-204
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -930,14 +1167,17 @@
     the explanatory power of the linear regression model. It calculates the proportion
     of variation in the dependent variable explained, or accounted for, by the independent
     variable.
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
 - en: 'Generally, the closer *R²* is to 1, the better the regression line fits the
     points and the more the variation in *Y* is explained by *X*. *R²* can be calculated
     using the following formula:'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
 - en: '![Goodness-of-fit and R-square](img/7180OS_03_29.jpg)'
+  id: totrans-207
   prefs: []
   type: TYPE_IMG
 - en: Here, *var(ε)* is the variance of the residuals and *var(Y)* is the variance
@@ -946,33 +1186,40 @@
     to guess the mean of the weights within the population in general. This way, the
     mean squared error of your guess compared to their true weight would be *var(Y)*
     or the variance of the weights in the population.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
 - en: But if I told you their height, you would guess ![Goodness-of-fit and R-square](img/7180OS_03_28.jpg)
     as per the regression model. In this case, your mean squared error would be *var(ε)*
     or the variance of the residuals of the model.
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
 - en: The term *var(ε)/ var(Y)* is the ratio of mean squared error with and without
     the explanatory variable, which is the fraction of variability left unexplained
     by the model. The complement *R²* is the fraction of variability explained by
     the model.
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-211
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: As with *r*, a low *R²* does not mean that the two variables are uncorrelated.
     It might simply be that their relationship is not linear.
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
 - en: The *R²* value describes how well the line fits the data. The line of *best
     fit* is the line that minimizes the value of *R²*. As the coefficients increase
     or decrease away from their optimum values, *R²* will always increase.
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
 - en: '![Goodness-of-fit and R-square](img/7180OS_03_240.jpg)'
+  id: totrans-214
   prefs: []
   type: TYPE_IMG
 - en: 'The left graph shows the variance for a model that always guesses the mean
@@ -980,42 +1227,53 @@
     unexplained by the model *f*. In purely geometric terms, you can see the how the
     model has explained most of the variance in *y*. The following code calculates
     *R²* by dividing the variance of the residuals with the variance of the *y* values:'
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE17]'
+  id: totrans-216
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: This gives a value of `0.753`. In other words, over 75 percent of the variance
     of the weight of 2012 Olympic swimmers can be explained by the height.
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
 - en: 'In the case of a simple regression model (with a single independent variable),
     the relationship between the coefficient of determination *R²* and the correlation
     coefficient *r* is a straightforward one:'
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
 - en: '![Goodness-of-fit and R-square](img/7180OS_03_30.jpg)'
+  id: totrans-219
   prefs: []
   type: TYPE_IMG
 - en: A correlation coefficient of 0.5 might suggest that half the variability in
     *Y* is explained by *X*, but actually, *R²* would be 0.5² or 0.25.
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
 - en: Multiple linear regression
+  id: totrans-221
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: We've seen so far in this chapter how to build a regression line with one independent
     variable. However, it is often desirable to build a model with several independent
     variables. This is called **multiple linear regression**.
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
 - en: 'Each independent variable is going to need its own coefficient. Rather than
     working our way through the alphabet to represent each one, let''s designate a
     new variable *β*, pronounced "beta", to hold all of our coefficients:'
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
 - en: '![Multiple linear regression](img/7180OS_03_31.jpg)'
+  id: totrans-224
   prefs: []
   type: TYPE_IMG
 - en: This model is equivalent to our **bivariate linear regression** model, where
@@ -1023,106 +1281,135 @@
     so long as we ensure that *x[1]* is always equal to one. This ensures that *β[1]*
     is always a constant factor representing our intercept. *x[1]* is called the **bias**
     **term**.
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
 - en: 'Having generalized the linear equation in terms of beta, easy to extend to
     as many coefficients as we''d like:'
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
 - en: '![Multiple linear regression](img/7180OS_03_34.jpg)'
+  id: totrans-227
   prefs: []
   type: TYPE_IMG
 - en: Each of the values of *x[1]* up to *x[n]* correspond to an independent variable
     that might help explain the value of *y*. Each of the values of *β[1]* up to *β[n]*
     correspond to a coefficient that determines the relative contribution of this
     independent variable.
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
 - en: 'Our simple linear regression aimed to explain weight only in terms of height,
     but many other factors help to explain someone''s weight: their age, gender, diet,
     and body type. We know the ages of our Olympic swimmers, so we could build a model
     that incorporates this additional data too.'
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
 - en: 'We''ve been providing the independent variable as a single sequence of values,
     but with multiple parameters, we''ll need to provide several values for each *x*.
     We can use Incanter''s `i/$` function to select multiple columns and manipulate
     each *x* as a Clojure vector, but there is a better way: matrices.'
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
 - en: Matrices
+  id: totrans-231
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: A matrix is a two-dimensional grid of numbers. The dimensions are expressed
     as the number of rows and columns in the matrix.
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
 - en: 'For example, *A* is a matrix with four rows and two columns:'
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
 - en: '![Matrices](img/7180OS_03_35.jpg)'
+  id: totrans-234
   prefs: []
   type: TYPE_IMG
 - en: In mathematical notation, a matrix will usually be assigned to a variable with
     an upper-case letter to distinguish it from other variables in an equation.
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
 - en: 'We can construct a matrix from our dataset using Incanter''s `incanter.core/to-matrix`
     function:'
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE18]'
+  id: totrans-237
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'Incanter also defines the `incanter.core/matrix` function that will take a
     sequence of scalar values or a sequence of sequences and convert them into a matrix
     if it can:'
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE19]'
+  id: totrans-239
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'If you run this in the REPL, the output will be a summary of the contents of
     the matrix:'
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE20]'
+  id: totrans-241
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: Incanter returns a representation exactly as shown in the preceding example,
     presenting only the top and bottom three rows of the matrix. Matrices can often
     become very large and Incanter takes care not to inundate the REPL with information.
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
 - en: Dimensions
+  id: totrans-243
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'The element in the *i^(th)* row *j^(th)* column is referred to as *A[ij]*.
     Therefore, in our earlier example:'
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
 - en: '![Dimensions](img/7180OS_03_36.jpg)'
+  id: totrans-245
   prefs: []
   type: TYPE_IMG
 - en: One of the most fundamental attributes of a matrix is its size. Incanter provides
     the `incanter.core/dim`, `ncol`, and `nrow` functions to query matrices dimensions.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
 - en: Vectors
+  id: totrans-247
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'A vector is a special case of matrix with only one column. The number of rows
     in the vector are referred to as its dimension:'
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
 - en: '![Vectors](img/7180OS_03_37.jpg)'
+  id: totrans-249
   prefs: []
   type: TYPE_IMG
 - en: Here, *y* is a four-dimensional vector. The *i^(th)* element is referred to
     as *y[i]*.
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
 - en: Vectors in mathematical literature are one-indexed unless otherwise specified.
@@ -1130,9 +1417,11 @@
     assigned to lowercase variables in equations. Incanter's API doesn't distinguish
     between vectors and single column matrices and we can create a vector by passing
     a single sequence to the `incanter.core/matrix` function.
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
 - en: Construction
+  id: totrans-252
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1141,56 +1430,70 @@
     blocks, provided the dimensions are compatible. Incanter provides the `incanter.core/bind-columns`
     and `incanter.core/bind-rows` functions to stack matrices above one another or
     side by side.
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
 - en: 'For example, we could add a column of 1s to the front of another matrix in
     the following way:'
+  id: totrans-254
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE21]'
+  id: totrans-255
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: In fact, we'll want to do this for our bias term. Recall that *β[1]* will represent
     a constant value, so we must ensure that our corresponding *x[1]* is constant
     too. Without the bias term, *y* would have to be zero when the values of *x* are
     zero.
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
 - en: Addition and scalar multiplication
+  id: totrans-257
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: A scalar is a name for a simple number. When we add a scalar to a matrix, it's
     as if we added the number to each element of the matrix, individually. Incanter
     provides the `incanter.core/plus` function to add scalars and matrices together.
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
 - en: Matrix-matrix addition works by adding the elements in each corresponding position.
     Only matrices of the same dimensions can be added together. If the matrices are
     of the same dimensions, they are said to be compatible.
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
 - en: '![Addition and scalar multiplication](img/7180OS_03_38.jpg)'
+  id: totrans-260
   prefs: []
   type: TYPE_IMG
 - en: The `plus` function will also add compatible matrices. The `minus` function
     will subtract scalars or compatible matrices. Multiplying a matrix by a scalar
     results in each of the elements in the matrix being multiplied by the scalar.
+  id: totrans-261
   prefs: []
   type: TYPE_NORMAL
 - en: '![Addition and scalar multiplication](img/7180OS_03_39.jpg)'
+  id: totrans-262
   prefs: []
   type: TYPE_IMG
 - en: The `incanter.core/mult` performs matrix-scalar multiplication, while `incanter.core/div`
     performs the inverse.
+  id: totrans-263
   prefs: []
   type: TYPE_NORMAL
 - en: We can also use `mult` and `div` on compatible matrices, but this element-wise
     method of multiplying and dividing is not what we normally intend to do when we
     speak of matrix multiplication.
+  id: totrans-264
   prefs: []
   type: TYPE_NORMAL
 - en: Matrix-vector multiplication
+  id: totrans-265
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1199,10 +1502,12 @@
     the result of multiplying a 3 x 2 matrix with a 2 x 1 matrix is a 3 x 1 matrix.
     The number of columns on the left has to match the number of rows on the right
     of the multiplication:'
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
 - en: '![Matrix-vector multiplication](img/7180OS_03_40.jpg)![Matrix-vector multiplication](img/7180OS_03_41.jpg)![Matrix-vector
     multiplication](img/7180OS_03_42.jpg)'
+  id: totrans-267
   prefs: []
   type: TYPE_IMG
 - en: 'To get *Ax*, multiply each row of *A* element-by-element with the corresponding
@@ -1210,19 +1515,23 @@
     the elements *1* and *3*. These are multiplied pairwise by the elements in vector
     *x*: *1* and *5*. Then, the products are added together to produce *16*. This
     is called the **dot product** and is what is commonly intended by matrix multiplication.'
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
 - en: Matrix-matrix multiplication
+  id: totrans-269
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Matrix-matrix multiplication proceeds very similarly to matrix-vector multiplication.
     The sum of the products is taken pairwise, row by row and column by column, from
     the corresponding elements of matrices *A* and *B*.
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
 - en: '![Matrix-matrix multiplication](img/7180OS_03_40.jpg)![Matrix-matrix multiplication](img/7180OS_03_43.jpg)![Matrix-matrix
     multiplication](img/7180OS_03_44.jpg)'
+  id: totrans-271
   prefs: []
   type: TYPE_IMG
 - en: As before, we can only multiply matrices together when the number of columns
@@ -1230,103 +1539,130 @@
     first matrix *A* is of dimensions ![Matrix-matrix multiplication](img/7180OS_03_45.jpg)
     and the second matrix *B* is of dimensions ![Matrix-matrix multiplication](img/7180OS_03_46.jpg),
     *n[a]* and *m[B]* must be equal if the matrices are to be multiplied.
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
 - en: '![Matrix-matrix multiplication](img/7180OS_03_250.jpg)'
+  id: totrans-273
   prefs: []
   type: TYPE_IMG
 - en: 'In the previous visual example:'
+  id: totrans-274
   prefs: []
   type: TYPE_NORMAL
 - en: '![Matrix-matrix multiplication](img/7180OS_03_47.jpg)![Matrix-matrix multiplication](img/7180OS_03_48.jpg)'
+  id: totrans-275
   prefs: []
   type: TYPE_IMG
 - en: Luckily, we don't have to remember the process ourselves. Incanter uses very
     efficient algorithms to perform matrix algebra for us.
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
 - en: Transposition
+  id: totrans-277
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Transposing a matrix means flipping the matrix over the main diagonal running
     from the top-left to the bottom-right corner. The transpose of matrix *A* is represented
     as *A^T*:'
+  id: totrans-278
   prefs: []
   type: TYPE_NORMAL
 - en: '![Transposition](img/7180OS_03_49.jpg)'
+  id: totrans-279
   prefs: []
   type: TYPE_IMG
 - en: 'The columns and rows have been changed such that:'
+  id: totrans-280
   prefs: []
   type: TYPE_NORMAL
 - en: '![Transposition](img/7180OS_03_50.jpg)'
+  id: totrans-281
   prefs: []
   type: TYPE_IMG
 - en: 'Therefore, if:'
+  id: totrans-282
   prefs: []
   type: TYPE_NORMAL
 - en: '![Transposition](img/7180OS_03_36.jpg)'
+  id: totrans-283
   prefs: []
   type: TYPE_IMG
 - en: 'Then:'
+  id: totrans-284
   prefs: []
   type: TYPE_NORMAL
 - en: '![Transposition](img/7180OS_03_51.jpg)'
+  id: totrans-285
   prefs: []
   type: TYPE_IMG
 - en: Incanter provides the `incanter.core/trans` function to transpose a matrix.
+  id: totrans-286
   prefs: []
   type: TYPE_NORMAL
 - en: The identity matrix
+  id: totrans-287
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Certain matrices have special properties and are used regularly in matrix algebra.
     One of the most important of these is the identity matrix. It''s a square matrix
     with ones along the main diagonal and zeros everywhere else:'
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
 - en: '![The identity matrix](img/7180OS_03_52.jpg)'
+  id: totrans-289
   prefs: []
   type: TYPE_IMG
 - en: The identity matrix is the identity for matrix multiplication. As with a scalar
     multiplication by the number one, a matrix multiplication by the identity matrix
     has no effect.
+  id: totrans-290
   prefs: []
   type: TYPE_NORMAL
 - en: Incanter provides the `incanter.core/identity-matrix` function to construct
     identity matrices. Since they're always square, we only provide a single argument
     corresponding to both, the width and height.
+  id: totrans-291
   prefs: []
   type: TYPE_NORMAL
 - en: Inversion
+  id: totrans-292
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'If we have a square matrix *A*, the inverse of *A* is denoted as *A^(-1)* and
     it will have the following properties, where *I* is the identity matrix:'
+  id: totrans-293
   prefs: []
   type: TYPE_NORMAL
 - en: '![Inversion](img/7180OS_03_53.jpg)'
+  id: totrans-294
   prefs: []
   type: TYPE_IMG
 - en: The identity matrix is its own inverse. Not all matrices are invertible and
     noninvertible matrices are also called **singular** or **degenerate** matrices.
     We can calculate the inverse of a matrix with the `incanter.core/solve` function.
     `solve` will raise an exception if passed a singular matrix.
+  id: totrans-295
   prefs: []
   type: TYPE_NORMAL
 - en: The normal equation
+  id: totrans-296
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'Now that we''ve covered the basics of matrix and vector manipulation we''re
     in a position to study the **normal equation**. This is an equation that uses
     matrix algebra to calculate the coefficients of our OLS linear regression model:'
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
 - en: '![The normal equation](img/7180OS_03_54.jpg)'
+  id: totrans-298
   prefs: []
   type: TYPE_IMG
 - en: We read "to find *β*, multiply the inverse of *X* transpose *X*, by *X* transpose
@@ -1336,129 +1672,173 @@
     is relatively easy to derive from the equation of multiple regression, applying
     the rules of matrix multiplication, but the mathematics is beyond the scope of
     this book.
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
 - en: 'We can implement the normal equation with Incanter using only the functions
     we have just encountered:'
+  id: totrans-300
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE22]'
+  id: totrans-301
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: 'This normal equation expresses the mathematics of least squares linear regression
     in a very succinct way. We can use it as follows (remembering to add the bias
     term):'
+  id: totrans-302
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE23]'
+  id: totrans-303
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: 'This yields the following matrix:'
+  id: totrans-304
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE24]'
+  id: totrans-305
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: These are the values of *β[1]* and *β[2]* corresponding to the intercept and
     slope parameters. Happily, they agree with the values we calculated previously.
+  id: totrans-306
   prefs: []
   type: TYPE_NORMAL
 - en: More features
+  id: totrans-307
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Part of the strength of the normal equation is that we''ve now implemented
     everything we need in order to support multiple linear regression. Let''s write
     a function to convert the features of interest to a matrix:'
+  id: totrans-308
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE25]'
+  id: totrans-309
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: This function will allow us to select specific columns as a matrix in one step.
+  id: totrans-310
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-311
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: A feature is a synonym for an independent variable and is popularly used in
     machine learning. Other synonyms are predictor, regressor, and explanatory variable,
     or simply input variable.
+  id: totrans-312
   prefs: []
   type: TYPE_NORMAL
 - en: 'To start with, let''s select height and age as our two features:'
+  id: totrans-313
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE26]'
+  id: totrans-314
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: 'This returns the following matrix of two columns:'
+  id: totrans-315
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE27]'
+  id: totrans-316
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: 'Our normal equation function will accept this new matrix without any further
     change:'
+  id: totrans-317
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE28]'
+  id: totrans-318
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: 'It will return the following coefficients:'
+  id: totrans-319
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE29]'
+  id: totrans-320
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: These three numbers correspond to the intercept, the slope for height, and the
     slope for age, respectively. To determine whether our model has significantly
     improved by this new data, we could calculate the *R²* value of our new model
     and compare it to the earlier one.
+  id: totrans-321
   prefs: []
   type: TYPE_NORMAL
 - en: Multiple R-squared
+  id: totrans-322
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'While calculating *R²* previously, we saw how it was the amount of variance
     explained by the model:'
+  id: totrans-323
   prefs: []
   type: TYPE_NORMAL
 - en: '![Multiple R-squared](img/7180OS_03_55.jpg)'
+  id: totrans-324
   prefs: []
   type: TYPE_IMG
 - en: 'Since the variance is the mean squared error, we can multiply both the *var(ε)*
     and *var(y)* terms by the sample size and arrive at the following alternative
     equation for R²:'
+  id: totrans-325
   prefs: []
   type: TYPE_NORMAL
 - en: '![Multiple R-squared](img/7180OS_03_56.jpg)'
+  id: totrans-326
   prefs: []
   type: TYPE_IMG
 - en: 'This is simply the sum of squared residuals over the sum of squared differences
     from the mean. Incanter contains the `incanter.core/sum-of-squares` function that
     makes this very simple to express:'
+  id: totrans-327
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE30]'
+  id: totrans-328
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: 'We use the variable names `rss` for **residual sum of squares** and `ess` for
     **explained sum of squares**. We can calculate the matrix *R²* for our new model
     as follows:'
+  id: totrans-329
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE31]'
+  id: totrans-330
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: This yields the value `0.757`. Our *R²* value has increased by a small amount
     by including the age value. Because we have used multiple independent variables,
     *R²* is now called the **coefficient of** **multiple determination**.
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
 - en: Adjusted R-squared
+  id: totrans-332
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1467,6 +1847,7 @@
     isn't going to make it harder to predict the dependent variable—if the new variable
     has no explanatory power, then its coefficient will simply be zero and the R²
     will remain the same as it was without the independent variable.
+  id: totrans-333
   prefs: []
   type: TYPE_NORMAL
 - en: 'However, this doesn''t tell us whether a model has been improved by the addition
@@ -1475,23 +1856,31 @@
     R-squared](img/7180OS_03_57.jpg) and pronounced as "R-bar squared." Unlike *R²*,
     ![Adjusted R-squared](img/7180OS_03_57.jpg) will only increase if the new independent
     variable increases *R²* more than would be expected due to chance:'
+  id: totrans-334
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE32]'
+  id: totrans-335
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: 'The adjusted *R²* depends on two additional parameters, *n* and *p*, corresponding
     to the sample size and number of model parameters, respectively:'
+  id: totrans-336
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE33]'
+  id: totrans-337
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: This example returns a value of `0.756`. This is still greater than the original
     model, so age certainly carries some explanatory power.
+  id: totrans-338
   prefs: []
   type: TYPE_NORMAL
 - en: Incanter's linear model
+  id: totrans-339
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1499,6 +1888,7 @@
     a valuable opportunity to introduce matrix algebra, it's important to note that
     Incanter provides the `incanter.stats/linear-model` function that does everything
     we've covered and more.
+  id: totrans-340
   prefs: []
   type: TYPE_NORMAL
 - en: The function expects to be called with *y* and *x* (as either sequences or,
@@ -1507,15 +1897,18 @@
     Incanter to add the intercept term for us. The function will return a map containing
     the coefficients of the linear model—`:coefs` and the fitted data—`:fitted`, as
     well as `:residuals`, `:r-square`, and `:adj-r-square`, amongst others.
+  id: totrans-341
   prefs: []
   type: TYPE_NORMAL
 - en: It will also return significance tests and 95 percent confidence intervals for
     the coefficients as the `:t-probs` and `:coefs-ci` keys, respectively, as well
     as the `:f-prob` keys, corresponding to a significance test on the regression
     model as a whole.
+  id: totrans-342
   prefs: []
   type: TYPE_NORMAL
 - en: The F-test of model significance
+  id: totrans-343
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1525,22 +1918,27 @@
     of multiple linear regression, we are testing whether any of the coefficients
     of the model, except for the intercept term, are statistically indistinguishable
     from zero.
+  id: totrans-344
   prefs: []
   type: TYPE_NORMAL
 - en: 'Our null and alternate hypotheses are therefore:'
+  id: totrans-345
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-test of model significance](img/7180OS_03_58.jpg)![The F-test of model
     significance](img/7180OS_03_59.jpg)'
+  id: totrans-346
   prefs: []
   type: TYPE_IMG
 - en: 'Here, *j* is some index in the parameter''s vector excluding the intercept.
     The *F*-statistic we calculate is the ratio of explained variance over the unexplained
     (residual) variance. This can be expressed as the **mean square model** (**MSM**)
     over the **mean** **square error** (**MSE**):'
+  id: totrans-347
   prefs: []
   type: TYPE_NORMAL
 - en: '![The F-test of model significance](img/7180OS_03_60.jpg)'
+  id: totrans-348
   prefs: []
   type: TYPE_IMG
 - en: The MSM is equal to the **explained sum of squares** (**ESS**) divided by the
@@ -1549,26 +1947,33 @@
     **residual squares** (**RSS**) divided by the residual degree of freedom, where
     the residual degree of freedom is the size of the sample minus the number of model
     parameters.
+  id: totrans-349
   prefs: []
   type: TYPE_NORMAL
 - en: 'Once we''ve calculated the *F*-statistic, we look it up in an *F*-distribution
     parameterized by the same two degrees of freedom:'
+  id: totrans-350
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE34]'
+  id: totrans-351
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: The test returns a result of `1.11x10e-16`. This is a tiny number; as a result,
     we can be certain that the model is significant.
+  id: totrans-352
   prefs: []
   type: TYPE_NORMAL
 - en: Note that with smaller samples of data, the *F*-test quantifies increasing uncertainty
     that a linear model is appropriate. With a random sample of five, for example,
     the data sometimes shows barely any linear relationship at all and the *F*-test
     judges the data insignificant at even a 50 percent confidence interval.
+  id: totrans-353
   prefs: []
   type: TYPE_NORMAL
 - en: Categorical and dummy variables
+  id: totrans-354
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1578,15 +1983,18 @@
     that can take one of a finite set of values that are unordered and (usually) not
     numeric. Other examples of categorical variables are the sport that the athlete
     participates in or the particular event in which they are most proficient.'
+  id: totrans-355
   prefs: []
   type: TYPE_NORMAL
 - en: Ordinary least squares relies on a numerical value of residual distance to minimize.
     What could the numeric distance between swimming and athletics be? This might
     imply that it is impossible to include categorical variables in our regression
     equation.
+  id: totrans-356
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-357
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1594,38 +2002,47 @@
     they don't sit on the number line. Sometimes categories are represented by numbers
     like for ZIP codes, but we shouldn't assume that numeric categories are necessarily
     ordered or that the interval between categories are equal.
+  id: totrans-358
   prefs: []
   type: TYPE_NORMAL
 - en: Fortunately, many categorical variables can be considered dichotomies and, in
     fact, our sample data contains two categories for `sex`. These can be included
     in our regression model provided we transform them into two numbers, for example,
     zero and one.
+  id: totrans-359
   prefs: []
   type: TYPE_NORMAL
 - en: When a category such as sport takes on more than two values, we could include
     an independent variable for each type of sport. We would create a variable for
     swimming and another for weightlifting, and so on. The value of swimming would
     be one for swimmers and zero otherwise.
+  id: totrans-360
   prefs: []
   type: TYPE_NORMAL
 - en: Since `sex` might be a useful explanatory variable for our regression model,
     let's convert female to `0` and male to `1`. We can add a derived column containing
     our dummy variable using Incanter's `incanter.core/add-derived-column` function.
+  id: totrans-361
   prefs: []
   type: TYPE_NORMAL
 - en: 'Let''s calculate our ![Categorical and dummy variables](img/7180OS_03_57.jpg)
     value to see if it has improved:'
+  id: totrans-362
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE35]'
+  id: totrans-363
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: The code yields the value `0.809`. Using the height, age, and gender features,
     we have successfully explained over 80 percent of the variance in weight of our
     Olympic swimmers.
+  id: totrans-364
   prefs: []
   type: TYPE_NORMAL
 - en: Relative power
+  id: totrans-365
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1633,86 +2050,110 @@
     to explain the observed weight: is it age, gender, or height? We could make use
     of our adjusted *R²* and see how much the value changes, but this would require
     us to re-run the regression for each variable we want to test.'
+  id: totrans-366
   prefs: []
   type: TYPE_NORMAL
 - en: 'We can''t look at the magnitude of the coefficients, because the ranges of
     the data they apply to are vastly different: height in centimeters, age in years,
     and gender measured as a dummy variable in the range zero to one.'
+  id: totrans-367
   prefs: []
   type: TYPE_NORMAL
 - en: In order to compare the relative contributions of the coefficients, we can calculate
     the standardized regression coefficient, or beta weight.
+  id: totrans-368
   prefs: []
   type: TYPE_NORMAL
 - en: '![Relative power](img/7180OS_03_62.jpg)'
+  id: totrans-369
   prefs: []
   type: TYPE_IMG
 - en: 'To calculate the beta weight we multiply each coefficient by the ratio of the
     standard deviations for the associated independent variable and the model''s dependent
     variable. This can be accomplished with the following Clojure code:'
+  id: totrans-370
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE36]'
+  id: totrans-371
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE36]'
 - en: 'This outputs (rounded to three decimal places):'
+  id: totrans-372
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE37]'
+  id: totrans-373
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE37]'
 - en: This indicates that height is the most important explanatory variable, followed
     by gender and then age. Transforming it into standardized coefficients tells us
     that with an increase of one standard deviation in height, the mean weight increases
     by `0.65` standard deviations.
+  id: totrans-374
   prefs: []
   type: TYPE_NORMAL
 - en: Collinearity
+  id: totrans-375
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: We might try at this point to keep adding features to our model in an attempt
     to increase its explanatory power.
+  id: totrans-376
   prefs: []
   type: TYPE_NORMAL
 - en: 'For example, we also have a `"Date of birth"` column and we may be tempted
     to try and include this too. It is a date, but we could easily convert it into
     a number suitable for use in regression. We could do this simply by extracting
     the year from their birth date using the `clj-time` library:'
+  id: totrans-377
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE38]'
+  id: totrans-378
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE38]'
 - en: The new "Year of Birth" feature has a beta weight of only `0.038`, less than
     the weight of the age feature we calculated earlier. However, the age weight of
     the age feature is now showing a value of `0.096`. Its relative importance has
     increased by over 65 percent since we added `"Year of birth"` as a feature. The
     fact that the addition of a new feature has altered the importance of an existing
     feature indicates that we have a problem.
+  id: totrans-379
   prefs: []
   type: TYPE_NORMAL
 - en: 'By including the additional `"Year of birth"` parameter, we have inadvertently
     broken a rule of the regression estimator. Let''s see why:'
+  id: totrans-380
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE39]'
+  id: totrans-381
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE39]'
 - en: 'The following scatter plot shows the age of swimmers (with jittering) plotted
     against their year of birth. As you would expect, the two variables are very closely
     correlated:'
+  id: totrans-382
   prefs: []
   type: TYPE_NORMAL
 - en: '![Collinearity](img/7180OS_03_260.jpg)'
+  id: totrans-383
   prefs: []
   type: TYPE_IMG
 - en: The two features are so highly correlated that the algorithm is unable to determine
     which of them best explains the observed changes in *y*. This is an undesirable
     issue when we deal with multivariate linear regression called **collinearity**.
+  id: totrans-384
   prefs: []
   type: TYPE_NORMAL
 - en: Multicollinearity
+  id: totrans-385
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1720,9 +2161,11 @@
     data must conform to the same assumptions as simple regression plus one additional
     assumption— the absence of perfect **multicollinearity**. This means that the
     independent variables should not be exactly linearly correlated with each other.
+  id: totrans-386
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-387
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1730,6 +2173,7 @@
     for example, that age and height or gender and height are themselves correlated
     with each other. It's only when this condition becomes extreme that serious coefficient
     errors can arise.
+  id: totrans-388
   prefs: []
   type: TYPE_NORMAL
 - en: If the independent variables are, in fact, not independent, then linear regression
@@ -1737,6 +2181,7 @@
     features are so strongly correlated that they always vary together, how can the
     algorithm distinguish their relative importance? As a result, there may be high
     variance in the coefficient estimates and a high standard error.
+  id: totrans-389
   prefs: []
   type: TYPE_NORMAL
 - en: 'We''ve already seen one symptom of high multicollinearity: regression coefficients
@@ -1744,6 +2189,7 @@
     the equation. Another symptom is when there is an insignificant coefficient in
     a multiple regression for a particular independent variable, but a substantial
     *R²* for the simple regression model using the same independent variable.'
+  id: totrans-390
   prefs: []
   type: TYPE_NORMAL
 - en: While these offer clues of multicollinearity, to confirm, we must look directly
@@ -1752,33 +2198,40 @@
     variables, looking for coefficients of 0.8 or more. While this simple approach
     often works, it may fail to take into account situations where an independent
     variable has a linear relationship with the other variables taken together.
+  id: totrans-391
   prefs: []
   type: TYPE_NORMAL
 - en: The surest method to assess multicollinearity is to regress each independent
     variable on all the other independent variables. When any of the *R²* from these
     equations is near 1.0, there is high-multicollinearity. In fact, the largest of
     these *R²* serves as an indicator of the degree of multicollinearity that exists.
+  id: totrans-392
   prefs: []
   type: TYPE_NORMAL
 - en: 'Once identified, there are several ways to address multicollinearity:'
+  id: totrans-393
   prefs: []
   type: TYPE_NORMAL
 - en: Increase the sample size. More data can produce more precise parameter estimates
     with smaller standard errors.
+  id: totrans-394
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Combine the features into one. If you have several features that measure essentially
     the same attribute, find a way to unify them into a single feature.
+  id: totrans-395
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Discard the offending variable(s).
+  id: totrans-396
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Limit the equation of prediction. Collinearity affects the coefficients of the
     model, but the result may still be a good fit for the data.
+  id: totrans-397
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -1786,29 +2239,35 @@
     well discard one. We can easily see which of the two contains more explanatory
     power by calculating the bivariate regression for each feature and the dependent
     variable.
+  id: totrans-398
   prefs: []
   type: TYPE_NORMAL
 - en: '"Age" *R²* = 0.1049, whereas "Year of birth" *R²* = 0.1050.'
+  id: totrans-399
   prefs: []
   type: TYPE_NORMAL
 - en: As expected, there is virtually no difference between the two features, both
     explaining around 10 percent of the variance in weight. Since the year of birth
     marginally explains marginally more of the variance, we'll keep it and discard
     the age feature.
+  id: totrans-400
   prefs: []
   type: TYPE_NORMAL
 - en: Prediction
+  id: totrans-401
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'Finally, we arrive at one of the most important uses of linear regression:
     prediction. We''ve trained a model capable of predicting the weight of Olympic
     swimmers given the data about their height, gender, and year of birth.'
+  id: totrans-402
   prefs: []
   type: TYPE_NORMAL
 - en: Mark Spitz is a nine-time Olympic swimming champion, and he won seven gold medals
     at the 1972 Olympics. He was born in 1950 and, according to his Wikipedia page,
     is 183cm tall and weighs 73kg. Let's see what our model predicts as his weight.
+  id: totrans-403
   prefs: []
   type: TYPE_NORMAL
 - en: 'Our multiple regression model requires these values to be presented as a matrix
@@ -1816,63 +2275,82 @@
     learned the features so that the correct coefficient is applied. After the bias
     term, our feature vector needs to contain height, gender, and year of birth in
     the same units as our model was trained:'
+  id: totrans-404
   prefs: []
   type: TYPE_NORMAL
 - en: '![Prediction](img/7180OS_03_63.jpg)'
+  id: totrans-405
   prefs: []
   type: TYPE_IMG
 - en: 'Our *β* matrix contains the coefficients for each of these features:'
+  id: totrans-406
   prefs: []
   type: TYPE_NORMAL
 - en: '![Prediction](img/7180OS_03_64.jpg)'
+  id: totrans-407
   prefs: []
   type: TYPE_IMG
 - en: 'The prediction of our model will be the sum of the products of the *β* coefficients
     and features *x* for each row:'
+  id: totrans-408
   prefs: []
   type: TYPE_NORMAL
 - en: '![Prediction](img/7180OS_03_65.jpg)'
+  id: totrans-409
   prefs: []
   type: TYPE_IMG
 - en: Since matrix multiplication produces each element by adding up the products
     of the rows and columns of each matrix respectively, producing our result is as
     simple as multiplying the transpose of *β* with the *x[spitz]* vector.
+  id: totrans-410
   prefs: []
   type: TYPE_NORMAL
 - en: 'Recall that the dimensions of the resulting matrix will be the number of rows
     from the first matrix and the number of columns from the second matrix:'
+  id: totrans-411
   prefs: []
   type: TYPE_NORMAL
 - en: '![Prediction](img/7180OS_03_66.jpg)'
+  id: totrans-412
   prefs: []
   type: TYPE_IMG
 - en: '![Prediction](img/7180OS_03_67.jpg) is a product of a ![Prediction](img/7180OS_03_68.jpg)
     matrix and an ![Prediction](img/7180OS_03_69.jpg) matrix. The result is a ![Prediction](img/7180OS_03_70.jpg)
     matrix:'
+  id: totrans-413
   prefs: []
   type: TYPE_NORMAL
 - en: '![Prediction](img/7180OS_03_270.jpg)'
+  id: totrans-414
   prefs: []
   type: TYPE_IMG
 - en: 'Calculating this in code is very simple:'
+  id: totrans-415
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE40]'
+  id: totrans-416
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE40]'
 - en: 'We call `first` to return the first (and only) element from the matrix rather
     than the matrix itself:'
+  id: totrans-417
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE41]'
+  id: totrans-418
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE41]'
 - en: This returns `84.21`, corresponding to a expected weight of 84.21 kg. This is
     much heavier than Mark Spitz's reported weight of 73 kg. Our model doesn't appear
     to have performed very well.
+  id: totrans-419
   prefs: []
   type: TYPE_NORMAL
 - en: The confidence interval of a prediction
+  id: totrans-420
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1881,6 +2359,7 @@
     **prediction interval**. The prediction interval quantifies the amount of uncertainty
     in the prediction by providing a minimum and a maximum value between which the
     true value is expected to fall with a certain probability.
+  id: totrans-421
   prefs: []
   type: TYPE_NORMAL
 - en: The prediction interval for ![The confidence interval of a prediction](img/7180OS_03_23.jpg)
@@ -1888,17 +2367,21 @@
     the mean. This is because the confidence interval simply needs to account for
     our uncertainty in estimating the mean, while the prediction interval must also
     take into account the variance of *y* from the mean.
+  id: totrans-422
   prefs: []
   type: TYPE_NORMAL
 - en: '![The confidence interval of a prediction](img/7180OS_03_280.jpg)'
+  id: totrans-423
   prefs: []
   type: TYPE_IMG
 - en: 'The previous image shows the relationship between the outer prediction interval
     and the inner confidence interval. We can calculate the prediction interval using
     the following formula:'
+  id: totrans-424
   prefs: []
   type: TYPE_NORMAL
 - en: '![The confidence interval of a prediction](img/7180OS_03_71.jpg)'
+  id: totrans-425
   prefs: []
   type: TYPE_IMG
 - en: 'Here, ![The confidence interval of a prediction](img/7180OS_03_72.jpg) is the
@@ -1908,41 +2391,53 @@
     for the *F*-test previously. While the formula may look intimidating, it''s relatively
     straightforward to translate into the code shown in the following example, which
     calculates the 95 percent prediction interval:'
+  id: totrans-426
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE42]'
+  id: totrans-427
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE42]'
 - en: Since the *t*-statistic is parameterized by the degree of freedom of the error,
     it takes into account the uncertainty present in the model.
+  id: totrans-428
   prefs: []
   type: TYPE_NORMAL
 - en: If we'd like to calculate the confidence interval for the mean instead of the
     prediction interval, we can simply omit the addition of one to `se-y` while calculating
     `t-stat`.
+  id: totrans-429
   prefs: []
   type: TYPE_NORMAL
 - en: 'The preceding code can be used to generate the following chart, showing how
     the prediction interval varies with the value of the independent variable:'
+  id: totrans-430
   prefs: []
   type: TYPE_NORMAL
 - en: '![The confidence interval of a prediction](img/7180OS_03_290.jpg)'
+  id: totrans-431
   prefs: []
   type: TYPE_IMG
 - en: 'In the preceding graph, a model trained on a sample size of five shows how
     the 95 percent prediction interval increases as we move further from the mean
     height. Applying the previous formula to Mark Spitz yields the following:'
+  id: totrans-432
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE43]'
+  id: totrans-433
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE43]'
 - en: This returns the range from 72.7 kg to 97.4 kg. This range just includes Mark's
     weight of 73 kg, so our prediction is within the 95 percent prediction interval.
     It's uncomfortably close to the bounds though.
+  id: totrans-434
   prefs: []
   type: TYPE_NORMAL
 - en: Model scope
+  id: totrans-435
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1950,6 +2445,7 @@
     Olympic Games. By trying to predict Mark's weight using his year of birth, we're
     guilty of trying to extrapolate too far beyond our training data. We have exceeded
     the scope of our model.
+  id: totrans-436
   prefs: []
   type: TYPE_NORMAL
 - en: There is a second way in which this is problematic. Our data was based entirely
@@ -1957,25 +2453,31 @@
     competed for many years. In other words, Mark is now not a part of the population
     we have trained our model on. To fix both of these problems, we need to look up
     Mark's details from 1979, when he was a competition swimmer.
+  id: totrans-437
   prefs: []
   type: TYPE_NORMAL
 - en: According to [http://www.topendsports.com/athletes/swimming/spitz-mark.htm](http://www.topendsports.com/athletes/swimming/spitz-mark.htm),
     in 1972, 22-year-old Mark Spitz was 185 cm tall and he weighed 79 kg.
+  id: totrans-438
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-439
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: Selecting the right features is one of the most important prerequisites to get
     good results from any predictive algorithm.
+  id: totrans-440
   prefs: []
   type: TYPE_NORMAL
 - en: You should strive to select features not only on the basis of their predictive
     power, but also on their relevance to the domain being modeled.
+  id: totrans-441
   prefs: []
   type: TYPE_NORMAL
 - en: The final model
+  id: totrans-442
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1983,31 +2485,41 @@
     of year of birth as a feature. This will allow us to easily predict weights for
     past and future unseen data, as it models more closely the variable we suspect
     of having a causal relationship with weight.
+  id: totrans-443
   prefs: []
   type: TYPE_NORMAL
 - en: 'This yields *β* of approximately:'
+  id: totrans-444
   prefs: []
   type: TYPE_NORMAL
 - en: '![The final model](img/7180OS_03_74.jpg)'
+  id: totrans-445
   prefs: []
   type: TYPE_IMG
 - en: 'Our features for Mark in the 1972 games are:'
+  id: totrans-446
   prefs: []
   type: TYPE_NORMAL
 - en: '![The final model](img/7180OS_03_75.jpg)'
+  id: totrans-447
   prefs: []
   type: TYPE_IMG
 - en: 'We can use them to predict his competitive weight with the following code:'
+  id: totrans-448
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE44]'
+  id: totrans-449
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE44]'
 - en: This returns `78.47`, corresponding to a prediction of 78.47 kg. This is now
     very close to Mark's true competition weight of 79 kg.
+  id: totrans-450
   prefs: []
   type: TYPE_NORMAL
 - en: Summary
+  id: totrans-451
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -2016,6 +2528,7 @@
     with *r* and how well a linear model explains the variance with *R²* and ![Summary](img/7180OS_03_57.jpg).
     We've also performed hypothesis tests and calculated confidence intervals to infer
     the range of the true population parameter for correlation, ![Summary](img/7180OS_03_08.jpg).
+  id: totrans-452
   prefs: []
   type: TYPE_NORMAL
 - en: Having established a correlation between variables, we were able to build a
@@ -2025,6 +2538,7 @@
     by determining the model parameters *β*, inferred from our sample data, that could
     be used to make predictions. Our model was able to predict an expected weight
     for a new athlete that fell well within the prediction interval of the true value.
+  id: totrans-453
   prefs: []
   type: TYPE_NORMAL
 - en: In the next chapter, we'll see how similar techniques can be used to classify
@@ -2032,5 +2546,6 @@
     particular to classification as well as introduce a very general technique for
     parameter optimization that works for a variety of machine learning models, including
     linear regression.
+  id: totrans-454
   prefs: []
   type: TYPE_NORMAL

@@ -1,0 +1,983 @@
+- en: Chapter 10. Real-time Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter will cover the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streaming Twitter for real-time sentiment analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading IRC chat room messages
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Responding to IRC messages
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Polling a web server for the latest updates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detecting real-time file directory changes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Communicating in real time through sockets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detecting faces and eyes through a camera stream
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Streaming camera frames for template matching
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![Introduction](img/ch10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: It's fairly easy to first collect data and then analyze it later. However, doing
+    both steps together may be necessary for some tasks. The gratifying nature of
+    analyzing data the moment it is received is the core subject of this chapter.
+    We will cover how to manage real-time data input from Twitter tweets, Internet
+    Relay Chat (IRC), web servers, file-change notifications, sockets, and webcams.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first three recipes will focus on dealing with real-time data from Twitter.
+    These topics will include streaming posts by users as well as posts related to
+    keywords.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we will use two separate libraries to interact with IRC servers. The first
+    recipe will demonstrate how to join an IRC chat room and start listening for messages,
+    and the next recipe will show us how to listen for direct messages on an IRC server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If real-time data is not supported, a common fallback is to query for that data
+    often. This process is calling **polling**, and we will learn a quick way to poll
+    a web server in one of the recipes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also detect changes in a file directory when a file is modified, deleted,
+    or created. Imagine implementing Dropbox, OneDrive, or Google Drive in Haskell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we will create a simple server-client interaction with sockets and
+    play around with real-time webcam streams.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streaming Twitter for real-time sentiment analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Twitter is flooded with content that arrives every second. A great way to start
+    investigating real-time data is by examining tweets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This recipe will show how to write code that reacts to tweets relating to a
+    specific search query. We use an external web-endpoint to determine whether the
+    sentiment is positive, neutral, or negative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `twitter-conduit` package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For parsing JSON, let''s use `yocto`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Follow these steps to set up the Twitter credentials and begin coding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new Twitter app by navigating to [https://apps.twitter.com](https://apps.twitter.com).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Find the OAuth Consumer Key and OAuth Consumer Secret from this Twitter Application
+    Management page. Set the environmental variables on our system for `OAUTH_CONSUMER_KEY`
+    and `OAUTH_CONSUMER_SECRET` respectively. Most Unix-based systems with sh-compatible
+    shells support the `export` command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Moreover, find the OAuth Access Token and OAuth Access Secret through the same
+    Twitter Application Management page and set the environmental variables accordingly:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Tip
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We put our keys, tokens, and secret pins in the environmental variables instead
+    of simply hardcoding them into the program because these variables are as important
+    as passwords. Just like passwords should never be publicly visible, we try our
+    best to keep these tokens and keys out of direct reach from the source code.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Download the `Common.hs` file from the sample directory of the `twitter-conduit`
+    package, which is located at [https://github.com/himura/twitter-conduit/tree/master/sample](https://github.com/himura/twitter-conduit/tree/master/sample).
+    Study the `userstream.hs` sample file.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'First, we import all the relevant libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'In `main`, run our real-time sentiment analyzer for a search query:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Tap into the Twitter real-time stream with our Twitter API credentials by using
+    the `runTwitterFromEnv''` function provided by the `Common` module. We will use
+    some crazy syntax such as `$$+-` or `^!`. Please do not be intimidated by them.
+    They''re mainly used for succinctness. Every time an event is triggered, such
+    as a new tweet or a new follow, we will call our `process` function on it:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Once we have our event-triggered input, we will run `process` to obtain an
+    output, such as discovering the sentiment of a text. In this example, we append
+    the sentiment output to a comma-separated file:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'If the event-triggered input is not a tweet but instead a friendship event
+    or something else, do nothing:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a helper function to clean up the input by removing all `@user` mentions,
+    `#hashtags`, or `http://websites`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use an external API to run the sentiment analysis on a body of text. In this
+    example, we use the Sentiment140 API because of its ease and simplicity. Please
+    see [http://help.sentiment140.com/api](http://help.sentiment140.com/api) for more
+    information. To prevent getting rate-limited, also supply the `appid` parameter
+    with an e-mail address or obtain a commercial license:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Extract the sentiment value from the JSON response from our API:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code to see tweets displayed right as they are posted publicly by anyone
+    worldwide. The sentiment value will be a rational number between 0 and 1, where
+    0 is a negative sentiment and 1 is a positive sentiment:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Have a look at the following output:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![How to do it…](img/6331OS_10_01.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'We can also analyze the data in bulk from the `output.csv` file. Here''s a
+    visual representation of the sentiments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How to do it…](img/6331OS_10_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The Twitter-conduit package uses the conduit design pattern from the original
+    package placed at [https://hackage.haskell.org/package/conduit](https://hackage.haskell.org/package/conduit).
+    The conduit documentation states:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Conduit is a solution to the streaming data problem, allowing for production,
+    transformation, and consumption of streams of data in constant memory. It is an
+    alternative to lazy I/O which guarantees deterministic resource handling, and
+    fits in the same general solution space as enumerator/iteratee and pipes.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To interact with Twitter's Application Programming Interface (API), it is necessary
+    to obtain the access and application tokens and keys. We store these values in
+    our environment variables and let the Haskell code retrieve it from there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `Common.hs` file takes care of monotonous authentication code, which should
+    be left untouched.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function that reacts to each Twitter event is `process`. We can modify `process`
+    to accompany our specific needs. More specifically, we can modify the sentiment
+    function to use a different `sentiment` analysis service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our code listens to any tweets that match our query. This Twitter-conduit library
+    also supports two other real-time streams: `statusesFilterByFollow` and `userstream`.
+    The former retrieves all tweets from a list of prescribed users. The latter retrieves
+    all tweets from the users that the account follows.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, modify our code by replacing the `statusesFilterByTrack` query
+    with the UIDs of some Twitter users:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Moreover, to only retrieve tweets from the users that we are following, we
+    can instead modify our code by replacing the `statusesFilterByTrack` query with
+    `userstream`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Many more examples can be found through [https://github.com/himura/twitter-conduit/tree/master/sample](https://github.com/himura/twitter-conduit/tree/master/sample).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading IRC chat room messages
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Internet Relay Chat (IRC) is one of the oldest and most vibrant group chat
+    room services out there. The Haskell community has a substantially welcoming presence
+    on the Freenode IRC server (`irc.freenode.org`) in the `#haskell` channel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will build an IRC bot that joins a room and listens to text
+    conversations. Our program will emulate an IRC client and connect to one of the
+    many existing IRC servers. This recipe requires no external libraries at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Make sure an Internet connection is enabled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To test out the IRC bot, it helps to install an IRC client. For instance, one
+    of the top IRC clients is **Hexchat**, which can be downloaded from [http://hexchat.github.io](http://hexchat.github.io).
+    For a terminal-based IRC client, **Irssi** is a favorite: [http://www.irssi.org](http://www.irssi.org).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Review the *Roll your own IRC bot* article on the Haskell wiki: [http://www.haskell.org/haskellwiki/Roll_your_own_IRC_bot](http://www.haskell.org/haskellwiki/Roll_your_own_IRC_bot).
+    This recipe is heavily based on the code presented on the wiki.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file called `Main.hs`, insert the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Specify the IRC server specifics:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Connect to the server and listen to all text being passed in a chat room:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define our listener. For this recipe, we will just echo all events to the console:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To see another way to interact with IRC, see the next recipe, *Responding to
+    IRC messages*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Responding to IRC messages
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another way to interact with IRC in Haskell is by using the `Network.SimpleIRC`
+    package. This package encapsulates much of the low-level networking and also provides
+    useful IRC interfaces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will respond to messages in a channel. If any user types
+    in the trigger phrase, in our case "host?", then we will reply to that user with
+    their host address.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `Network.SimpleIRC` package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To test out the IRC bot, it is helpful to install an IRC client. A decent IRC
+    client is Hexchat, which can be downloaded from [http://hexchat.github.io](http://hexchat.github.io).
+    For a terminal-based IRC client, Irssi is one of the best: [http://www.irssi.org](http://www.irssi.org).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we call `Main.hs`, and do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create an event handler when a message is received. If the message is "host?",
+    then reply to the user with information about their host:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define on which events to listen:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Set up the IRC server configuration. Connect to any list of channels and bind
+    our event:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Connect to the server. Don''t run in a new thread, but print debug messages,
+    as specified by the corresponding Boolean parameters:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Run the code, and open an IRC client to test it out:![How to do it…](img/6331OS_10_03.jpg)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To connect to an IRC server without using an external library, see the previous
+    recipe, *Reading IRC chat room messages*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Polling a web server for latest updates
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Some websites change dramatically very often. For instance, Google News and
+    Reddit are usually loaded with recent postings the moment we refresh the page.
+    To maintain the latest data at all times, it might be best to run an HTTP request
+    often.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this recipe, we poll new Reddit posts every 10 seconds as summarized in
+    the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Polling a web server for latest updates](img/6331OS_10_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file called `Main.hs`, perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the URL to poll:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the function to obtain the latest data from an HTTP GET request:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Polling is simply the act of recursively conducting a task after waiting for
+    a specified amount of time. In this case, we will wait 10 seconds before asking
+    for the latest web data:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the polling:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'After each web request, analyze the data. In this recipe, count the number
+    of times Imgur shows up:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Detecting real-time file directory changes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this recipe, we will instantly detect when a new file is created, modified,
+    or deleted. Similar to the popular file synchronization software Dropbox, we will
+    be able to do interesting actions every time such an event occurs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `fsnotify` package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file called `Main.hs`, perform these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the file watcher on the current directory:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Handle each of the file change events. In this recipe, we just print out the
+    action to the console:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code and start modifying some files in the same directory. For example,
+    create a new file, edit it, and then remove it:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `fsnotify` library binds to the event-notification services specific to
+    a platform-specific filesystem. On Unix-based systems, this is usually `inotify`
+    ([http://dell9.ma.utexas.edu/cgi-bin/man-cgi?inotify](http://dell9.ma.utexas.edu/cgi-bin/man-cgi?inotify)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Communicating in real time through sockets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sockets provide a convenient way of communicating between programs in real time.
+    Think of them as a chat client.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will pass messages from one program to another and obtain
+    responses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Insert the following code in a new file called `Main.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create the server code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a socket connection to listen on, and attach our handler, `sockHandler`,
+    on it:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the handler to process each message received:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define how to process messages sent by the client:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Send messages to the client through user input:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, create the client code in a new file, `client.hs`. First, import the libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Connect the client to the corresponding port and set up the responder and listener
+    threads:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Get user input and send it as a message:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Listen to incoming messages from the server:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test out the code by first running the server:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Next, on a separate terminal, run the client:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'We can now send messages between the two by typing and hitting *Enter*:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `hGetLine` function is blocking the code execution, which means that code
+    execution halts at that point until a message is received. This allows us to wait
+    for messages to conduct real-time reactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first specify a port on the computer, which is simply a number that is not
+    yet reserved by other programs. The server sets up the socket, and the client
+    connects to it without needing to set it up. The messages passed between the two
+    happen in real time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A visualization of the server-client model is demonstrated in the following
+    diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/6331OS_10_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Detecting faces and eyes through a camera stream
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The camera is another source for real-time data. As frames come and go, we can
+    perform powerful analysis using the OpenCV library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we conduct facial detection through a live camera stream.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the OpenCV, SDL, and FTGL libraries for image manipulation and computer
+    vision:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install an OpenCV library using cabal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new source file, `Main.hs`, and follow these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the source of the camera stream. We will be using the built-in webcam.
+    To instead use a video, we can replace `camera 0` with `videoFile "./myVideo.mpeg"`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Shrink the size of the stream for faster performance:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Detect the faces in an image using the training dataset provided by OpenCV:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Detect the eyes in the image using the training data set provided by OpenCV:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Draw rectangles around faces and eyes:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Capture the camera''s stream, detect the faces and eyes, draw rectangles, and
+    display them in two different windows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Perform the real-time camera streaming and stop once a key is pressed:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code and look at the webcam to detect faces and eyes as shown in the
+    screenshot that follows this command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![How to do it…](img/6331OS_10_06.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To detect faces, eyes, or other objects, we use the `haarDetect` function, which
+    performs a classifier trained from many positive and negative test cases. These
+    test cases are provided by OpenCV and are typically located in `/usr/share/opencv/haarcascades/`
+    on Unix-based systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cv-combinator library provides a convenient abstraction to OpenCV's low-level
+    manipulations. To run any useful code, we must define a source, a process, and
+    a final destination (also referred to as a *sink*). In our case, the source was
+    the machine's built-in camera. We first resize the image to something more manageable
+    (`resizer`), split the stream into two in parallel (`--<`), draw boxes around
+    faces in one while drawing boxes around eyes in the other, and finally output
+    the streams to two separate windows. For more documentation of the cv-combinators
+    package, see [https://hackage.haskell.org/package/cv-combinators](https://hackage.haskell.org/package/cv-combinators).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streaming camera frames for template matching
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Template matching is a machine-learning technique to find areas of an image
+    that match a given template image. We will apply template matching to every frame
+    of a real-time video stream to locate an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the OpenCV and c2hs toolkits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install the CV library from cabal. Be sure to include the `–fopencv24` or `–fopencv23`
+    parameter depending on which version of OpenCV is installed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Also, create a small template image. In this recipe, we use an image of Lena,
+    which is usually used in many image-processing experiments. We name this image
+    file `lena.png`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_10_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file, `Main.hs`, start with these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Load the template image and start the template matching on a camera stream:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Perform an action on each frame of the camera stream. Specifically, use template
+    matching to locate the template and draw a circle around it:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code using the following command and show an image of the template.
+    A black circle will be drawn around the found image:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![How to do it…](img/6331OS_10_08.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: More OpenCV examples can be found at [https://github.com/aleator/CV/tree/master/examples](https://github.com/aleator/CV/tree/master/examples).
+  prefs: []
+  type: TYPE_NORMAL

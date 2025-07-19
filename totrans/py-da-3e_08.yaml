@@ -1,0 +1,835 @@
+- en: Retrieving, Processing, and Storing Data
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data can be found everywhere, in all shapes and forms. We can get it from the
+    web, IoT sensors, emails, FTP, and databases. We can also collect it ourselves
+    in a lab experiment, election polls, marketing polls, and social surveys. As a
+    data professional, you should know how to handle a variety of datasets as that
+    is a very important skill. We will discuss retrieving, processing, and storing
+    various types of data in this chapter. This chapter offers an overview of how
+    to acquire data in various formats, such as CSV, Excel, JSON, HDF5, Parquet, and
+    `pickle`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, we need to store or save the data before or after the data analysis.
+    We will also learn how to access data from relational and **NoSQL** (**Not Only
+    SQL**) databases such as `sqlite3`, MySQL, MongoDB, Cassandra, and Redis. In the
+    world of the21st-century web, NoSQL databases are undergoing substantial growth
+    in big data and web applications. They provide a more flexible, faster, and schema-free
+    database. NoSQL databases can store data in various formats, such as document
+    style, column-oriented, objects, graphs, tuples, or a combination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The topics covered in this chapter are listed as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing CSV files with NumPy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing CSV files with pandas
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from Excel
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from JSON
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from HDF5
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from HTML tables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from Parquet
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from a `pickle pandas` object
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lightweight access with `sqllite3`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from MySQL
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from MongoDB
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from Cassandra
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing data from Redis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: PonyORM
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Technical requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter has the following technical requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find the code and the dataset at the following GitHub link: [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter06](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter06).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All the code blocks are available in the `ch6.ipynb` file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This chapter uses CSV files (`demo.csv`, `product.csv`, `demo_sample_df.csv`,
+    `my_first_demo.csv`, and `employee.csv`), Excel files (`employee.xlsx`, `employee_performance.xlsx`,
+    and `new_employee_details.xlsx`), JSON files (`employee.json` and `employee_demo.json`),
+    an HTML file (`country.html`), a `pickle` file (`demo_obj.pkl`), an HDF5 file
+    (`employee.h5`), and a Parquet file (`employee.parquet`) for practice purposes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will use the `pandas`, `pickle`, `pyarrow`, `sqlite3`, `pymysql`,
+    `mysql-connector`, `pymongo`, `cassandra-driver`, and `redis` Python libraries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reading and writing CSV files with NumPy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In [Chapter 2](2519d92c-1aff-40f7-a6ee-e36d32b77096.xhtml), *NumPy and pandas*,
+    we looked at the NumPy library in detail and explored lots of functionality. NumPy
+    also has functions to read and write CSV files and get output in a NumPy array.
+    The `genfromtxt()` function will help us to read the data and the `savetxt()`
+    function will help us to write the data into a file. The `genfromtxt()` function
+    is slow compared to other functions due to its two-stage operation. In the first
+    stage, it reads the data in a string type, and in the second stage, it converts
+    the string type into suitable data types. `genfromtxt()` has the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`fname`: String; filename or path of the file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`delimiter`: String; optional, separate string value. By default, it takes
+    consecutive white spaces.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`skip_header`: Integer; optional, number of lines you want to skip from the
+    start of the file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let''s see an example of reading and writing CSV files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code example, we are reading the `demo.csv` file using the
+    `genfromtxt()` method of the NumPy module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code example, we are writing the `my_first_demo.csv` file using
+    the `savetxt()` method of the NumPy module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's see how can we read CSV files using the `pandas` module in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing CSV files with pandas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The `pandas` library provides a variety of file reading and writing options.
+    In this section, we will learn about reading and writing CSV files. In order to
+    read a CSV file, we will use the `read_csv()` method. Let''s see an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2f3288ff-42bd-4c76-9674-b5c9d94c0888.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can now save the dataframe as a CSV file using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding sample code, we have read and saved the CSV file using the
+    `read_csv()` and `to_csv(0)` methods of the `pandas` module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `read_csv()` method has the following important arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`filepath_or_buffer`: Provides a file path or URL as a string to read a file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`sep`: Provides a separator in the string, for example, comma as `'',''` and
+    semicolon as `'';''`. The default separator is a comma `'',''`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`delim_whitespace`: Alternative argument for a white space separator. It is
+    a Boolean variable. The default value for `delim_whitespace` is `False`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`header`: This is used to identify the names of columns. The default value
+    is `infer`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`names`: You can pass a list of column names. The default value for `names`
+    is `None`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In `pandas`, a DataFrame can also be exported in a CSV file using the `to_csv()`
+    method. CSV files are comma-separated values files. This method can run with only
+    a single argument (filename as a string):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`path_or_buf`: The file path or location where the file will export.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`sep`: This is a delimiter used for output files.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`header`: To include column names or a list of column aliases (default value:
+    `True`).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`index`: To write an index to the file (default value: `True`).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For more parameters and detailed descriptions, visit [https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_csv.html](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_csv.html).
+    Let's see how can we read Excel files using the `pandas` module in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from Excel
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Excel files are widely used files in the business domain. Excel files can be
+    easily read in Python''s `pandas` using the `read_excel()` function. The `read_excel()`
+    function takes a file path and `sheet_name` parameters to read the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/9458050f-19fc-47fd-95a9-0f411cfb3ef6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'DataFrame objects can be written on Excel sheets. We can use the `to_excel()`
+    function to export DataFrame objects into an Excel sheet. Mostly, the `to_excel()`
+    function arguments are the same as `to_csv()` except for the `sheet_name` argument:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code example, we have exported a single DataFrame into an
+    Excel sheet. We can also export multiple DataFrames in a single file with different
+    sheet names. We can also write more than one DataFrame in a single Excel file
+    (each DataFrame on different sheets) using `ExcelWriter`, as shown:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code example, we have written multiple DataFrames to a single
+    Excel file. Here, each DataFrame store on a different sheet using the `ExcelWriter`
+    function. Let's see how can we read the JSON files using the `pandas` module in
+    the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from JSON
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**JSON** (**JavaScript Object Notation**) files are a widely used format for
+    interchanging data among web applications and servers. It acts as a data interchanger
+    and is more readable compared to XML. `pandas` offers the `read_json` function
+    for reading JSON data and `to_json()` for writing JSON data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b694891d-1d89-4264-bf15-5412ba97b2fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code example, we have read the JSON file using the `read_json()`
+    method. Let''s see how to write a JSON file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code example, we have written the JSON file using the `to_json()`
+    method. In the `to_json()` method, the `orient` parameter is used to handle the
+    output string format. `orient` offers record, column, index, and value kind of
+    formats. You can explore it in more detail on the official web page, at [https://pandas.pydata.org/pandas-docs/version/0.24.2/reference/api/pandas.DataFrame.to_json.html](https://pandas.pydata.org/pandas-docs/version/0.24.2/reference/api/pandas.DataFrame.to_json.html).
+    It's time to jump into HDF5 files. In the next section, we will see how to read
+    and write HDF5 files using the `pandas` module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from HDF5
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**HDF** stands for **Hierarchical Data Format**. HDF is designed to store and
+    manage large amounts of data with high performance. It offers fast I/O processing
+    and storage of heterogeneous data. There are various HDF file formats available,
+    such as HDF4 and HDF5\. HDF5 is the same as a dictionary object that reads and
+    writes `pandas` DataFrames. It uses the PyTables library''s `read_hdf()` function
+    for reading the HDF5 file and the `to_hdf()` function for writing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code example, we have written the HDF file format using the
+    `to_hdf()` method. `''table''` is a format parameter used for the table format.
+    Table format may perform slower but offers more flexible operations, such as searching
+    and selecting. The `append` parameter is used to append input data onto the existing
+    data file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3ea05ef4-fb90-4f8e-ab93-0d15496e2aef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code example, we have read the HDF file format using the `read_hdf()`
+    method. Let's see how to read and write HTML tables from a website in the next
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from HTML tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'HTML tables store rows in the `<tr>...</tr>` tag and each row has corresponding
+    `<td>...</td>` cells for holding values. In `pandas`, we can also read the HTML
+    tables from a file or URL. The `read_html()` function reads an HTML table from
+    a file or URL and returns HTML tables into a list of `pandas` DataFrames:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code example, we have read the HTML table from a given web
+    page using the `read_html()` method. `read_html()` will return all the tables
+    as a list of DataFrames. Let''s check one of the DataFrames from the list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/12053630-a477-4f75-9354-f324711171b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code example, we have shown the initial five records of the
+    first table available on the given web page. Similarly, we can also write DataFrame
+    objects as HTML tables using `to_html()`. `to_html()` renders the content as an
+    HTML table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the preceding code example, we can convert any DataFrame into an HTML page
+    that contains the DataFrame as a table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from Parquet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Parquet file format provides columnar serialization for `pandas` DataFrames.
+    It reads and writes DataFrames efficiently in terms of storage and performance
+    and shares data across distributed systems without information loss. The Parquet
+    file format does not support duplicate and numeric columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two engines used to read and write Parquet files in `pandas`: `pyarrow`
+    and the `fastparquet` engine. `pandas`''s default Parquet engine is `pyarrow`;
+    if `pyarrow` is unavailable, then it uses `fastparquet`. In our example, we are
+    using `pyarrow`. Let''s install `pyarrow` using `pip`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can also install the `pyarrow` engine in the Jupyter Notebook by putting
+    an `!` before the `pip` keyword. Here is an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s write a file using the `pyarrow` engine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code example, we have written the `using to_parquet()` Parquet
+    file and the `pyarrow` engine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b44e908a-ac9e-43fc-9a94-86fbb6d1abb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code example, we have read the Parquet file using `read_parquet()`
+    and the `pyarrow` engine. `read_parquet()` helps to read the Parquet file formats.
+    Let's see how to read and write the data using `pickle` files in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from a pickle pandas object
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the data preparation step, we will use various data structures such as dictionaries,
+    lists, arrays, or DataFrames. Sometimes, we might want to save them for future
+    reference or send them to someone else. Here, a `pickle` object comes into the
+    picture. `pickle` serializes the objects to save them and can be loaded again
+    any time. `pandas` offer two functions: `read_pickle()` for loading `pandas` objects
+    and `to_pickle()` for saving Python objects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we read the `demo.csv` file using the `read_csv()` method
+    with `sep` and `header` parameters. Here, we have assigned `sep` with a comma
+    and `header` with `None`. Finally, we have written the dataset to a `pickle` object
+    using the `to_pickle()` method. Let''s see how to read `pickle` objects using
+    the `pandas` library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e6244c42-b825-4193-886c-eee9ae5d3c8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we have read the `pickle` objects using the `read_pickle()`
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lightweight access with sqllite3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: SQLite is an open-source database engine. It offers various features such as
+    faster execution, lightweight processing, serverless architecture, ACID compliance,
+    less administration, high stability, and reliable transactions. It is the most
+    popular and widely deployed database in the mobile and computer world. It is also
+    known as an embedded relational database because it runs as part of your application.
+    SQLite is a lighter database and does not offer full-fledged features. It is mainly
+    used for small data to store and process locally, such as mobile and desktop applications.
+    The main advantages of SQLite are that it is easy to use, efficient, and light,
+    and can be embedded into the application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can read and write data in Python from the `sqlite3` module. We don''t need
+    to download and install `sqlite3` as it is already available in all the standard
+    Python distributions. With `sqlite3`, we can either store the database in a file
+    or keep it in RAM. `sqlite3` allows us to write any database using SQL without
+    any third-party application server. Let''s look at the following example to understand
+    database connectivity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we are using the `sqlite3` module. First, we import the module and create
+    a connection using the `connect()` method. The `connect()` method will take the
+    database name and path; if the database does not exist, it will create the database
+    with the given name and on the given location path. Once you have established
+    a connection with the database, then you need to create the `Cursor` object and
+    execute the SQL query using the `execute()` method. We can create a table in the
+    `execute()` method, as given in the example `emp` table, which is created in the
+    employee database. Similarly, we can write the data using the `execute()` method
+    with an `insert` query argument and commit the data into the database using the
+    `commit()` method. Data can also be extracted using the `execute()` method by
+    passing the `select` query as an argument and fetched using `fetchall()` and the
+    `fetchone()` method. `fetchone()` extracts a single record and `fetchall()` extracts
+    all the records from a database table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from MySQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'MySQL is a fast, open-source, and easy-to-use relational or tabular database.
+    It is suitable for small and large business applications. It is very friendly
+    with database-driven web development applications. There are lots of ways to access
+    data in Python from MySQL. Connectors such as MySQLdb, `mysqlconnector`, and `pymysql`
+    are available for MySQL database connectivity. For this connectivity purpose,
+    you should install a MySQL relational database and the `mysql-python` connector.
+    The MySQL setup details are available on its website: [https://www.mysql.com/downloads/](https://www.mysql.com/downloads/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can use the `pymysql` connector as the client library and it can be installed
+    using `pip`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can establish a connection with the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import the library.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a database connection.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a cursor object.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Execute the SQL query.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fetch the records or response for the update or insert the record.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Close the connection.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In our examples, we are trying database connectivity using `mysqlconnecter`
+    and `pymysql`. Before running the database connectivity script, the first step
+    is to design and create a database and then create a table in MySQL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s create a database using the following query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Change the database to the employee database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Create a table in the database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can insert and fetch the records from a table in MySQL. Let''s look
+    at the following example to understand the database connectivity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we are using the `pymysql` module. First, we import the module and create
+    a connection. The `connect()` function will take the host address, which is `localhost`,
+    in our case (we can also use the IP address of the remote database), username,
+    password, database name, character set, and cursor class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After establishing the connection, we can read or write the data. In our example,
+    we are writing the data using the `insert` SQL query and retrieving it using the
+    `select` query. In the insert query, we are executing the query and passing the
+    argument that we want to enter into the database, and committing the results into
+    the database using the `commit()` method. When we read the records using the select
+    query, we will get some number of records. We can extract those records using
+    the `fetchone()` and `fetchall()` functions. The `fetchone()` method extracts
+    only single records and the `fetchall()` method extracts multiple records from
+    a database table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One more thing; here, all the read-write operations are performed in a `try`
+    block and the connection is closed in the final block. We can also try one more
+    module `mysql.connector` for MySQL and Python connectivity. It can be installed
+    using `pip`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s look at the following example to understand the database connectivity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code example, we are connecting to Python with the MySQL database
+    using the `mysql.connector` module and the approach and steps for retrieving data
+    are the same as with the `pymysql` module. We are also writing the extracted records
+    into a `pandas` DataFrame by just passing fetched records into the DataFrame object
+    and assigning column names from the cursor description.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inserting a whole DataFrame into the database
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the preceding program, a single record is inserted using the `insert` command.
+    If we want to insert multiple records, we need to run a loop to insert the multiple
+    records into the database. We can also use the `to_sql()` function to insert multiple
+    records in a single line of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code example, we will create an engine for a database connection
+    with username, password, and database parameters. The `to_sql()` function writes
+    multiple records from the DataFrame to a SQL database. It will take the table
+    name, the `con` parameter for the connection engine object, the `if_exists` parameter
+    for checking whether data will append to a new table or replace with a new table,
+    and `chunksize` for writing data in batches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from MongoDB
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'MongoDB is a document-oriented non-relational (NoSQL) database. It uses JSON-like
+    notation, **BSON** (**Binary Object Notation**) to store the data. MongoDB offers
+    the following features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is a free, open-source, and cross-platform database software.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is easy to learn, can build faster applications, supports flexible schemas,
+    handles diverse data types, and has the capability to scale in a distributed environment.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It works on concepts of documents.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It has a database, collection, document, field, and primary key.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can read and write data in Python from MongoDB using the `pymongo` connector.
+    For this connectivity purpose, we need to install MongoDB and the `pymongo` connector.
+    You can download MongoDB from its official web portal: [https://www.mongodb.com/download-center/community](https://www.mongodb.com/download-center/community).
+    PyMongo is a pure Python MongoDB client library that can be installed using `pip`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s try database connectivity using `pymongo`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we are trying to extract data from database collection in MongoDB by creating
+    a Mongo client, inserting data, extracting collection details, and assigning it
+    to the DataFrame. Let's see how to create a database connection with the columnar
+    database Cassandra in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from Cassandra
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Cassandra is scalable, highly available, durable, and fault-tolerant, has lower
+    admin overhead, has faster read-write, and is a resilient column-oriented database.
+    It is easier to learn and configure. It provides solutions for quite complex problems.
+    It also supports replication across multiple data centers. Plenty of big companies,
+    for example, Apple, eBay, and Netflix use Cassandra.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can read and write data in Python from Cassandra using the `cassandra-driver`
+    connector. For this connectivity purpose, we need to install Cassandra and `cassandra-driver`
+    connectors. You can download Cassandra from its official website: [http://cassandra.apache.org/download/](http://cassandra.apache.org/download/).
+    `cassandra-driver` is a pure Python Cassandra client library that can be installed
+    using `pip`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s try database connectivity using `cassandra-driver`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, we are trying to extract data from the Cassandra database by creating
+    a cluster object, creating a connection using the `connect()` method, executing
+    an insert, and selecting query data. After running the query, we are printing
+    the results and assigning the extracted records to the `pandas` DataFrame. Let''s
+    move on now to another NoSQL database: Redis.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading and writing data from Redis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Redis is an open-source NoSQL database. It is a key-value database, in-memory,
+    extremely fast, and highly available. It can also be employed as a cache or act
+    as a message broker. In-memory means it uses RAM for the storage of data and handles
+    bigger-sized data using virtual memory. Redis offers a cache service or permanent
+    storage. Redis supports a variety of data structures, such as string, set, list,
+    bitmap, geospatial indexes, and hyperlogs. Redis can deal with geospatial, streaming,
+    and time-series data. It is offered with cloud services such as AWS and Google
+    Cloud.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can read and write data in Python from Redis using the Redis connector.
+    For this connectivity purpose, we need to install Redis and the Redis connector.
+    You can download Redis from the following link: [https://github.com/rgl/redis/downloads](https://github.com/rgl/redis/downloads).
+    Redis is a pure Python Redis client library that can be installed using `pip`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s try database connectivity using Redis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we are trying to extract data from the Redis key-value database. First,
+    we have created a connection with the database. We are setting the key-value pairs
+    into the Redis database using the `set()` method and we have also extracted the
+    value using the `get()` method with the given key parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, its time to shift to the last topic of this chapter, which is PonyORM
+    for **object-relational mapping** (**ORM**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: PonyORM
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'PonyORM is a powerful ORM package that is written in pure Python. It is fast
+    and easy to use and performs operations with minimum effort. It provides automatic
+    query optimization and a GUI database schema editor. It also supports automatic
+    transaction management, automatic caching, and composite keys. PonyORM uses Python
+    generator expressions, which are translated in SQL. We can install it using `pip`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s see an example of ORM using `pony`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code example, we are performing ORM. First, we have created
+    a `Database` object and defined entities using an `Emp` class. After that, we
+    have attached the entities to the database using `db.bind()`. We can bind it with
+    four databases: `sqlite`, `mysql`, `postgresql`, and `oracle`. In our example,
+    we are using MySQL and passing its credential details, such as username, password,
+    and database name. We can perform the mapping of entities with data using `generate_mapping()`.
+    The `create_tables=True` argument creates the tables if it does not exist. `sql_debug(True)`
+    will turn on the debug mode. The `select()` function translates a Python generator
+    into a SQL query and returns a `pony` object. This `pony` object will be converted
+    into a list of entities using the slice operator (`[:]`) and the `show()` function
+    will display all the records in a tabular fashion.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned about retrieving, processing, and storing data in
+    different formats. We have looked at reading and writing data from various file
+    formats and sources, such as CSV, Excel, JSON, HDF5, HTML, `pickle`, table, and
+    Parquet files. We also learned how to read and write from various relational and
+    NoSQL databases, such as SQLite3, MySQL, MongoDB, Cassandra, and Redis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next chapter, [Chapter 7](5e8db48a-32f4-4b31-ba39-33376d7cafa3.xhtml), *Cleaning
+    Messy Data*, is about the important topic of data preprocessing and feature engineering
+    with Python. The chapter starts with exploratory data analysis, and leads to filtering,
+    handling missing values, and outliers. After cleaning, the focus will be on data
+    transformation, such as encoding, scaling, and splitting.
+  prefs: []
+  type: TYPE_NORMAL

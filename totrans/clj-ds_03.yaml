@@ -1,0 +1,2036 @@
+- en: Chapter 3. Correlation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"The more I learn about people, the better I like my dog."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Mark Twain* |'
+  prefs: []
+  type: TYPE_TB
+- en: 'In previous chapters, we''ve considered how to describe samples in terms of
+    summary statistics and how population parameters can be inferred from them. Such
+    analysis tells us something about a population in general and a sample in particular,
+    but it doesn''t allow us to make very precise statements about individual elements.
+    This is because so much information has been lost by reducing the data to just
+    two statistics: the mean and standard deviation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We often want to go further and establish a relationship between two or more
+    variables or to predict one variable given another. This takes us into the study
+    of correlation and regression. Correlation concerns the strength and direction
+    of the relationship between two or more variables. Regression determines the nature
+    of this relationship and enables us to make predictions from it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear regression is our first machine learning algorithm. Given a sample of
+    data, our model will learn a linear equation that allows it to make predictions
+    about new, unseen data. To do this, we'll return to Incanter and study the relationship
+    between height and weight for Olympic athletes. We'll introduce the concept of
+    matrices and show how Incanter can be used to manipulate them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter will make use of data on athletes in the London 2012 Olympic Games,
+    courtesy of Guardian News and Media Ltd. The data was originally sourced from
+    the Guardian's excellent data blog at [http://www.theguardian.com/data](http://www.theguardian.com/data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Download the example code for this chapter from the publisher's website or from
+    [https://github.com/clojuredatascience/ch3-correlation](https://github.com/clojuredatascience/ch3-correlation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consult the `Readme` file in this chapter's sample code or the book's wiki at
+    [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com) for more
+    information on the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspecting the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first task when confronted with a new dataset is to study it to ensure that
+    we understand what it contains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `all-london-2012-athletes.xlsx` file is small enough that it''s been provided
+    with the sample code for this chapter. We can inspect the data with Incanter,
+    as we did in [Chapter 1](ch01.xhtml "Chapter 1. Statistics"), *Statistics* using
+    the `incanter.excel/read-xls` and `incanter.core/view` functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run this code (either in the REPL or on the command line with `lein
+    run –e 3.1`), you should see the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Inspecting the data](img/7180OS_03_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We''re fortunate that the data is clearly labeled in the columns and contains
+    the following information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Name of the athlete
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Country for which they are competing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Age in years
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Height in centimeters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Weight in kilograms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sex as the string "M" or "F"
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Date of birth as a string
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Place of birth as a string (with country)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gold medals won
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Silver medals won
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bronze medals won
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Total gold, silver, and bronze medals won
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sport in which they competed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Event as a comma-separated list
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Even though the data is clearly labeled, gaps are evident in the data for height,
+    weight, and place of birth. We'll have to be careful to make sure these don't
+    trip us up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, we''ll consider the spread of the heights of the London 2012 athletes.
+    Let''s plot our height values as a histogram to see how the data is distributed,
+    remembering to filter the nil values first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing the data](img/7180OS_03_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The data is approximately normally distributed, as we have come to expect.
+    The mean height of our athletes is around 177 cm. Let''s take a look at the distribution
+    of weights of swimmers from the 2012 Olympics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing the data](img/7180OS_03_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This data shows a pronounced skew. The tail is much longer to the right of
+    the peak than to the left, so we say the skew is positive. We can quantify the
+    skewness of the data with Incanter''s `incanter.stats/skewness` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Fortunately, this skew can be effectively mitigated by taking the logarithm
+    of the weight using Incanter''s `incanter.core/log` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code results in the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing the data](img/7180OS_03_130.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is much closer to the normal distribution. This suggests that weight is
+    distributed according to a **log-normal distribution**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The log-normal distribution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The log-normal distribution is simply the distribution of a set of values whose
+    logarithm is normally distributed. The base of the logarithm can be any positive
+    number except for one. Like the normal distribution, the log-normal distribution
+    is important in the description of many naturally occurring phenomena.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A logarithm represents the power to which a fixed number (the base) must be
+    raised to produce a given number. By plotting the logarithms as a histogram, we''ve
+    shown that these powers are approximately normally distributed. Logarithms are
+    usually taken to base 10 or base *e*: the transcendental number that''s equal
+    to approximately 2.718\. Incanter''s `log` function and its inverse `exp` both
+    use base *e*. *log[e]* is also called the **natural logarithm** or *ln*, because
+    of the properties that make it particularly suitable in calculus.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The log-normal distribution tends to occur in processes of growth where the
+    growth rate is independent of size. This is known as *Gibrat's law* and was formally
+    defined in 1931 by Robert Gibrat, who noticed that it applied to the growth of
+    firms. Since the growth rate is a proportion of the size, larger firms tend to
+    grow more quickly than smaller firms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The normal distribution occurs in situations where many small variations have
+    an additive effect, whereas the log-normal distribution occurs in situations where
+    many small variations have a multiplicative effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gibrat's law has since been found to be applicable to lots of situations, including
+    the sizes of cities and, according to Wolfram MathWorld, the numbers of words
+    in sentences by George Bernard Shaw.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the rest of this chapter, we'll be using the natural logarithm of the weight
+    data so that our data is approximately normally distributed. We'll choose a population
+    of athletes with roughly similar body types, say Olympic swimmers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing correlation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the quickest and simplest ways of determining if two variables are correlated
+    is to view them on a scatter plot. We''ll filter our data to select only swimmers
+    and then plot the heights against the weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code yields the following plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing correlation](img/7180OS_03_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The output clearly shows a relationship between the two variables. The chart
+    has the characteristically skewed elliptical shape of two correlated, normally
+    distributed variables centered on the means. The following diagram compares the
+    scatter plot against probability distributions of the height and log weight:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing correlation](img/7180OS_03_150.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Points close to the tail of one distribution also tend to be close to the same
+    tail of the other distribution, and vice versa. Thus, there is a relationship
+    between the two distributions that we'll show how to quantify over the next several
+    sections. If we look closely at the previous scatter plot though, we'll see that
+    the points are packed into columns and rows due to the measurements being rounded
+    (to centimeters and kilograms for height and weight, respectively). Where this
+    occurs, it is sometimes preferable to *jitter* the data to make the strength of
+    the relationship clearer. Without jittering, it could be that what appears to
+    be one point is actually many points that share exactly the same pair of values.
+    Introducing some random noise makes this possibility less likely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jittering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since each value is rounded to the nearest centimeter, a value captured as 180
+    could actually have been anywhere between 179.5 cm and 180.5 cm. To unwind this
+    effect, we can add random noise in the -0.5 to 0.5 range to each of the height
+    data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The weight data point was captured to the nearest kilogram, so a value of 80
+    could actually have been anywhere between 79.5 kg and 80.5 kg. We can add random
+    noise in the same range to unwind this effect (though clearly, this must be done
+    before we take the logarithm):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The jittered graph appears as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Jittering](img/7180OS_03_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As with introducing transparency to the scatter plot in [Chapter 1](ch01.xhtml
+    "Chapter 1. Statistics"), *Statistics*, jittering is a mechanism to ensure that
+    we don't let incidental factors—such as data volume or rounding artifacts—obscure
+    our ability to see patterns in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Covariance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One way of quantifying the strength of the relationship between two variables
+    is their covariance. This measures the tendency of two variables to change together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we have two series, *X* and *Y*, their deviations from the mean are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Covariance](img/7180OS_03_01.jpg)![Covariance](img/7180OS_03_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Where *x[i]* is the value of *X* at index *i*, *y[i]* is the value of *Y* at
+    index *i*, ![Covariance](img/7180OS_03_03.jpg) is the mean of *X*, and ![Covariance](img/7180OS_03_04.jpg)
+    is the mean of *Y*. If *X* and *Y* tend to vary together, their deviations from
+    the mean tend to have the same sign: negative if they''re less than the mean,
+    positive if they''re greater. If we multiply them together, the product is positive
+    when they have the same sign and negative when they have different signs. Adding
+    up the products gives a measure of the tendency of the two variables to deviate
+    from the mean in the same direction for each given sample.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Covariance is defined as the mean of these products:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Covariance](img/7180OS_03_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Covariance can be calculated in Clojure using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Alternatively, we could use the `incanter.stats/covariance` function. The covariance
+    of height and log-weight for our Olympic swimmers is `1.354`, but this is a hard
+    number to interpret. The units are the product of the units of the inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because of this, covariance is rarely reported as a summary statistic on its
+    own. A solution to make the number more comprehensible is to divide the deviations
+    by the product of the standard deviations. This transforms the units to standard
+    scores and constrains the output to a number between `-1` and `+1`. The result
+    is called **Pearson's correlation**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pearson's correlation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Pearson''s correlation is often given the variable name *r* and is calculated
+    in the following way, where *dx[i]* and *dy[i]* are calculated as before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Pearson''s correlation](img/7180OS_03_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since the standard deviations are constant values for the variables *X* and
+    *Y* the equation can be simplified to the following, where *σ[x]* and *σ[y]* are
+    the standard deviations of *X* and *Y* respectively:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Pearson''s correlation](img/7180OS_03_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is sometimes referred to as Pearson's product-moment correlation coefficient
+    or simply just the *correlation coefficient* and is usually denoted by the letter
+    *r*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have previously written functions to calculate the standard deviation. Combining
+    with our function to calculate covariance yields the following implementation
+    of Pearson''s correlation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Alternately, we can make use of the `incanter.stats/correlation` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because standard scores are dimensionless, so is *r*. If *r* is -1.0 or 1.0,
+    the variables are perfectly negatively or perfectly positively correlated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If *r* is zero though, it doesn''t necessarily follow that the variables are
+    uncorrelated. Pearson''s correlation only measures linear relationships. There
+    could still be some nonlinear relationship between variables that isn''t captured
+    by *r*, as demonstrated by the following plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Pearson''s correlation](img/7180OS_03_170.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that the correlation of the central example is undefined because the standard
+    deviation of *y* is zero. Since our equation for *r* would involve dividing the
+    covariance by zero, the result is meaningless. In this case, there can't be any
+    correlation between the variables; the value for *y* is always the mean. A simple
+    inspection of standard deviations would confirm this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The correlation coefficient can be calculated for the height and log-weight
+    data for our swimmers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: This yields the answer `0.867`, which quantifies the strong, positive correlation
+    we already observed on the scatter plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample r and population rho
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Like the mean or standard deviation, the correlation coefficient is a statistic.
+    It describes a sample; in this case, a sample of paired values: height and weight.
+    While our known sample correlation coefficient is given the letter *r*, the unknown
+    population correlation coefficient is given the Greek letter rho: ![Sample r and
+    population rho](img/7180OS_03_08.jpg).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we discovered in the last chapter, we should not assume that what we measured
+    in our sample applies to the population as a whole. In this case, our population
+    might be all swimmers from all recent Olympic Games. It would not be appropriate
+    to generalize, for example, to other Olympic sports such as weightlifting or to
+    noncompetitive swimmers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Even within an appropriate population—such as swimmers from the recent Olympic
+    Games—our sample is just one of many potential samples of different correlation
+    coefficients. How far we can trust our *r* as an estimate of ![Sample r and population
+    rho](img/7180OS_03_08.jpg) will depend on two factors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The size of the sample
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The magnitude of *r*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clearly, for a fair sample, the larger it is the more we can trust it to be
+    a representative of the population as a whole. It may not be intuitively obvious
+    to you that the magnitude of *r* also affects how confident we can be of it representing
+    ![Sample r and population rho](img/7180OS_03_08.jpg). The reason is that large
+    coefficients are less likely to have arisen by chance or by random sampling error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hypothesis testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous chapter, we introduced hypothesis testing as a means to quantify
+    the probability that a given hypothesis (such as that the two samples were from
+    a single population) is true. We will use the same process to quantify the probability
+    that a correlation exists in the wider population based on our sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we must formulate two hypotheses, a null hypothesis and an alternate
+    hypothesis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Hypothesis testing](img/7180OS_03_09.jpg)![Hypothesis testing](img/7180OS_03_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*H[0]* is the hypothesis that the population correlation is zero. In other
+    words, our conservative view is that the measured correlation is purely due to
+    chance sampling error.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*H[1]* is the alternative possibility that the population correlation is not
+    zero. Notice that we don''t specify the direction of the correlation, only that
+    there is one. This means we are performing a two-tailed test.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The standard error of the sample *r* is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Hypothesis testing](img/7180OS_03_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This formula is only accurate when ![Hypothesis testing](img/7180OS_03_08.jpg)
+    is close to zero (recall that the magnitude of *r* influences our confidence),
+    but fortunately, this is exactly what we're assuming under our null hypothesis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once again, we can make use of the *t*-distribution and calculate our *t*-statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Hypothesis testing](img/7180OS_03_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The term *df* is the degree of freedom of our data. For correlation testing,
+    the degree of freedom is *n - 2* where *n* is the size of the sample. Putting
+    this value into the formula, we obtain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Hypothesis testing](img/7180OS_03_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This gives us a *t*-value of `102.21`. To convert this into a *p* value, we
+    need to refer to the *t*-distribution. Incanter provides the **cumulative distribution
+    function** (**CDF**) for the *t*-distribution with the `incanter.stats/cdf-t`
+    function. The value of the CDF corresponds to the *p*-value for a one-tailed test.
+    We multiply the value by two because we''re performing a two-tailed test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *p*-value is so small as to be essentially zero, meaning that the chances
+    of the null hypothesis being true is essentially non-existent. We are forced to
+    accept the alternate hypothesis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Confidence intervals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having established that there certainly is a correlation in the wider population,
+    we might want to quantify the range of values we expect ![Confidence intervals](img/7180OS_03_08.jpg)
+    to lie within by calculating a confidence interval. As in the previous chapter
+    with the mean, the confidence interval of *r* expresses the probability (expressed
+    as a percentage) that the population parameter ![Confidence intervals](img/7180OS_03_08.jpg)
+    lies between two specific values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, a complication arises when trying to calculate the standard error of
+    the correlation coefficient that didn't exist for the mean. Because the absolute
+    value of *r* cannot exceed **1**, the distribution of possible samples of *r*
+    is skewed as *r* approaches the limit of its range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_03_180.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The previous graph shows the negatively skewed distribution of *r* samples for
+    a ![Confidence intervals](img/7180OS_03_08.jpg) of 0.6.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, a transformation called the **Fisher z-transformation** will stabilize
+    the variance of *r* throughout its range. This is analogous to how our weight
+    data became normally distributed when we took the logarithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The equation for the *z*-transformation is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_03_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The standard error of *z* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_03_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thus, the process to calculate confidence intervals is to convert *r* to *z*
+    using the *z*-transformation, compute a confidence interval in terms of *SE[z]*,
+    and then convert the confidence interval back to *r*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To calculate a confidence interval in terms of *SE[z]*, we can take the number
+    of standard deviations away from the mean that gives us the desired confidence.
+    1.96 is a common number to use, because it is the number of standard deviations
+    away from the mean that contains 95 percent of the area. In other words, 1.96
+    standard errors from the mean of the sample *r* contains the true population correlation
+    *ρ* with 95 percent certainty.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_03_190.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can verify this using Incanter's `incanter.stats/quantile-normal` function.
+    This will return the standard score associated with a given cumulative probability,
+    assuming a one-tailed test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, as shown in the previous diagram, we''d like to subtract the same
+    amount— 2.5 percent—from each tail, so that the 95 percent confidence interval
+    is centered on zero. A simple translation is to halve the difference to 100 percent
+    while performing a two-tailed test. So, a desired confidence of 95 percent means
+    we look up the critical value of 97.5 percent:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, our 95 percent confidence interval in *z*-space for ![Confidence intervals](img/7180OS_03_08.jpg)
+    is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_03_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Substituting our formulae for *z[r]* and *SE[z]* gives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_03_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For `r = 0.867` and `n = 859`, this gives a lower and upper bound of `1.137`
+    and `1.722`, respectively. To convert these from *z*-scores back to *r*-values,
+    we use the following equation, the inverse of the *z*-transformation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_03_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The transformations and confidence interval can be calculated with the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives a 95 percent confidence interval for ![Confidence intervals](img/7180OS_03_08.jpg)
+    being between `0.850` and `0.883`. We can be very confident that there is a strong
+    positive correlation between the height and weight in the wider population of
+    Olympic-class swimmers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While it may be useful to know that two variables are correlated, we can't use
+    this information alone to predict the weights of Olympic swimmers given their
+    height or vice versa. In establishing a correlation, we have measured the strength
+    and sign of a relationship, but not the slope. Knowing the expected rate of change
+    for one variable given a unit change in the other is required in order to make
+    predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What we'd like to determine is an equation that relates the specific value of
+    one variable, called the **independent** **variable**, to the expected value of
+    the other, the **dependent** **variable**. For example, if our linear equation
+    predicts the weight given the height, then the height is our independent variable
+    and the weight is our dependent variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The lines described by these equations are called **regression lines**. The
+    term was introduced by the 19th century British polymath Sir Francis Galton. He
+    and his student Karl Pearson (who defined the correlation coefficient) developed
+    a variety of methods to study linear relationships in the 19th century and these
+    collectively became known as regression techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember that correlation does not imply causation and there is no implied causation
+    by the terms dependent and independent—they're just the names for mathematical
+    inputs and outputs. A classic example is the highly positive correlation between
+    the number of fire engines sent to a fire and the damage done by the fire. Clearly,
+    sending fire engines to a fire does not itself cause damage. No one would recommend
+    reducing the number of engines sent to a fire as a way of reducing damage. In
+    situations like these, we should look for an additional variable, which is causally
+    connected with the other variables, and explains the correlation between them.
+    In the previous example, this might be the *size of fire*. Such hidden causes
+    are called **confounding** **variables**, because they confound our ability to
+    determine the relationship between their dependent variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear equations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Two variables, which we can signify as *x* and *y*, may be related to each
+    other exactly or inexactly. The simplest relationship between an independent variable
+    labeled *x* and a dependent variable labeled *y* is a straight line expressed
+    in the formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Linear equations](img/7180OS_03_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, the values of the parameters *a* and *b* determine respectively the precise
+    height and steepness of the line. The parameter *a* is referred to as the intercept
+    or constant and *b* as the gradient or slope. For example, in the mapping between
+    Celsius and Fahrenheit temperature scales, *a = 32* and *b = 1.8*. Substituting
+    these values of *a* and *b* into our equation yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Linear equations](img/7180OS_03_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To calculate 10 degrees Celsius in Fahrenheit, we substitute 10 for *x*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Linear equations](img/7180OS_03_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thus, our equation tells us that 10 degrees Celsius is 50 degrees Fahrenheit,
+    which is indeed the case. Using Incanter, we can easily write a function that
+    maps Celsius to Fahrenheit and plot it as a graph using `incanter.charts/function-plot`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code yields the following line graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Linear equations](img/7180OS_03_200.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how the red line crosses zero on the Celsius scale at 32 on the Fahrenheit
+    scale. The intercept *a* is the value of *y*, where *x* is zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The slope of the line is determined by *b*; it is close to 2 for this equation.
+    See how the range of the Fahrenheit scale is almost double the range of the Celsius
+    scale. In other words, the line sweeps almost twice as fast vertically as it does
+    horizontally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Residuals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Unfortunately few relationships we will study are as tidy as the mapping between
+    Celsius and Fahrenheit. The straight-line equation rarely allows us to specify
+    *y* exactly in terms of *x*. There will ordinarily be an error, thus:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Residuals](img/7180OS_03_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *ε* is an error term standing for the difference between the value calculated
+    by the parameters *a* and *b* for a given value of *x* and the actual value of
+    *y*. If our predicted value of *y* is ![Residuals](img/7180OS_03_23.jpg) (pronounced
+    "y-hat"), then the error is the difference between the two:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Residuals](img/7180OS_03_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This error is referred to as the residual. The residual might be due to random
+    factors like measurement error or non-random factors that are unknown. For example,
+    if we are trying to predict weight as a function of height, unknown factors might
+    include diet, level of fitness, and body type (or simply the effect of rounding
+    to the nearest kilogram).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we select parameters for *a* and *b* that are not ideal, then the residual
+    for each *x* will be larger than it needs to be. Therefore, it follows that the
+    parameters we'd like to find are the ones that minimize the residuals across all
+    values of *x* and *y*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ordinary least squares
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In order to optimize the parameters of our linear model, we'd like to devise
+    a cost function, also called a **loss function**, that quantifies how closely
+    our predictions fit the data. We cannot simply sum up the residuals, positive
+    and negative, because even large residuals will cancel each other out if their
+    signs are in opposite directions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could square the values before calculating the sum so that positive and negative
+    residuals both count towards the cost. This also has the effect of penalizing
+    large errors more than smaller errors, but not so much that the largest residual
+    always dominates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Expressed as an optimization problem, we seek to identify the coefficients
+    that minimize the sum of the residual squares. This is called **Ordinary Least
+    Squares** (**OLS**), and the formula to calculate the slope of the regression
+    line using OLS is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Ordinary least squares](img/7180OS_03_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Although this looks more complicated than the previous equations, it''s really
+    just the sum of squared residuals divided by the sum of squared differences from
+    the mean. This shares a number of terms from the equations we have already looked
+    at and can be simplified to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Ordinary least squares](img/7180OS_03_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The intercept is the term that allows a line of this slope to pass through
+    the mean of both *X* and *Y*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Ordinary least squares](img/7180OS_03_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: These values of *a* and *b* are the coefficients of our least squares estimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Slope and intercept
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We''ve already written the `covariance`, `variance`, and `mean` functions we
+    need to calculate the slope and intercept for the swimming height and weight data.
+    Therefore, the slope and intercept calculations are trivial:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The output gives a slope of approximately `0.0143` and an intercept of approximately
+    `1.6910`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The **intercept value** is the value of the dependent variable (log weight)
+    when the independent variable (`height`) is zero. To find out what this value
+    equates to in kilograms, we can use the `incanter.core/exp` function, which performs
+    the inverse of the `incanter.core/log` function. Our model seems to suggest that
+    the best guess for the weight of an Olympic swimmer of zero height is 5.42 kg.
+    This is meaningless, and it is unwise to extrapolate beyond the bounds of your
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The slope value shows how much *y* changes for each unit change in *x*. Our
+    model suggests that each additional centimeter of height adds on an average of
+    1.014 kg to the weight of our Olympic swimmers. Since our model is based on all
+    Olympic swimmers, this is the average effect of a unit increase in height without
+    taking into account any other factor, such as age, gender, or body type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can visualize the output of our linear equation with `incanter.charts/function-plot`
+    and a simple function of *x* that calculates ![Visualization](img/7180OS_03_23.jpg)
+    based on the coefficients *a* and *b*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `regression-line` function returns a function of *x* that calculates ![Visualization](img/7180OS_03_28.jpg).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualization](img/7180OS_03_210.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can also use the `regression-line` function to calculate each residual, showing
+    how far our estimate ![Visualization](img/7180OS_03_23.jpg) deviates from each
+    measured *y*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A **residual plot** is a graph that shows the residuals on the *y*-axis and
+    the independent variable on the *x*-axis. If the points in the residual plot are
+    randomly dispersed around the horizontal axis, a linear model is a good fit for
+    the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualization](img/7180OS_03_220.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: With the exception of some outliers on the left side of the chart, the residual
+    plot appears to indicate that a linear model is a good fit for the data. Plotting
+    the residuals is important to verify that the linear model is appropriate. There
+    are certain assumptions that a linear model makes about your data that will, if
+    violated, invalidate models you build.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assumptions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Obviously, the primary assumption of linear regression is that there is a linear
+    relationship between the dependent and independent variable. In addition, the
+    residuals must not be correlated with each other or with the independent variable.
+    In other words, we expect the errors to have a zero mean and constant variance
+    versus the dependent and independent variable. A residual plot allows us to quickly
+    determine if this is the case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The left side of our residual plot has greater residuals than the right side.
+    This corresponds to greater variance of weight amongst shorter athletes. The variables
+    are said to be **heteroscedastic** when the variance of one variable changes with
+    respect to another. This is a concern in regression analysis, because it invalidates
+    the assumption that modeling errors are uncorrelated and normally distributed
+    and that their variances do not vary with the effects being modeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The heteroscedasticity of our residuals are fairly small and should not influence
+    the quality of our model very much. If the variance on the left side of the graph
+    were more pronounced, it would cause the least squares estimate of variance to
+    be incorrect, which in turn would affect inferences we make based on the standard
+    error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Goodness-of-fit and R-square
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although we can see from the residual plot that a linear model is a good fit
+    for our data, it would be desirable to quantify just how good it is. Also called
+    the **coefficient of determination**, *R²* varies between zero and one and indicates
+    the explanatory power of the linear regression model. It calculates the proportion
+    of variation in the dependent variable explained, or accounted for, by the independent
+    variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generally, the closer *R²* is to 1, the better the regression line fits the
+    points and the more the variation in *Y* is explained by *X*. *R²* can be calculated
+    using the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Goodness-of-fit and R-square](img/7180OS_03_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *var(ε)* is the variance of the residuals and *var(Y)* is the variance
+    in *Y*. To understand what this means, let's suppose you're trying to guess someone's
+    weight. If you don't know anything else about them, your best strategy would be
+    to guess the mean of the weights within the population in general. This way, the
+    mean squared error of your guess compared to their true weight would be *var(Y)*
+    or the variance of the weights in the population.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But if I told you their height, you would guess ![Goodness-of-fit and R-square](img/7180OS_03_28.jpg)
+    as per the regression model. In this case, your mean squared error would be *var(ε)*
+    or the variance of the residuals of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The term *var(ε)/ var(Y)* is the ratio of mean squared error with and without
+    the explanatory variable, which is the fraction of variability left unexplained
+    by the model. The complement *R²* is the fraction of variability explained by
+    the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: As with *r*, a low *R²* does not mean that the two variables are uncorrelated.
+    It might simply be that their relationship is not linear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *R²* value describes how well the line fits the data. The line of *best
+    fit* is the line that minimizes the value of *R²*. As the coefficients increase
+    or decrease away from their optimum values, *R²* will always increase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Goodness-of-fit and R-square](img/7180OS_03_240.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The left graph shows the variance for a model that always guesses the mean
+    of *y* and the right one shows smaller squares associated with the residuals left
+    unexplained by the model *f*. In purely geometric terms, you can see the how the
+    model has explained most of the variance in *y*. The following code calculates
+    *R²* by dividing the variance of the residuals with the variance of the *y* values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives a value of `0.753`. In other words, over 75 percent of the variance
+    of the weight of 2012 Olympic swimmers can be explained by the height.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the case of a simple regression model (with a single independent variable),
+    the relationship between the coefficient of determination *R²* and the correlation
+    coefficient *r* is a straightforward one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Goodness-of-fit and R-square](img/7180OS_03_30.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: A correlation coefficient of 0.5 might suggest that half the variability in
+    *Y* is explained by *X*, but actually, *R²* would be 0.5² or 0.25.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple linear regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We've seen so far in this chapter how to build a regression line with one independent
+    variable. However, it is often desirable to build a model with several independent
+    variables. This is called **multiple linear regression**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each independent variable is going to need its own coefficient. Rather than
+    working our way through the alphabet to represent each one, let''s designate a
+    new variable *β*, pronounced "beta", to hold all of our coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Multiple linear regression](img/7180OS_03_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This model is equivalent to our **bivariate linear regression** model, where
+    ![Multiple linear regression](img/7180OS_03_32.jpg) and ![Multiple linear regression](img/7180OS_03_33.jpg)
+    so long as we ensure that *x[1]* is always equal to one. This ensures that *β[1]*
+    is always a constant factor representing our intercept. *x[1]* is called the **bias**
+    **term**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Having generalized the linear equation in terms of beta, easy to extend to
+    as many coefficients as we''d like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Multiple linear regression](img/7180OS_03_34.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Each of the values of *x[1]* up to *x[n]* correspond to an independent variable
+    that might help explain the value of *y*. Each of the values of *β[1]* up to *β[n]*
+    correspond to a coefficient that determines the relative contribution of this
+    independent variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our simple linear regression aimed to explain weight only in terms of height,
+    but many other factors help to explain someone''s weight: their age, gender, diet,
+    and body type. We know the ages of our Olympic swimmers, so we could build a model
+    that incorporates this additional data too.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve been providing the independent variable as a single sequence of values,
+    but with multiple parameters, we''ll need to provide several values for each *x*.
+    We can use Incanter''s `i/$` function to select multiple columns and manipulate
+    each *x* as a Clojure vector, but there is a better way: matrices.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrices
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A matrix is a two-dimensional grid of numbers. The dimensions are expressed
+    as the number of rows and columns in the matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, *A* is a matrix with four rows and two columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Matrices](img/7180OS_03_35.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In mathematical notation, a matrix will usually be assigned to a variable with
+    an upper-case letter to distinguish it from other variables in an equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can construct a matrix from our dataset using Incanter''s `incanter.core/to-matrix`
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Incanter also defines the `incanter.core/matrix` function that will take a
+    sequence of scalar values or a sequence of sequences and convert them into a matrix
+    if it can:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run this in the REPL, the output will be a summary of the contents of
+    the matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Incanter returns a representation exactly as shown in the preceding example,
+    presenting only the top and bottom three rows of the matrix. Matrices can often
+    become very large and Incanter takes care not to inundate the REPL with information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimensions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The element in the *i^(th)* row *j^(th)* column is referred to as *A[ij]*.
+    Therefore, in our earlier example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Dimensions](img/7180OS_03_36.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: One of the most fundamental attributes of a matrix is its size. Incanter provides
+    the `incanter.core/dim`, `ncol`, and `nrow` functions to query matrices dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vectors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A vector is a special case of matrix with only one column. The number of rows
+    in the vector are referred to as its dimension:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Vectors](img/7180OS_03_37.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *y* is a four-dimensional vector. The *i^(th)* element is referred to
+    as *y[i]*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vectors in mathematical literature are one-indexed unless otherwise specified.
+    So, *y[1]* refers to the first element, not the second. Vectors are generally
+    assigned to lowercase variables in equations. Incanter's API doesn't distinguish
+    between vectors and single column matrices and we can create a vector by passing
+    a single sequence to the `incanter.core/matrix` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Construction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we've seen, it's possible to build matrices out of Clojure sequences and
+    Incanter datasets. It's also possible to build matrices out of smaller building
+    blocks, provided the dimensions are compatible. Incanter provides the `incanter.core/bind-columns`
+    and `incanter.core/bind-rows` functions to stack matrices above one another or
+    side by side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, we could add a column of 1s to the front of another matrix in
+    the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: In fact, we'll want to do this for our bias term. Recall that *β[1]* will represent
+    a constant value, so we must ensure that our corresponding *x[1]* is constant
+    too. Without the bias term, *y* would have to be zero when the values of *x* are
+    zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Addition and scalar multiplication
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A scalar is a name for a simple number. When we add a scalar to a matrix, it's
+    as if we added the number to each element of the matrix, individually. Incanter
+    provides the `incanter.core/plus` function to add scalars and matrices together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix-matrix addition works by adding the elements in each corresponding position.
+    Only matrices of the same dimensions can be added together. If the matrices are
+    of the same dimensions, they are said to be compatible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Addition and scalar multiplication](img/7180OS_03_38.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The `plus` function will also add compatible matrices. The `minus` function
+    will subtract scalars or compatible matrices. Multiplying a matrix by a scalar
+    results in each of the elements in the matrix being multiplied by the scalar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Addition and scalar multiplication](img/7180OS_03_39.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The `incanter.core/mult` performs matrix-scalar multiplication, while `incanter.core/div`
+    performs the inverse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also use `mult` and `div` on compatible matrices, but this element-wise
+    method of multiplying and dividing is not what we normally intend to do when we
+    speak of matrix multiplication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix-vector multiplication
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The standard way to multiply matrices is handled by the `incanter.core/mmult`
+    function, which applies the complex matrix multiplication algorithm. For example,
+    the result of multiplying a 3 x 2 matrix with a 2 x 1 matrix is a 3 x 1 matrix.
+    The number of columns on the left has to match the number of rows on the right
+    of the multiplication:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Matrix-vector multiplication](img/7180OS_03_40.jpg)![Matrix-vector multiplication](img/7180OS_03_41.jpg)![Matrix-vector
+    multiplication](img/7180OS_03_42.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To get *Ax*, multiply each row of *A* element-by-element with the corresponding
+    element of *x* and sum the results. For example, the first row of matrix *A* contains
+    the elements *1* and *3*. These are multiplied pairwise by the elements in vector
+    *x*: *1* and *5*. Then, the products are added together to produce *16*. This
+    is called the **dot product** and is what is commonly intended by matrix multiplication.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix-matrix multiplication
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Matrix-matrix multiplication proceeds very similarly to matrix-vector multiplication.
+    The sum of the products is taken pairwise, row by row and column by column, from
+    the corresponding elements of matrices *A* and *B*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Matrix-matrix multiplication](img/7180OS_03_40.jpg)![Matrix-matrix multiplication](img/7180OS_03_43.jpg)![Matrix-matrix
+    multiplication](img/7180OS_03_44.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As before, we can only multiply matrices together when the number of columns
+    in the first matrix is equal to the number of rows in the second matrix. If the
+    first matrix *A* is of dimensions ![Matrix-matrix multiplication](img/7180OS_03_45.jpg)
+    and the second matrix *B* is of dimensions ![Matrix-matrix multiplication](img/7180OS_03_46.jpg),
+    *n[a]* and *m[B]* must be equal if the matrices are to be multiplied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Matrix-matrix multiplication](img/7180OS_03_250.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the previous visual example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Matrix-matrix multiplication](img/7180OS_03_47.jpg)![Matrix-matrix multiplication](img/7180OS_03_48.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Luckily, we don't have to remember the process ourselves. Incanter uses very
+    efficient algorithms to perform matrix algebra for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transposition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Transposing a matrix means flipping the matrix over the main diagonal running
+    from the top-left to the bottom-right corner. The transpose of matrix *A* is represented
+    as *A^T*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Transposition](img/7180OS_03_49.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The columns and rows have been changed such that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Transposition](img/7180OS_03_50.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, if:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Transposition](img/7180OS_03_36.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Transposition](img/7180OS_03_51.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Incanter provides the `incanter.core/trans` function to transpose a matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The identity matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Certain matrices have special properties and are used regularly in matrix algebra.
+    One of the most important of these is the identity matrix. It''s a square matrix
+    with ones along the main diagonal and zeros everywhere else:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The identity matrix](img/7180OS_03_52.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The identity matrix is the identity for matrix multiplication. As with a scalar
+    multiplication by the number one, a matrix multiplication by the identity matrix
+    has no effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incanter provides the `incanter.core/identity-matrix` function to construct
+    identity matrices. Since they're always square, we only provide a single argument
+    corresponding to both, the width and height.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inversion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we have a square matrix *A*, the inverse of *A* is denoted as *A^(-1)* and
+    it will have the following properties, where *I* is the identity matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Inversion](img/7180OS_03_53.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The identity matrix is its own inverse. Not all matrices are invertible and
+    noninvertible matrices are also called **singular** or **degenerate** matrices.
+    We can calculate the inverse of a matrix with the `incanter.core/solve` function.
+    `solve` will raise an exception if passed a singular matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The normal equation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we''ve covered the basics of matrix and vector manipulation we''re
+    in a position to study the **normal equation**. This is an equation that uses
+    matrix algebra to calculate the coefficients of our OLS linear regression model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The normal equation](img/7180OS_03_54.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We read "to find *β*, multiply the inverse of *X* transpose *X*, by *X* transpose
+    *y*" where *X* is the matrix of independent variables (including the intercept
+    term) for our sample and *y* is a vector containing the dependent variables for
+    our sample. The result *β* contains the calculated coefficients. This normal equation
+    is relatively easy to derive from the equation of multiple regression, applying
+    the rules of matrix multiplication, but the mathematics is beyond the scope of
+    this book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can implement the normal equation with Incanter using only the functions
+    we have just encountered:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This normal equation expresses the mathematics of least squares linear regression
+    in a very succinct way. We can use it as follows (remembering to add the bias
+    term):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This yields the following matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: These are the values of *β[1]* and *β[2]* corresponding to the intercept and
+    slope parameters. Happily, they agree with the values we calculated previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Part of the strength of the normal equation is that we''ve now implemented
+    everything we need in order to support multiple linear regression. Let''s write
+    a function to convert the features of interest to a matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: This function will allow us to select specific columns as a matrix in one step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A feature is a synonym for an independent variable and is popularly used in
+    machine learning. Other synonyms are predictor, regressor, and explanatory variable,
+    or simply input variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To start with, let''s select height and age as our two features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This returns the following matrix of two columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our normal equation function will accept this new matrix without any further
+    change:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It will return the following coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: These three numbers correspond to the intercept, the slope for height, and the
+    slope for age, respectively. To determine whether our model has significantly
+    improved by this new data, we could calculate the *R²* value of our new model
+    and compare it to the earlier one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple R-squared
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While calculating *R²* previously, we saw how it was the amount of variance
+    explained by the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Multiple R-squared](img/7180OS_03_55.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since the variance is the mean squared error, we can multiply both the *var(ε)*
+    and *var(y)* terms by the sample size and arrive at the following alternative
+    equation for R²:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Multiple R-squared](img/7180OS_03_56.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is simply the sum of squared residuals over the sum of squared differences
+    from the mean. Incanter contains the `incanter.core/sum-of-squares` function that
+    makes this very simple to express:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We use the variable names `rss` for **residual sum of squares** and `ess` for
+    **explained sum of squares**. We can calculate the matrix *R²* for our new model
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: This yields the value `0.757`. Our *R²* value has increased by a small amount
+    by including the age value. Because we have used multiple independent variables,
+    *R²* is now called the **coefficient of** **multiple determination**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adjusted R-squared
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we add more independent variables to our regression, we might be encouraged
+    by the fact that our *R²* value always increases. Adding a new independent variable
+    isn't going to make it harder to predict the dependent variable—if the new variable
+    has no explanatory power, then its coefficient will simply be zero and the R²
+    will remain the same as it was without the independent variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, this doesn''t tell us whether a model has been improved by the addition
+    of a new variable. If we want to know whether our new variable is really helping
+    it to generate a better fit, we can use the adjusted *R²*, often written as ![Adjusted
+    R-squared](img/7180OS_03_57.jpg) and pronounced as "R-bar squared." Unlike *R²*,
+    ![Adjusted R-squared](img/7180OS_03_57.jpg) will only increase if the new independent
+    variable increases *R²* more than would be expected due to chance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The adjusted *R²* depends on two additional parameters, *n* and *p*, corresponding
+    to the sample size and number of model parameters, respectively:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: This example returns a value of `0.756`. This is still greater than the original
+    model, so age certainly carries some explanatory power.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incanter's linear model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While implementing our own version of the normal equation and *R²* provides
+    a valuable opportunity to introduce matrix algebra, it's important to note that
+    Incanter provides the `incanter.stats/linear-model` function that does everything
+    we've covered and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function expects to be called with *y* and *x* (as either sequences or,
+    in the case of multiple regression, matrices). We can also pass in an optional
+    keyword argument—`intercept` with a Boolean value—indicating whether we'd like
+    Incanter to add the intercept term for us. The function will return a map containing
+    the coefficients of the linear model—`:coefs` and the fitted data—`:fitted`, as
+    well as `:residuals`, `:r-square`, and `:adj-r-square`, amongst others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It will also return significance tests and 95 percent confidence intervals for
+    the coefficients as the `:t-probs` and `:coefs-ci` keys, respectively, as well
+    as the `:f-prob` keys, corresponding to a significance test on the regression
+    model as a whole.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The F-test of model significance
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The `:f-prob` key returned by `linear-model` is a significance test of the entire
+    model using an *F*-test. As we discovered in the previous chapter, an *F*-test
+    is appropriate when performing multiple significance tests at once. In the case
+    of multiple linear regression, we are testing whether any of the coefficients
+    of the model, except for the intercept term, are statistically indistinguishable
+    from zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our null and alternate hypotheses are therefore:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-test of model significance](img/7180OS_03_58.jpg)![The F-test of model
+    significance](img/7180OS_03_59.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *j* is some index in the parameter''s vector excluding the intercept.
+    The *F*-statistic we calculate is the ratio of explained variance over the unexplained
+    (residual) variance. This can be expressed as the **mean square model** (**MSM**)
+    over the **mean** **square error** (**MSE**):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-test of model significance](img/7180OS_03_60.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The MSM is equal to the **explained sum of squares** (**ESS**) divided by the
+    model degree of freedom, where the model degree of freedom is the number of parameters
+    in the model excluding the intercept term. The MSE is equal to the **sum of**
+    **residual squares** (**RSS**) divided by the residual degree of freedom, where
+    the residual degree of freedom is the size of the sample minus the number of model
+    parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we''ve calculated the *F*-statistic, we look it up in an *F*-distribution
+    parameterized by the same two degrees of freedom:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: The test returns a result of `1.11x10e-16`. This is a tiny number; as a result,
+    we can be certain that the model is significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that with smaller samples of data, the *F*-test quantifies increasing uncertainty
+    that a linear model is appropriate. With a random sample of five, for example,
+    the data sometimes shows barely any linear relationship at all and the *F*-test
+    judges the data insignificant at even a 50 percent confidence interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Categorical and dummy variables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We might attempt at this point to include `"Sex"` as a feature in our regression
+    analysis, but we''ll encounter a problem. The input is expressed as `"M"` or `"F"`
+    rather than a number. This is an example of a categorical variable: a variable
+    that can take one of a finite set of values that are unordered and (usually) not
+    numeric. Other examples of categorical variables are the sport that the athlete
+    participates in or the particular event in which they are most proficient.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ordinary least squares relies on a numerical value of residual distance to minimize.
+    What could the numeric distance between swimming and athletics be? This might
+    imply that it is impossible to include categorical variables in our regression
+    equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Categorical or nominal variables are distinct from continuous variables, because
+    they don't sit on the number line. Sometimes categories are represented by numbers
+    like for ZIP codes, but we shouldn't assume that numeric categories are necessarily
+    ordered or that the interval between categories are equal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, many categorical variables can be considered dichotomies and, in
+    fact, our sample data contains two categories for `sex`. These can be included
+    in our regression model provided we transform them into two numbers, for example,
+    zero and one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When a category such as sport takes on more than two values, we could include
+    an independent variable for each type of sport. We would create a variable for
+    swimming and another for weightlifting, and so on. The value of swimming would
+    be one for swimmers and zero otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since `sex` might be a useful explanatory variable for our regression model,
+    let's convert female to `0` and male to `1`. We can add a derived column containing
+    our dummy variable using Incanter's `incanter.core/add-derived-column` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s calculate our ![Categorical and dummy variables](img/7180OS_03_57.jpg)
+    value to see if it has improved:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code yields the value `0.809`. Using the height, age, and gender features,
+    we have successfully explained over 80 percent of the variance in weight of our
+    Olympic swimmers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relative power
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At this point, it might be useful to ask what is the most important feature
+    to explain the observed weight: is it age, gender, or height? We could make use
+    of our adjusted *R²* and see how much the value changes, but this would require
+    us to re-run the regression for each variable we want to test.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can''t look at the magnitude of the coefficients, because the ranges of
+    the data they apply to are vastly different: height in centimeters, age in years,
+    and gender measured as a dummy variable in the range zero to one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to compare the relative contributions of the coefficients, we can calculate
+    the standardized regression coefficient, or beta weight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Relative power](img/7180OS_03_62.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To calculate the beta weight we multiply each coefficient by the ratio of the
+    standard deviations for the associated independent variable and the model''s dependent
+    variable. This can be accomplished with the following Clojure code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This outputs (rounded to three decimal places):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: This indicates that height is the most important explanatory variable, followed
+    by gender and then age. Transforming it into standardized coefficients tells us
+    that with an increase of one standard deviation in height, the mean weight increases
+    by `0.65` standard deviations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collinearity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We might try at this point to keep adding features to our model in an attempt
+    to increase its explanatory power.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, we also have a `"Date of birth"` column and we may be tempted
+    to try and include this too. It is a date, but we could easily convert it into
+    a number suitable for use in regression. We could do this simply by extracting
+    the year from their birth date using the `clj-time` library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: The new "Year of Birth" feature has a beta weight of only `0.038`, less than
+    the weight of the age feature we calculated earlier. However, the age weight of
+    the age feature is now showing a value of `0.096`. Its relative importance has
+    increased by over 65 percent since we added `"Year of birth"` as a feature. The
+    fact that the addition of a new feature has altered the importance of an existing
+    feature indicates that we have a problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By including the additional `"Year of birth"` parameter, we have inadvertently
+    broken a rule of the regression estimator. Let''s see why:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following scatter plot shows the age of swimmers (with jittering) plotted
+    against their year of birth. As you would expect, the two variables are very closely
+    correlated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Collinearity](img/7180OS_03_260.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The two features are so highly correlated that the algorithm is unable to determine
+    which of them best explains the observed changes in *y*. This is an undesirable
+    issue when we deal with multivariate linear regression called **collinearity**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multicollinearity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For multiple regression to produce the best coefficient estimates, the underlying
+    data must conform to the same assumptions as simple regression plus one additional
+    assumption— the absence of perfect **multicollinearity**. This means that the
+    independent variables should not be exactly linearly correlated with each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In practice, independent variables are often collinear in some way. Consider,
+    for example, that age and height or gender and height are themselves correlated
+    with each other. It's only when this condition becomes extreme that serious coefficient
+    errors can arise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the independent variables are, in fact, not independent, then linear regression
+    can't determine the relative contribution of each independent variable. If two
+    features are so strongly correlated that they always vary together, how can the
+    algorithm distinguish their relative importance? As a result, there may be high
+    variance in the coefficient estimates and a high standard error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve already seen one symptom of high multicollinearity: regression coefficients
+    that change significantly when independent variables are added or removed from
+    the equation. Another symptom is when there is an insignificant coefficient in
+    a multiple regression for a particular independent variable, but a substantial
+    *R²* for the simple regression model using the same independent variable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While these offer clues of multicollinearity, to confirm, we must look directly
+    at the intercorrelation of the independent variables. One way to determine the
+    intercorrelation is to examine the correlation between each of the independent
+    variables, looking for coefficients of 0.8 or more. While this simple approach
+    often works, it may fail to take into account situations where an independent
+    variable has a linear relationship with the other variables taken together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The surest method to assess multicollinearity is to regress each independent
+    variable on all the other independent variables. When any of the *R²* from these
+    equations is near 1.0, there is high-multicollinearity. In fact, the largest of
+    these *R²* serves as an indicator of the degree of multicollinearity that exists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once identified, there are several ways to address multicollinearity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increase the sample size. More data can produce more precise parameter estimates
+    with smaller standard errors.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Combine the features into one. If you have several features that measure essentially
+    the same attribute, find a way to unify them into a single feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Discard the offending variable(s).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Limit the equation of prediction. Collinearity affects the coefficients of the
+    model, but the result may still be a good fit for the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since age and year of birth carry essentially the same information, we may as
+    well discard one. We can easily see which of the two contains more explanatory
+    power by calculating the bivariate regression for each feature and the dependent
+    variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"Age" *R²* = 0.1049, whereas "Year of birth" *R²* = 0.1050.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As expected, there is virtually no difference between the two features, both
+    explaining around 10 percent of the variance in weight. Since the year of birth
+    marginally explains marginally more of the variance, we'll keep it and discard
+    the age feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Finally, we arrive at one of the most important uses of linear regression:
+    prediction. We''ve trained a model capable of predicting the weight of Olympic
+    swimmers given the data about their height, gender, and year of birth.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mark Spitz is a nine-time Olympic swimming champion, and he won seven gold medals
+    at the 1972 Olympics. He was born in 1950 and, according to his Wikipedia page,
+    is 183cm tall and weighs 73kg. Let's see what our model predicts as his weight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our multiple regression model requires these values to be presented as a matrix
+    form. Each of the parameters needs to be provided in the order in which the model
+    learned the features so that the correct coefficient is applied. After the bias
+    term, our feature vector needs to contain height, gender, and year of birth in
+    the same units as our model was trained:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Prediction](img/7180OS_03_63.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our *β* matrix contains the coefficients for each of these features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Prediction](img/7180OS_03_64.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The prediction of our model will be the sum of the products of the *β* coefficients
+    and features *x* for each row:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Prediction](img/7180OS_03_65.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since matrix multiplication produces each element by adding up the products
+    of the rows and columns of each matrix respectively, producing our result is as
+    simple as multiplying the transpose of *β* with the *x[spitz]* vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall that the dimensions of the resulting matrix will be the number of rows
+    from the first matrix and the number of columns from the second matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Prediction](img/7180OS_03_66.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![Prediction](img/7180OS_03_67.jpg) is a product of a ![Prediction](img/7180OS_03_68.jpg)
+    matrix and an ![Prediction](img/7180OS_03_69.jpg) matrix. The result is a ![Prediction](img/7180OS_03_70.jpg)
+    matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Prediction](img/7180OS_03_270.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Calculating this in code is very simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We call `first` to return the first (and only) element from the matrix rather
+    than the matrix itself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: This returns `84.21`, corresponding to a expected weight of 84.21 kg. This is
+    much heavier than Mark Spitz's reported weight of 73 kg. Our model doesn't appear
+    to have performed very well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The confidence interval of a prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We previously calculated confidence intervals for population parameters. It's
+    also possible to construct confidence intervals for a specific prediction called
+    **prediction interval**. The prediction interval quantifies the amount of uncertainty
+    in the prediction by providing a minimum and a maximum value between which the
+    true value is expected to fall with a certain probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The prediction interval for ![The confidence interval of a prediction](img/7180OS_03_23.jpg)
+    is wider than the confidence interval for a population parameter such as *µ*,
+    the mean. This is because the confidence interval simply needs to account for
+    our uncertainty in estimating the mean, while the prediction interval must also
+    take into account the variance of *y* from the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The confidence interval of a prediction](img/7180OS_03_280.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The previous image shows the relationship between the outer prediction interval
+    and the inner confidence interval. We can calculate the prediction interval using
+    the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The confidence interval of a prediction](img/7180OS_03_71.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, ![The confidence interval of a prediction](img/7180OS_03_72.jpg) is the
+    prediction, plus or minus the interval. We''re making use of the *t*-distribution,
+    where the degree of freedom is ![The confidence interval of a prediction](img/7180OS_03_73.jpg),
+    the sample size minus the number of parameters. This is the same as we calculated
+    for the *F*-test previously. While the formula may look intimidating, it''s relatively
+    straightforward to translate into the code shown in the following example, which
+    calculates the 95 percent prediction interval:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since the *t*-statistic is parameterized by the degree of freedom of the error,
+    it takes into account the uncertainty present in the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we'd like to calculate the confidence interval for the mean instead of the
+    prediction interval, we can simply omit the addition of one to `se-y` while calculating
+    `t-stat`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The preceding code can be used to generate the following chart, showing how
+    the prediction interval varies with the value of the independent variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The confidence interval of a prediction](img/7180OS_03_290.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding graph, a model trained on a sample size of five shows how
+    the 95 percent prediction interval increases as we move further from the mean
+    height. Applying the previous formula to Mark Spitz yields the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: This returns the range from 72.7 kg to 97.4 kg. This range just includes Mark's
+    weight of 73 kg, so our prediction is within the 95 percent prediction interval.
+    It's uncomfortably close to the bounds though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model scope
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Mark Spitz was born in 1950, decades before even the oldest swimmer in the 2012
+    Olympic Games. By trying to predict Mark's weight using his year of birth, we're
+    guilty of trying to extrapolate too far beyond our training data. We have exceeded
+    the scope of our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a second way in which this is problematic. Our data was based entirely
+    on swimmers currently competing at international standard, whereas Mark has not
+    competed for many years. In other words, Mark is now not a part of the population
+    we have trained our model on. To fix both of these problems, we need to look up
+    Mark's details from 1979, when he was a competition swimmer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to [http://www.topendsports.com/athletes/swimming/spitz-mark.htm](http://www.topendsports.com/athletes/swimming/spitz-mark.htm),
+    in 1972, 22-year-old Mark Spitz was 185 cm tall and he weighed 79 kg.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Selecting the right features is one of the most important prerequisites to get
+    good results from any predictive algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should strive to select features not only on the basis of their predictive
+    power, but also on their relevance to the domain being modeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although it has a slightly lower *R²*, let's retrain our model with age in place
+    of year of birth as a feature. This will allow us to easily predict weights for
+    past and future unseen data, as it models more closely the variable we suspect
+    of having a causal relationship with weight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This yields *β* of approximately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The final model](img/7180OS_03_74.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our features for Mark in the 1972 games are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The final model](img/7180OS_03_75.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can use them to predict his competitive weight with the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: This returns `78.47`, corresponding to a prediction of 78.47 kg. This is now
+    very close to Mark's true competition weight of 79 kg.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we've learned about how to determine whether two or more variables
+    share a linear relationship. We've seen how to express the strength of their correlation
+    with *r* and how well a linear model explains the variance with *R²* and ![Summary](img/7180OS_03_57.jpg).
+    We've also performed hypothesis tests and calculated confidence intervals to infer
+    the range of the true population parameter for correlation, ![Summary](img/7180OS_03_08.jpg).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having established a correlation between variables, we were able to build a
+    predictive model using ordinary least squares regression and simple Clojure functions.
+    We then generalized our approach using Incanter's matrix functionality and the
+    normal equation. This simple model demonstrated the principles of machine learning
+    by determining the model parameters *β*, inferred from our sample data, that could
+    be used to make predictions. Our model was able to predict an expected weight
+    for a new athlete that fell well within the prediction interval of the true value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we'll see how similar techniques can be used to classify
+    data into discrete classes. We'll demonstrate a variety of different approaches
+    particular to classification as well as introduce a very general technique for
+    parameter optimization that works for a variety of machine learning models, including
+    linear regression.
+  prefs: []
+  type: TYPE_NORMAL

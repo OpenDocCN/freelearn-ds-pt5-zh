@@ -1,0 +1,1338 @@
+- en: Chapter 5. Making Sense of Data Using Visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Julia doesn't have a visualization/graphics package in the core system. Therefore,
+    without adding and loading a package, it is not possible to create the desired
+    visualizations on the datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By not including the visualization package, Julia keeps the core system clean
+    so that different types of backends such, as Qt and GTK on different operating
+    systems, don't interfere with the builds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will be learning how to visualize data and how visualization
+    helps to understand the data at a glance. We will be covering the following packages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyPlot
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Unicodeplots
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Vega
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gadfly
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `plot` function is a common function used by the packages to plot a graph.
+    When we have loaded multiple plotting libraries, which plot function will be used?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Difference between using and importall
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Suppose we want to extend a function called `bar` in the `Foo` package. When
+    we do it by using, we need include the package name too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But when we do it by `importall`, we are not required to include the package
+    name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we use `importall`, `function bar(...)`, and `function Foo.bar(...)` are
+    equivalent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This prevents us from accidentally extending a function that we didn't want
+    to extend or didn't know about, and saves us from possibly breaking future implementations
+    of `Foo`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pyplot for Julia
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This package was made by Steven G. Johnson and provides Python's famous `matplotlib`
+    library to Julia. If you have used `matplotlib`, you will be familiar with its
+    `pyplot` module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We learned about the Julia's Pycall package in the first chapter, and PyPlot
+    makes use of the same package to make the call to the matplotlib plotting library
+    directly from Julia. This call has very less (or no) overhead, and arrays are
+    passed directly without making a copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multimedia I/O
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Only plaintext display is provided by the base Julia runtime. By loading external
+    modules or by using graphical environments such as `Jupyter` notebooks, rich multimedia
+    output can be given. Julia has a standardized mechanism to display the rich multimedia
+    outputs (images, audio, and video). This is provided by the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`display(x)` is the richest multimedia display of the Julia object'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Arbitrary multimedia representations are done by overloading the `writemime`
+    of user-defined types
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By subclassing a generic display type, different multimedia-capable backends
+    can be used
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: PyPlot makes use of this multimedia I/O API of Julia for plotting in any of
+    the Julia graphical backends, including IJulia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is required to have Python with Matplotlib installed to use it in Julia.
+    The recommended way is to have the complete package from any of the bundles of
+    scientific Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Popular ones are Anaconda, provided by Continuum analytics, and Canopy, provided
+    by Enthought.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can also install `matplotlib` using pip:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will need to install the necessary dependencies before installing `matplotlib`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After successful installation of `matplotlib`, we can add the Pyplot package
+    in Julia:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: It will add the dependencies by itself. We will be using inline plotting with
+    IJulia in our examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic plotting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have added the package to the system, we can start using it. We
+    will use IJulia (jupyter notebook) in our examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The second line, `Pyplot.svg(true)`, will allow us to get the SVG of the plots
+    and visualizations generated. **Scalable Vector Graphics** (**SVG**) is an XML-based
+    markup language for a vector image format for two-dimensional graphics with interactivity
+    and animation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first and second lines define the values of `x` and `y` for which we want
+    to generate the plot.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The third line, `plot(x,y)`, actually generates the plot.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the plot that we are generating, we provide labels and change the aesthetics.
+    With `xlabel` and `ylabel`, we are providing labels for the *x* axis and *y* axis.
+    We will explore the other options of the `plot` function in the coming sections.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Basic plotting](img/image_05_001.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: It has generated an exponential plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot using sine and cosine
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In the following code, we are initializing `x` and `y` using functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s understand the preceding code in brief:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the `plot` function, we are passing the arguments for the particular plot
+    that we want to generate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can change the style of the line, its width, and the color by passing the
+    arguments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Plot using sine and cosine](img/image_05_002.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here we can see that the line style is much different from the line style of
+    the first figure. The default color is blue, but we have specified that the plot
+    uses orange color for the line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unicode plots
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Unicode plots are really useful when we want to plot on the REPL. They are extremely
+    lightweight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are no dependencies, so they can be installed easily:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's walk through the basic plots that can be made easily using `UnicodePlots`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating Unicode scatterplots
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Scatterplots are used to determine the correlation between two variables, that
+    is, how one is affected by the other:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Generating Unicode scatterplots](img/image_05_003.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generating Unicode line plots
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'A line plot displays the dataset in a series of data points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Generating Unicode line plots](img/image_05_004.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualizing using Vega
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Vega is a beautiful visualization library provided by John Myles White. It is
+    available as a registered Julia package, so it can be installed easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is built on top of D3.js and uses JSON to create beautiful visualizations.
+    It requires an Internet connection whenever we need to generate graphs as it doesn't
+    store local copies of the JavaScript libraries needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To install Vega, use the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's walk through various visualizations using Vega.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scatterplot
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Following are the arguments of a scatterplot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x` and `y`: AbstractVector'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Group: AbstractVector'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Scatterplots are used to determine the correlation between two variables, that
+    is, how one is affected by the other:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![Scatterplot](img/image_05_005.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can now move on to building a complex scatterplot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Scatterplot](img/image_05_006.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This will generate the following scatterplot. We can clearly see two clusters
+    generated by Vega. These are `d1` and `d2`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Scatterplot](img/image_05_007.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this particular example, we grouped the data and used different colors to
+    visualize the groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Heatmaps in Vega
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Heatmaps in Vega are easy to generate. This helps us to easily visualize the
+    density of data points. Arguments are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x` and `y`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: color
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![Heatmaps in Vega](img/image_05_008.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data visualization using Gadfly
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Gadfly is an exhaustive plotting and data visualization package written in Julia
+    by Daniel Jones. It is based on the book, *The Grammar of Graphics*, by Leland
+    Wilkinson. It is largely inspired by `ggplot2` for R, which is another amazing
+    package for plotting and visualizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing Gadfly
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Installation is straightforward as it is a registered Julia package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will also install a few other packages needed by Gadfly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To use Gadfly, run this line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will use IJulia (jupyter notebook) in our examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gadfly has the capability to render high-quality graphics and visualizations
+    in PNG, SVG, Postscript, and PDF. Embedded JavaScript is used by the SVG backend,
+    which provides interactivity with the graphics such as zooming, panning, and toggling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is good to have Cairo installed, as it is needed by PNG, PostScript, and
+    PDF:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Suppose we create an `exampleplot`. To draw it on the backend, we use the draw
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For SVG:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For SVG with embedded JavaScript:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For PNG:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For PostScript:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For PDF:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Interacting with Gadfly using plot function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `plot` function is used to interact with the Gadfly package and create the
+    desired visualizations. Aesthetics are mapped to the plot geometry and are used
+    to specify how the `plot` function would work. They are specially named variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `plot` elements can be scales, coordinates, guides, and geometries. It is
+    defined in the grammar of graphics to avoid special cases, and aesthetics helps
+    this by approaching the problem with well-defined inputs and outputs, which produces
+    the desired result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Plot can operate on the following data sources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Functions and expressions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Arrays and collections
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataframes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Example
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If we do not define the `plot` elements, then by default, point geometry is
+    used. In point geometry, x and y inputs are taken as aesthetics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s draw a scatterplot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Example](img/image_05_009.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the same aesthetics, we can use multiple elements to have a specific output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, to have both line and point geometries on the same dataset we
+    can make the layered plot using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Geom.line`: Line plot'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Geom.point`: Point plot'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Example](img/image_05_010.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This generates a layered plot having both lines and points. A complex plot can
+    be generated by combining the various elements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Guide:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`xlabel` and `ylabel`: Guide can be used to give the necessary labels to the
+    plot that we use'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`title`: Use this to provide a title to the plot'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Scale:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use this to scale up or down any desired axis of the plot
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let''s create a similar plot that includes these elements. We will add `x`
+    and `y` labels, add a title to the plot, and scale the plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Example](img/image_05_011.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The slider in the image can be used to zoom in and out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Gadfly to plot DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The capability provided by the Gadfly to work with DataFrames out of the box
+    is really useful. We studied in previous chapters the capability of the DataFrame.
+    It is a powerful data structure used to represent and manipulate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Gadfly, we can generate complex plots easily. DataFrame is passed to the
+    plot function as the first argument.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The columns in the DataFrame are used by the plot function in the aesthetics
+    by name or index. We will use RDatasets to create the DataFrame for the plot function.
+    RDatasets provides us with some real-life datasets, on which we can make some
+    visualizations to understand the capabilities of the Gadfly package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![Using Gadfly to plot DataFrames](img/image_05_012.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is a very famous dataset—iris—which we also used in our previous examples.
+    Plotting the dataset by sepal length and sepal width is easy, as we only have
+    to pass them in `x` and `y` coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's now create a histogram using random number generator. We will pass the
+    array, which we will create using a random number generator, and then we will
+    create the histogram.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using Gadfly to plot DataFrames](img/image_05_013.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is fairly a simple histogram. Let''s use a dataset from RDataset to create
+    a histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using Gadfly to plot DataFrames](img/image_05_014.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding dataset is from RDatasets, and we created a histogram to see the
+    marks secured in the course and the gender of the student.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This can be extended by creating a scatterplot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using Gadfly to plot DataFrames](img/image_05_015.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using Gadfly to visualize functions and expressions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Plotting functions and expressions is really convenient in Gadfly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The signatures of the plot function for functions and expressions are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: It shows that we can pass functions or expressions as arrays with the elements
+    that we would like to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using Gadfly to visualize functions and expressions](img/image_05_016.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is a plot of simple sin and cos functions. Let''s create a plot from a
+    complex expression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using Gadfly to visualize functions and expressions](img/image_05_017.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is a random expression that we tried to plot. You can see that it is really
+    easy to plot such a slightly complex expression. Gadfly does well even if the
+    complexity increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating an image with multiple layers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Gadfly is able to draw multiple layers to the same plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Generating an image with multiple layers](img/image_05_018.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generating plots with different aesthetics using statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Statistics functions in Gadfly give one or more aesthetics as output by taking
+    one or more aesthetics as input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's explore them one by one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The step function
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'This is used to do a stepwise interpolation between the given points. A new
+    point is introduced by the function between two points, which is dependent on
+    the direction of the argument:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x` and `y` points are the aesthetics used'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`:vh` is used for vertical direction and `:hv` for horizontal direction'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![The step function](img/image_05_019.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The quantile-quantile function
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: This is used to produce quantile-quantile plots. Two numeric vectors are passed
+    to the function and a comparison of their quantiles is done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `x` and `y` passed to the function are the distributions or the numeric
+    vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The quantile-quantile function](img/image_05_020.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ticks in Gadfly
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Ticks are used to encompass the data between the axes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two types of ticks: `xticks` and `yticks`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Arguments taken by the ticks function are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`ticks`: A specific array of ticks (they are computed when nothing is there)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`granularity_weight`: Number of ticks (default is 1/4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`simplicity_weight`: Include zero (default is 1/6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`coverage_weight`: Tightly fit the span of the data (default is 1/3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`niceness_weight`: Numbering (default is 1/4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Ticks in Gadfly](img/image_05_021.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generating plots with different aesthetics using Geometry
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Geometry is responsible for the actual drawing. One or more inputs (aesthetics)
+    are given to the function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boxplots
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'This is also known as the whisker diagram; this is a standard way of displaying
+    data based on the quartiles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first and third quartiles are represented by the bottom and top of the box
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The band inside the box is the second quartile (median)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The bands outside the box are minimum and maximum
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Aesthetics that are used directly include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`middle`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`lower_hinge` and `upper_hinge`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`lower_fence` and `upper_fence`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`outliers`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Only the dataset from which the boxplot needs to be drawn is mandatory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Boxplots](img/image_05_022.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using Geometry to create density plots
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The distribution of a variable can be viewed effectively by density plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using Geometry to create density plots](img/image_05_023.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding screenshot shows the density of the variables over the particular
+    range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Geometry to create histograms
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A histogram helps to understand the shape of a distribution. It groups numbers
+    into ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x`: The dataset from which the histogram will be drawn'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`color` (optional): Different categories can be grouped by color'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`position`: There are two options, `:stack` or `:dodge`. This defines if the
+    bars should be placed side by side or stacked on top of each other.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`density`: Optional.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`orientation`: Horizontal or vertical.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`bincount`: The number of bins.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`maxbincount` and `minbincount`: Upper and lower limits when the bin count
+    is automatically chosen.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Using Geometry to create histograms](img/image_05_024.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bar plots
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: These consist of parallel bars that represent frequency distribution graphically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`y`: This is required. It is the height of each bar.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Color`: This is optional. It is used to categorize the dataset with color.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`x`: The position of each bar.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`xmin` and `xmax` can also be used instead of `x`, which are the start and
+    end of each bar.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`position`: This can be `:stack` or `:dodge`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`orientation`: This can be `:vertical` or `:horizontal`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If `:horizontal` is chosen, then it is required to provide `y` as an aesthetic
+    (or `ymin`/`ymax`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bar plots](img/image_05_025.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Histogram2d - the two-dimensional histogram
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: This is used to create a heatmap-like histogram, where rectangular bars represent
+    density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x` and `y`: The dataset to be plotted on the coordinates'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`xbincount`: This specifies the number of bins in the *x* coordinate'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`xminbincount` and `xmaxbincount` are provided when the number of bins is determined
+    automatically'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`ybincount`: This specifies the number of bins in the *y* coordinate'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`yminbincount` and `ymaxbincount` are provided when the number of bins is determined
+    automatically'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Histogram2d - the two-dimensional histogram](img/image_05_026.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Smooth line plot
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We worked on an example of line plot earlier. We can also create a smooth line
+    plot, which estimates the function from the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x`: Predictor data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`y`: Response (function) data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`color`: This can be used as an optional argument to categorize the dataset'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`smoothing`: This specifies to what extent smoothing should be done'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Smaller values use more data (more fit) and larger values use less data (less
+    fit).
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Method: The `:lm` and `:loess` methods are supported as arguments to generate
+    the smooth curve'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Smooth line plot](img/image_05_027.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Subplot grid
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Multiple plots can be made together as a grid, and they are organized by a
+    few categorical vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`xgroup` and `ygroup` (optional): Use these to arrange the subplots on the
+    *x* axis or *y* axis on the basis of the categorical data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`free_y_axis` and `free_x_axis` (optional): By default, the values are false,
+    which means the *y* axis or *x* axis scales can differ across different subplots'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the value is true, then scales are set for individual plots
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: If both `xgroup` and `ygroup` are bound, then a grid is formed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Subplot grid](img/image_05_028.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using fixed scales:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Subplot grid](img/image_05_029.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Horizontal and vertical lines
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Using `hline` and `vline`, we can draw horizontal and vertical lines across
+    the canvas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`xintercept`: The *x* axis intercept'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`yintercept`: The *y* axis intercept'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`color`: The color of the generated lines'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`size`: We can also specify the width of the lines'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Horizontal and vertical lines](img/image_05_030.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plotting a ribbon
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We can also plot a ribbon over the line plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x`: The *x* axis'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`ymin` and `ymax`: The *y* axis, lower and upper bound'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`color` (optional): Categorically groups the data using different colors'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![Plotting a ribbon](img/image_05_031.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Violin plots
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Violin plots are very specific to the use case. They are used to show the density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x` and `y`: The position on the *x* axis and *y* axis'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`width`: This represents the density according to the `y` value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Violin plots](img/image_05_032.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Beeswarm plots
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Just like the violin plots, we can have the `beeswarm` plots to represent density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x` and `y`: The dataset for *x* axis and *y* axis'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`color` (optional)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`orientation`: This can be `:vertical` or `:horizontal`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`padding`: The minimum distance between two points'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Beeswarm plots](img/image_05_033.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Elements - scale
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is used to transform the original data while retaining the original values.
+    It maps one aesthetic to the same aesthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: x_continuous and y_continuous
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: These are used to map values to *x* and *y* coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x`, `xmin`/`xmax`, and `xintercept`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`y`, `ymin`/`ymax`, and `yintercept`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`minvalue`: Minimum `x` or `y` value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`maxvalue`: Maximum `x` or `y` value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`labels`: This can be either a function or nothing'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When a function is passed, a string is mapped to the value in `x` or `y`
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`format`: Formatting of the numbers'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Variations are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Scale.x_continuous` and `Scale.y_continuous`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Scale.x_log10` and `Scale.ylog10`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Scale.x_log2` and `Scale.ylog2`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Scale.x_log` and `Scale.y_log`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Scale.x_asinh` and `Scale.y_asinh`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Scale.x_sqrt` and `Scale.y_sqrt`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![x_continuous and y_continuous](img/image_05_034.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: x_discrete and y_discrete
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: These are used to map the categorical data to the Cartesian coordinates. Regardless
+    of the value, each value is mapped to a point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x`, `xmin`/`xmax`, and `xintercept`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`y`, `ymin`/`ymax`, and `yintercept`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`labels`: This can be either a function or nothing'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'When a function is passed, a string is mapped to the value in `x` or `y`:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![x_discrete and y_discrete](img/image_05_035.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: Continuous color scale
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: This creates a plot that uses a continuous color scale. This is used to represent
+    the density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aesthetics are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: color
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Arguments are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`f`: The function defined that returns a color'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`minvalues` and `maxvalue`: The range of the value of the color scale'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Continuous color scale](img/image_05_036.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Elements - guide
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: These provide the special layout considerations to help us to better understand
+    the data. They contain `xticks`, `yticks`, `xlabes`, `ylabels`, titles, and annotations,
+    and many more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding how Gadfly works
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have gone through various plots in this chapter. Now, a brief introduction
+    how Gadfly actually works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First of all, subsets of the data source are mapped to the data objects for
+    each layer in the plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have passed various scales to the plotting function. They are used to get
+    the plottable aesthetics.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A transformation of aesthetics is done, both layer wise and plot wise.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A Compose context is created to fit the data into the screen coordinates by
+    using aesthetics from all layers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Geometry is rendered individually for every layer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: At last, the Guide is computed and rendered on top of the plot.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned to visualize in Julia using different graphics options.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We studied the PyPlot and how we can exploit the vast matplotlib library. We
+    worked on various examples. We also went through Unicode plots, which are very
+    lightweight and can be used in the terminal. Vega and Gadfly, the two most popular
+    graphics libraries, were also explained in this chapter. Using different plots
+    such as scatter, line, box, histogram, bar, and violin, we understood how and
+    why it is important and helpful to visualize our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will study machine learning with Julia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[http://dcjones.github.io/Gadfly.jl/](http://dcjones.github.io/Gadfly.jl/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/stevengj/PyPlot.jl](https://github.com/stevengj/PyPlot.jl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[http://johnmyleswhite.github.io/Vega.jl/](http://johnmyleswhite.github.io/Vega.jl/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/Evizero/UnicodePlots.jl](https://github.com/Evizero/UnicodePlots.jl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

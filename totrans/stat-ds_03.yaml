@@ -1,0 +1,985 @@
+- en: A Developer&#x27;s Approach to Data Cleaning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter discusses how a developer might understand and approach the topic
+    of **data cleaning** using several common statistical methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we''ve broken things into the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding basic data cleaning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using R to detect and diagnose common data issues, such as missing values, special
+    values, outliers, inconsistencies, and localization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using R to address advanced statistical situations, such as transformation,
+    deductive correction, and deterministic imputation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding basic data cleaning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The importance of having clean (and therefore reliable) data in any statistical
+    project cannot be overstated. Dirty data, even with sound statistical practice,
+    can be unreliable and can lead to producing results that suggest courses of action
+    that are incorrect or that may even cause harm or financial loss. It has been
+    stated that a data scientist spends nearly 90 percent of his or her time in the
+    process of cleaning data and only 10 percent on the actual modeling of the data
+    and deriving results from it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, just what is data cleaning?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data cleaning is also referred to as data cleansing or data scrubbing and involves
+    both the processes of detecting as well as addressing errors, omissions, and inconsistencies
+    within a population of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This may be done interactively with data wrangling tools, or in batch mode through
+    scripting. We will use R in this book as it is well-fitted for data science since
+    it works with even very complex datasets, allows handling of the data through
+    various modeling functions, and even provides the ability to generate visualizations
+    to represent data and prove theories and assumptions in just a few lines of code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During cleansing, you first use logic to examine and evaluate your data pool
+    to establish a level of quality for the data. The level of data quality can be
+    affected by the way the data is entered, stored, and managed. Cleansing can involve
+    correcting, replacing, or just removing data points or entire actual records.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cleansing should not be confused with validating as they differ from each other.
+    A validation process is a pass or fails process, usually occurring as the data
+    is captured (time of entry), rather than an operation performed later on the data
+    in preparation for an intended purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a data developer, one should not be new to the concept of data cleaning or
+    the importance of improving the level of quality of data. A data developer will
+    also agree that the process of addressing data quality requires a routine and
+    regular review and evaluation of the data, and in fact, most organizations have
+    enterprise tools and/or processes (or at least policies) in place to routinely
+    preprocess and cleanse the enterprise data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is quite a list of both free and paid tools to sample, if you are interested,
+    including iManageData, Data Manager, DataPreparator (Trifecta) Wrangler, and so
+    on. From a statistical perspective, the top choices would be R, Python, and Julia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before you can address specific issues within your data, you need to detect
+    them. Detecting them requires that you determine what would qualify as an issue
+    or error, given the context of your objective (more on this later in this section).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common data issues
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can categorize data difficulties into several groups. The most generally
+    accepted groupings (of data issues) include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Accuracy**: There are many varieties of data inaccuracies and the most common
+    examples include poor math, out-of-range values, invalid values, duplication,
+    and more.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Completeness**: Data sources may be missing values from particular columns,
+    missing entire columns, or even missing complete transactions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Update status**: As part of your quality assurance, you need to establish
+    the cadence of data refresh or update, as well as have the ability to determine
+    when the data was last saved or updated. This is also referred to as latency.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Relevance**: It is identification and elimination of information that you
+    don''t need or care about, given your objectives. An example would be removing
+    sales transactions for pickles if you are intending on studying personal grooming
+    products.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Consistency**: It is common to have to cross-reference or translate information
+    from data sources. For example, recorded responses to a patient survey may require
+    translation to a single consistent indicator to later make processing or visualizing
+    easier.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reliability**: This is chiefly concerned with making sure that the method
+    of data gathering leads to consistent results. A common data assurance process
+    involves establishing baselines and ranges, and then routinely verifying that
+    the data results fall within the established expectations. For example, districts
+    that typically have a mix of both registered Democrat and Republican voters would
+    warrant the investigation if the data suddenly was 100 percent single partied.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Appropriateness**: Data is considered appropriate if it is suitable for the
+    intended purpose; this can be subjective. For example, it is considered a fact
+    that holiday traffic affects purchasing habits (an increase in US Flags Memorial
+    day week does not indicate an average or expected weekly behavior).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Accessibility**: Data of interest may be watered down in a sea of data you
+    are not interested in, thereby reducing the quality of the interesting data since
+    it would be mostly inaccessible. This is particularly common in big data projects.
+    Additionally, security may play a role in the quality of your data. For example,
+    particular computers might be excluded from captured logging files or certain
+    health-related information may be hidden and not part of shared patient data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Contextual data issues
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A lot of the previously mentioned data issues can be automatically detected
+    and even corrected. The issues may have been originally caused by user entry errors,
+    by corruption in transmission or storage, or by different definitions or understandings
+    of similar entities in different data sources. In data science, there is more
+    to think about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During data cleaning, a data scientist will attempt to identify patterns within
+    the data, based on a hypothesis or assumption about the context of the data and
+    its intended purpose. In other words, any data that the data scientist determines
+    to be either obviously disconnected with the assumption or objective of the data
+    or obviously inaccurate will then be addressed. This process is reliant upon the
+    data scientist's judgment and his or her ability to determine which points are
+    valid and which are not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When relying on human judgment, there is always a chance that valid data points,
+    not sufficiently accounted for in the data scientist's hypothesis/assumption,
+    are overlooked or incorrectly addressed. Therefore, it is a common practice to
+    maintain appropriately labeled versions of your cleansed data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cleaning techniques
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Typically, the data cleansing process evolves around identifying those data
+    points that are outliers, or those data points that stand out for not following
+    the pattern within the data that the data scientist sees or is interested in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data scientists use various methods or techniques for identifying the outliers
+    in the data. One approach is plotting the data points and then visually inspecting
+    the resultant plot for those data points that lie far outside the general distribution.
+    Another technique is programmatically eliminating all points that do not meet
+    the data scientist's mathematical control limits (limits based upon the objective
+    or intention of the statistical project).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Other data cleaning techniques include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Validity checking**: Validity checking involves applying rules to the data
+    to determine if it is valid or not. These rules can be global; for example, a
+    data scientist could perform a uniqueness check if specific unique keys are part
+    of the data pool (for example, social security numbers cannot be duplicated),
+    or case level, as when a combination of field values must be a certain value.
+    The validation may be strict (such as removing records with missing values) or
+    fuzzy (such as correcting values that partially match existing, known values).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Enhancement**: This is a technique where data is made complete by adding
+    related information. The additional information can be calculated by using the
+    existing values within the data file or it can be added from another source. This
+    information could be used for reference, comparison, contrast, or show tendencies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Harmonization**: With data harmonization, data values are converted, or mapped
+    to other more desirable values.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Standardization**: This involves changing a reference dataset to a new standard.
+    For example, use of standard codes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Domain expertise**: This involves removing or modifying data values in a
+    data file based upon the data scientist''s prior experience or best judgment.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will go through an example of each of these techniques in the next sections
+    of this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: R and common data issues
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's start this section with some background on R. R is a language and environment
+    that is easy to learn, very flexible in nature, and very focused on statistical
+    computing, making it a great choice for manipulating, cleaning, summarizing, producing
+    probability statistics, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition, here are a few more reasons to use R for data cleaning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is used by a large number of data scientists so it's not going away anytime
+    soon
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: R is platform independent, so what you create will run almost anywhere
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: R has awesome help resources--just Google it, you'll see!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Outliers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The simplest explanation for what outliers are might be is to say that outliers
+    are those data points that just don''t fit the rest of your data. Upon observance,
+    any data that is either very high, very low, or just unusual (within the context
+    of your project), is an outlier. As part of data cleansing, a data scientist would
+    typically identify the outliers and then address the outliers using a generally
+    accepted method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Delete the outlier values or even the actual variable where the outliers exist
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Transform the values or the variable itself
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let's look at a real-world example of using R to identify and then address data
+    outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the world of gaming, slot machines (a gambling machine operated by inserting
+    coins into a slot and pulling a handle which determines the payoff) are quite
+    popular. Most slot machines today are electronic and therefore are programmed
+    in such a way that all their activities are continuously tracked. In our example,
+    investors in a casino want to use this data (as well as various supplementary
+    data) to drive adjustments to their profitability strategy. In other words, what
+    makes for a profitable slot machine? Is it the machine's theme or its type? Are
+    newer machines more profitable than older or retro machines? What about the physical
+    location of the machine? Are lower denomination machines more profitable? We try
+    to find our answers using the outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are given a collection or pool of gaming data (formatted as a comma-delimited
+    or CSV text file), which includes data points such as the location of the slot
+    machine, its denomination, month, day, year, machine type, age of the machine,
+    promotions, coupons, weather, and coin-in (which is the total amount inserted
+    into the machine less pay-outs). The first step for us as a data scientist is
+    to review (sometimes called **profile**) the data, where we'll determine if any
+    outliers exist. The second step will be to address those outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 1 – Profiling the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'R makes this step very simple. Although there are many ways to program a solution,
+    let us try to keep the lines of the actual program code or script to a minimum.
+    We can begin by defining our CSV file as a variable in our R session (named `MyFile`)
+    and then reading our file into an R `data.frame` (named `MyData`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In statistics, a `boxplot` is a simple way to gain information regarding the
+    shape, variability, and centre (or median) of a statistical dataset, so we''ll
+    use the `boxplot` with our data to see if we can identify both the median `Coin-in`
+    and if there are any outliers. To do this, we can ask R to plot the `Coin-in`
+    value for each slot machine in our file, using the `boxplot` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Coin-in` is the 11th column in our file so I am referring to it explicitly
+    as a parameter of the function `boxplot`. I''ve also added optional parameters
+    (again, continuing the effort to stay minimal) which add headings to the visualization.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Executing the previous script yields us the following visual. Note both the
+    median (shown by the line that cuts through the box in the `boxplot`) as well
+    as the four outliers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/eb9f236a-3856-46ce-9471-b8851f952c24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Step 2 – Addressing the outliers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we see the outliers do exist within our data, we can address them so
+    that they do not adversely affect our intended study. Firstly, we know that it
+    is illogical to have a negative `Coin-in` value since machines cannot dispense
+    more coins that have been inserted in them. Given this rule, we can simply drop
+    any records from the file that have negative `Coin-in` values. Again, R makes
+    it easy as we'll use the `subset` function to create a new version of our `data.frame`,
+    one that only has records (or cases) with non-negative `Coin-in` values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ll call our `subset` data frame `noNegs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we''ll replot to make sure we''ve dropped our negative outlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This produces a new `boxplot`, as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3b83e3a1-b730-4441-b64d-805707d21dc8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can use the same approach to drop our extreme positive `Coin-in` values
+    (those greater than $1,500) by creating yet another `subset` and then replotting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is well-advised, as you work through various iterations of your data, that
+    you save off most (if not just the most significant) versions of your data. You
+    can use the R function `write.csv`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Most data scientists adopt a common naming convention to be used through the
+    project (if not for all the projects). The names of your files should be as explicit
+    as possible to save you time later. In addition, especially when working with
+    big data, you need to be mindful of disk space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output of the preceding code is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/874a7a47-f170-4c53-a966-8861ec97c0e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Domain expertise
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Moving on, another data cleaning technique is referred to as cleaning data based
+    upon domain expertise. This doesn't need to be complicated. The point of this
+    technique is simply using information not found in the data. For example, previously
+    we excluded cases with negative `Coin-in` values since we know it is impossible
+    to have a negative `Coin-in` amount. Another example might be the time when Hurricane
+    Sandy hit the northeast United States. During that period of time, the cases of
+    most machines had very low (if not zero) `Coin-in` amounts. A data scientist would
+    probably remove all the data cases during a specific time period, based on that
+    information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validity checking
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As I mentioned earlier in this chapter, cross-validation is when a data scientist
+    applies rules to data in a data pool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validity checking is the most common form of statistical data cleansing and
+    is a process that both the data developer and the data scientist will most likely
+    be (at least somewhat) familiar with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There can be any number of validity rules used to clean the data, and these
+    rules will depend upon the intended purpose or objective of the data scientist.
+    Examples of these rules include: data-typing (for example, a field must be a numeric),
+    range limitations (where numbers or dates must fall within a certain range), required
+    (a value cannot be empty or missing), uniqueness (a field, or a combination of
+    fields, must be unique within the data pool), set-member (this is when values
+    must be a member of a discreet list), foreign-key (certain values found within
+    a case must be defined as member of or meeting a particular rule), regular expression
+    patterning (which simply means verifying that a value is formatted in a prescribed
+    format), and cross-field validation (where combinations of fields within a case
+    must meet a certain criteria).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at a few examples of the preceding, starting with data-typing (also
+    known as **coercion**). R offers six coercion functions to make it easy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`as.numeric`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`as.integer`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`as.character`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`as.logical`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`as.factor`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`as.ordered`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`as.Date`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'These functions, along with a little R knowledge, can make the effort of converting
+    a value in a data pool pretty straightforward. For example, using the previous
+    GammingData as an example, we might discover that a new gamming results file was
+    generated and the age value was saved as a string (or text value). To clean it,
+    we need to convert the value to a numeric data type. We can use the following
+    single line of R code to quickly convert those values in the file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'One point: using this simple approach, should any value be unable to be converted,
+    it will be set to an **NA** value. In type conversion, the real work is understanding
+    what type a value needs to be, and, of course, what data types are valid; R has
+    a wide variety of data types, including scalars, vectors (numerical, character,
+    logical), matrices, data frames, and lists.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another area of data cleaning we'll look at here is the process of regular expression
+    patterning. In practice, especially when working with data that is collected (or
+    mined) from multiple sources, the data scientist surely encounters either field
+    that are not in the desired format (for the objective at hand) or, field values
+    that are inconsistently formatted (which potentially can yield incorrect results).
+    Some examples can be dates, social security numbers, and telephone numbers. With
+    dates, depending on the source, you may have to re-type (as described previously),
+    but more often than not, you'll also need to reformat the values into a format
+    that is usable, given your objective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Re-typing a date is important so that R knows to use the value as an actual
+    date and you can use the various R data functions correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A common example is when data contains cases with dates that are perhaps formatted
+    as `YYYY/MM/DD` and you want to perform a time series analysis showing a sum week
+    to week, or some other operation that requires using the date value but perhaps
+    requiring the date to be reformatted, or you just need it to be a true R date
+    object type. So, let''s assume a new Gamming file—this one with just two columns
+    of data: `Date` and `Coinin`. This file is a dump of collected `Coinin` values
+    for a single slot machine, day by day.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The records (or cases) in our new file look like the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/16b90af7-9697-4826-9fb1-d4d877b3e992.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A variety of cleaning examples can be used by the data scientist. Starting
+    with verifying what data types each of these data points are. We can use the R
+    function class to verify our file''s data types. First (as we did in the previous
+    example), we read our CSV file into an R data frame object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we can use the `class` function, as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8e56f465-ba3f-460c-9db9-1f09c36913eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see in the preceding screenshot that we used `class` to display our
+    data types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MyData` is our data frame holding our gaming data, `Date` is of type `factor`,
+    and `Coinin` is an `integer`. So, the data frame and the integer should make sense
+    to you, but take note that R sets our dates up for what it calls a `factor`. Factors
+    are categorical variables that are beneficial in summary statistics, plots, and
+    regressions, but not so much as date values. To remedy this, we can use the R
+    functions `substr` and `paste` as shown next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This reformats the value of our `Data` field in all our cases in one simple
+    line of script by pulling apart the field into three segments (the month, day,
+    and year) and then pasting the segments back together in the order we want (with
+    a/as the separator (`sep`)), as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/9d21a628-e05a-44e9-80b8-67815525d812.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We find that this line of script converts our `Data` field to type `character`
+    and, finally, we can use them `as.Date` function to re-data type our values to
+    an R `Date` type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e97e3be7-be72-4bb4-bb36-660405cd5858.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With a little trial and error, you can reformat a string or character data point
+    exactly how you want it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enhancing data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data cleaning through enhancement is another common technique where data is
+    made complete (and perhaps more valuable) by adding related information, facts,
+    and/or figures. The source of this additional data could be calculations using
+    information already in the data or added from another source. There are a variety
+    of reasons why a data scientist may take the time to enhance data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based upon the purpose or objective at hand, the information the data scientist
+    adds might be used for reference, comparison, contrast, or show tendencies. Typical
+    use cases include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Derived fact calculation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Indicating the use of calendar versus fiscal year
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Converting time zones
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Currency conversions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Adding current versus previous period indicators
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculating values such as the total units shipped per day
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maintaining slowly changing dimensions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a data scientist, you should always use scripting to enhance your data, as
+    this approach is much better than editing a data file directly since it is less
+    prone to errors and maintains the integrity of the original file. Also, creating
+    scripts allows you to reapply the enhancements to multiple files and/or new versions
+    of files received, without having to redo the same work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a working example, let us again go back to our `GammingData`. Assume we''re
+    receiving files of the `Coinin` amounts by slot machine and our gaming company
+    now runs casinos outside of the continental United States. These locations are
+    sending us files to be included in our statistical analysis and we''ve now discovered
+    that these international files are providing the `Coinin` amounts in their local
+    currencies. To be able to correctly model the data, we''ll need to convert those
+    amounts to US dollars. Here is the scenario:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'File Source: Great Britain'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Currency used: GBP or Great British Pound'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The formula to convert our GBP values to USD is simply the amount multiplied
+    by an exchange rate. So, in R:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The previous line of code will accomplish what we want; however, the data scientist
+    is left to determine which currency needs to be converted (GBP) and what the exchange
+    rate to be used is. Not a huge deal, but one might want to experiment with creating
+    a user-defined function that determines the rate to be used, as shown next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Although the preceding code snippet is rather simplistic, it illustrates the
+    point of creating logic that we can reuse later:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/9abc7426-e90c-497a-8909-aabf86a3900a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Finally, to make things better still, save off your function (in an R file)
+    so that it can always be used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Of course, in the best of all worlds, we might modify the function to look up
+    the rate in a table or a file, based upon the country code, so that the rates
+    can be changed to reflect the most current value and to de-couple the data from
+    the program code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Harmonization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With data harmonization, the data scientist converts, translates, or maps data
+    values to other more desirable values, based upon the overall objective or purpose
+    of the analysis to be performed. The most common examples of this can be gender
+    or country code. For example, if your file has gender coded as `1`s and `0`s or
+    `M` and `F`, you might want to convert the data points to be consistently coded
+    as `MALE` or `FEMALE`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With country codes, the data scientist may want to plot summations for regions:
+    North America, South America, and Europe rather than USA, CA, MX, BR, CH, GB,
+    FR, and DE individually. In this case, he or she would be creating aggregated
+    values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: North America = USA + CA + MX
+  prefs: []
+  type: TYPE_NORMAL
+- en: South America = BR + CH
+  prefs: []
+  type: TYPE_NORMAL
+- en: Europe = GB + FR + DE
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make a point, perhaps the data scientist has stitched together multiple
+    survey files, all containing gender, called `gender.txt`, but in various codes
+    (`1`, `0`, `M`, `F`, `Male`, and `Female`). If we tried to use the R function
+    table, we would see the following undesirable result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f5f4ff68-574c-4b49-b9ca-5bf531893c45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And if we visualize this with the best of expectations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We see the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e31b73ea-1d20-48f5-88e9-ae58b6c5b863.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once again, to solve the inconsistent coding of the data point gender, I''ve
+    borrowed the concept from the example in the previous section and created a simple
+    function to help us with our recoding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This time, I've added the `toupper` function so that we don't have to worry
+    about the case, as well as `substr` to handle values that are longer than a single
+    character.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am assuming the argument value will be either `0`,`1`,`m`,`M`,`f`,`F`,`Male`,
+    or `Female`, otherwise an error will occur.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since R categorizes the `Gender` value as data type `factor`, I found it was
+    difficult to easily make use of the simple function, so I decided to create a
+    new R data frame object to hold our harmonized data. I''ve also decided to use
+    a looping process to read through each case (record) in our file and convert it
+    to `Male` or `Female`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can enjoy a more appropriate visualization by writing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of the preceding code is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/43d1b057-00cd-41af-a0ea-938b3b4de4c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Standardization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Most mainstream data scientists have noted the importance of standardizing data
+    variables (changing reference data to a standard) as part of the data cleaning
+    process before beginning a statistical study or analysis project. This is important,
+    as, without standardization, the data points measured using different scales will
+    most likely not contribute equally to the analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you consider that a data point within a range between 0 and 100 will outweigh
+    a variable within a range between 0 and 1, you can understand the importance of
+    data standardization. Using these variables without standardization in effect
+    gives the variable with the larger range a larger weight in the analysis. To address
+    this concern and equalize the variables, the data scientists try to transform
+    the data into a comparable scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Centring (of the data points) is the most common example of data standardization
+    (there are many others though). To center a data point, the data scientist would
+    subtract the mean of all the data points from each individual data point in the
+    file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of doing the mathematics, R provides the `scale` function. This is a
+    function whose default method centers and/or scales a column of numeric data in
+    a file in one line of code. Let's look at a simple example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Back to our slot machines! In our gaming files, you may recall that there is
+    a field named `Coinin` that contains a numeric value indicating the total dollars
+    put into the machine. This is considered a measurement of the machine profitability.
+    This seems like an obvious data point to use in our profitability analysis. However,
+    these amounts may be misleading since there are machines of different denominations
+    (in other words, some machines accept nickels while others accept dimes or dollars).
+    Perhaps this difference in machine denominations creates an unequal scale. We
+    can use the `scale` function to address this situation. First, we see in the following
+    screenshot, the values of `Coin.in`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6bfc6e92-9f22-48e4-a624-e806aacd79d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can then write the following line of code to center our `Coin.in` data points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The value of center determines how column centring is to be performed. Using
+    center is `TRUE` causes centring to be done by subtracting the column means (omitting
+    NAs) of `Coin.in` from their corresponding columns. The value of `scale` determines
+    how column scaling is performed (after centring). If the scale is `TRUE`, then
+    scaling is done by dividing the (centered) columns of `Coin.in` by their standard
+    deviations if a center is `TRUE`, and the root mean square otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We see the difference in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6c565dfb-7d93-4fcf-9f46-5b39e0a9b468.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A thought-provoking type of data cleaning, which may be a new concept for a
+    data developer, is **data transformation**. Data transformation is a process where
+    the data scientist actually changes what you might expect to be valid data values
+    through some mathematical operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing data transformation maps data from an original format into the format
+    expected by an appropriate application or a format more convenient for a particular
+    assumption or purpose. This includes value conversions or translation functions,
+    as well as normalizing of numeric values to conform to the minimum and maximum
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we''ve used R earlier in this chapter, we can see that the syntax of a very
+    simple example of this process is simple. For example, a data scientist may decide
+    to transform a given value to the square root of the value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code example informs R to create a new variable (or column in
+    the `data.dat` dataset) named `trans_Y` that is equal to the square root of the
+    original response variable `Y`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While R can support just about any mathematical operation you can think of or
+    have a need for, the syntax is not always intuitive. R even provides the generic
+    function `transform`**,** but as of this writing, it only works with data frames.
+    `transform.default` converts its first argument to a data frame and then calls
+    `transform.data.frame`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But why would you do this? Well, one reason is relationships like that wouldn't
+    work well. For example, if you were experimenting with values that were different
+    by orders of magnitude, it would be difficult to deal or work with them. Practical
+    examples can be a comparison of the physical body weight between species or various
+    sound frequencies and their effects on the atmosphere. In these examples, the
+    use of log transformations enables the data scientist to graph values in a way
+    that permits one to see the differences among the data points at lower values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another example is the transformation of test scores (to the distance the score
+    is from a mean score).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, various widely used statistical methods assume normality or a normal
+    distribution shape. In cases where the data scientist observes something other
+    than normalcy, data transformations can be used. Data transformations such as
+    log or exponential, or power transformations are typically used in an attempt
+    to make the distribution of data scores that are non-normal in shape more normal.
+    These data transformations can also help the data scientist bring extreme outliers
+    closer to the rest of the data values; and that reduces the impact of the outliers
+    on the estimates of summary statistics, such as the sample mean or correlation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deductive correction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With deductive reasoning, one uses known information, assumptions, or generally
+    accepted rules to reach a conclusion. In statistics, a data scientist uses this
+    concept (in an attempt) to repair inconsistencies and/or missing values within
+    a data population.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To the data developer, examples of deductive correction include the idea of
+    converting a string or text value to a numeric data type or flipping a sign from
+    negative to positive (or vice versa). Practical examples of these instances are
+    overcoming storage limitations such as when survey information is always captured
+    and stored as text or when accounting needs to represent a numeric dollar value
+    as an expense. In these cases, a review of the data may take place (in order to
+    deduce what corrections—also known as **statistical data****editing**—need to
+    be performed), or the process may be automated to affect all incoming data from
+    a particular data source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other deductive corrections routinely performed by the data scientists include
+    the corrections of input typing errors, rounding errors, sign errors, and value
+    interchanges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are R packages and libraries available, such as the `deducorrect` package,
+    which focus on the correction of rounding, typing, and sign errors, and include
+    three data cleaning algorithms (`correctRounding`, `correctTypos`, and `correctSigns`).
+    However, the data scientists mostly want to specially custom script a solution
+    for the project at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deterministic imputation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have been discussing the topic of the data scientists deducing or determining
+    how to address or correct a dirty data issue, such as missing, incorrect, incomplete,
+    or inconsistent values within a data pool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When data is missing (or incorrect, incomplete, or inconsistent) within a data
+    pool, it can make handling and analysis difficult and can introduce bias to the
+    results of the analysis performed on the data. This leads us to imputation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In data statistics, imputation is when, through a data cleansing procedure,
+    the data scientist replaces missing (or otherwise specified) data with other values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because missing data can create problems in analyzing data, imputation is seen
+    as a way to avoid the dangers involved with simply discarding or removing altogether
+    the cases with missing values. In fact, some statistical packages default to discarding
+    any case that has a missing value, which may introduce bias or affect the representativeness
+    of the results. Imputation preserves all the cases within the data pool by replacing
+    the missing data with an estimated value based on other available information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deterministic imputation is a process used by the data scientists in the process
+    of assigning replacement values for missing, invalid, or inconsistent data that
+    has failed edits. In other words, in a particular case, when specific values of
+    all other fields are known and valid, if only one (missing) value will cause the
+    record or case to satisfy or pass all the data scientist edits, that value will
+    be imputed. Deterministic imputation is a conservation imputation theory in that
+    it is aimed at cases that are simply identified (as mentioned previously) and
+    may be the first situation that is considered in the automated editing and imputation
+    of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Currently, in the field of data science, imputation theory is gaining popularity
+    and is continuing to be developed, and thus requires consistent attention to new
+    information regarding the subject.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A few of the other well-known imputation theories attempting to deal with missing
+    data include hot deck and cold deck imputation; listwise and pairwise deletion;
+    mean imputation; regression imputation; last observation carried forward; stochastic
+    imputation; and multiple imputations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we provided an overview of the fundamentals of the different
+    kinds or types of statistical data cleansing. Then, using the R programming language,
+    we illustrated various working examples, showing each of the best or commonly
+    used data cleansing techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also introduced the concepts of data transformation, deductive correction,
+    and deterministic imputation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the next chapter, we will dive deep into the topic of what data mining is
+    and why it is important, and use R for the most common statistical data mining
+    methods: dimensional reduction, frequent patterns, and sequences.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1568 @@
+- en: Chapter 9. Time Series
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"Again time elapsed."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Carolyn Keene, The Secret of the Old Clock* |'
+  prefs: []
+  type: TYPE_TB
+- en: In several of the previous chapters, we saw how we can apply iterative algorithms
+    to identify solutions to complex equations. We first encountered this with gradient
+    descent—both batch and stochastic—but most recently we saw it in community detection
+    in graphs using the graph-parallel model of computation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is about time series data. A time series is any data series that
+    consists of regular observations of a quantity arranged according to the time
+    of their measurement. For many of the techniques in this chapter to work, we require
+    that the intervals between successive observations are all equal. The period between
+    measurements could be monthly in the case of sales figures, daily in the case
+    of rainfall or stock market fluctuations, or by minute in the case of hits to
+    a high-traffic website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For us to be able to predict the future values of a time series, we require
+    that the future values are, to some extent, based on the values that have come
+    before. This chapter is therefore also about recursion: how we can build up a
+    sequence where each new value is a function of the previous values. By modeling
+    a real time series as a process where new values are generated in this way, we
+    hope to be able to simulate the sequence forwards in time and produce a forecast.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we get to recursion though, we'll learn how we can adapt a technique
+    we've already encountered—linear regression—to fit curves to time series data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter will make use of two datasets that come pre-installed with Incanter:
+    the **Longley dataset**, which contains data on seven economic variables measured
+    in the United States between the years 1947 to 1962, and the **Airline dataset**,
+    which contains the monthly total airline passengers from January 1949 to December
+    1960.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: You can download the source code for this chapter from [https://github.com/clojuredatascience/ch9-time-series](https://github.com/clojuredatascience/ch9-time-series).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Airline dataset is where we will spend most of our time in this chapter,
+    but first let's look at the Longley dataset. It contains columns including the
+    gross domestic product (GDP), the number of employed and unemployed people, the
+    population, and the size of the armed forces. It's a classic dataset for analyzing
+    multicollinearity since many of the predictors are themselves correlated. This
+    won't affect the analysis we're performing since we'll only be using one of the
+    predictors at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading the Longley data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Since Incanter includes the Longley dataset as part of its sample datasets
+    library, loading the data in is a simple matter of calling `incanter.datasets/get-dataset`
+    with `:longley` as the only argument. Once loaded, we''ll view the dataset with
+    `incanter.core/view`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The data should look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Loading the Longley data](img/7180OS_09_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The data was originally published by the National Institute for Standards and
+    Technology as a statistical reference dataset and the column descriptions are
+    listed on their website at [http://www.itl.nist.gov/div898/strd/lls/data/LINKS/i-Longley.shtml](http://www.itl.nist.gov/div898/strd/lls/data/LINKS/i-Longley.shtml).
+    We''ll be considering the final three columns **x4**: the size of the armed forces,
+    **x5**: the "non-institutional" population aged 14 and over, and **x6**: the year.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let''s see how population changes with respect to time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Loading the Longley data](img/7180OS_09_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The plot of population against year shows a very clear not-quite-linear relationship.
+    The slight curve suggests that the population growth rate is increasing as the
+    population increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Recall Gibrat''s law from [Chapter 3](ch03.xhtml "Chapter 3. Correlation"),
+    *Correlation*, the growth rate of firms is proportional to their size. It''s common
+    to see growth curves similar to the preceding one when analyzing populations where
+    Gibrat''s law applies: the rate of growth will tend to increase over time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have seen how to fit a straight line through data with Incanter's linear
+    model. Perhaps surprisingly, it's also possible to fit curves with the `linear-model`
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fitting curves with a linear model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, let''s remind ourselves how we would fit a straight line using Incanter''s
+    `linear-model` function. We want to extract the `x5` and `x6` columns from the
+    dataset and apply them (in that order: `x6`, the year, is our predictor variable)
+    to the `incanter.stats/linear-model` function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Fitting curves with a linear model](img/7180OS_09_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: While the straight line is a close fit to the data—generating an *R*² of over
+    0.98—it doesn't capture the curve of the line. In particular, we can see that
+    points diverge from the line at either end and in the middle of the chart. Our
+    straightforward model has high bias and is systematically under- and over-predicting
+    the population depending on the year. A plot of the residuals would clearly show
+    that the errors are not normally distributed with equal variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `linear-model` function is so-called because it generates models that have
+    a linear relationship with their parameters. However, and perhaps surprisingly,
+    it''s capable of generating non-linear predictions, provided we supply it with
+    non-linear features. For example, we could add the year squared as a parameter,
+    in addition to the year. In the following code, we do this using Incanter''s `bind-columns`
+    function to create a matrix of both of these features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our *R*² has increased and we get the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Fitting curves with a linear model](img/7180OS_09_130.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This appears to be a much better fit for the data. We can use our model for
+    forecasting by creating a `forecast` function that takes the coefficients of the
+    model and returns a function of `x`, the year, that multiplies them them by the
+    features we''ve defined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The coefficients includes a parameter for the bias term, so we're multiplying
+    the coefficients by *1.0*, *x*, and *x*².
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we extend our function plot all the way to 1970 to more clearly see the
+    curve of the fitted model as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Fitting curves with a linear model](img/7180OS_09_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Of course, we are extrapolating beyond the bounds of our data. As discussed
+    back in [Chapter 3](ch03.xhtml "Chapter 3. Correlation"), *Correlation*, it is
+    generally unwise to extrapolate very far. To illustrate why more clearly, let''s
+    turn our attention to another column in the Longley dataset, the size of the armed
+    forces: `x6`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can plot this in the same way as before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Fitting curves with a linear model](img/7180OS_09_150.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is clearly a much more complicated series. We can see a sharp increase
+    in the size of the armed forces between 1950 and 1952 followed by a gentle decline.
+    On June 27^(th) 1950, President Truman ordered air and naval forces to assist
+    South Korea in what would become known as the Korean War.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To fit a curve to these data, we''ll need to generate higher order polynomials.
+    First, let''s construct a `polynomial-forecast` function that will create the
+    higher-order features for us automatically, based on a single `x` and the highest-degree
+    polynomial to create:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For example, we could train a model all the way up to *x*11 using the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Fitting curves with a linear model](img/7180OS_09_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The curve fits the data quite well, with an *R*² of over 0.97\. However, it
+    should come as no surprise to you now to discover that we are overfitting the
+    data. The model we have built is unlikely to have very much forecasting power.
+    In fact, if we extend the range of the chart to the right, as we do with `ex-9-8`
+    to show predictions into the future, we obtain the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Fitting curves with a linear model](img/7180OS_09_170.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Just two-and-a-half years after the last measured data point, our model is predicting
+    that the military will grow more than 500 percent to over 175,000 people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series decomposition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One of the problems that we have modeling the military time series is that
+    there is simply not enough data to be able to produce a general model of the process
+    that produced the series. A common way to model a time series is to decompose
+    the series into a number of separate components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Trend**: Does the series generally increase or decrease over time? Is the
+    trend an exponential curve as we saw with the population?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Seasonality**: Does the series exhibit periodic rises and falls at a set
+    number of intervals? For monthly data it is common to observe a period cycle of
+    12 months.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Cycles**: Are there longer-term cycles in the dataset that span multiple
+    seasons? For example, in financial data we might observe multi-year cycles corresponding
+    to periods of expansion and recession.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Another way of specifying the issue with the military data is that there is
+    not enough information to determine whether or not there is a trend, and whether
+    the observed peak is part of a seasonal or cyclic pattern. Although the data appears
+    to trend upwards, it could be that we are looking closely at a cycle that will
+    eventually decline back to where it started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the datasets that we'll study in this chapter is a classic time series
+    looking at monthly airline passenger numbers from 1949-1960\. This dataset is
+    larger and clearly exhibits trend and seasonal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspecting the airline data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Like the Longley dataset, the Airline dataset is part of Incanter's datasets
+    library. We load the `incanter.datasets` library as `d` and `incanter.code` as
+    `i`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first few rows should look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Inspecting the airline data](img/7180OS_09_180.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: When analyzing time series, it's important that the data is ordered sequentially
+    in time. This data is ordered by year and by month. All the January data is followed
+    by all the February data, and so on. To proceed further, we'll need to convert
+    the year and month columns into a single column we can sort by. For this, we'll
+    use the `clj-time` library ([https://github.com/clj-time/clj-time](https://github.com/clj-time/clj-time))
+    once again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing the airline data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: When parsing times previously in [Chapter 3](ch03.xhtml "Chapter 3. Correlation"),
+    *Correlation*, we were able to take advantage of the fact that the string representation
+    of the time was a default format that clj-time understood. Clj-time is not able
+    to automatically infer all time representations of course. Particularly problematic
+    is the difference between the *mm/dd/yyyy* American format and the *dd/mm/yyyy*
+    favored by most of the rest of the world. The `clj-time.format` namespace provides
+    a `parse` function that allows us to pass a format string instructing the library
+    how it should interpret the string. We're including the `format` namespace as
+    `tf` in the following code and specifying that our time will be expressed in the
+    format `"MMM YYYY"`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A list of formatter strings used by clj-time is available at [http://www.joda.org/joda-time/key_format.html](http://www.joda.org/joda-time/key_format.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, three characters of "month" followed by four characters of "year".
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the earlier functions in place we can parse our year and month columns
+    into a single time, order them sequentially, and extract the passenger numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is a sequence of numbers representing the passenger count in order
+    of ascending time. Let''s visualize this as a line chart now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing the airline data](img/7180OS_09_190.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see how the data has a pronounced seasonal pattern (repeating every
+    12 months), an upward trend, and a gentle growth curve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The variance to the right of the chart is greater than the variance to the left,
+    so we say that the data is exhibiting some **heteroscedasticity**. We'll want
+    to remove the increase in variance and also the upward trend from the dataset.
+    This will yield a time series which is **stationary**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stationarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A stationary time series is one whose statistical properties are constant in
+    time. Most statistical forecasting methodologies assume the series has been transformed
+    to be stationary. A prediction is made much easier with a stationary time series:
+    we assume the statistical properties of the series will be the same in the future
+    as they have been in the past. To remove both the increasing variance and the
+    growth curve from the airline data, we can simply take the logarithm of the passenger
+    numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Stationarity](img/7180OS_09_200.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The effect of taking the logarithm is twofold. Firstly, the heteroscedasticity
+    evident in the initial chart has been removed. Secondly, the exponential growth
+    curve has been reduced to a straight line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This has made the data much easier to work with but we still have a trend, also
+    known as **drift**, in the series. To get a truly stationary time series, we'll
+    want to stabilize the mean as well. There are several ways to do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: De-trending and differencing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first method is de-trending the series. After taking the logarithm, the
+    airline dataset contains a very strong linear trend. We could fit a linear model
+    to this data and then plot the residuals:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![De-trending and differencing](img/7180OS_09_210.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The residual plot shows a series whose mean is much more stable than the original
+    series and the upward trend has been entirely removed. Unfortunately, though,
+    the residuals don't appear to be quite normally distributed around the new mean.
+    In particular there appears to be a "hump" in the middle of the chart. This suggests
+    that our linear model is not performing ideally on the airline data. We could
+    fit a curve to the data like we did at the beginning of the chapter, but let's
+    instead look at another method of making time series stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second method is differencing. If we subtract the value of the directly
+    preceding point from each point in the time series, we'll obtain a new time series
+    (one data point shorter) that contains only the differences between successive
+    points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can see the effect in the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![De-trending and differencing](img/7180OS_09_220.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how the upward trend has been replaced with a series of fluctuations
+    around a constant mean value. The mean is slightly above zero, corresponding to
+    an increased propensity for differences to be positive and leading to the upward
+    trend we observe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both techniques aim to result in a series whose mean is constant. In some cases,
+    it may be necessary to difference the series more than once, or to apply differencing
+    after de-trending to obtain a series which a truly a stable mean. Some drift is
+    still evident in the series after de-trending, for example, so we'll use the differenced
+    data for the rest of this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before moving on to discuss how to model such time series for forecasting, let's
+    take a detour to think about what a time series is, and how we might model a time
+    series as a recursive process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discrete time models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Discrete time models, such as the ones we have been looking at so far, separate
+    time into slices at regular intervals. For us to be able to predict future values
+    of time slices, we assume that they are dependent on past slices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Time series can also be analyzed with respect to frequency rather than time.
+    We won't discuss frequency domain analysis in this chapter but the book's wiki
+    at [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com) contains
+    links to further resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following, let *y*[t] denote the value of an observation at time *t*.
+    The simplest time series possible would be one where the value of each time slice
+    is the same as the one directly preceding it. The predictor for such a series
+    would be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Discrete time models](img/7180OS_09_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is to say that the prediction at time *t + 1* given *t* is equal to the
+    observed value at time *t*. Notice that this definition is recursive: the value
+    at time *t* depends on the value at *t - 1*. The value at *t - 1* depends on the
+    value at *t - 2*, and so on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could model this "constant" time series as a lazy sequence in Clojure, where
+    each value in the sequence is a constant value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how the definition of `constant-series` contains a reference to itself.
+    This is a recursive function definition that creates an infinite lazy sequence
+    from which we can consume values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next time slice, at time *t + 1*, the actual value is observed to be *y*[t+1].
+    If this value and our predicted value ![Discrete time models](img/7180OS_09_02.jpg)
+    differ, then we can compute this difference as the error of our prediction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Discrete time models](img/7180OS_09_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: By combining the two previous equations we obtain the stochastic model for a
+    time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Discrete time models](img/7180OS_09_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In other words, the value at the current time slice is the value at the previous
+    time slice, plus some error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random walks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the simplest stochastic processes is the random walk. Let's extend our
+    `constant-series` into a `random-walk` process. We'll want our errors to be normally
+    distributed with a zero mean and constant variance. Let's simulate random noise
+    with a call to Incanter's `stats/sample-normal` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You''ll get a different result, of course, but it should look similar to the
+    following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Random walks](img/7180OS_09_230.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The random walk model is very often seen in finance and econometrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The term *random walk* was first introduced by Karl Pearson in 1905\. Many processes—from
+    fluctuating stock prices to the path traced by a molecule as it travels in a gas—can
+    be modeled as simple random walks. In 1973, the Princeton economist Burton Gordon
+    Malkiel argued in his book *A Random Walk Down Wall Street* that stock prices
+    evolve according to a random walk as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The random walk is not entirely unpredictable. Although the difference between
+    each point and the next is governed by a random process, the variance of that
+    difference is constant. This means that we can estimate confidence intervals for
+    the magnitude of each step. However, since the mean is zero we cannot say with
+    any confidence whether the difference will be positive or negative relative to
+    the current value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autoregressive models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We've seen already in this chapter how to use a linear model to make a prediction
+    based on a linear combination of predictors. In an autoregressive model we forecast
+    the variable of interest by using a linear combination of the past values of the
+    variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The autoregressive model regresses the predictor against itself. In order to
+    see how this works in practice, let''s look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: This shares much in common with the random walk recursive definition that we
+    encountered a few pages previously. This time, however, we're generating each
+    new `y` as a product of previous `ys` and the `coefs`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can generate an autoregressive series with a call to our new `ar` function,
+    passing the previous `ys` and the coefficients of the autoregressive model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Autoregressive models](img/7180OS_09_240.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: By taking an initial value of 1.0 and a coefficient of 2.0, with zero noise,
+    we're creating an exponential growth curve. Each time step in the series is a
+    power of two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The autoregressive series is said to be *autocorrelated*. In other words, each
+    point is linearly correlated to its preceding points. In the earlier case, this
+    is simply twice the preceding value. The quantity of coefficients is said to be
+    the order of the autocorrelation model and is often denoted by the letter *p*.
+    The preceding example is therefore an autoregressive process with *p=1*, or an
+    *AR(1)* process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More intricate autoregressive series can be generated by increasing *p*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: For example, the previous code generates an autoregressive time series of order
+    5, or an *AR(5)* series. The effect is visible in the series as a regular cycle
+    with a period of 5 points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Autoregressive models](img/7180OS_09_250.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can combine the autoregressive model together with some noise to introduce
+    a component of the random walk we saw previously. Let''s increase sigma to 0.2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Autoregressive models](img/7180OS_09_260.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how the characteristic "seasonal" cycle every five points is preserved,
+    but has been combined with an element of noise too. Although this is simulated
+    data, this simple model is beginning to approach the sort of series that regularly
+    appears in time series analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The general equation for an AR model of one lag is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Autoregressive models](img/7180OS_09_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where *c* is some constant, *ε*[t] is the error, *y*[t-1] is the value of the
+    series at the previous time step, and *φ*[1] is the coefficient denoted by the
+    Greek symbol *phi*. More generally, the equation for an autoregressive model up
+    to *p* lags is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Autoregressive models](img/7180OS_09_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since our series are stationary, we have omitted the constant term *c* in the
+    code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining autocorrelation in AR models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Just as linear regression can establish a (linear) correlation between multiple
+    independent variables, autoregression can establish a correlation between a variable
+    and itself at different points in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just as in linear regression we sought to establish correlation between the
+    predictors and the response variable, so in time series analysis we seek to establish
+    an autocorrelation with the time series and itself at a certain number of lags.
+    Knowing the number of lags for which autocorrelation exists allows us to calculate
+    the order of the autoregressive model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It follows that we want to study the autocorrelation of the series at different
+    lags. For example, a lag of zero will mean that we compare each point with itself
+    (an autocorrelation of 1.0). A lag of 1 will mean that we compare each point with
+    the directly preceding point. The **autocorrelation function** (**ACF**) is a
+    linear dependence between a dataset and itself with a given lag. The ACF is therefore
+    parameterized by the lag, *k*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining autocorrelation in AR models](img/7180OS_09_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Incanter contains an `auto-correlation` function that will return the autocorrelation
+    for a given sequence and lag. However, we''re defining our own `autocorrelation`
+    function that will return the `autocorrelation` for a sequence of lags:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before calculating the autocorrelation, we use `sweep` function of `incanter.stats`
+    to remove the mean from the series. This means that we can simply multiply the
+    values of the series together with the values at lag *k* to determine whether
+    they have a tendency to vary together. If they do, their products will be positive;
+    if not, their products will be negative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This function returns an infinite lazy sequence of autocorrelation values corresponding
+    to the autocorrelation of lags *0...k*. Let''s define a function for plotting
+    these values as a bar chart. As with the `timeseries-plot`, this function will
+    accept an ordered sequence of values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining autocorrelation in AR models](img/7180OS_09_270.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The peaks every 5 lags are consistent with our *AR(5)* series generator. They
+    diminish over time as noise interferes with the signal and decreases the measured
+    autocorrelation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving-average models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An assumption of AR models is that noise is random with constant mean and variance.
+    Our recursive AR function sampled values from the normal distribution to generate
+    noise that satisfied these assumptions. In an AR process, therefore, the noise
+    terms are *uncorrelated* with each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some processes, though, the noise terms themselves are not uncorrelated.
+    For an example of this consider a time series that reports the daily number of
+    barbeques sold. We might observe peaks every 7 days corresponding to customers'
+    increased likelihood of buying barbeques at the weekend. Occasionally, we might
+    observe a period of several weeks where the total sales are down, and other periods
+    of several weeks where the sales are correspondingly up. We might reason that
+    this is due to the weather, with poor sales corresponding to a period of cold
+    or rainy weather and good sales corresponding to a period of favorable weather.
+    Whatever the cause, it will appear in our data as a pronounced shift in the mean
+    value of the series. Series that exhibit this behavior are called **moving-average**
+    (**MA**), models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A first-order moving-average model, denoted by *MA(1)*, is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Moving-average models](img/7180OS_09_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where *μ* is the mean of the series, *ε[t]* are the noise values, and *θ[1]*
+    is the parameter to the model. More generally for *q* terms the MA model is given
+    by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Moving-average models](img/7180OS_09_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thus, an MA model is conceptually a linear regression of the current value of
+    the series against current and previous (unobserved) white noise error terms or
+    random shocks. The error terms at each point are assumed to be mutually independent
+    and come from the same (usually normal) distribution with zero mean and constant
+    variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In MA models, we make the assumption that the noise values themselves are autocorrelated.
+    We can model it like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, `es` are the previous errors, `coefs` are the parameters to the MA model,
+    and `sigma` is the standard deviation of the errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice how the function differs from the `ar` function previously defined.
+    Instead of retaining a sequence of the previous *ys*, we retain a sequence of
+    the previous *es*. Let''s see what sort of series an MA model generates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates a graph similar to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Moving-average models](img/7180OS_09_280.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see that the chart for an MA lacks the obvious repetition of the AR
+    model. Viewed over a longer series of points, though, you can see how it reintroduces
+    *drift* into the model as the reverberations of one random shock are perpetuated
+    in a new temporary mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining autocorrelation in MA models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You may wonder if an autocorrelation plot would help identify an MA process.
+    Let's plot that now. An MA model can be harder to spot, so we'll generate more
+    points before plotting the autocorrelation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining autocorrelation in MA models](img/7180OS_09_290.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see on the preceding chart how it clearly shows the order of the MA
+    process with a pronounced peak at lag 5\. Notice though that, unlike the autoregressive
+    process, there is no recurring peak every 5 lags. It's a feature of the MA process
+    that, since the process introduces drift into the mean, autocorrelation for the
+    other lags is greatly diminished.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combining the AR and MA models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The AR and MA models that we've been considering so far this chapter are two
+    different but closely related ways of generating autocorrelated time series. They
+    are not mutually exclusive, though, and when trying to model real time series
+    you'll often encounter situations where the series appears to be a mixture of
+    both.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Combining the AR and MA models](img/7180OS_09_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can combine both AR and MA processes into a single ARMA model, with two
+    sets of coefficients: those of the autoregressive model and those of the moving-average
+    model. The number of coefficients for each model need not be identical, and by
+    convention the order of the AR model is identified by *p* and the order of the
+    MA model identified by *q*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s plot a longer series of points to see what sort of structure emerges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice how we''re specifying a different number of parameters for the AR and
+    MA portions of the model: 5 parameters for the AR and 2 parameters for the MA
+    model. This is referred to as an *ARMA(5,2)* model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Combining the AR and MA models](img/7180OS_09_300.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The plot of the earlier ARMA model over a longer series of points allows the
+    effect of the MA terms to become visible. At this scale we can''t see the effect
+    of the AR component, so let''s run the series though an autocorrelation plot as
+    before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see a chart similar to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Combining the AR and MA models](img/7180OS_09_310.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Far from making the order of the series clearer, with more data and both AR
+    and MA components in the series the ACF plot is not very useful and quite unlike
+    the strikingly clear autocorrelation plots that we have been looking at so far.
+    The autocorrelation decays slowly to zero making it impossible to determine the
+    order of the AR and MA processes, even though we've provided it with a large quantity
+    of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason for this is that the MA portion of the model is overwhelming the
+    AR portion of the model. We can't determine a cyclic pattern in the data because
+    it is hidden behind a moving average that makes all points that are close to each
+    other appear correlated. The best approach to fixing this is to plot the partial
+    autocorrelation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating partial autocorrelation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The **partial autocorrelation function** (**PACF**) aims to address the issue
+    of spotting cyclic components in a hybrid ARMA model. It's defined as the correlation
+    coefficient between *y*[t] and *y*[t+k] given all the in-between observations.
+    In other words, it's the autocorrelation at lag *k* that isn't already accounted
+    for by lags 1 through *k-1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first order, lag 1 partial autocorrelation is defined to equal the first
+    order autocorrelation. The second order, lag 2 partial autocorrelation is equal
+    to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating partial autocorrelation](img/7180OS_09_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the correlation between values two time periods apart, *y*[t] and *y*[t-2],
+    conditional on knowledge of *y*[t-1]. In a stationary time series, the two variances
+    in the denominator will be equal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The third order, lag 3 partial autocorrelation is equal to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating partial autocorrelation](img/7180OS_09_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: And so on, for any lag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autocovariance
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The equations for partial autocorrelation require us to calculate the covariance
+    of our data with itself at some lag. This is called the **autocovariance**. We
+    have seen in previous chapters how to measure the covariance between two series
+    of data, the tendency of two or more attributes to vary together. This function
+    is very similar to the autocorrelation function we defined earlier in the chapter,
+    and calculates the autocovariance for a range of lags beginning at zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: As before, the return value will be a lazy sequence of lags, so we'll be sure
+    to take only the values we need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PACF with Durbin-Levinson recursion
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Because of the need to account for previously explained variation, calculating
+    partial autocorrelation is a lot more involved than calculating autocorrelation.
+    The Durbin-Levinson algorithm provides a way to calculate it recursively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Durbin-Levinson recursion, or simply Levinson Recursion, is a method for calculating
+    the solution to equations involving matrices with constant values on the diagonals
+    (called **Toeplitz matrices**). More information is available at [https://en.wikipedia.org/wiki/Levinson_recursion](https://en.wikipedia.org/wiki/Levinson_recursion).
+  prefs: []
+  type: TYPE_NORMAL
+- en: An implementation of Levinson recursion is shown as follows. The math is beyond
+    the scope of this book, but the general shape of the recursive function should
+    be familiar to you now. At each iteration, we calculate the partial autocorrelation
+    with a function of the previous partial autocorrelations and the autocovariance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: As before, this function will create an infinite lazy sequence of partial autocorrelations,
+    so we have to take only the numbers that we actually want from it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting partial autocorrelation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now that we've implemented a function to calculate the partial autocorrelations
+    of a time series, let's plot them. We'll use the same ARMA coefficients as before
+    so we can compare the difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This should generate a bar chart similar to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Plotting partial autocorrelation](img/7180OS_09_320.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fortunately, this is rather different from the ACF plot that we created previously.
+    There is a high partial autocorrelation at lags 1 and 2\. This suggests that an
+    *MA(2)* process is at work. Then, there is low partial autocorrelation until lag
+    5\. This suggests that there is a an *AR(5)* model at work too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining ARMA model order with ACF and PACF
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The differences between ACF and PACF plots are useful to help with selecting
+    the most appropriate model for the time series. The following table describes
+    the appearance of ACF and PACF plots for idealized AR and MA series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Model | ACF | PACF |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| *AR(p)* | Decays gradually | Cuts off after *p* lags |'
+  prefs: []
+  type: TYPE_TB
+- en: '| *MA(q)* | Cuts off after *q* lags | Decays gradually |'
+  prefs: []
+  type: TYPE_TB
+- en: '| *ARMA(p,q)* | Decays gradually | Decays gradually |'
+  prefs: []
+  type: TYPE_TB
+- en: We are often not confronted with data that confirms to these ideals though.
+    Given a real time series, particularly one without a significant number of points,
+    it's not always obvious which would be the most appropriate model. The best course
+    of action is often to pick the simplest model (the one with the lowest order)
+    capable of describing your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining ARMA model order with ACF and PACF](img/7180OS_09_330.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding illustration shows sample ACF and PACF plots for an idealized
+    *AR(1)* series. Next are sample ACF and PACF plots for an idealized *MA(1)* series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining ARMA model order with ACF and PACF](img/7180OS_09_340.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The dotted lines on the graphics indicate the threshold of significance. In
+    general, we are not able to produce a model that perfectly captures all the autocorrelations
+    in the time series and the significance threshold helps us prioritize the most
+    important. A simple formula for determining significance threshold with an *α*
+    of 5 percent is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining ARMA model order with ACF and PACF](img/7180OS_09_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *n* is the number of points in the time series. If all points in the ACF
+    and PACF are close to zero, the data are basically random.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ACF and PACF of airline data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's return to the airline data that we started considering earlier and plot
+    the ACF of the data for the first 25 lags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![ACF and PACF of airline data](img/7180OS_09_350.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see that there are regular peaks and troughs in the data. The first
+    peak is at lag 12; the second is at lag 24\. Since the data is monthly, these
+    peaks correspond to an annual, seasonal, cycle. Since we have 144 points in our
+    time series, the threshold for significance is about ![ACF and PACF of airline
+    data](img/7180OS_09_14.jpg) or 0.17.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, let''s look at the partial autocorrelation plot for the airline data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![ACF and PACF of airline data](img/7180OS_09_360.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The partial autocorrelation plot also has a peak at lag 12\. Unlike the autocorrelation
+    plot it doesn't have a peak at lag 24 because the periodic autocorrelation has
+    already been accounted for at lag 12.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although this appears to suggest an AR(12) model will be appropriate, that will
+    create a large number of coefficients to learn, especially on a relatively small
+    amount of data. Since the periodic cycle is seasonal, we ought to remove it with
+    a second phase of differencing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removing seasonality with differencing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have already differenced the data once, meaning that our model is referred
+    to as an **autoregressive integrated moving-average** (**ARIMA**) model. The level
+    of differencing is given the parameter *d*, and the full model order can therefore
+    be specified as *ARIMA(p,d,q)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can difference the data a second time to remove the strong seasonality in
+    the data. Let''s do this next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'First, we plot the autocorrelation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Removing seasonality with differencing](img/7180OS_09_362.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, the partial autocorrelation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Removing seasonality with differencing](img/7180OS_09_364.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The strong seasonal cycle accounted for most of the significance in the charts.
+    We're left with negative autocorrelation at lag 1 on both charts, and a barely
+    significant autocorrelation at lag 9 on the ACF. A general rule of thumb is that
+    positive autocorrelation is best treated by adding an *AR* term to the model,
+    while negative autocorrelation is usually best treated by adding an *MA* term
+    to the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It appears based on the preceding charts that a justified model is an *MA(1)*
+    model. This would probably be a good enough model for this case, but let's use
+    this as an opportunity to demonstrate how to fit a large number of parameters
+    to a model by trying to capture the *AR(9)* autocorrelation as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll consider an alternative to the cost function, the likelihood, which measures
+    how closely the given model fits the data. The better the model fits, the greater
+    the likelihood. Thus, we will want to maximize the likelihood, a goal also known
+    as **maximum likelihood estimation**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Maximum likelihood estimation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: On several occasions throughout this book, we've expressed optimization problems
+    in terms of a cost function to be minimized. For example, in [Chapter 4](ch04.xhtml
+    "Chapter 4. Classification"), *Classification*, we used Incanter to minimize the
+    logistic cost function whilst building a logistic regression classifier, and in
+    [Chapter 5](ch05.xhtml "Chapter 5. Big Data"), *Big Data*, we used gradient descent
+    to minimize a least-squares cost function when performing batch and stochastic
+    gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization can also be expressed as a benefit to maximize, and it's sometimes
+    more natural to think in these terms. Maximum likelihood estimation aims to find
+    the best parameters for a model by maximizing the likelihood function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s say that the probability of an observation *x* given model parameters
+    *β* is written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Maximum likelihood estimation](img/7180OS_09_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then, the likelihood can be expressed as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Maximum likelihood estimation](img/7180OS_09_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The likelihood is a measure of the *probability of the parameters*, given the
+    data. The aim of maximum likelihood estimation is to find the parameter values
+    that make the observed data most likely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the likelihood
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before calculating the likelihood for a time series, we'll illustrate the process
+    by way of a simple example. Say we toss a coin 100 times and observe 56 heads,
+    *h*, and 44 tails, *t*. Rather than assume that we have a fair coin with *P(h)=0.5*
+    (and therefore that the slightly unequal totals are the result of chance variation),
+    instead we could ask whether the observed values differ significantly from 0.5\.
+    We can do this by asking what value of *P(h)* makes the observed data most likely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we''re using binomial distribution to model the sequence
+    of coin tosses (recall from [Chapter 4](ch04.xhtml "Chapter 4. Classification"),
+    *Classification*, that binomial distribution is used to model the number of times
+    a binary outcome is expected to occur). The key point is that the data is fixed,
+    and we''re plotting the varying probabilities of observing that data given different
+    parameters to the binomial distribution. The following plot shows the likelihood
+    surface:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the likelihood](img/7180OS_09_366.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we might have expected, the most likely parameter to the binomial distribution
+    is *p=0.56*. This contrived example could have more easily been calculated by
+    hand, but the principle of maximum likelihood estimation is able to cope with
+    much more complicated models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, our ARMA model is one such complicated model. The math for calculating
+    the likelihood of time series parameters is beyond the scope of this book. We'll
+    be making use of the Clojure library Succession ([https://github.com/henrygarner/succession](https://github.com/henrygarner/succession))
+    to calculate the likelihood for our time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is often the case that we work with the log-likelihood rather than the likelihood.
+    This is simply for mathematical convenience, since the log-likelihood:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the likelihood](img/7180OS_09_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'can be re-written as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the likelihood](img/7180OS_09_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *k* is the number of parameters to the model. Taking the sum of a large
+    number of parameters is more computationally convenient than taking the product,
+    so the second formula is often preferred. Let's get a feel for how the likelihood
+    function behaves on some test data by plotting the log-likelihood of different
+    parameters against a simple *AR(2)* time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the likelihood](img/7180OS_09_370.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The peak of the curve corresponds to the best estimate for the parameters,
+    given the data. Notice how the peak in the preceding plot is a little higher than
+    0.5: the noise we added to the model has meant that the best estimate is not exactly
+    0.5\.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Estimating the maximum likelihood
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The number of parameters to our ARMA model is large, and so to determine the
+    maximum likelihood we're going to use an optimization method that performs well
+    in high-dimensional spaces. The method is called the **Nelder-Mead**, or **simplex**,
+    method. In a space of *n* dimensions, a simplex is a *polytope* of *n+1* vertices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A polytope is a geometric object with flat sides that can exist in an arbitrary
+    number of dimensions. A two-dimensional polygon is 2-polytope, and a three dimensional
+    polyhedron is a 3-polytope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advantage of simplex optimization is that it doesn't need to calculate the
+    gradient at each point in order to descend (or ascend) to a more optimal position.
+    The Nelder-Mead method extrapolates the behavior of the objective function measured
+    at each test point on the simplex. The worst point is replaced with a point created
+    by reflecting through the centroid of the remaining points. If the new point is
+    better than the current best point then we stretch the simplex out exponentially
+    along this line. If the new point isn't much better than before we could be stepping
+    across a valley, so we contract the simplex towards a possibly better point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following plot shows an example of how the simplex, represented as a triangle,
+    reflects and contracts to find the optimal parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Estimating the maximum likelihood](img/7180OS_09_380.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The simplex is always represented as a shape whose number of vertices is one
+    greater than the number of dimensions. The simplex for two-dimensional optimization,
+    as in the preceding plot, is represented by a triangle. For an arbitrary *n*-dimensional
+    space, the simplex will be represented as a polygon of *n+1* vertices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The simplex method is also called the **amoeba method** due to the way it appears
+    to crawl towards a more optimal position.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The simplex method of optimization isn't implemented in Incanter, but it's available
+    in the Apache Commons Math library ([http://commons.apache.org/proper/commons-math/](http://commons.apache.org/proper/commons-math/)).
+    To use it, we'll need to wrap our objective function, the log-likelihood, in a
+    representation that the library understands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nelder-Mead optimization with Apache Commons Math
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Apache Commons Math is a large and sophisticated library. We can't cover more
+    than the barest essentials here. The next example is provided simply to illustrate
+    how to integrate Clojure code with the Java interfaces provided by the library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: An overview of Apache Commons Math's extensive optimization capabilities is
+    available at [http://commons.apache.org/proper/commons-math/userguide/optimization.html](http://commons.apache.org/proper/commons-math/userguide/optimization.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Apache Commons Math library expects that we''ll provide an `ObjectiveFunction`
+    to be optimized. Next, we create one by reifying a `MultivariateFunction`, since
+    our objective function needs to be supplied with multiple parameters. Our response
+    will be a single value: the log-likelihood.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code will return an `ObjectiveFunction` representation of an arbitrary
+    function `f`. A `MultivariateFunction` expects to receive a parameter vector `v`,
+    which we pass straight through to our `f`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this in place, we use some Java interop to call `optimize` on a `SimplexOptimizer`
+    with some sensible default values. Our `InitialGuess` at the parameters is simply
+    an array of zeros. The `NelderMeadSimplex` must be initialized with a default
+    step size for each dimension, which can be any value except zero. We're picking
+    a value of 0.2 for each parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our model is a large one with many parameters and so the optimization will
+    take a while to converge. If you run the preceding example you should eventually
+    see returned parameters similar to those shown next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: These are the maximum likelihood estimates for our model. Also included in the
+    response is the log-likelihood for the model with the maximum-likelihood parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identifying better models with Akaike Information Criterion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When evaluating multiple models, it might appear that the best model is the
+    one with the greatest maximum likelihood estimate. After all, the estimate has
+    determined that the model is the best candidate for generating the observed data.
+    However, the maximum likelihood estimate takes no account of the complexity of
+    the model and, in general, simpler models are to be preferred. Think back to the
+    beginning of the chapter and our high-order polynomial model that had a high *R*2
+    but provided no predictive power.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Akaike Information Criterion** (**AIC**) is a method for comparing models
+    that rewarded goodness of fit, as assessed by the likelihood function, but includes
+    a penalty that is a function of the number of parameters. This penalty discourages
+    overfitting, since increasing the number of parameters to the model almost always
+    improves the goodness of fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The AIC can be calculated from the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Identifying better models with Akaike Information Criterion](img/7180OS_09_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *k* is the number of parameters to the model and *L* is the likelihood
+    function. We can calculate the AIC in the following way in Clojure with the parameter
+    counts *p* and *q*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we were to produce multiple models and pick the best one, we would want to
+    pick the one with the lowest AIC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series forecasting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With the parameter estimates having been defined, we''re finally in a position
+    to use our model for forecasting. We''ve actually already written most of the
+    code we need to do this: we have an `arma` function that''s capable of generating
+    an autoregressive moving-average series based on some seed data and the model
+    parameters *p* and *q*. The seed data will be our measured values of *y* from
+    the airline data, and the values of *p* and *q* will be the parameters that we
+    calculated using the Nelder-Mead method.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s plug those numbers into our ARMA model and generate a sequence of predictions
+    for *y*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Time series forecasting](img/7180OS_09_390.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The line up to time slice 144 is the original series. The line subsequent to
+    this point is our forecast series. The forecast looks a lot like we might have
+    hoped: the exponentially increasing trend continues, as do the regular seasonal
+    pattern of peaks and troughs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, the forecast is almost too regular. Unlike the series at points 1 to
+    144, our forecast contains no noise. Let's add some noise to make our forecast
+    more realistic. To determine how much noise is justified, we could look to see
+    what the error was in our past forecasting. To avoid our errors compounding, we
+    should make predictions one time step ahead, and observe the difference between
+    the prediction and the actual value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s run our ARMA function with a sigma of 0.02:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code may generate a chart like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Time series forecasting](img/7180OS_09_395.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now we get a sense of the volatility of the forecast. By running the simulation
+    several times we can get a sense of the variety of different possible outcomes.
+    What would be useful is if we could determine the confidence interval of our predictions:
+    the upper and lower expectation of all future series, including noise.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forecasting with Monte Carlo simulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although analytic methods do exist for calculating the expected future value
+    of a time series, together with confidence intervals, we'll use this final section
+    to arrive at these values through simulation instead. By studying the variation
+    amongst many forecasts we can arrive at confidence intervals for our model predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if we run a very large number of simulations we can calculate the
+    95 percent confidence intervals on our future predictions based on the range within
+    which values fall 95 percent of the time. This is the essence of the Monte Carlo
+    simulation, which is a commonly used statistical tool for problems that are analytically
+    intractable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The Monte Carlo method was developed and used systematically during the Manhattan
+    Project, the American World War II effort to develop nuclear weapons. John Von
+    Neumann and Stanislaw Ulam suggested it as a means to investigate properties of
+    neutron travel through radiation shielding and named the method after the Monte
+    Carlo Casino in Monaco.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We've already laid all the foundations for Monte Carlo simulations of the time
+    series forecasts. We simply need to run the simulation many hundreds of times
+    and collect the results. In the following code, we run 1,000 simulations and gather
+    the mean and standard deviation across all forecasts at each future time slice.
+    By creating two new series (an upper bound that adds the standard deviation multiplied
+    by 1.96 and a lower bound that subtracts the standard deviation multiplied by
+    1.96), we're able to visualize the 95 percent confidence interval for the future
+    values of the series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Forecasting with Monte Carlo simulation](img/7180OS_09_400.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The upper and lower bounds provide the confidence intervals for our time series
+    predictions into the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we''ve considered the task of analyzing discrete time series:
+    sequential observations taken at fixed intervals in time. We''ve seen how the
+    challenge of modeling such a series can be made easier by decomposing it into
+    a set of components: a trend component, a seasonal component, and a cyclic component.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We've seen how ARMA models decompose a series further into autoregressive and
+    moving-average components, each of which is in some way determined by past values
+    of the series. This conception of a series is inherently recursive, and we've
+    seen how Clojure's natural capabilities for defining recursive functions and lazy
+    sequences lend themselves to the algorithmic generation of such series. By determining
+    each value of the series as a function of the previous values, we implemented
+    a recursive ARMA generator that was capable of simulating a measured series and
+    forecasting it forwards in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve also learned about expectation maximization: a way of reframing solutions
+    to optimization problems as those which generate the greatest likelihood, given
+    the data. And we''ve also seen how the Apache Commons Math library can be used
+    to estimate the maximum likelihood parameters using the Nelder-Mead method. Finally,
+    we saw how forecasting could be accomplished by playing the sequence forward in
+    time, and how Monte Carlo simulation could be used to estimate the future error
+    of the series.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the final chapter, we'll turn our attention away from data analysis towards
+    data visualization. In some respects, the most important challenge for data scientists
+    is communication, and we'll see how Clojure can support us in presenting our data
+    in the most effective way.
+  prefs: []
+  type: TYPE_NORMAL

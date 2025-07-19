@@ -1,0 +1,2523 @@
+- en: Chapter 4. Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"It is a truth universally acknowledged, that a single man in possession
+    of a good fortune, must be in want of a wife."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Jane Austen, Pride and Prejudice* |'
+  prefs: []
+  type: TYPE_TB
+- en: In the previous chapter, we learned how to make numeric predictions using linear
+    regression. The model we built was able to learn how the features of Olympic swimmers
+    related to their weight and we were able to use the model to make a weight prediction
+    for a new swimmer. As with all regression techniques, our output was a number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not all predictions demand a numeric solution, though—sometimes we want our
+    predictions to be items. For example, we may want to predict which candidate a
+    voter will back in an election. Or we may want to know which of several products
+    a customer is likely to buy. In these cases, the outcome is a selection from one
+    of a number of possible discrete options. We call these options classes, and models
+    we'll build in this chapter are classifiers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll learn about several different types of classifier and compare their performance
+    on a sample dataset—the list of passengers from the Titanic. Prediction and classification
+    are intimately connected to theories of probability and information, and so we'll
+    cover these in more detail too. We'll begin the chapter with ways of measuring
+    relative probabilities between groups and move then on to applying statistical
+    significance testing to the groups themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter will make use of data about the passengers on the Titanic, which
+    famously sank on her maiden voyage in 1912 after hitting an iceberg. The survival
+    rates of passengers were strongly affected by a variety of factors, including
+    class and sex.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset is derived from a painstakingly compiled dataset produced by Michael
+    A. Findlay. For more information about how the data was derived, including links
+    to original sources, consult the book's wiki at [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The example code for this chapter is available from Packt Publishing's website
+    or from [https://github.com/clojuredatascience/ch4-classification](https://github.com/clojuredatascience/ch4-classification).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data is small enough to have been included together with the source code
+    in the data directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspecting the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We encountered categorical variables in the previous chapter as the dichotomous
+    variable "sex" in the athlete dataset. That dataset also contained many other
+    categorical variables including "sport", "event", and "country".
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take a look at the Titanic dataset (using the `clojure.java.io` library
+    to access the file resource and the `incanter.io` library to read it in):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Inspecting the data](img/7180OS_04_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Titanic dataset includes categorical variables too. For example—**:sex**,
+    **:pclass** (the passenger class), and **:embarked** (a letter signifying the
+    port of boarding). These are all string values, taking categories such as **female**,
+    **first**, and **C**, but classes don't always have to be string values. Columns
+    such as **:ticket**, **:boat**, and **:body** can be thought of as containing
+    categorical variables too. Despite having numeric values, they are simply labels
+    that have been applied to things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A categorical variable is one that can take on only a discrete number of values.
+    This is in contrast to a continuous variable that can take on any value within
+    its range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other numbers representing counts are not so easy to define. The field **:sibsp**
+    reports how many companions (spouse or siblings) were traveling with a passenger.
+    These are counts, and their units are people. But they could just as easily represent
+    labels, with **0** standing for "a passenger with no companions" and **1** "a
+    passenger with one companion", and so on. There are only a small set of labels,
+    and so the field's representation as a number is largely convenience. In other
+    words, we could choose to represent **:sibsp** (and **:parch**—a count of related
+    parents and children) as either categorical or numerical features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since categorical variables don't make sense on the number line, we can't plot
+    a chart showing how these numbers relate to each other. We can construct a frequency
+    table, though, showing how the counts of passengers in each of the groups are
+    distributed. Since there are two sets of two variables, there are four groups
+    in total.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data can be summarized using Incanter core''s `$rollup` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Incanter's `$rollup` requires that we provide three arguments—a function with
+    which to "roll up" a group of rows, a column to roll up, and the columns whose
+    unique values define the groups of interest. Any function that reduces a sequence
+    to a single value can be used as a rollup function, but some are so common we
+    can supply the keywords `:min`, `:max`, `:sum`, `:count`, and `:mean` instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The example generates the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This chart represents the frequencies of passengers falling into the various
+    groups "males who perished", "females who survived", and so on. There are several
+    ways of making sense of frequency counts like this; let's start with the most
+    common.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparisons with relative risk and odds
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The preceding Incanter dataset is an easily comprehensible representation of
+    our data, but to extract the numbers for each of the groups individually we''ll
+    want to store the data in a more readily accessible data structure. Let''s write
+    a function to convert the dataset to a series of nested maps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For example, we can use the `frequency-map` function as follows to calculate
+    a nested map of `:sex` and `:survived`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'More generally, given any dataset and sequence of columns, this will make it
+    easier to pull out just the counts we''re interested in. We''re going to be comparing
+    the survival rates of males and females, so let''s use Clojure''s `get-in` function
+    to extract the number of fatalities for men and women as well as the overall counts
+    of men and women:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'From these numbers, we can calculate simple ratios. Relative risk is a ratio
+    of probabilities of an event occurring in two separate groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Comparisons with relative risk and odds](img/7180OS_04_01.jpg)![Comparisons
+    with relative risk and odds](img/7180OS_04_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Where *P(event)* is the probability of the event occurring. The risk of perishing
+    on the Titanic as a male was *682* divided by *843*; the risk of perishing on
+    the Titanic as a female was *127* divided by *466*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In other words, the risk of perishing on the Titanic was almost three times
+    higher if you were a man. The relative risk is often used in healthcare to show
+    how one's chances of developing an illness are affected by some other factor.
+    A relative risk of one means that there is no difference in risk between the groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In contrast, the odds ratio can be either positive or negative and measures
+    the extent to which being in a group raises your odds of some other attribute.
+    As with any correlation, no causation is implied. Both attributes could of course
+    be linked by a third property—their mutual cause:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Comparisons with relative risk and odds](img/7180OS_04_03.jpg)![Comparisons
+    with relative risk and odds](img/7180OS_04_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The odds of perishing as a male are *682*:*161* and the odds of perishing as
+    a female are *127*:*339*. The odds ratio is simply the ratio of the two:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This example shows how the odds ratio is sensitive to stating relative positions,
+    and can generate much larger numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: When presented with ratios, make sure you're aware whether they're relative-risk
+    or odds ratios. While the two approaches appear similar, they output results over
+    very different ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compare the two equations for relative risk and odds ratio. The numerators are
+    the same in each case but for risk the denominator is all females, whereas with
+    the odds ratio it is females who survived.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The standard error of a proportion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It's clear that the proportion of women surviving the Titanic is much greater
+    than the proportion of men. But, as with the dwell time differences we encountered
+    in [Chapter 2](ch02.xhtml "Chapter 2. Inference"), *Inference*, we should ask
+    ourselves whether these differences could have occurred due to chance alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have seen in previous chapters how to construct confidence intervals around
+    statistics based on the sample's standard error. The standard error is based on
+    the sample's variance, but what is the variance of a proportion? No matter how
+    many samples we take, only one proportion will be generated—the proportion in
+    the overall sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly a proportion is still subject to some sort of variance. When we flip
+    a fair coin 10 times we would expect to get roughly five heads, but there's it's
+    not impossible we'd get ten heads in a row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Estimation using bootstrapping
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In [Chapter 2](ch02.xhtml "Chapter 2. Inference"), *Inference*, we learned about
+    bootstrapping statistics such as the mean and we saw how bootstrapping can be
+    a useful way of estimating parameters through simulation. Let's use bootstrapping
+    to estimate the standard error of the proportion of female passengers surviving
+    the Titanic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can represent the 466 female passengers as a sequence of zeros and ones.
+    Zero could represent a passenger who perished, and one a passenger who survived.
+    This is a convenient representation because it means the sum of the whole sequence
+    equals the total number of passengers who survived. By taking repeated random
+    samples of 466 elements from this sequence of 466 zeros and ones, and taking the
+    sum each time, we can get an estimate of the variance in the proportion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Estimation using bootstrapping](img/7180OS_04_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The histogram appears to show a normal distribution with a mean of 339—the
+    measured number of female survivors. The standard deviation of this distribution
+    is the standard error of the sampled survivors and we can calculate it simply
+    from the bootstrapped samples like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Your standard deviation may be slightly different, depending on chance variation
+    in the bootstrapped sample. It should be very close, though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The units of standard deviation are people—female passengers—so to figure out
+    the standard error of the proportion we have to divide this through by the total
+    number of passengers in our sample, 466\. This yields a standard error of the
+    proportion of 0.021.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The binomial distribution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The preceding histogram looks a great deal like a normal distribution, but in
+    fact it is a binomial distribution. The two distributions are very similar, but
+    the binomial distribution is used to model cases where we want to determine how
+    many times a binary event is expected to occur.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s plot both the binomial and the normal distribution on a histogram to
+    see how they compare:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The binomial distribution](img/7180OS_04_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how in the preceding chart the line corresponding to the binomial distribution
+    is jagged—it represents discrete counts of things rather than a continuous value
+    such as the normal distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The standard error of a proportion formula
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We have calculated the standard error empirically and found it to equal 0.021,
+    using only the proportion of female survivors and the total number of female passengers.
+    Although it''s been instructive to see what the standard error of the proportion
+    is actually measuring, there is a formula that allows us to get there in one step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The standard error of a proportion formula](img/7180OS_04_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Substituting in the counts of female survivors gives us the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The standard error of a proportion formula](img/7180OS_04_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fortunately, this number closely matches the standard error we calculated through
+    bootstrapping. It's not exact, of course, since our bootstrapping calculation
+    has its own sampling error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The equation for the standard error of a proportion gives us an important insight—the
+    value of *p(1 - p)* is greatest when *p* is close to 0.5\. This means that the
+    greatest standard error in a proportion is when the proportion is close to a half.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If this seems surprising to you, consider this—when the proportion is 50 percent,
+    the variation in the sample is greatest. Like a fair coin toss, we have no way
+    of predicting what the next value will be. As the proportion increases (or decreases)
+    within the sample, the data becomes increasingly homogenous. As a result, the
+    variation decreases, and so the standard error decreases accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Significance testing proportions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s return to the question of whether the measured differences in male or
+    female fatality rates could be due to chance alone. As in [Chapter 2](ch02.xhtml
+    "Chapter 2. Inference"), *Inference*, our *z*-test is simply the difference in
+    proportions divided by the pooled standard error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Significance testing proportions](img/7180OS_04_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding formula, *p*[1] denotes the proportion of women who survived,
+    that is, *339/466 = 0.73*. And *p*[2] denotes the proportion of men who survived,
+    that is, *161/843 = 0.19*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the *z*-statistic, we need to pool our standard errors for the
+    two proportions. Our proportions measure the survival rates of males and females
+    respectively, so the pooled standard error is simply the standard error of the
+    males and females combined, or the total survival rate overall, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Significance testing proportions](img/7180OS_04_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Substituting the values into the equation for the *z*-statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Significance testing proportions](img/7180OS_04_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using a *z*-score means we''ll use the normal distribution to look up the *p*-value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we have a one-tailed test, the *p*-value is the probability that the *z*-score
+    is less than 39.95\. The response is zero, corresponding to a very, very significant
+    result. This allows us to reject the null hypothesis and conclude that the difference
+    between survival rates between men and women was certainly not down to chance
+    alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adjusting standard errors for large samples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You may be wondering why we're talking about standard errors at all. The data
+    we have on passengers on the Titanic is not a sample of a wider population. It
+    is the population. There was only one Titanic and only one fateful journey.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this is true in one sense, there are many ways in which the Titanic disaster
+    could have occurred. If the "women and children first" instructions had not been
+    followed or had been followed more universally, a different set of results would
+    have been obtained. If there had been enough lifeboats for everyone, or the evacuation
+    process had run more smoothly, then this would have been represented in the outcome
+    too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standard error and significance testing allows us to treat the disaster as one
+    of an infinite number of potential similar disasters and determine whether the
+    observed differences are likely to have been systemic or purely coincidental.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That said, sometimes we are more interested in how confident we can be that
+    our samples are representative of a finite, quantified population. Where samples
+    begin to measure more than about 10 percent of the population, we can adjust the
+    standard error downwards to account for the decreased uncertainty:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Adjusting standard errors for large samples](img/7180OS_04_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This can be written in Clojure as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Where *N* is the size of the overall population. As the sample size increases
+    relative to the size of the population, *(N - n)* tends towards zero. If you sample
+    the entire population, then any difference in proportion—however small—is going
+    to be judged significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Chi-squared multiple significance testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Not all categories are dichotomous (such as male and female, survived and perished).
+    Although we would expect categorical variables to have a finite number of categories,
+    there is no hard upper limit on the number of categories a particular attribute
+    can have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could use other categorical variables to separate out the passengers on the
+    Titanic, such as the class in which they were traveling. There were three class
+    levels on the Titanic, and the `frequency-table` function we constructed at the
+    beginning of this chapter is already able to handle multiple classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following frequency table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: These three classes give us an additional way to cut our data on survival rates.
+    As the number of classes increases, it becomes harder to read patterns in the
+    frequency table, so let's visualize it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing the categories
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although they were originally devised to represent proportions, pie charts are
+    generally not a good way to represent parts of a whole. People have a difficult
+    time visually comparing the areas of slices of a circle. Representing quantities
+    linearly, as with a stacked bar chart, is nearly always a better approach. Not
+    only are the areas easier to interpret but they're easier to compare side by side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can visualize our data as a stacked bar chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing the categories](img/7180OS_04_130.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The data clearly shows a difference in both the number of passengers who perished,
+    and the proportion of passengers who perished, most visible between first and
+    third class. We'd like to determine if this difference is significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could perform a *z*-test between each pair of proportions but, as we learned
+    in [Chapter 2](ch02.xhtml "Chapter 2. Inference"), *Inference*, this is much more
+    likely to lead to Type I errors and cause us to find a significant result where,
+    in fact, there is none.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem of multiple-category significance testing may seem to call for the
+    *F*-test but the *F*-test is based on the ratio of variance of some continuous
+    variable within and between groups. What we'd like, therefore, is a similar test
+    that cares only about the relative proportion between groups. This is the premise
+    on which the *X*² test is based.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chi-squared test
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pronounced *kai square*, the *X*² test is a statistical test applied to sets
+    of categorical data to evaluate how likely it is that any observed difference
+    between proportions of those categories in the sets arose by chance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When performing a *X*² test, therefore, our null hypothesis is that the observed
+    difference in proportions between groups is simply the result of chance variation.
+    We can think of this as an independence test between two categorical variables.
+    If category *A* is the passenger class and category *B* is whether they survived
+    or not, the null hypothesis is that passenger class and survival rate are independent
+    of each other. The alternate hypothesis is that the categories are not independent—that
+    the passenger class and survival are related to each other in some way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The *X*² statistic is calculated by comparing the observed frequency counts
+    from the sample to a table of frequencies calculated under the assumption of independence.
+    This frequency table is an estimation of what the data would have looked like
+    had the categories been independent. We can calculate the frequency table assuming
+    independence in the following way, using the row, column, and grand totals:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | Survived | Perished | Total |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| First Class | *323*500/1309 = 123.4* | *323*809/1309 = 199.6* | *323* |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Second Class | *277*500/1309 = 105.8* | *277*809/1309 = 171.2* | *277* |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Third Class | *709*500/1309 = 270.8* | *709*809/1309 = 438.2* | *709* |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Total | *500* | *809* | *1,309* |'
+  prefs: []
+  type: TYPE_TB
+- en: A simple formula calculates each cell value using only the totals for each row
+    and column, and assumes an even distribution amongst cells. This is our table
+    of expected frequencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: To demonstrate a statistically significant difference between the survival rates
+    by class, we'll need to show that the difference between the frequencies assuming
+    independence and the observed frequencies is unlikely to have arisen through chance
+    alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chi-squared statistic
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The *X*²statistic simply measures how far the actual frequencies differ from
+    those calculated under the assumption of independence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The chi-squared statistic](img/7180OS_04_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*F*[ij] is the expected frequency assuming independence for categories *i*
+    and *j*, and *f*[ij] is the observed frequency for categories *i* and *j*. We
+    therefore need to fetch the observed frequencies for our data. We can calculate
+    this in Clojure as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: As with the `expected-frequencies` function earlier, the `observed-frequencies`
+    function returns a sequence of frequency counts for each combination of categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This sequence—and the sequence of expected values from the previous example—give
+    us all we need to calculate the *X*² statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have our test statistic, we'll need to look this up in the relevant
+    distribution to determine if the result is significant. Unsurprisingly, the distribution
+    we refer to is the *X*² distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chi-squared test
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The *X*²distribution is paramaterized by one degree of freedom: the product
+    of each of the category counts less one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The chi-squared test](img/7180OS_04_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *a* is the number of categories for attribute *A* and *b* is the number
+    of categories for attribute *B*. For our Titanic data, *a* is *3* and *b* is *2*,
+    so our degrees of freedom parameter is *2*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our *X*² test simply needs to view our *X*² statistic against the *X*² cumulative
+    distribution function (CDF). Let''s do this now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is an absolutely tiny number, and is as close to zero as makes no difference
+    so we can comfortably reject the null hypothesis at any significance level. In
+    other words, we can be absolutely certain that the observed difference is not
+    the result of a chance sampling error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although it is useful to see the *X*² conducted by hand, the Incanter stats
+    namespace has a function, `chisq-test`, for conducting the *X*² test in one step.
+    To use it we simply need to supply our original table of observations as a matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In preceding the code, we calculated a frequency-table from the Titanic data
+    and then ordered the contents, using `i/$order`, so that we get a table like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We take the count column and convert it into a matrix of three columns using
+    `(i/matrix frequencies 3)`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: This matrix is the only input required by Incanter's `s/chisq-test` function.
+    Run the example and you'll see the response is a map containing keys `:X-sq`,
+    the *X*² statistic, and `:p-value`, the result of the test, amongst many others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have established that the categories of class and survived, and gender and
+    survived are certainly not independent. This is analogous to discovering a correlation
+    between variables—height, sex, and weight—in the previous chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, as then, the next step is to use the dependence between the variables to
+    make predictions. Whereas in the previous chapter our output was a predicted number—the
+    weight—in this chapter our output will be a class—a prediction about whether the
+    passenger survived or not. Assigning items to their expected class based on other
+    attributes is the process of classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classification with logistic regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous chapter, we saw how linear regression produces a predicted
+    value, *ŷ*, from an input vector *x* and a vector of coefficients *β*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classification with logistic regression](img/7180OS_04_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *ŷ* can be any real number. Logistic regression proceeds in a very similar
+    way, but adjusts the prediction to guarantee an answer only between zero and one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classification with logistic regression](img/7180OS_04_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Zero and one represent two different classes. The change is a simple one; we
+    simply wrap the prediction in a function *g* that constrains the output between
+    zero and one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classification with logistic regression](img/7180OS_04_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where *g* is called the **sigmoid** **function**. This seemingly minor change
+    is enough to transform linear regression into logistic regression and turn real-valued
+    predictions into classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The sigmoid function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The sigmoid function is also referred to as the *logistic function* and is
+    shown next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The sigmoid function](img/7180OS_04_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: For positive inputs, the logistic function rises quickly to one while, for negative
+    inputs, it falls quickly to zero. These outputs correspond to the predicted classes.
+    For values close to zero, the logistic function returns values close to **0.5**.
+    This corresponds to increased uncertainty about the correct output class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The sigmoid function](img/7180OS_04_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Combining the formulae we have seen already gives rise to the following complete
+    definition of the logistic hypothesis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The sigmoid function](img/7180OS_04_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As with linear regression, the parameter vector *β* contains the coefficients
+    that we''re seeking to learn, and *x* is our vector of input features. We can
+    express this in Clojure with the following higher-order function. Given a vector
+    of coefficients, this function returns a function that will calculate *ŷ* for
+    a given *x*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If the logistic function is given a *β* of `[0]`, then the feature is discounted
+    as having any predictive power. The function will output `0.5`, corresponding
+    to complete uncertainty, for any input *x*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, if values other than zero are provided as coefficients, the sigmoid
+    function can return values other than `0.5`. A positive *β* will result in a greater
+    probability of a positive class given a positive *x*, whereas a negative *β* will
+    correspond to a greater probability of a negative class given a positive *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since values above `0.5` correspond to a positive class and values less than
+    `0.5` correspond to a negative class, the sigmoid function output can simply be
+    rounded to the nearest integer to get the output class. This would result in values
+    of exactly `0.5` being classified as the positive class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have a `sigmoid-function` that can return class predictions, we
+    need to learn the parameters *β* which yield the best predictions *ŷ*. In the
+    previous chapter, we saw two methods for calculating the coefficients for a linear
+    model—calculating the slope and intercept using covariance, and the normal equation
+    using matrices. In both cases the equations were able to find a linear solution
+    that minimized the least-squares estimates of our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The squared error was an appropriate function to use for our linear model, but
+    it doesn't translate well to classification where classes are measured only between
+    zero and one. We need an alternative method of determining how incorrect our predictions
+    are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The logistic regression cost function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As with linear regression, the logistic regression algorithm must learn from
+    data. The `cost` function is a way to let the algorithm know how well, or poorly,
+    it's doing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following is the `cost` function for logistic regression, which imposes
+    a different cost depending on whether the output class is supposed to be zero
+    or one. The cost for a single training example is calculated like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The logistic regression cost function](img/7180OS_04_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This pair of functions captures the intuition that, if *ŷ* = 0 but *y* = 1,
+    then the model should be penalized by a very large cost. Symmetrically, the model
+    should also be heavily penalized if *ŷ* = 1 and *y* = 0\. Where the model closely
+    agrees with the data, the cost falls steeply towards zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the cost for an individual training point. To combine the individual
+    costs and calculate an overall cost for a given vector of coefficients and a set
+    of training data, we can simply take the average across all the training examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The logistic regression cost function](img/7180OS_04_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This can be represented in Clojure as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have a `cost` function that can quantify how incorrect our predictions
+    are, the next step is to make use of this information to figure out better predictions.
+    The very best classifier will be the one with the lowest overall cost, since by
+    definition its predicted classes will be closest to the true classes. The method
+    by which we can incrementally improve our cost is called **gradient descent**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameter optimization with gradient descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The cost function, also called the **loss function**, is the function that calculates
+    the error of the model based on our coefficients. Different parameters will generate
+    different costs for the same dataset, and we can visualize how the cost function
+    changes with respect to the parameters on a graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Parameter optimization with gradient descent](img/7180OS_04_150.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding chart shows a representation of a cost function for a two-parameter
+    model. The cost is plotted on the *y* axis (higher values correspond to a higher
+    cost) and the two parameters are plotted on the *x* and *z* axes, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best parameters are the ones that minimize the cost function, corresponding
+    to the parameters at the point identified as the "Global minimum". We don't know
+    ahead of time what these parameters will be, but we can make an initial, arbitrary
+    guess. These parameters are the ones identified by the point "P".
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent is an algorithm that iteratively improves on the initial condition
+    by following the gradient downhill towards the minimum value. When the algorithm
+    can't descend any further, the minimum cost has been found. The parameters at
+    this point correspond to our best estimate for the parameters that minimize the
+    cost function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent with Incanter
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Incanter provides the ability to run gradient descent with the function `minimize`
+    in the `incanter.optimize` namespace. Mathematical optimization is the general
+    term for a series of techniques that aim to find the best available solution to
+    some set of constraints. The `incanter.optimize` namespace contains functions
+    for calculating the parameters that will minimize or maximize the value of any
+    arbitrary function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, the following code finds the minimum value of `f` given a starting
+    position of `10`. Since `f` is *x*², the input that will produce the minimum value
+    is `0`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Indeed, if you run the example you should get an answer very close to zero.
+    You are very unlikely to get exactly zero though because gradient descent tends
+    to provide only approximate answers—Incanter's `minimize` function accepts a tolerance
+    argument `:tol` that defaults to 0.00001\. If the result differs by less than
+    this amount between iterations, then the equation is said to have converged. The
+    function also accepts a `:max-iter` argument, the maximum number of steps to take
+    before returning an answer, irrespective of convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convexity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Gradient descent is not always guaranteed to find the lowest possible cost
+    for all equations. For example, the answer may find what is called a "local minimum",
+    which represents the lowest cost in the vicinity of the initial guess but doesn''t
+    represent the best overall solution to the problem. This is illustrated in the
+    following illustration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Convexity](img/7180OS_04_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: If the initial position corresponds to either of the points labeled **C** on
+    the graph, then the algorithm will converge to a local minimum. Gradient descent
+    will have found a minimum, but it is not the best overall solution. Only initial
+    guesses within the range **A** to **B** will converge on the global minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is therefore possible that gradient descent will converge to different answers
+    depending on its initialization. For gradient descent to guarantee the optimal
+    solution, the equation to optimize needs to be a convex equation. This means that
+    there is a single global minimum and no local minima.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, there is no global minimum of the `sin` function. The result we
+    calculate for the minimum will depend strongly on our starting conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: Fortunately, logistic regression is a convex function. This means that gradient
+    descent will be able to determine the values of our coefficients corresponding
+    to the global minimum irrespective of our starting position.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing logistic regression with Incanter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can define a logistic regression function with Incanter''s `minimize` function
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `cost-fn` accepts a matrix of coefficients. We create a classifier from
+    the coefficients using the `sigmoid-function` previously defined, and a sequence
+    of predictions, `y-hats`, based on the input data. Finally, we can calculate and
+    return the `logistic-cost` value based on the provided coefficients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To perform logistic regression, we minimize the logistic `cost-fn` by selecting
+    the optimal parameters to the `sigmoid-function`. Since we have to start somewhere,
+    our initial coefficients are simply `0.0` for each parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `minimize` function expects to receive an input in numeric form. Like the
+    athlete data in the previous chapter, we have to convert our Titanic data into
+    a feature matrix and create dummy variables for our categorical data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a feature matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's define a function, `add-dummy`, that will create a dummy variable for
+    a given column. Where the value in the input column equals a particular value,
+    the dummy column will contain a `1`. Where the value in the input column does
+    not contain that value, the dummy column will be `0`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This simple function makes it very straightforward to convert our Titanic data
+    to a feature matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our output matrix will entirely consist of zeros and ones. The first element
+    in the feature matrix is the dummy variable determining survival. This is our
+    class label. `0` corresponds to perishing and `1` corresponds to survival. The
+    second is a `bias` term, which always contains the value `1.0`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With our `matrix-dataset` and `logistic-regression` functions defined, running
+    logistic regression is as simple as this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''re providing `0` to Incanter''s `i/$` function to select the first column
+    of the matrix (the classes), and [`:not 0`] to select everything else (the features):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you run this example, you'll find that it returns a vector of numbers. This
+    vector corresponds to the best estimates for the coefficients of the logistic
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating the logistic regression classifier
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The vector calculated in the previous section contains the coefficients of
+    our logistic model. We can make predictions with them by passing them to our `sigmoid-function`
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can see that the classifier is not doing a perfect job—it''s confused by
+    some of the classes. In the first ten results, it''s getting four classes incorrect,
+    which is only just better than chance. Let''s see what proportion of classes was
+    correctly identified over the entire dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code we train a classifier as before, and simply map over the
+    entire dataset looking for predictions that equal observed classes. We use Clojure
+    core's `frequencies` function to provide a simple count of the number of times
+    the classes are equal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting the correct outcome 1,021 times out of 1,309 equates to 78 percent
+    correct. Our classifier is definitely performing better than chance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The confusion matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While percent correct is a simple measure to calculate and comprehend, it's
+    vulnerable to situations where a classifier systematically under- or over-represents
+    a given class. As an extreme example, consider a classifier that always classifies
+    passengers as having perished. On our Titanic dataset such a classifier would
+    appear to be 68 percent correct, but it would perform terribly on an alternative
+    dataset where most of the passengers survived.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A `confusion-matrix` function shows how many misclassified items there are
+    in the training set, split into true positives, true negatives, false positives,
+    and false negatives. The confusion matrix has a row for each category of the input
+    and a column for each category of the model. We can create one like this in Clojure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can then run our confusion matrix on the results of our logistic regression
+    like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which returns the following matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see how the model returned `682` true negatives and `339` true positives,
+    adding up to the 1,021 correctly predicted results. The confusion matrix for a
+    good model will be dominated by counts along the diagonal, with much smaller numbers
+    in the off-diagonal positions. A perfect classifier would have zero in all off-diagonal
+    cells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The kappa statistic
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The kappa statistic can be used for comparing two pairs of classes to see how
+    well the classes agree. It is more robust that simply looking at percentage agreement
+    because the equation aims to account for the possibility that some of the agreement
+    has occurred simply due to chance alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The kappa statistic models how often each class occurs in each sequence and
+    factors this into the calculation. For example, if I correctly guess the result
+    of a coin toss 50 percent of the time, but I always guess heads, the kappa statistic
+    will be zero. This is because the agreement is no more than could be expected
+    by chance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the kappa statistic we need to know two things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*p(a)*: This is the probability of actual observed agreement'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*p(e)*: This is the probability of expected agreement'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The value of *p(a)* is the percentage agreement we calculated previously to
+    be 78 percent. It's the sum of true positives and true negatives divided by the
+    size of the sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To calculate the value of *p(e)* we need to know both the proportion of negative
+    classes present in the data, and the proportion of negative classes predicted
+    by our model. The proportion of negative classes in our data is ![The kappa statistic](img/7180OS_04_20.jpg),
+    or 62 percent. This is the probability of perishing in the Titanic disaster overall.
+    The proportion of negative classes in our model can be calculated from the confusion
+    matrix as ![The kappa statistic](img/7180OS_04_21.jpg), or 64 percent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The probability that the data and model might agree by chance, *p(e)*, is the
+    probability that the model and the data both have a negative class ![The kappa
+    statistic](img/7180OS_04_22.jpg) plus the probability that both the data and the
+    model have a positive class ![The kappa statistic](img/7180OS_04_23.jpg). Therefore
+    the probability of random agreement *p(e)* is about 53 percent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The preceding information is all we need to calculate the kappa statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The kappa statistic](img/7180OS_04_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Substituting in the values we just calculated yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The kappa statistic](img/7180OS_04_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can calculate this in Clojure as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Values of kappa range between 0 and 1, with 1 corresponding to complete agreement
+    across both output classes. Complete agreement for only one output class is undefined
+    with kappa—if I guess the result of a coin toss correctly 100 percent of the time,
+    but the coin always comes up heads, there is no way of knowing that the coin was
+    a fair coin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Probability
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We have encountered probability in several guises so far in this book: as *p*-values,
+    confidence intervals, and most recently as the output of logistic regression where
+    the result can be considered as the probability of the output class being positive.
+    The probabilities we calculated for the kappa statistic were the result of adding
+    up counts and dividing by totals. The probability of agreement, for example, was
+    calculated as the number of times the model and the data agreed divided by the
+    number of samples. This way of calculating probabilities is referred to as **frequentist**,
+    because it is concerned with the rates at which things happen.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An output of `1.0` from logistic regression (pre-rounding) corresponds to the
+    certainty that the input is in the positive class; an output of `0.0` corresponds
+    to the certainty that the input isn''t in the positive class. An output of `0.5`
+    corresponds to complete uncertainty about the output class. For example, if *ŷ
+    = 0.7* the probability of *y = 1* is 70 percent. We can write this in the following
+    way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Probability](img/7180OS_04_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We say *y-hat equals the probability that y equals one given x, parameterized
+    by beta*. This new notation expresses the fact that our prediction, *ŷ*, is informed
+    by inputs including *x* and *β*. The values contained in these vectors affect
+    our calculation of the output probability, and correspondingly our prediction
+    for *y*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An alternative to the frequentist view of probability is **Bayesian view**.
+    The Bayesian conception of probability incorporates a prior belief into the probability
+    calculation. To illustrate the difference, let's look again at the example of
+    tossing a coin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's imagine that a coin is tossed 14 times in a row and comes up as heads
+    10 times. You're asked to bet whether it will land heads on the next two throws.
+    Would you take the bet?
+  prefs: []
+  type: TYPE_NORMAL
+- en: To a frequentist, the probability of the coin landing heads for two consecutive
+    further throws is ![Probability](img/7180OS_04_27.jpg). This is marginally better
+    than 50 percent, so it makes sense to take the bet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Bayesian would frame the problem differently. With a prior belief that the
+    coin is fair, how well does the data fit this belief? The standard error of the
+    proportion over 14 throws is 0.12\. The difference between ![Probability](img/7180OS_04_28.jpg)
+    and ![Probability](img/7180OS_04_29.jpg) divided by the standard error is approximately
+    1.77, corresponding to a *p*-value of about 0.08\. There's simply not enough evidence
+    to reject the theory that the coin is fair. If the coin were fair, then the probability
+    of getting two consecutive heads is ![Probability](img/7180OS_04_30.jpg) and we
+    would likely lose the bet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the 18^(th) Century, Pierre-Simon Laplace posited "What is the probability
+    the sun will rise tomorrow?" to illustrate the difficulty of using probability
+    theory to evaluate the plausibility of statements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Bayesian view of probability gives rise to a very useful theorem called
+    **Bayes theorem**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayes theorem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The logistic regression equation we presented in the previous section is an
+    example of conditional probability:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability of our prediction *ŷ* is determined by the values *x* and *β*.
+    A conditional probability is the likelihood of one thing given another thing we
+    already know about. For example, we have already considered questions such as
+    the "probability of survival given that the passenger was female".
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assuming we are interested in *x*, *y*, and *z*, the basic notation for probability
+    is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_31.jpg): This is the probability of *A* occurring'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_32.jpg): This is the joint probability of both
+    *A* and *B* occurring'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_33.jpg): This is the probability of *A* or *B*
+    occurring'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_80.jpg): This is the probability of *A* occurring
+    given *B* has occurred'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_81.jpg): This is the probability of both *A*
+    and *B* occurring given that *C* has occurred'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The relationship between the preceding variables is expressed in the following
+    formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_34.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using this, we can solve for ![Bayes theorem](img/7180OS_04_80.jpg) assuming
+    ![Bayes theorem](img/7180OS_04_35.jpg) to get what is called Bayes theorem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_36.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We read this as "the probability of *A* given *B* is equal to the probability
+    of *B*, given *A*, times the probability of *A* all over the probability of *B*".
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_31.jpg) is the prior probability: the initial
+    degree of belief in *A*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_80.jpg) is the conditional probability—the degree
+    of belief in *A* having taken *B* into account.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The quotient ![Bayes theorem](img/7180OS_04_37.jpg) represents the support that
+    *B* provides for *A*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bayes theorem can appear intimidating and abstract, so let''s see an example
+    of why it''s useful. Let''s say we''re testing for disease that has infected 1
+    percent of the population. We have a highly sensitive and specific test that is
+    not quite perfect:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 99 percent of sick patients test positive
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 99 percent of healthy patients test negative
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given that a patient tests positive, what is the probability that the patient
+    is actually sick?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The preceding bullet points appear to imply that a positive test means a 99
+    percent chance of being sick, but this fails to take into account how rare the
+    disease is in the population. Since the probability of being infected (the prior)
+    is so small, this hugely decreases your chances of actually having the disease
+    even if you test positive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s work through the numbers with 10,000 representative people. That would
+    mean that 100 are sick, but 9,900 are healthy. If we applied the test to all 10,000
+    people we would find 99 sick people testing sick (true positives), but 99 healthy
+    people, testing sick (false positives) as well. If you test positive, the chances
+    of actually having the disease are ![Bayes theorem](img/7180OS_04_38.jpg), or
+    50 percent:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_170.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can calculate the same example using Bayes rule. Let *y* to refer to "sick"
+    and *x* refer to the event "+" for a positive result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_40.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In other words, although a positive test has vastly increased your chances of
+    having the disease (up from 1 percent in the population), you still only have
+    even odds of actually being sick—nowhere near the 99 percent implied by the test
+    accuracy alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The previous example provides neat numbers for us to work through, let's run
+    the example on the Titanic data now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The probability of surviving given you are female is equal to the probability
+    of being female given you survived multiplied by the probability of surviving
+    all divided by the probability of being a woman on the Titanic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_41.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s remind ourselves of the contingency table from earlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*P(survival|female)*is the posterior, the degree of belief in survival given
+    the evidence. This is the value we are trying to calculate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P(female|survival)* is the conditional probability of being female, given
+    survival:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_42.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*P(survival)* is the prior, the initial degree of belief in survival:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_43.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*P(female)* is the evidence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_44.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Substituting these proportions into Bayes rule:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem](img/7180OS_04_45.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using Bayes rule we have calculated that the probability of survival, given
+    being female, is ![Bayes theorem](img/7180OS_04_46.jpg) or 76 percent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice that we could have calculated this value from the contingency table
+    too, by looking up the proportion of survivors out of the total females: ![Bayes
+    theorem](img/7180OS_04_47.jpg). The reason for the popularity of Bayes rule is
+    that it gives us a way of calculating this probability where no such contingency
+    table exists.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayes theorem with multiple predictors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As an example of how we can use Bayes rule without a full contingency table,
+    let's use the example of a third-class male. What's the probability of survival
+    for third-class male passengers?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s write out Bayes rule for this new question:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem with multiple predictors](img/7180OS_04_48.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we have two contingency tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '"Third-class male" is not a category in any of our contingency tables that
+    we can simply look up. However, by using Bayes theorem we can calculate it like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The posterior probability we're seeking is *P(survive|male,third)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The prior probability of survival is the same as before:![Bayes theorem with
+    multiple predictors](img/7180OS_04_49.jpg) or about 0.38.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The conditional probability is ![Bayes theorem with multiple predictors](img/7180OS_04_50.jpg).
+    This is the same as ![Bayes theorem with multiple predictors](img/7180OS_04_51.jpg).
+    In other words, we can multiply the two probabilities together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem with multiple predictors](img/7180OS_04_52.jpg)![Bayes theorem
+    with multiple predictors](img/7180OS_04_53.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The evidence is the probability of being both male and in third class ![Bayes
+    theorem with multiple predictors](img/7180OS_04_54.jpg):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem with multiple predictors](img/7180OS_04_55.jpg)![Bayes theorem
+    with multiple predictors](img/7180OS_04_56.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Putting this all together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bayes theorem with multiple predictors](img/7180OS_04_57.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In actual fact, there were 75 surviving third class males out of 493 in total,
+    giving a true survival rate of 15 percent. Bayes Theorem has allowed us to calculate
+    the true answer very closely, without the use of a complete contingency table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The reason that the answer we arrived at using Bayes theorem and the actual
+    result differ slightly is that by using Bayes rule we made an assumption when
+    calculating ![Naive Bayes classification](img/7180OS_04_54.jpg) that the probability
+    of being male, and the probability of being in third class, are independent. In
+    the next section, we'll use Bayes theorem to produce a naive Bayes classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The reason this algorithm is called naive is because it assumes all variables
+    are independent. We know this is often not the case, and there are interaction
+    effects between variables. For example, we might know that combinations of parameters
+    make a certain class very much more likely—for example, being both male and in
+    third class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at how we might use Bayes rule for a classifier. The Bayes theorem
+    for two possible classes, survive and perish, are shown as follows for a male
+    in third class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Naive Bayes classification](img/7180OS_04_58.jpg)![Naive Bayes classification](img/7180OS_04_59.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The most likely class will be the one with the greatest posterior probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Naive Bayes classification](img/7180OS_04_54.jpg) appears as the common factor
+    for both classes. If we were to relax the requirements of Bayes theorem a little
+    so that it didn''t have to return probabilities, we could remove the common factor
+    to arrive at the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Naive Bayes classification](img/7180OS_04_61.jpg)![Naive Bayes classification](img/7180OS_04_62.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have simply removed the denominator from the right hand side of both equations.
+    Since we are no longer calculating probabilities, the equals sign has become ![Naive
+    Bayes classification](img/7180OS_04_63.jpg), meaning "is proportional to".
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Putting the values from our previous table of data into the equations yields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Naive Bayes classification](img/7180OS_04_64.jpg)![Naive Bayes classification](img/7180OS_04_65.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can instantly see that we are not calculating probabilities because the two
+    classes do not add up to one. This doesn't matter for our classifier since we
+    were only going to select the class associated with the highest value anyway.
+    Unfortunately for our third-class male, our naive Bayes model predicts that he
+    will perish.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s do the equivalent calculation for a first class female:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Naive Bayes classification](img/7180OS_04_66.jpg)![Naive Bayes classification](img/7180OS_04_67.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fortunately for our first class female, the model predicts that she will survive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Bayes classifier is a combination of the Bayes probability model combined
+    with a decision rule (which class to choose). The decision rule described earlier
+    is the maximum a posteriori rule, or MAP rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing a naive Bayes classifier
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Fortunately, implementing a naive Bayes model in code is much easier than understanding
+    the mathematics. The first step is simply to calculate the number of examples
+    corresponding to each value of each feature for each class. The following code
+    keeps a count of the number of times each parameter is seen for each class label:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: The label is the attribute corresponding to the class (for example, in our Titanic
+    data "survived" is the label corresponding to our classes true and false), and
+    parameters are the sequence of attributes corresponding to the features (sex and
+    class).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It can be used like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example yields the following Bayes model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: The model is simply a two-level hierarchy implemented as nested maps. At the
+    top level are our two classes—`"n"` and `"y"`, corresponding to "perished" and
+    "survived", respectively. For each class we have a map of predictors—`:pclass`
+    and `:sex`. Each key corresponds to a map of possible values and counts. As well
+    as a map of predictors, each class has a count `:n`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we have calculated our Bayes model, we can implement our MAP decision
+    rule. The following is a function that calculates the conditional probability
+    of a provided class. For example, ![Implementing a naive Bayes classifier](img/7180OS_04_68.jpg):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Given a particular `class-attr`, the preceding code will calculate the posterior
+    probability of the class, given the observations. Having implemented the earlier
+    code, the classifier simply needs to return the class corresponding to the maximum
+    posterior probability:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code calculates the probability of the test input against each
+    of the model's classes. The returned class is simply the one with the highest
+    posterior probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating the naive Bayes classifier
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have written two complementary functions, `bayes-classifier` and
+    `bayes-classify`, we can use our model to make predictions. Let''s train our model
+    on the Titanic dataset and check its predictions for the third-class male and
+    first-class female that we''ve already calculated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It''s a good start—our classifier is in agreement with the outcomes we''ve
+    calculated by hand. Let''s take a look at the percent correct for the naive Bayes
+    classifier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: By replicating our test over the entire dataset and comparing outputs, we can
+    see how often our classifier got the correct answer. 78 percent is the same percent
+    correct we got using our logistic regression classifier. For such a simple model,
+    naive Bayes is performing remarkably well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can calculate a confusion matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates the following matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: This confusion matrix is identical to the one we obtained previously from logistic
+    regression. Despite taking very different approaches, they have both been able
+    to classify the dataset to the same degree of accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing the logistic regression and naive Bayes approaches
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Although they have performed equally well on our small Titanic dataset, the
+    two methods of classification are generally suited to different tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In spite of being conceptually a simpler classifier as compared to logistic
+    regression, naive Bayes can often outperform it in cases where either data is
+    scarce or the number of parameters is very large. Because of naive Bayes' ability
+    to deal with a very large number of features, it is often employed for problems
+    such as automatic medical diagnosis or in spam classification. In spam classification,
+    features could run into the tens or hundreds of thousands, with each word representing
+    a feature that can help identify whether the message is spam or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, a drawback of naive Bayes is its assumption of independence—in problem
+    domains where this assumption is not valid, other classifiers can outperform naive
+    Bayes. With a lot of data, logistic regression is able to learn more sophisticated
+    models and classify potentially more accurately than naive Bayes is able to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is another method that—while simple and relatively straightforward to
+    model—is able to learn more sophisticated relationships amongst parameters. This
+    method is the decision tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The third method of classification we'll look at in this chapter is the decision
+    tree. A decision tree models the process of classification as a series of tests
+    that checks the value of a particular attribute or attributes of the item to be
+    classified. It can be thought of as similar to a flowchart, with each test being
+    a branch in the flow. The process continues, testing and branching, until a leaf
+    node is reached. The leaf node will represent the most likely class for the item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision trees share some similarities with both logistic regression and naive
+    Bayes. Although the classifier can support categorical variables without dummy
+    coding, it is also able to model complex dependencies between variables through
+    repeated branching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the old-fashioned parlor game *Twenty Questions*, one person, the "answerer",
+    chooses an object but does not reveal their choice to the others. All other players
+    are "questioners" and take turns to ask questions that aim to guess the object
+    the answerer has thought of. Each question can only be answered with a simple
+    "yes" or "no". The challenge for the questioners is to guess the object the answerer
+    was thinking of in only 20 questions, and to pick questions that reveal the most
+    amount of information about the object the answerer is thinking of. This is not
+    an easy task—ask questions that are too broad and you do not gain much information
+    through the answer. Ask questions that are too specific and you will not reach
+    an answer in only 20 steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unsurprisingly, these concerns also appear in decision tree classification.
+    Information is something that is quantifiable, and decision trees aim to ask questions
+    that are likely to yield the biggest information gain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Information
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Imagine that I pick a random card from a normal deck of 52 playing cards. Your
+    challenge is to guess what card I have picked. But first, I offer to answer one
+    question with a "yes" or a "no". Which question would you rather ask?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is it red? (a Heart or a Diamond)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Is it a picture card? (a Jack, Queen, or King)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will explore this challenge in detail over the coming pages. Take a moment
+    to consider your question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are 26 red cards in a deck, so the probability of a random red card being
+    chosen is ![Information](img/7180OS_04_29.jpg). There are 12 picture cards in
+    a deck so the probability of a picture card being randomly chosen is ![Information](img/7180OS_04_69.jpg).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The information *I* associated with a single event is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Information](img/7180OS_04_70.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Incanter has a `log2` function that enables us to calculate information like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, `log2` is the log to base 2\. Therefore:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Information](img/7180OS_04_71.jpg)![Information](img/7180OS_04_72.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since a picture card has the lower probability, it also carries the highest
+    information value. If we know the card is a picture card, there are only 12 cards
+    it could possibly be. If we know the card is red, then 26 possibilities still
+    remain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Information is usually measured in bits. The information content of knowing
+    the card is red carries only one bit of information. A computer bit can only represent
+    a zero or a one. One bit is enough to contain a simple 50/50 split. Knowing that
+    the card is a picture card offers two bits of information. This appears to suggest
+    that the best question to ask therefore is "Is it a picture card?". An affirmative
+    answer will carry with it a lot of information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But look what happens if we find out the answer to the question is "no". What's
+    the information content of finding out that the card I've chosen is not a picture
+    card?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Information](img/7180OS_04_73.jpg)![Information](img/7180OS_04_74.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: It appears that now we could be better off asking whether the card is red, since
+    the information content is greater. Finding out our card is not a picture card
+    still leaves 36 possibilities remaining. We clearly don't know in advance whether
+    the answer will be "yes" or "no", so how can we go about choosing the best question?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Entropy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Entropy is a measure of uncertainty. By calculating the entropy we can strike
+    a balance between information content over all possible responses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The concept of entropy was introduced by Rudolf Clausius in the mid-nineteenth
+    century as part of the emerging science of thermodynamics to help explain how
+    part of the functional energy of combustion engines was lost due to heat dissipation.
+    In this chapter we talk about Shannon Entropy, which comes from Claude Shannon's
+    work on information theory in the mid-twentieth century. The two concepts are
+    closely related, despite hailing from different corners of science in very different
+    contexts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Entropy, *H*, can be calculated in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Entropy](img/7180OS_04_75.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *P(x)*is the probability of *x* occurring and *I(P(x))*is the information
+    content of *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, let''s compare the entropy of a pack of cards where each class
+    is simply "red" and "not red". We know the information content of "red" is 1 and
+    the probability is ![Entropy](img/7180OS_04_29.jpg). The same is true for "not
+    red", so the entropy is the following sum:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Entropy](img/7180OS_04_76.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Splitting the pack in this way yields an entropy of 1\. What about splitting
+    the pack into "picture" and "not picture" cards? The information content of "picture"
+    is 2.12 and the probability is ![Entropy](img/7180OS_04_69.jpg). The information
+    content of "not picture" is 0.38 and the probability is ![Entropy](img/7180OS_04_77.jpg):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Entropy](img/7180OS_04_78.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If we imagine the deck of cards as a sequence of classes, positive and negative,
+    we can calculate the entropy for our two decks using Clojure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: Entropy is a measure of uncertainty. The lower entropy by splitting the deck
+    into "picture" and "not picture" groups shows us that asking whether or not the
+    card is a picture is the best question to ask. It remains the best question to
+    have asked even if we discover that my card is not a picture card, because the
+    amount of uncertainty remaining in the deck is lower. Entropy does not just apply
+    to sequences of numbers, but to any sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: is lower than
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: This in spite of their equal length, because there is more consistency amongst
+    the letters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Information gain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Entropy has indicated to us that the best question to ask—the one that will
+    decrease the entropy of our deck of cards most—is whether or not the card is a
+    picture card.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In general, we can use entropy to tell us whether a grouping is a good grouping
+    or not using the theory of information gain. To illustrate this, let''s return
+    to our Titanic survivors. Let''s assume that I''ve picked a passenger at random
+    and you have to guess whether or not they survived. This time, before you answer,
+    I offer to tell you one of two things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Their sex (male or female)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The class they were traveling in (first, second, or third)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Which would you rather know?
+  prefs: []
+  type: TYPE_NORMAL
+- en: It might appear at first that the best question to ask is which class they were
+    travelling in. This will divide the passengers into three groups and, as we saw
+    with the playing cards, smaller groups are better. Don't forget, though, that
+    the objective is to guess the survival of the passenger. To determine the best
+    question to ask we need to know which question gives us the highest information
+    gain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Information gain is measured as the difference between entropy before and after
+    we learn the new information. Let's calculate the information gain when we learn
+    that the passenger is male. First, let's calculate the baseline entropy of the
+    survival rates for all passengers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use our existing entropy calculation and pass it the sequence of survival
+    classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is a high entropy. We already know that an entropy of 1.0 indicates a
+    50/50 split, yet we also know that survival on the Titanic was around 38 percent.
+    The reason for this apparent discrepancy is that entropy does not change linearly,
+    but rises quickly towards 1 as illustrated in the following graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Information gain](img/7180OS_04_180.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, let''s consider the entropy of survival when split by sex. Now we have
+    two groups to calculate entropy for: males and females. The combined entropy is
+    the weighted average of the two groups. We can calculate the weighted average
+    for an arbitrary number of groups in Clojure by using the following function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see that the weighted entropy for the survival classes that have been
+    grouped by sex is lower than the 0.96 we obtained from the passengers as a whole.
+    Therefore our information gain is *0.96 - 0.75 = 0.21* bits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can easily express the gain as a Clojure function based on the `entropy`
+    and `weighted-entropy` functions that we''ve just defined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s use this to calculate the gain if we group the passengers by their class,
+    instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: The information gain for passenger class is 0.07, and for sex is 0.21\. Therefore,
+    when classifying survival rates, knowing the passenger's sex is much more useful
+    than the class they were traveling in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using information gain to identify the best predictor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Using the functions we have just defined, we can construct an effective tree
+    classifier. We''ll want a general purpose way to calculate the information gain
+    for a specific predictor attribute, given an output class. In the preceding example,
+    the predictor was `:pclass` and the class attribute was `:survived`, but we can
+    make a generic function that will accept these keywords as the arguments `class-attr`
+    and `predictor`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we''ll want a way to calculate the best predictor for a given set of
+    rows. We can simply map the preceding function over all the desired predictors
+    and return the predictor corresponding to the highest gain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s test this function by asking which of the predictors `:sex` and `:pclass`
+    is the best predictor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: Reassuringly, we're getting the same answer as before. Decision trees allow
+    us to apply this logic recursively to build a tree structure that chooses the
+    best question to ask at each branch, based solely on the data in that branch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recursively building a decision tree
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By applying the functions we have written recursively to the data, we can build
+    up a data structure that represents the best category split at each level of the
+    tree. First, let's define a function that will return the **modal** (most common)
+    class, given a sequence of data. When our decision tree reaches a point at which
+    it can't split the data any more (either because the entropy is zero or because
+    there are no remaining predictors left on which to split), we'll return the modal
+    class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: With that simple function in place, we're ready to construct the decision tree.
+    This is implemented as a recursive function. Given a class attribute, a sequence
+    of predictors, and a sequence of values, we build a sequence of available classes
+    by mapping the `class-attr` over our `xs`. If the entropy is zero, then all the
+    classes are the same, so we simply return the first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the classes are not identical in our group, then we need to pick a predictor
+    to branch on. We use our `best-predictor` function to select the predictor associated
+    with the highest information gain. We remove this from our list of predictors
+    (there's no point in trying to use the same predictor twice), and construct a
+    `tree-branch` function. This is a partial recursive call to `decision-tree` with
+    the remaining predictors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we group our data on the `best-predictor`, and call our partially
+    applied `tree-branch` function on each group. This causes the whole process to
+    repeat again, but this time only on the subset of data defined by `group-by`.
+    The return value is wrapped in a vector, together with the predictor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's visualize the output of this function for the predictors `:sex` and `:pclass`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see how the decision tree is represented as a vector. The first element
+    of the vector is the predictor that's being used to branch the tree. The second
+    element is a map containing the attributes of this predictor as keys `"male"`
+    and `"female"` with values corresponding to a further branch on `:pclass`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To see how we can build up arbitrarily deep trees using this function, let''s
+    add a further predictor `:age`. Unfortunately, the tree classifier we''ve built
+    is only able to deal with categorical data, so let''s split the age continuous
+    variable into three simple categories: `unknown`, `child`, and `adult`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code yields the following tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how the best overall predictor is still the sex of the passenger, as
+    before. However, if the sex is male, age is the next most informative predictor.
+    On the other hand, if the sex is female, passenger class is the most informative
+    predictor. Because of the recursive nature of the tree, each branch is able to
+    determine the best predictor only for the data in that particular branch of the
+    tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the decision tree for classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the data structure returned from the decision-tree function, we have all
+    the information we require to classify passengers into their most likely class.
+    Our classifier will also be implemented recursively. If a vector has been passed
+    in as the model, we know it will contain two elements—the predictor and the branches.
+    We destructure the predictor and branches from the model and then determine the
+    branch our test is on. To do this, we simply get the value of the predictor from
+    the test with `(get test predictor)`. The branch we want will be the one corresponding
+    to this value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we have the branch, we need to call `tree-classify` again on the branch.
+    Because we''re in the tail position (no further logic is applied after the `if`)
+    we can call `recur`, allowing the Clojure compiler to optimize our recursive function
+    call:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: We continue to call tree-classify recursively until `(vector? model)` returns
+    false. At this point we will have traversed the full depth of the decision tree
+    and reached a leaf node. At this point the `model` argument contains the predicted
+    class, so we simply return it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: The decision tree predicts that the young male from second class will survive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating the decision tree classifier
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As before, we can calculate our confusion matrix and kappa statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The confusion matrix looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can immediately see that the classifier is generating a lot of false negatives:
+    `219`. Let''s calculate the kappa statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our tree classifier isn''t performing nearly as well as others we have tried.
+    One way we could try to improve the accuracy is to increase the number of predictors
+    we''re using. Rather than use crude categories for age, let''s use the actual
+    data for age as a feature. This will allow our classifier to better distinguish
+    between our passengers. While we''re at it, let''s add the fare too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: Great! We've made fantastic progress; our new model is the best yet. By adding
+    more granular predictors, we've built a model that's able to predict with a very
+    high degree of accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we celebrate too much, though, we should think carefully about how general
+    our model is. The purpose of building a classifier is usually to make predictions
+    about new data. This means that it should perform well on data that it's never
+    seen before. The model we've just built has a significant problem. To understand
+    what it is, we'll turn to the library clj-ml, which contains a variety of functions
+    for training and testing classifiers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classification with clj-ml
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While building our own versions of logistic regression, naive Bayes, and decision
+    trees has provided a valuable opportunity to talk about the theory behind them,
+    Clojure gives us several libraries for building classifiers. One of the better
+    supported is the clj-ml library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The clj-ml library is currently maintained by Josua Eckroth and is documented
+    on his GitHub page at [https://github.com/joshuaeckroth/clj-ml](https://github.com/joshuaeckroth/clj-ml).
+    The library provides Clojure interfaces for running linear regression described
+    in the previous chapter, as well as classification with logistic regression, naive
+    Bayes, decision trees, and other algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The underlying implementation for most machine learning functionality in clj-ml
+    is provided by the Java machine learning library `Weka`. **Waikato Environment
+    for Knowledge Analysis** (**Weka**), an open source machine learning project released
+    and maintained primarily by the Machine Learning Group at the University of Waikato,
+    New Zealand ([http://www.cs.waikato.ac.nz/ml/](http://www.cs.waikato.ac.nz/ml/)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading data with clj-ml
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Because of its specialized support for machine learning algorithms, clj-ml
+    provides functions for creating datasets that identify the classes and attributes
+    of a dataset. The function `clj-ml.data/make-dataset` allows us to create a dataset
+    that can be passed to Weka''s classifiers. In the following code, we include `clj-ml.data`
+    as `mld`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`mld/make-dataset` expects to receive the name of the dataset, a vector of
+    attributes, a dataset as a sequence of row vectors, and an optional map of further
+    settings. The attributes identify the column names and, in the case of categorical
+    variables, also enumerate all the possible categories. Categorical variables,
+    for example `:survived`, are passed as a map `{:survived ["y" "n"]}`, whereas
+    continuous variables such as `:age` and `:fare` are passed as straightforward
+    keywords. The dataset must be provided as a sequence of row vectors. To construct
+    this, we''re simply using Incanter''s `i/$` function and calling `i/to-vect` on
+    the results.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: While `make-dataset` is a flexible way to create datasets from arbitrary data
+    sources, `clj-ml.io` provides a `load-instances` function that loads data from
+    a variety of sources such as CSV or Attribute-Relation File Format (ARFF) files
+    and the MongoDB database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With our dataset in a format that clj-ml understands, it's time to train a classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a decision tree in clj-ml
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Clj-ml implements a large variety of classifiers, and all are accessible through
+    the `cl/make-classifier` function. We pass two keyword arguments to the constructor:
+    the classifier type and an algorithm to use. For example, let''s look at the `:decision-tree`,
+    `:c45` algorithm. The **C4.5 algorithm** was devised by Ross Quinlan and builds
+    a tree classifier based on information entropy in the same way as our very own
+    `tree-classifier` function from earlier in the chapter. C4.5 extends the classifier
+    we built in a couple of ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where none of the predictors provide any information gain, C4.5 creates a decision
+    node higher up the tree using the expected value of the class
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If a previously-unseen class is encountered, C4.5 will create a decision node
+    higher up the tree with the expected value of the class
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can create a decision tree in clj-ml with the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code returns the following information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how we don't need to explicitly provide the class and predictor attributes
+    while training our classifier or using it for prediction. The Weka dataset already
+    contains the information about the class attribute of each instance, and the classifier
+    will use all the attributes it can to arrive at a prediction. In spite of this,
+    the results still aren't as good as we were getting before. The reason is that
+    Weka's implementation of decision trees is refusing to over-fit the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bias and variance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overfitting is a problem that occurs with machine learning algorithms that are
+    able to generate very accurate results on a training dataset but fail to generalize
+    very well from what they've learned. We say that models which have overfit the
+    data have very high variance. When we trained our decision tree on data that included
+    the numeric age of passengers, we were overfitting the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversely, certain models may have very high bias. This is a situation where
+    the model has a strong tendency towards a certain outcome irrespective of the
+    training examples to the contrary. Recall our example of a classifier that always
+    predicts that a survivor will perish. This classifier would perform well on dataset
+    with low survivor rates, but very poorly otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of high bias, the model is unlikely to perform well on diverse inputs
+    at the training stage. In the case of high variance, the model is unlikely to
+    perform well on data that differs from that which it was trained on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Like the balance to be struck between Type I and Type II errors in hypothesis
+    testing, balancing bias and variance is critical for producing good results from
+    machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we have too many features, the learned hypothesis may fit the training set
+    very well but fail to generalize to new examples very well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overfitting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The secret to identifying overfitting, then, is to test the classifier on examples
+    that it has not been trained on. If the classifier performs poorly on these examples
+    then there is a possibility that the model is overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The usual approach is to divide the dataset into two groups: a training set
+    and a test set. The training set is used to train the classifier, and the test
+    set is used to determine whether the classifier is able to generalize well from
+    what it has learned.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The test set should be large enough that it will be a representative sample
+    from the dataset, but should still leave the majority of records for training.
+    Test sets are often around 10-30 percent of the overall dataset. Let''s use `clj-ml.data/do-split-dataset`
+    to return two sets of instances. The smaller will be our test set and the larger
+    will be our training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you compare this kappa statistic to the previous one, you'll see that actually
+    our accuracy has improved on unseen data. Whilst this appears to suggest our classifier
+    is not overfitting our training set, it doesn't seem very realistic that our classifier
+    should be able to make better predictions for new data than the data we've actually
+    told it about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This suggests that we may have been fortunate with the values that were returned
+    in our test set. Perhaps this just happened to contain some of the easier-to-classify
+    passengers compared to the training set. Let''s see what happens if we take the
+    test set from the final 30 percent instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs: []
+  type: TYPE_PRE
+- en: The classifier is struggling on test data from the final 30 percent of the dataset.
+    To get a fair reflection of the actual performance of the classifier overall,
+    therefore, we'll want to make sure we test it on several random subsets of the
+    data to even out the classifier's performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cross-validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The process of splitting a dataset into complementary subsets of training and
+    test data is called cross-validation. To reduce the variability in output we''ve
+    just seen, with a lower error rate on the test set compared to the training set,
+    it''s usual to run multiple rounds of cross-validation on different partitions
+    of the data. By averaging the results of all runs we get a much more accurate
+    picture of the model''s true accuracy. This is such a common practice that clj-ml
+    includes a function for just this purpose:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we make use of `cl/classifier-evaluate` to run 10 cross-validations
+    on our dataset. The result is returned as a map with useful information about
+    the model performance—for example, a confusion matrix and a list of summary statistics—including
+    the kappa statistic we''ve been tracking so far. We print out the confusion matrix
+    and the summary string that clj-ml provides, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE81]'
+  prefs: []
+  type: TYPE_PRE
+- en: The kappa after 10 cross-validations is 0.56, only slightly lower than our model
+    validated against the training data. This seems about as high as we will be able
+    to get.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Addressing high bias
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Whereas overfitting can be caused by including too many features in our model—such
+    as when we included age as a categorical variable in our decision tree—high bias
+    can be caused by other factors including not having enough data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One simple way of increasing the accuracy of the model is to ensure that there
+    are no missing values in the training set. Missing values are necessarily discarded
+    by the model, limiting the number of training examples from which the model can
+    learn. With a relatively small dataset such as this, each example can have a material
+    effect on the outcome, and there are numerous age values and one fare value missing
+    from the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could simply substitute the mean value for a missing value in numeric columns.
+    This is a reasonable default value and a fair tradeoff—in return for slightly
+    lowering the variance of the field, we are potentially gaining several more training
+    examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clj-ml contains numerous filters in the `clj-ml.filters` namespace that are
+    able to alter the dataset in some way. A useful filter is `:replace-missing-values`,
+    which will substitute any missing numeric values with the means from the dataset.
+    For categorical data, the modal category is substituted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs: []
+  type: TYPE_PRE
+- en: Simply plugging the missing values in the age column has nudged our kappa statistic
+    upwards. Our model is currently struggling to distinguish between passengers with
+    different survival outcomes and more information may help the algorithm determine
+    the correct class. Whilst we could return to the data and pull in all of the remaining
+    fields, it's also possible to construct new features out of existing features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For numeric values, another way of increasing the number of parameters is to
+    include polynomial versions of the values as features. For example we could create
+    features for age² and age³ simply by squaring or cubing the existing age value.
+    While these may appear to add no new information to the model, polynomials scale
+    differently and provide alternative features for the model to learn from.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final way we'll look at for balancing bias and variance is to combine the
+    output from multiple models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ensemble learning and random forests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ensemble learning combines the output from multiple models to obtain a better
+    prediction than could be obtained with any of the models individually. The principle
+    is that the combined accuracy of many weak learners is greater than any of the
+    weak learners taken individually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random forests is an ensemble learning algorithm devised and trademarked by
+    Leo Breiman and Adele Cutler. It combines multiple decision trees into one large
+    forest learner. Each tree is trained on the data using a subset of the available
+    features, meaning that each tree will have a slightly different view of the data
+    and is capable of generating a different prediction from that of its peers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a Random Forest in clj-ml simply requires that we alter the arguments
+    to `cl/make-classifier` to `:decision-tree`, `:random-forest`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bagging and boosting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bagging and boosting are two opposing techniques for creating ensemble models.
+    Boosting is the name for a general technique of building an ensemble by training
+    each new model to emphasize correct the classification of training examples that
+    previous models weren't able to correctly classify. It is a **meta-algorithm**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: One of the most popular boosting algorithms is **AdaBoost**, a portmanteau of
+    "adaptive boosting". As long as each model performs slightly better than random
+    guessing, the combined output can be shown to converge to a strong learner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bagging is a portmanteau of "bootstrap aggregating" and is the name of another
+    meta-algorithm that is usually applied to decision tree learners but can be applied
+    to other learners too. In cases where a single tree might overfit the training
+    data, bagging helps reduce the variance of the combined model. It does this by
+    sampling the training data with replacement, just as with our bootstrapped standard
+    error at the beginning of the chapter. As a result, each model in the ensemble
+    has a differently incomplete view of the world, making it less likely that the
+    combined model will learn an overly specific hypothesis on the training data.
+    Random forests is an example of a bagging algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the random forests classifier, you should observe a kappa of around 0.55,
+    slightly lower than the decision tree we have been optimizing. The random forest
+    implementation has sacrificed some of the variance of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whilst this might seem disappointing, it is actually part of the reason for
+    random forests' appeal. Their ability to strike a balance between bias and variance
+    makes them flexible and general-purpose classifiers suitable for a wide variety
+    of problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Saving the classifier to a file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Finally, we can write out our classifier to a file using `clj-ml.utils/serialize-to-file`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE84]'
+  prefs: []
+  type: TYPE_PRE
+- en: At some point later, we can load up our trained classifier using the `clj-ml.utils/deserialize-from-file`
+    and immediately begin classifying new data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we've learned about how to make use of categorical variables
+    to group data into classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve seen how quantify the difference between groups using the odds ratio
+    and relative risk, and how to perform statistical significance tests on groups
+    using the *X*² test. We''ve learned about how to build machine learning models
+    suitable for the task of classification with a variety of techniques: logistic
+    regression, naive Bayes, decision trees, and random forests, and several methods
+    of evaluating them; the confusion matrix and the kappa statistic. We also learned
+    about the opposing dangers of high bias and of overfitting in machine learning,
+    and how to ensure that your model is not overfitting by making use of cross-validation.
+    Finally, we''ve seen how the clj-ml library can help to prepare data and to build
+    many different types of classifiers and save them for future use.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we'll learn about how to adapt some of the techniques we've
+    learned about so far to the task of processing very large datasets that exceed
+    the storage and processing capabilities of any single computer—so-called **Big
+    Data**. We'll see how one of the techniques we encountered in this chapter, gradient
+    descent, turns out to be particularly amenable to parameter optimization on a
+    very large scale.
+  prefs: []
+  type: TYPE_NORMAL

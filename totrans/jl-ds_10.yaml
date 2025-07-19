@@ -1,0 +1,1132 @@
+- en: Chapter 10. Collaborative Filtering and Recommendation System
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Every day, we are immersed with decisions and choices. These can range from
+    our clothes to the movies we can watch or what to eat when we order online. We
+    take decisions in business, too. For instance, which stock we should invest in.
+    The set of choices that we have can vary depending on what we are actually doing
+    and what we want. For example, when buying clothes online from Flipkart or Amazon
+    we see hundreds or thousands of choices. Amazon's Kindle store is so huge that
+    no one can read all the books in their lifetime. To make these decisions, we require
+    some background information and maybe a little help in knowing what can be best
+    for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generally, individuals depend on suggestions from their companions or the counsel
+    of specialists to choose and make decisions. They may observe their friends or
+    trusted people to make the same decisions as them. These include either paying
+    a good amount on the ticket and go to watch a movie, or order a specific pizza
+    that the individual has not tasted before, or start reading a book the individual
+    knows nothing about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The way these suggestions are made have limits. These are not dependent on the
+    likings or the "taste" of the user. There might be many movies or pizzas or books
+    that one may like and their friends or their company won't on whose his decisions
+    are usually made. This specific taste of the user cannot be taken care of by the
+    traditional way of suggestions or recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are recommendation systems?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Association rule mining.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Content-based filtering.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is collaborative filtering?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is user-based and item-based collaborative filtering?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building a recommendation engine.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is a recommendation system?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recommendation frameworks use learning methods for making customized suggestions
+    for data, items, or services. These recommendation systems generally have some
+    level of interaction with the target individual. The amount of data that has been
+    collected in recent years and the data that is being generated today proved a
+    great boon for these recommendation systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Today, many recommendation systems are in operation and produce millions of
+    recommendations per day:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommendations on e-commerce websites regarding the books, clothes, or items
+    to buy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Advertisements suited to our tastes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Type of properties that we may be interested in
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Travel packages suited to our tastes and budget
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The current generation of recommender systems are able to make worthy recommendations
+    and are scaled to millions of products and target users. It is required that even
+    if the number of products or users increase, the recommender system should continue
+    to work. But this becomes another challenge, as to get better recommendations
+    the algorithm would process more data which would increase the time taken for
+    recommendations. If we limit the data that is processed, the recommendations generated
+    may not be that effective or have the quality that the user would trust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to create the balance and devise the mechanisms to process more data
+    in a less amount of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is done by utilizing user-based collaborative filtering or item-based collaborative
+    filtering. Before we go further in collaborative filtering, we will also go through
+    association rule mining.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A recommender framework is an essential part of the data and e-business system.
+    It is an effective technique for empowering clients to channel through vast data
+    and item spaces. It also helps the user to find the product right at the front
+    which the user might not have been able to search for or might not have bought
+    if the recommendation system hadn't been there in place. This also helps in increasing
+    the sales as more and more users find the correct item that they would be interested
+    in buying.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A lot of research has been made to improve the recommender systems and it has
+    been accepted that there is no recommender system that can fit to every kind of
+    problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Algorithms cannot work without the user interaction or the data. Interaction
+    with the user is needed to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understand the user
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provide recommendations generated to the user
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is a big challenge to collect the "good" data from the user, that is, eliminating
+    or removing the noisy data that can have an affect on the recommendations that
+    will be generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some users generally traverse through various information on the Internet, while
+    some are focused only on the data they are interested in. Also, some users are
+    very concerned about their privacy and don't allow the data collection process
+    to happen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actually, the current recommender systems generally give good recommendations
+    when fed with clean and useful data. A lot of effort is put into the data collection
+    and cleaning phase where we understand which data is actually of use to the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The utility matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Generally, we encounter entities belonging to two classes in recommender systems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Users
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Items
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Users may have a liking for specific items and we need to find this liking and
+    show the items matching the criteria to them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take an example of the matrix of user ratings for movies. We will make
+    a user-movie matrix where the the ratings would be values in this matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **Star Wars IV** | **The Godfather** | **LOTR 1** | **LOTR 2** | **LOTR
+    3** | **The Notebook** | **Titanic** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **User 1** |  | 4 |  |  | 3 | 3 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **User 2** | 5 |  |  | 3 |  |  | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **User 3** | 5 |  | 5 |  | 4 |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **User 4** |  | 4 |  |  |  | 3 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **User 5** | 2 |  |  |  | 3 | 4 | 5 |'
+  prefs: []
+  type: TYPE_TB
+- en: In this particular example, we can see that user 1 has given a rating of 4 to
+    "The Godfather", a rating of 3 to "LOTR 3" (The Lord of the Rings 3), and a rating
+    of 3 to "The Notebook", but the user has not given ratings to other movies, which
+    is generally due to the reason that the user has not watched the movie. It is
+    also a possibility that the user preferred not to share views regarding the movie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The values range from 1 to 5, 1 being the lowest and 5 being the highest rating
+    for a movie. It is evident that the matrix is sparse, which means that most of
+    the entries are unknown. In the real world, the data that we encounter is more
+    sparse and we are required to fill these blank spaces with the probable ratings
+    from the user and thus give the recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Association rule mining
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Association rule mining is finding associations or patterns among a collection
+    of items which occur frequently. It is also known as **Market basket analysis**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Its main aim is to understand the buying habits of the customer, which is done
+    by finding the correlations and patterns among the items that customers intended
+    to buy or actually bought. For example, a customer who buys a computer keyboard
+    is also likely to buy a computer mouse or a pen drive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rule is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Antecedent → Consequent [support, confidence]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Measures of association rules
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let *A*, *B*, *C*, *D*, and *E* .... represent different items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then we need to generate association rules, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*{A, J} → {C}*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*{M, D, J} → {X}*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The first rule here means that when *A* and *J* are bought together then there
+    is a high probability of the customer buying *C* too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, the second rule means that when *M*, *D*, and *J* are bought together
+    there is a high probability of the customer buying *X* too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These rules are measured by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Support**: Support refers to the total coverage. It is the probability of
+    items bought together over the total transactions:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Support, X → Y: P(X,Y)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: (transactions containing both X and Y)/(total number of transactions)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Confidence**: Confidence refers to the accuracy. It is the probability of
+    buying the second item if the first item is bought:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Confidence, X → Y: P(Y|X)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: (transactions that contain both X and Y) / (transactions that contain only X)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Some items are not bought that frequently and they may not be of that much
+    importance to the algorithm. To generate these rules, these items need to to be
+    dropped. These are defined by the two thresholds, which are called:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minimum support
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Minimum confidence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to generate the item sets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Item sets that have the required minimal support are chosen.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If {X,Y} fulfills the criteria for the minimal support, then X and Y also fulfill
+    that criteria. The vice-versa is not true.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Apriori algorithm**:Subsets belonging to the frequent item sets are themselves
+    frequent:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, all the item sets are found based on the *n*:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For example, when *n=2*, *{{X,Y}, {Y,Z}, {X,S}, {S,Y}}*
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Now we merge these sets to a higher level:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*{{X,Y,Z}, {X,Y,S}, {Y,Z,S}, {X,Z,S}}*'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Out of these merged sets, we check how many of these have the required minimum
+    support:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We eliminate those sets whose minimum support couldn't be generated
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We keep on increasing the level to the point where no more sets can be generated
+    that have the required minimal support
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How to generate the rules
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When the number of item sets is small, the brute-force method is used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subsets of all the item sets are generated. The empty set is not included.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Confidence of these subsets is computed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rules having higher confidence are selected.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Content-based filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Content-based filtering creates a profile of the user and uses this profile
+    to give relevant recommendations to the user. The profile of the user is created
+    by the history of the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, an e-commerce company can track the following details of the user
+    to generate recommendations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Items ordered in the past
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Items viewed or added to the cart but not purchased
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: User browsing history to identify what kinds of products the user may be interested
+    in
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The user may or may not have manually given ratings to these items, but various
+    factors can be considered to evaluate their relevance to the user. Based on this,
+    new items are recommended to the user that would be interesting to that user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Content-based filtering](img/B05321_10_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The process as shown, takes the attributes from the user profile and matches
+    them with the attributes of the items available. When there are relevant items
+    available, these are considered to be of interest to the user and are recommended.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, the recommendations are heavily dependent on the profile of the user.
+    If the user profile correctly represents the user likings and interests then the
+    recommendations produced would be accurate and if the profile is not the current
+    representation of the user's preferences then the recommendations produced may
+    not be accurate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Steps involved in content-based filtering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are multiple steps involved in generating recommendations using content-based
+    filtering. These steps are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Analyzing attributes of the items. There is a possibility that the items that
+    are the candidates for the recommendation don''t have the valid structure of the
+    information. Therefore, the first step is to extract these attributes from the
+    items in a structured way:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For instance, for an e-commerce company, these attributes are the properties
+    or features of the products available in their catalog
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Generating the profile of the user. The user profile is created considering
+    various factors. This is done using machine learning techniques. The various factors
+    that can be considered are:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Order history
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Item view history
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: User browsing history to identify what kind of products the user may be interested
+    in
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In addition to these, the feedback from the user is also taken into account.
+    For example, if the user was satisfied after ordering a product, how many times
+    the user viewed a product and how much time was spent on it.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: The recommender using the preceding two generated components. The following
+    generated user profile and the item attributes that are extracted are matched
+    against each other using various techniques. Different weights are provided to
+    the different attributes of both user and item. We then generate recommendations
+    that can be ordered on the basis of relevance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Generating a user profile is a typical task and it needs to be exhaustive to
+    generate a more accurate profile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Social networks help to build a user profile. That is a treasure trove of the
+    information that is manually provided by the user. The user gives the details,
+    such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Type of products interested in, such as which type of books, music, and so on
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Products disliked such as some particular cuisine, cosmetic brands, and so on
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'After we start giving user recommendations, we also have the capability to
+    receive feedback, which helps the recommender to produce better recommendations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Explicit feedback**: When we buy an item on an e-commerce website, we generally
+    receive a feedback form after 2-3 days of initial use. The primary aim of this
+    form is to help the company to know if we actually liked the product and if not,
+    what could have been done to make it better. This is called explicit feedback.
+    This enables the recommender system to know that the product was not completely
+    suited for the user or a better product could have been recommended.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Implicit feedback**: The user may not be required to manually fill out the
+    feedback or may choose not to do so. In such a scenario, the user''s activities
+    are analyzed and monitored to know what the response was of the user towards the
+    product.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feedback may also be present as the comments on the product review section on
+    these e-commerce sites. These comments can be mined, and sentiment of the user
+    can be extracted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although having direct feedback from the user makes it easier for the system,
+    most users choose to ignore this particular feedback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advantages of content-based filtering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many advantages of using content-based filtering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Content-based filtering is dependent only on the user that we are generating
+    recommendations for. These are not dependent on the other users' ratings or profiles.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The recommendations generated can be explained to the user as they are dependent
+    on the user's profile and the attributes of the items present.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As the recommendations are not based on the ratings of the items, but on the
+    attributes of these items and the profile of the users, the newer items that have
+    not yet been bought or rated can be recommended too.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Limitations of content-based filtering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are some limitations of content-based filtering too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As content-based filtering requires the user profile, for a new user it can
+    be difficult to generate recommendations. To give good quality recommendations,
+    we need to analyze the user's activity and still the recommendations generated
+    may not be as per to the user's liking.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When the attributes or the features of the items are not readily available,
+    the content-based filtering faces difficulty to give recommendations. Also, sufficient
+    domain knowledge is also needed to understand these attributes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Content-based filtering is also dependent on the feedback provided by the user.
+    So, we need to analyze and monitor for the user feedback continuously. In the
+    scenario where the system can't understand if it is positive or negative feedback,
+    then it may not give such relevant recommendations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CBF also has the tendency to limit the recommendations to a very specific set.
+    It may not be able to recommend similar or related items that the user might be
+    interested in.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Collaborative filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Collaborative filtering is a famous algorithm that is based on the likings or
+    the behavior of other users or peers unlike the content-based filtering that we
+    studied in the previous section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Collaborative filtering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the user likes some of the things that other users or peers have shown an
+    inclination to, then the preferences of these users can be recommended to the
+    desired user
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is referred to as the "nearest neighbor recommendation"
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To implement collaborative filtering, some assumptions are made:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Likings or the behavior of peers or other users can be taken into consideration
+    to understand and predict for the desired user. Therefore, an assumption is made
+    that the desired user has similar tastes as the other users taken into consideration
+    here.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the user got a recommendation in the past based on ratings of a group of
+    users, then the user would have a similar taste with that group.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There are different types of collaborative filtering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Memory-based collaborative filtering**: Memory-based collaborative filtering
+    is based on the rating of the users to compute the similarity between the users
+    or even the items. This is used to make the recommendations:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It makes use of the rating matrix
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recommendations are generated for the desired user using this rating matrix
+    at any given time
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Model-based collaborative filtering**: Model-based collaborative filtering
+    depends on the training data and the learning algorithm to create the model. This
+    model is used to generate the recommendations using the actual data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This method fits the model to the provided matrix to generate the recommendations
+    on the basis of this model
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The basic procedure for collaborative filtering includes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As CF is highly based on the group whose preferences are considered, it is recommended
+    to find the peer group with similar tastes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The items that we will consider recommending should be there in the list of
+    items from the group, but not of the user
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After creating the matrix, the items are given a particular score depending
+    on the various factors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The items that receive the highest scores are recommended
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To keep improving and adding the recommendations as new items are added to the
+    list from the group, the preceding steps are performed again on a desired interval
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There are some advantages and disadvantages with collaborative filtering. Let''s
+    go through the advantages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is easier to understand where attributes of the user are properly formed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Users and products are simple systems and don't need specific understanding
+    to build the recommender
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The recommendations produced are generally good
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There are some drawbacks to collaborative filtering, too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As discussed earlier, collaborative filtering requires a lot of user feedback.
+    Also, these users need to be reliable.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A standardization is also required for the attributes of the items.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Assumption of past behavior will influence the present choices.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Baseline prediction methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A baseline is the simplest and easiest prediction that can be formed. It is
+    important to calculate a baseline to know about the accuracy of the models we
+    generate and validity of the results of the algorithms that we produce:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification**: The baseline for classification problems can be formed
+    by considering that most of the results of the predictions will be from the class
+    with the most observations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Regression**: The baseline for regression problems can be formed by considering
+    that most of the results of the predictions will be a central tendency measure,
+    such as mean or median.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Optimization**: Random samples in the domain are fixed when working on the
+    optimization problem.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When we have chosen the baseline prediction methods and have the results we
+    can compare them with the results of the models that we generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the models that we generated are not able to out perform these baseline methods
+    then most likely we need to work on the model to improve the accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: User-based collaborative filtering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: User-based collaborative filtering makes use of the main idea of collaborative
+    filtering which is finding similar users that have past ratings or behavior somewhat
+    similar to the target user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach is also called k-Nearest Neighbour collaborative filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![User-based collaborative filtering](img/B05321_10_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: If we have n number of users and x number of items, then we will have a matrix
+    *R -> n*x*. In the preceding diagram, we can see that there is one target user
+    and multiple other users. Out of these other users, two of them are similar to
+    the target user. Therefore, the previous ratings or behavior can be utilized for
+    generating the recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other than the matrix mentioned above, we also need a function to compute the
+    similarity between the users to calculate which users' ratings can be used to
+    generate the recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To find the similarity between the users (u,v), we find the nearest neighbors
+    using the Pearson Correlation coefficient (Pearson''s r):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![User-based collaborative filtering](img/B05321_10_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This computes the neighborhood N ⊆ U of neighbors of *u*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perfectly positive correlation = 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Perfectly negative correlation = -1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pearson Correlation has a drawback in that it may show two users as similar
+    even if they have very few ratings in common. To treat this, we can apply a threshold
+    on the items that are rated by both the users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cosine similarity: This is another method to find similar users. This takes
+    a different approach than Pearson Correlation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike Pearson correlation, which uses statistical approach, cosine similarity
+    uses the vector-space approach. In this method, users are not part of the matrix
+    but are represented by |I|-dimensional vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To measure the similarity between two users (vectors), it computes the cosine
+    distance. This is the dot product of the vectors and divides it by taking the
+    product of their L2 (Euclidean) norms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![User-based collaborative filtering](img/B05321_10_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: When there is no rating for a particular item, the dot product becomes 0 and
+    it drops out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now to generate the recommendation, we use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![User-based collaborative filtering](img/B05321_10_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This computes the weighted average of the user's rating of the neighbors taking
+    similarity as the weights. It is the most commonly used practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are some drawbacks of user-based collaborative filtering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sparsity: the matrix formed is usually very sparse and sparsity increases with
+    the increase in number of users and items'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is not always easy to effectively find nearest neighbors and make recommendations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is not very scalable and becomes computationally heavy with the increase
+    in the number of users and items
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sparse matrices may not be able to predict actual sets of like-minded people
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Item-item collaborative filtering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are some drawbacks to the user-based collaborative filtering, one of them
+    is scalability. To find the nearest neighbors, we find similarities between the
+    neighbors, which involves a lot of computation. It may not be feasible to apply
+    user-based collaborative filtering to systems having millions of users because
+    of high computation power requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, item-based collaborative filtering is used instead of user-based collaborative
+    filtering to achieve the desired scalability. It looks for patterns such as a
+    few items liked and an other few items disliked by the same set of users, then
+    these are considered to be like-minded and items are recommended.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is still required that we find the similar items in the item set by using
+    k-Nearest Neighbor or a similar algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's consider a scenario where a user has rated a few items. After a few days,
+    that particular user revisits those items and changes their rating. By changing
+    their rating, the user is essentially going to another neighbor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, it is not always recommended to pre-compute the matrix or find the
+    nearest neighbors. This is generally done when the recommendations are actually
+    needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithm of item-based collaborative filtering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'For (*i=1 to I*) where *I* refers to every item available:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each customer, *x* who rated *I*
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each item *K* purchased by the same customer, *x*
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Save that customer, *x* purchased both *I* and *K*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each item *K*
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Find the similarity between *I* and *K*
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This particular similarity is found using the same methods as used in user-based
+    collaborative filtering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cosine-based similarity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Correlation-based similarity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A weighted average is used to generate the recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let *S* be the set of items which is similar to *i*, then predictions can be
+    made. The equation that defines the item-based collaborative filtering is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Algorithm of item-based collaborative filtering](img/B05321_10_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: For the number of neighbors *k*, u would have rated some items which are taken
+    into consideration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a movie recommender system
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The dataset is maintained by the "GroupLens research" and is available for free
+    at [http://grouplens.org/datasets/movielens/](http://grouplens.org/datasets/movielens/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will be working on the dataset of 20 million ratings (`ml-20m.zip`). This
+    contains:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 20 million ratings
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 465,000 tag applications applied to 27,000 movies by 138,000 users
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will work on an ALS recommender, which is a matrix factorization algorithm
+    that uses **Alternating Least Squares with Weighted-Lamda-Regularization** (**ALS-WR**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's consider that we have a matrix with users, *u*, and items, *i:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, *r* represents the ratings submitted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider that we have *m* number of users and *n* number of movies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Building a movie recommender system](img/B05321_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: With *m* number of users and *n* number of movies, we create a matrix of users
+    and movies (*m*n*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The recommendations are generated for any user-movie pair as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(i,j),rij=ui⋅mj,∀i,j*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, *(i,j)* is the user-movie pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Julia has a package, `RecSys.jl`, created by Abhijith Chandraprabhu ([https://github.com/abhijithch](https://github.com/abhijithch)).
+    The package can be installed as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will initiate Julia in parallel mode:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we will be working on a huge dataset it is recommended to initiate the Julia
+    process in parallel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is `movielens.jl` in the examples section. We will be using this to generate
+    recommendations for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Keep it in the directory where it can be called and open it using any text
+    editor, such as Atom (Juno), Sublime, Vim, and so on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example will use the package `RecSys` and we are importing the methods
+    `train`, `recommend`, and `rmse`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This creates a composite type, which is a collection of named fields whose instances
+    can be treated as a single value. This is a user-defined data type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This user-defined data type has three fields and three methods. The field `als` belongs
+    to the type ALSWR, which is defined in RecSys.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The function uses multiple dispatches for the different types of inputs, which
+    could be provided:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`trainingset` and `movie_names`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`trainingset`, `movie_names`, and `thread`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`user_item_ratings`, `item_user_ratings`, and `movie_names`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This creates a function, `movie_names`, which is made to work with the `movielens`
+    dataset to handle the data types and missing values in the CSV file, which we
+    use as the input to the recommender system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, to train the system, we will use the train function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this particular scenario, we will do as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This trains the model for the `movielens` dataset using ALS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also initiate the test for the recommendations that will be produced:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To start the recommendations, do as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will print the recommendations on screen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The recommendations that I received were:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will call the function test to generate the recommendations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: This function takes the dataset path as an argument. Here we will provide the
+    path of the directory where we extracted the `ml-20m.zip`, which we downloaded
+    from grouplens.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It takes the ratings file and the movies file and creates an object "rec" of
+    type MovieRec, which we created earlier.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We pass the object to rmse to find out the error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It calls `print_recommendations`, which calls the recommend function to generate
+    the recommendations for the existing user.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It saves the model for further use.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned what recommendation engines are and how they are
+    important to businesses as well as what value they provide to the customer. We
+    discussed association rule mining and market basket analysis and how this simple
+    method is being used in the industry. Then we went through content-based filtering
+    and its advantages and disadvantages. We then discussed collaborative filtering
+    and different types of collaborative filtering, namely user-based and item-based
+    collaborative filtering. The aim of user-based collaborative filtering is finding
+    similar users that have past ratings or behavior somewhat similar to the target
+    user, whereas item-based collaborative filtering looks for patterns in ratings
+    of items to find like-minded users and to recommend items.
+  prefs: []
+  type: TYPE_NORMAL

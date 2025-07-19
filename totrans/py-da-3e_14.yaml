@@ -1,0 +1,977 @@
+- en: Unsupervised Learning - PCA and Clustering
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unsupervised learning is one of the most important branches of machine learning.
+    It enables us to make predictions when we don't have target labels. In unsupervised
+    learning, the model learns only via features because the dataset doesn't have
+    a target label column. Most machine learning problems start with something that
+    helps automate the process. For example, when you want to develop a prediction
+    model for detecting diabetes patients, you need a set of target labels for each
+    patient in your dataset. In the initial stages, arranging target labels for any
+    machine learning problem is not an easy task, because it requires changing the
+    business process to get the labels, whether by manual in-house labeling or collecting
+    the data again with labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, our focus is on learning about unsupervised learning techniques
+    that can handle situations where target labels are not available. We will especially
+    cover dimensionality reduction techniques and clustering techniques. Dimensionality
+    reduction will be used where we have a large number of features and we want to
+    reduce that amount. This will reduce the model complexity and training cost because
+    it means we can achieve the results we want with just a few features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clustering techniques find groups in data based on similarity. These groups
+    essentially represent *unsupervised classification*. In clustering, classes or
+    labels for feature observations are found in an unsupervised manner. Clustering
+    is useful for various business operations, such as cognitive search, recommendations,
+    segmentation, and document clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the topics of this chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unsupervised learning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reducing the dimensions of data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Principal component analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Partitioning data using k-means clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hierarchical clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DBSCAN clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spectral clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluating clustering performance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Technical requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter has the following technical requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find the code and the datasets at the following GitHub link: [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter11](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter11).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All the code blocks are available in the `ch11.ipynb` file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This chapter uses only one CSV file (`diabetes.csv`) for practice purposes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will use the pandas and scikit-learn Python libraries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Unsupervised learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Unsupervised learning means learning by observation, not by example. This type
+    of learning works with unlabeled data. Dimensionality reduction and clustering
+    are examples of such learning. Dimensionality reduction is used to reduce a large
+    number of attributes to just a few that can produce the same results. There are
+    several methods that are available for reducing the dimensionality of data, such
+    as **principal component analysis** (**PCA**), t-SNE, wavelet transformation,
+    and attribute subset selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The term cluster means a group of similar items that are closely related to
+    each other. Clustering is an approach for generating units or groups of items
+    that are similar to each other. This similarity is computed based on certain features
+    or characteristics of items. We can say that a cluster is a set of data points
+    that are similar to others in its cluster and dissimilar to data points of other
+    clusters. Clustering has numerous applications, such as in searching documents,
+    business intelligence, information security, and recommender systems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6c4790eb-c2f7-4f6e-8e3d-fb3daf08f6ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding diagram, we can see how clustering puts data records or observations
+    into a few groups, and dimensionality reduction reduces the number of features
+    or attributes. Let's look at each of these topics in detail in the upcoming sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing the dimensionality of data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Reducing dimensionality, or dimensionality reduction, entails scaling down a
+    large number of attributes or columns (features) into a smaller number of attributes.
+    The main objective of this technique is to get the best number of features for
+    classification, regression, and other unsupervised approaches. In machine learning,
+    we face a problem called the curse of dimensionality. This is where there is a
+    large number of attributes or features. This means more data, causing complex
+    models and overfitting problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Dimensionality reduction helps us to deal with the curse of dimensionality.
+    It can transform data linearly and nonlinearly. Techniques for linear transformations
+    include PCA, linear discriminant analysis, and factor analysis. Non-linear transformations
+    include techniques such as t-SNE, Hessian eigenmaps, spectral embedding, and isometric
+    feature mapping. Dimensionality reduction offers the following benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It filters redundant and less important features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It reduces model complexity with less dimensional data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It reduces memory and computation costs for model generation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It visualizes high-dimensional data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the next section, we will focus on one of the important and popular dimension
+    reduction techniques, PCA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PCA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In machine learning, it is considered that having a large amount of data means
+    having a good-quality model for prediction, but a large dataset also poses the
+    challenge of higher dimensionality (or the curse of dimensionality). It causes
+    an increase in complexity for prediction models due to the large number of attributes.
+    PCA is the most commonly used dimensionality reduction method and helps us to
+    identify patterns and correlations in the original dataset to transform it into
+    a lower-dimension dataset with no loss of information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main concept of PCA is the discovery of unseen relationships and correlations
+    among attributes in the original dataset. Highly correlated attributes are so
+    similar as to be redundant. Therefore, PCA removes such redundant attributes.
+    For example, if we have 200 attributes or columns in our data, it becomes very
+    difficult for us to proceed, what with such a huge number of attributes. In such
+    cases, we need to reduce that number to 10 or 20 variables. Another objective
+    of PCA is to reduce the dimensionality without affecting the significant information.
+    For *p*-dimensional data, the PCA equation can be written as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/84002ca2-8f82-4924-aa1d-eff456166baf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Principal components are a weighted sum of all the attributes. Here, ![](img/dfcee7e5-ede5-4f6e-979a-853c8d328e60.png)
+    are the attributes in the original dataset and ![](img/b146c101-372c-42a9-ac1a-44464567cfe2.png)
+    are the weights of the attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's take an example. Let's consider the streets in a given city as attributes,
+    and let's say you want to visit this city. Now the question is, how many streets
+    you will visit? Obviously, you will want to visit the popular or main streets
+    of the city, which let's say is 10 out of the 50 available streets. These 10 streets
+    will give you the best understanding of that city. These streets are then principal
+    components, as they explain enough of the variance in the data (the city's streets).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing PCA
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let''s perform PCA from scratch in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute the correlation or covariance matrix of a given dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find the eigenvalues and eigenvectors of the correlation or covariance matrix.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Multiply the eigenvector matrix by the original dataset and you will get the
+    principal component matrix.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s implement PCA from scratch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will begin by importing libraries and defining the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Calculate the covariance matrix:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Calculate the eigenvalues and eigenvector of the covariance matrix:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Multiply the original data matrix by the eigenvector matrix:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we have computed a principal component matrix from scratch. First, we
+    centered the data and computed the covariance matrix. After calculating the covariance
+    matrix, we calculated the eigenvalues and eigenvectors. Finally, we chose two
+    principal components (the number of components should be equal to the number of
+    eigenvalues greater than 1) and multiplied the original data by the sorted and
+    selected eigenvectors. We can also perform PCA using the scikit-learn library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s perform PCA using scikit-learn in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we performed PCA using the scikit-learn library. First,
+    we created the dataset and instantiated the PCA object. After this, we performed
+    `fit_transform()` and generated the principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That was all about PCA. Now it's time to learn about another unsupervised learning
+    concept, clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Clustering means grouping items that are similar to each other. Grouping similar
+    products, grouping similar articles or documents, and grouping similar customers
+    for market segmentation are all examples of clustering. The core principle of
+    clustering is minimizing the intra-cluster distance and maximizing the intercluster
+    distance. The intra-cluster distance is the distance between data items within
+    a group, and the inter-cluster distance is the distance between different groups.
+    The data points are not labeled, so clustering is a kind of unsupervised problem.
+    There are various methods for clustering and each method uses a different way
+    to group the data points. The following diagram shows how data observations are
+    grouped together using clustering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4aee9f30-6327-4a98-afc5-4fbd8cd8d687.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As we are combining similar data points, the question that arises here is how
+    to find the similarity between two data points so we can group similar data objects
+    into the same cluster. In order to measure the similarity or dissimilarity between
+    data points, we can use distance measures such as Euclidean, Manhattan, and Minkowski
+    distance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c5729621-be25-414c-a572-53ab75533e6d.png)![](img/9d297c3f-c5a0-4b20-8e0f-757fbe84ac29.png)![](img/363377f5-ed0b-4456-9d38-b5f05ff03c58.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, the distance formula calculates the distance between two k-dimensional
+    vectors, x[i] and y[i].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we know what clustering is, but the most important question is, how many
+    numbers of clusters should be considered when grouping the data? That's the biggest
+    challenge for most clustering algorithms. There are lots of ways to decide the
+    number of clusters. Let's discuss those methods in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the number of clusters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this section, we will focus on the most fundamental issue of clustering
+    algorithms, which is discovering the number of clusters in a dataset – there is
+    no definitive answer. However, not all clustering algorithms require a predefined
+    number of clusters. In hierarchical and DBSCAN clustering, there is no need to
+    define the number of clusters, but in k-means, k-medoids, and spectral clustering,
+    we need to define the number of clusters. Selecting the right value for the number
+    of clusters is tricky, so let''s look at a couple of the methods for determining
+    the best number of clusters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The elbow method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The silhouette method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let's look at these methods in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The elbow method
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The elbow method is a well-known method for finding out the best number of
+    clusters. In this method, we focus on the percentage of variance for the different
+    numbers of clusters. The core concept of this method is to select the number of
+    clusters that appending another cluster should not cause a huge change in the
+    variance. We can plot a graph for the sum of squares within a cluster using the
+    number of clusters to find the optimal value. The sum of squares is also known
+    as the **Within-Cluster Sum of Squares** (**WCSS**) or inertia:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1fcf7f70-3fae-44a8-bc68-82a8557f1729.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here![](img/38f9dbcc-1544-468e-9c78-f801e65b255c.png) is the cluster centroid
+    and ![](img/ebbb69a9-9801-48c0-bf4a-ac68a5d2db80.png) is the data points in each
+    cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/770d743c-1fe4-4a53-9339-1c68692c8cb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, at k = 3, the graph begins to flatten significantly, so we would
+    choose 3 as the number of clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s find the optimal number of clusters using the elbow method in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6dbc98cd-5a3e-4775-b09c-8dd3aa022614.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we created a DataFrame with two columns, `X` and `Y`.
+    We generated the clusters using `K-means` and computed the WCSS. After this, we
+    plotted the number of clusters and inertia. As you can see at k = 2, the graph
+    begins to flatten significantly, so we would choose 2 as the best number of clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The silhouette method
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The silhouette method assesses and validates cluster data. It finds how well
+    each data point is classified. The plot of the silhouette score helps us to visualize
+    and interpret how well data points are tightly grouped within their own clusters
+    and separated from others. It helps us to evaluate the number of clusters. Its
+    score ranges from -1 to +1\. A positive value indicates a well-separated cluster
+    and a negative value indicates incorrectly assigned data points. The more positive
+    the value, the further data points are from the nearest clusters; a value of zero
+    indicates data points that are at the separation line between two clusters. Let''s
+    see the formula for the silhouette score:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ceb5698c-b585-447b-99fb-a7fa76c37ca7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*a[i]* is the average distance of the *i*th data point from other points within
+    the cluster.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*b[i]* is the average distance of the *i*th data point from other cluster points.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means we can easily say that *S(i)* would be between [-1, 1]. So, for *S(i)*
+    to be near to 1, *a[i]* must be very small compared to *b*[*i*, that is,]*e. a[i]
+    << b[i]*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s find the optimum number of clusters using the silhouette score in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/586ffef3-8bdc-417c-87a0-f59b7ecf6cdd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we created a DataFrame with two columns, `X` and `Y`.
+    We generated clusters with different numbers of clusters on the created DataFrame
+    using `K-means` and computed the silhouette score. After this, we plotted the
+    number of clusters and the silhouette scores using a barplot. As you can see,
+    at k = 2, the silhouette score has the highest value, so we would choose 2 clusters.
+    Let's jump to the k-means clustering technique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partitioning data using k-means clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'k-means is one of the simplest, most popular, and most well-known clustering
+    algorithms. It is a kind of partitioning clustering method. It partitions input
+    data by defining a random initial cluster center based on a given number of clusters.
+    In the next iteration, it associates the data items to the nearest cluster center
+    using Euclidean distance. In this algorithm, the initial cluster center can be
+    chosen manually or randomly. k-means takes data and the number of clusters as
+    input and performs the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select *k* random data items as the initial centers of clusters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Allocate the data items to the nearest cluster center.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select the new cluster center by averaging the values of other cluster items.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat steps 2 and 3 until there is no change in the clusters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'This algorithm aims to minimize the sum of squared errors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/daea790b-7faa-48c1-bd2b-5d94b91df8fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'k-means is one of the fastest and most robust algorithms of its kind. It works
+    best with a dataset with distinct and separate data items. It generates spherical
+    clusters. k-means requires the number of clusters as input at the beginning. If
+    data items are very much overlapped, it doesn''t work well. It captures the local
+    optima of the squared error function. It doesn''t perform well with noisy and
+    non-linear data. It also doesn''t work well with non-spherical clusters. Let''s
+    create a clustering model using k-means clustering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/eeacfb97-2443-49b0-b672-981e3fb70076.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code example, we imported the `KMeans` class and created its
+    object or model. This model will fit it on the dataset (without labels). After
+    training, the model is ready to make predictions using the `predict()` method.
+    After predicting the results, we plotted the cluster results using a scatter plot.
+    In this section, we have seen how k-means works and its implementation using the
+    scikit-learn library. In the next section, we will look at hierarchical clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hierarchical clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Hierarchical clustering groups data items based on different levels of a hierarchy.
+    It combines the items in groups based on different levels of a hierarchy using
+    top-down or bottom-up strategies. Based on the strategy used, hierarchical clustering
+    can be of two types – agglomerative or divisive:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The agglomerative type is the most widely used hierarchical clustering technique.
+    It groups similar data items in the form of a hierarchy based on similarity. This
+    method is also called **Agglomerative Nesting** (**AGNES**). This algorithm starts
+    by considering every data item as an individual cluster and combines clusters
+    based on similarity. It iteratively collects small clusters and combines them
+    into a single large cluster. This algorithm gives its result in the form of a
+    tree structure. It works in a bottom-up manner; that is, every item is initially
+    considered as a single element cluster and in each iteration of the algorithm,
+    the two most similar clusters are combined and form a bigger cluster.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Divisive hierarchical clustering is a top-down strategy algorithm. It is also
+    known as **Divisive Analysis** (**DIANA**). It starts with all the data items
+    as a single big cluster and partitions recursively. In each iteration, clusters
+    are divided into two non-similar or heterogeneous sub-clusters:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](img/c6980eaf-08c4-40b2-9672-2637b8d1df93.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In order to decide which clusters should be grouped or split, we use various
+    distances and linkage criteria such as single, complete, average, and centroid
+    linkage. These criteria decide the shape of the cluster. Both types of hierarchical
+    clustering (agglomerative and divisive hierarchical clustering) require a predefined
+    number of clusters or a distance threshold as input to terminate the recursive
+    process. It is difficult to decide the distance threshold, so the easiest option
+    is to check the number of clusters using a dendrogram. Dendrograms help us to
+    understand the process of hierarchical clustering. Let''s see how to create a
+    dendrogram using the `scipy` library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/277c91a5-02e5-40c7-a414-c1bbadd82e82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code example, we created the dataset and generated the dendrogram
+    using ward linkage. For the dendrograms, we used the `scipy.cluster.hierarchy`
+    module. To set the plot title and axis labels, we used `matplotlib`. In order
+    to select the number of clusters, we need to draw a horizontal line without intersecting
+    the clusters and count the number of vertical lines to find the number of clusters.
+    Let''s create a clustering model using agglomerative clustering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/67093ca4-b8e3-4534-a276-57edc0e0d8f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code example, we imported the `AgglomerativeClustering` class
+    and created its object or model. This model will fit on the dataset without labels.
+    After training, the model is ready to make predictions using the `predict()` method.
+    After predicting the results, we plotted the cluster results using a scatter plot.
+    In this section, we have seen how hierarchical clustering works and its implementation
+    using the `scipy` and scikit-learn libraries. In the next section, we will look
+    at density-based clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DBSCAN clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Partitioning clustering methods, such as k-means, and hierarchical clustering
+    methods, such as agglomerative clustering, are good for discovering spherical
+    or convex clusters. These algorithms are more sensitive to noise or outliers and
+    work for well-separated clusters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/cd625968-9075-4b20-b1b4-cfcb06357e31.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Intuitively, we can say that a density-based clustering approach is most similar
+    t how we as humans might instinctively group items. In all the preceding figures,
+    we can quickly see the number of different groups or clusters due to the density
+    of the items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Density-Based Spatial Clustering of Applications with Noise** (**DBSCAN**)
+    is based on the idea of groups and noise. The main idea behind it is that each
+    data item of a group or cluster has a minimum number of data items in a given
+    radius.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main goal of DBSCAN is to discover the dense region that can be computed
+    using minimum number of objects (`minPoints`) and given radius (`eps`). DBSCAN
+    has the capability to generate random shapes of clusters and deal with noise in
+    a dataset. Also, there is no requirement to feed in the number of clusters. DBSCAN
+    automatically identifies the number of clusters in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s create a clustering model using DBSCAN clustering in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/923fc029-3684-4ddd-9200-7d7f71d401ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First, we import the `DBSCAN` class and create the moon dataset. After this,
+    we create the DBSCAN model and fit it on the dataset. DBSCAN does not need the
+    number of clusters. After training, the model is ready to make predictions using
+    the `predict()` method. After predicting the results, we plotted the cluster results
+    using a scatter plot. In this section, we have seen how DBSCAN clustering works
+    and its implementation using the scikit-learn library. In the next section, we
+    will see the spectral clustering technique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spectral clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Spectral clustering is a method that employs the spectrum of a similarity matrix.
+    The spectrum of a matrix represents the set of its eigenvalues, and a similarity
+    matrix consists of similarity scores between each data point. It reduces the dimensionality
+    of data before clustering. In other words, we can say that spectral clustering
+    creates a graph of data points, and these points are mapped to a lower dimension
+    and separated into clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A similarity matrix converts data to conquer the lack of convexity in the distribution.
+    For any dataset, the data points could be *n*-dimensional, and here could be *m*
+    data points. From these *m* points, we can create a graph where the points are
+    nodes and the edges are weighted with the similarity between points. A common
+    way to define similarity is with a Gaussian kernel, which is a nonlinear function
+    of Euclidean distance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7ee0c840-cc47-4d40-8587-a0d37813e6d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distance of this function ranges from 0 to 1\. The fact that it's bounded
+    between zero and one is a nice property. The absolute distance (it can be anything)
+    in Euclidean distance can cause instability and difficulty in modeling. You can
+    think of the Gaussian kernel as a normalization function for Euclidean distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After getting the graph, create an adjacency matrix and put in each cell of
+    the matrix the weight of the edge ![](img/5464e4e3-4ae8-4e0f-89ce-171574d90d18.png).
+    This is a symmetric matrix. Let''s call the adjacency matrix A. We can also create
+    a "degree" diagonal matrix D, which will have in each ![](img/443cf00c-34b5-4f31-8109-7954d92bbda6.png)
+    element the sum of the weights of all edges linked to node *i*. Let''s call this
+    matrix D. For a given graph G with *n* vertices, its *n***n* Laplacian matrix
+    can be defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/215d43f8-0e28-42b0-8933-f5c90615cf90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here *D* is the degree matrix and *A* is the adjacency matrix of the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have the Laplacian matrix of the graph (G). We can compute the spectrum
+    of a matrix of eigenvectors. If we take *k* least-significant eigenvectors, we
+    get a representation in *k* dimensions. The least-significant eigenvectors are
+    the ones associated with the smallest eigenvalues. Each eigenvector provides information
+    about the connectivity of the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea of spectral clustering is to cluster the points using these *k* eigenvectors
+    as features. So, you take the *k* least-significant eigenvectors and you have
+    your *m* points in *k* dimensions. You run a clustering algorithm, such as k-means,
+    and then you have your result. This *k* in spectral clustering is deeply related
+    to the Gaussian kernel k-means. You can also think about it as a clustering method
+    where your points are projected into a space of infinite dimensions, clustered
+    there, and then you use those results as the results of clustering your points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Spectral clustering is used when k-means works badly because the clusters are
+    not linearly distinguishable in their original space. We can also try other clustering
+    methods, such as hierarchical clustering or density-based clustering, to solve
+    this problem. Let''s create a clustering model using spectral clustering in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/46feaaeb-2ee3-4038-b110-87ccb5642f3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code example, we imported the `SpectralClustering` class and
+    created a dummy dataset using pandas. After this, we created the model and fit
+    it on the dataset. After training, the model is ready to make predictions using
+    the `predict()` method. In this section, we have seen how spectral clustering
+    works and its implementation using the scikit-learn library. In the next section,
+    we will see how to evaluate a clustering algorithm's performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating clustering performance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Evaluating clustering performance is an essential step to assess the strength
+    of a clustering algorithm for a given dataset. Assessing performance in an unsupervised
+    environment is not an easy task, but in the literature, many methods are available.
+    We can categorize these methods into two broad categories: internal and external
+    performance evaluation. Let''s learn about both of these categories in detail.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Internal performance evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In internal performance evaluation, clustering is evaluated based on feature
+    data only. This method does not use any target label information. These evaluation
+    measures assign better scores to clustering methods that generate well-separated
+    clusters. Here, a high score does not guarantee effective clustering results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Internal performance evaluation helps us to compare multiple clustering algorithms
+    but it does not mean that a better-scoring algorithm will generate better results
+    than other algorithms. The following internal performance evaluation measures
+    can be utilized to estimate the quality of generated clusters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Davies-Bouldin index
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The **Davies-Bouldin index** (**BDI**) is the ratio of intra-cluster distance
+    to inter-cluster distance. A lower DBI value means better clustering results.
+    This can be calculated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e75f87e1-1f2d-4dbd-aa1a-fb92b1212df6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, the following applies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'n: The number of clusters'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'c[i]: The centroid of cluster *i*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'σ[i]: The intra-cluster distance or average distance of all cluster items from
+    the centroid c[i]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'd(c[i], c[j]): The inter-cluster distance between two cluster centroids c[i]
+    and c[j]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The silhouette coefficient
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The silhouette coefficient finds the similarity of an item in a cluster to
+    its own cluster items and other nearest clusters. It is also used to find the
+    number of clusters, as we have seen elsewhere in this chapter. A high silhouette
+    coefficient means better clustering results. This can be calculated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ebc76612-2f75-4eff-8f4b-2a212a2d9e76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: a[i] is the average distance of the *i*^(th) data point to other points within
+    the cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: b[i] is the average distance of the *i*^(th) data point to other cluster points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, we can say that *S(i)* would be between [-1, 1]. So, for *S(i)* to be near
+    to 1, a[i] must be very small compared to b[i], that is, a[i] << b[i].
+  prefs: []
+  type: TYPE_NORMAL
+- en: External performance evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In external performance evaluation, generated clustering is evaluated using
+    the actual labels of clusters that are not used in the clustering process. It
+    is similar to a supervised learning evaluation process; that is, we can use the
+    same confusion matrix here to assess performance. The following external evaluation
+    measures are used to evaluate the quality of generated clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Rand score
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The Rand score shows how similar a cluster is to the benchmark classification
+    and computes the percentage of correctly made decisions. A lower value is preferable
+    because this represents distinct clusters. This can be calculated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/266b80ed-0d3b-4721-9b47-893f2c7ac724.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, the following applies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'TP: Total number of true positives'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'TN: Total number of true negatives'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'FP: Total number of false positives'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'FN: Total number of false negatives'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Jaccard score
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The Jaccard score computes the similarity between two datasets. It ranges from
+    0 to 1\. 1 means the datasets are identical and 0 means the datasets have no common
+    elements. A low value is preferable because it indicates distinct clusters. This
+    can be calculated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/106dca43-e3b1-49b8-a4c4-e16f9ae9c12e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here A and B are two datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: F-Measure or F1-score
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The F-measure is a harmonic mean of precision and recall values. It measures
+    both the precision and robustness of clustering algorithms. It also tries to equalize
+    the participation of false negatives using the value of β. This can be calculated
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d4fbdaf9-f90c-4b2d-a3ab-7d501bf65460.png)![](img/03632ba5-602f-432c-804f-a460bd853f5e.png)![](img/d4493844-d68e-46f5-a5fb-f1feee93d11d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here β is the non-negative value. β=1 gives equal weight to precision and recall,
+    β = 0.5 gives twice the weight to precision than to recall, and β = 0 gives no
+    importance to recall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Fowlkes-Mallows score
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The Fowlkes-Mallows score is a geometric mean of precision and recall. A high
+    value represents similar clusters. This can be calculated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/49c6cf32-9e06-4e2f-910c-2059f933e711.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s create a cluster model using k-means clustering and evaluate the performance
+    using the internal and external evaluation measures in Python using the Pima Indian
+    Diabetes dataset [(https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter11/diabetes.csv](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter11/diabetes.csv)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d7489eec-d909-4472-bd07-a50b30a765ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'First, we need to import pandas and read the dataset. In the preceding example,
+    we are reading the Pima Indian Diabetes dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After loading the dataset, we need to divide the dataset into dependent/label
+    columns (target) and independent/feature columns (`feature_set`). After this,
+    the dataset will be broken into train and test sets. Now both dependent and independent
+    columns are broken into train and test sets (`feature_train`, `feature_test`,
+    `target_train`, and `target_test`) using `train_test_split()`. Let''s split the
+    dataset into train and test parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, `train_test_split()` takes the dependent and independent DataFrames,
+    `test_size` and `random_state`. Here, `test_size` will decide the ratio for the
+    train-test split (having a `test_size` value of `0.3` means 30% of the data will
+    go to the testing set and the remaining 70% will be for the training set), and
+    `random_state` is used as a seed value for reproducing the same data split each
+    time. If `random_state` is `None`, then it will split the records in a random
+    fashion each time, which will give different performance measures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, we imported the `KMeans` and `metrics` modules. We created a k-means
+    object or model and fit it on the training dataset (without labels). After training,
+    the model makes predictions and these predictions are assessed using internal
+    measures, such as the DBI and the silhouette coefficient, and external evaluation
+    measures, such as the Rand score, the Jaccard score, the F-Measure, and the Fowlkes-Mallows
+    score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have discovered unsupervised learning and its techniques,
+    such as dimensionality reduction and clustering. The main focus was on PCA for
+    dimensionality reduction and several clustering methods, such as k-means clustering,
+    hierarchical clustering, DBSCAN, and spectral clustering. The chapter started
+    with dimensionality reduction and PCA. After PCA, our main focus was on clustering
+    techniques and how to identify the number of clusters. In later sections, we moved
+    on to cluster performance evaluation measures such as the DBI and the silhouette
+    coefficient, which are internal measures. After looking at internal clustering
+    measures, we looked at external measures such as the Rand score, the Jaccard score,
+    the F-measure, and the Fowlkes-Mallows index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next chapter, [Chapter 12](e04e479d-3b11-4f6a-a2bb-946009c4a70a.xhtml),
+    *Analyzing Textual Data*, will focus on text analytics, covering the text preprocessing
+    and text classification using NLTK, SpaCy, and scikit-learn. The chapter starts
+    by exploring basic operations on textual data such as text normalization using
+    tokenization, stopwords removal, stemming and lemmatization, parts-of-speech tagging,
+    entity recognition, dependency parsing, and word clouds. In later sections, the
+    focus will be on feature engineering approaches such as Bag of Words, term presence,
+    TF-IDF, sentiment analysis, text classification, and text similarity.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,874 @@
+- en: Loops, Functions, and String Processing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sometimes, magic one-liners are insufficient for manipulating data. Loops and
+    conditionals enable us to iterate over data in interesting ways without sticking
+    to default behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bash views non-binary files and streams as collections of characters. We commonly
+    think of these characters as groups of strings separated by some kind of whitespace.
+    It makes sense that some of the most useful and common tools in the command-line
+    universe are the ones that search and manipulate these strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following topics will be covered in this chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`for` loops'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`while` loops'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: File test conditionals
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Numeric comparisons
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: String case statements
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using regular expressions and `grep` to search and filter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: String transformations using `awk`, `sed`, and `tr`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sorting lists of strings with `sort` and `uniq`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Along the way, we'll see how we can pipe the results of one program into another
+    to get the results we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once, twice, three times a lady loops
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Few command-line tools have implicit looping and conditionals built into them.
+    Often, tasks will only operate on each line of an input stream and then terminate.
+    The shell provides just enough control flow and conditionals to solve many complex
+    problems, making up for any deficiencies that command-line tools have for operating
+    on data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The almighty `for` loop is a common loop idiom, however bash''s `for` loop
+    might feel a little unfamiliar to users of more traditional languages. The `for` loop
+    allows you to iterate over a list of words, and assign each one to a variable
+    for processing. For example, (pun intended):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ada257e1-0797-4f71-b0f6-a8b281d81153.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Often, we want a more traditional range of numbers in our `for` loops. The `POSIX`
+    method of generating a number range is to use the `seq` command, as in `seq --
+    $(seq 1 1 5)`, which will generate numbers from 1 (the first argument) to 5 (the
+    third argument) in steps of 1 increment (the second argument).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following examples, you'll notice we are using bracket expansions, `{}`,
+    and parentheses, `()`. For more information about both, check out [https://ss64.com/bash/syntax-brackets.html](https://ss64.com/bash/syntax-brackets.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Modern versions of `bash` provide an easy shorthand for this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/17774fa8-f1c3-44c6-b4fd-fdf1f1f63607.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can also set the amount that the sequence is incremented by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2ed52b37-5d53-40ba-878d-a7ab14d4cf4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Alternatively, we can use the `bash` supported C-like syntax:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b4aa359d-7e15-48f5-a7de-fba201b5b3f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Looping for a specified number of times may be what we need, but we can also
+    pass in the result of a sub-command to generate the list of things to loop over.
+    For example, we may want to do something to each file in the current directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f8cf46e8-8f49-4489-9544-1512e3610085.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Often, we may want to test one or more conditionals, especially in loops. Bash
+    has an `if-then` construct, like most languages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bc85b83b-d991-43b1-b387-add64e2200f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The statement inside the brackets is a test, and bash contains a set of special
+    tests, such as `-f` for common tasks. Here''s a list of some of the most common
+    ones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Test type** | **Parameter** | **Description** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-O` | `True` if file exists and is owned by the effective user
+    ID |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-f` | `True` if file exists and is a regular file |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-G` | `True` if file exists and is owned by the effective group
+    ID |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-r` | `True` if file exists and is readable |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-w` | `True` if file exists and is writable |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-x` | `True` if file exists and is executable |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-s` | `True` if file exists and has a size greater than zero
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Filesystem | `-h` | `True` if file exists and is a symbolic link |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Arithmetic | `<=` | Less than equal |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Arithmetic | `>=` | Greater than equal |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Arithmetic | `<`  | Less than |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Arithmetic | `>`  | Greater than |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Arithmetic | `!=` | Not equal |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Arithmetic | `=` | Equal |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Like other languages, we can also include `else-if` tests, and finally an `else
+    if` nothing else matches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/48ae89f3-e5f2-4ffd-93e3-75e7711430ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Even though the `if-else` construct exists, most shell scripts use the pipeline
+    semantics of `&& (AND)` and `|| (OR)`. We briefly mentioned this in [Chapter 3](ea035d0b-e34a-481c-87f4-53c45869e4a3.xhtml), *Obtaining
+    and Working with Data and Detached Processing and Terminal Multiplexers*, but
+    here''s a more detailed example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It's the end of the world as we know it while and until
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s explore two more options for assisting with iteration. The `while` construct
+    allows for the repetitive execution of a list or set of commands as long as the
+    command that controls the `while` loop exits successfully. Let''s see an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s say I wanted to print the `"hello!"` string four times in a script—no
+    more and no less. We can do so with the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/88518703-1714-4788-904c-b7a3ba02a38d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's save and run this script to see what happens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don't forget to `chmod -x` these scripts to make them executable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Executing the script produces the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/00080cc2-726b-4440-98c5-a1d875db5c32.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that, in the script, we created a variable called `i="0"`. This sets
+    the `i` variable to zero. Do you see the `while [ $i -lt 4 ]` block? This allows
+    us to run the loop as the `i` variable is less than the `4` integer. Go ahead
+    and play around with this code for a bit to get a better understanding. Also,
+    you can `man [` for more information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our while script, we counted up until four for our output. Let''s use the `until` construct
+    to count down and provide the `goodbye!` output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/be4e8256-218b-4c48-a3bd-5a219b2650fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s save and run this script to see what happens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bbc9c002-41c4-481c-b557-1878fe92d685.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The simple case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Frequently, string comparison is done using the test operator, `[`. This is
+    ill-advised in bash, as there''s a much more convenient format for string comparison,
+    using the `case` statement. Here''s a simple example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `testcase` function lets us test the `case` statement by wrapping it in
+    a `for` loop that assigns each function argument to the `VAR` variable, then executes
+    the `case` statement. With the `foo a bar b c d` arguments, we can expect the
+    following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pay no heed to the magician redirecting your attention
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Looping is great for working over sequences of data in an iterative fashion,
+    but sometimes, when you''re doing all that work, you get lots of irrelevant output.
+    Enter our little magician: the output redirection operator, `*>*`. This operator
+    directs output to a specified file or file descriptor. We''ve talked about file
+    descriptors, they are integers that the OS uses to identify a file handle that
+    has been opened, and by default there are three opened for every process: `stdin`,
+    `stdout`, and `stderr`. The default file descriptors, denoted by `fd#`, are `fd0`
+    for standard input, `fd1` for standard output, and `fd2` for standard error. The `*>*` operator
+    by default, redirects `stdout`, the equivalent of `1>`, unless it''s preceded
+    by an integer file-descriptor. Let''s see some examples of output redirection,
+    before we get lost in what we''re referring to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Normal messaging is sent to standard output, and is rendered as text in your
+    Terminal window. This is how `ls /` will show the contents of the root filesystem
+    to your Terminal. In the second invocation, we use `>` to indicate that `stdout`
+    should be redirected to `/dev/null`, which will discard the output. The third
+    sends error messages to `dev/null`, so they don't render to the Terminal. The
+    fourth example redirects `stdout` to a file named `stdout_and_stderr.log` and
+    then copies `stderr` to the same location as `stdout` with `&1`. The fifth example
+    splits `stdout` to `stdout.log` and `stderr` to `stderr.log`. The sixth example
+    doesn'tredirect `stderr` to `/dev/null`, rather it redirects `stderr` to where
+    `stdout` is pointing at the time of the assignment—the Terminal and then `stdout`
+    is redirected to `/dev/null`. This shows that the order of operators matters and
+    diligence should be paid to ensure that assignments occur in definition order.
+    The last point to make is that because `stdout` is a file descriptor, and not
+    the Terminal, it's possible to direct other output to the Terminal, and have `stdout`
+    directed to another file descriptor that won't result in Terminal output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are three less-frequently-used redirection operators: `<` for input redirection, `>>` for
+    output append redirection, and `<<` for `HEREDOC`. Input redirection is used to
+    feed data into a pipeline, like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will read `stdout.log` into the standard input of the `cat` command, which
+    will write its output to the pipe operator. There''s really not much more to input
+    redirection, as pipelines implicitly set the `stdout` of the previous command
+    to the standard input of the next command. We also mentioned the append operator, `>>` ,
+    and it''s necessary to point out that the `>` redirection operator truncates files
+    to zero content before writing. This behavior isn''t desired if data needs to
+    be preserved between runs. To clarify, this truncates data in `keys.log`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The other option is appending the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lastly, the `heredoc` operator, `<<`, it replaces standard input with a predefined
+    text-stream book ended by a keyword that follows `<< KEYWORD`. For example, the
+    following example can be used to truncate an `options.conf` file and write the
+    three option values into the file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Regular expressions and grep
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One key task you will face over and over is matching particular patterns of
+    text. The match might be as simple as finding one instance of a specific string
+    in a body of text, or it could be much more complicated. A great tool for matching
+    text is the language of regular expressions. A regular expression is an abstract
+    way of expressing certain types of string-matching patterns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Contrary to popular belief, regular expressions can''t match everything you
+    might want to match. They''re limited to certain types of matches, and depending
+    on the particular flavor of regular expression implementation, they could have
+    a little more or a little less power. As an academic exercise, one might try to
+    characterize exactly what you can match and what you can''t. It''s a very interesting
+    endeavor that cuts to the very core of theoretical computer science. But we won''t
+    be doing that here: we are here to do practical things!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First up, you'll want to find a way to test your regular expressions. There
+    are several tools available on the web that allow you to interactively test your
+    matches. A couple of good ones are listed at the end of this section. Of course,
+    this is a command-line book, and you can test matches yourself just by putting
+    test text in a file and using `grep`. Grep is a program that takes a regular expression
+    and emits the lines in the input stream that match that regular expression (by
+    default, it emits lines where any substring of the line matches the regular expression).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exact matches
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A regular expression is a string itself. Several characters are reserved, that
+    is, when they're present in the string, they have a special meaning. Any non-reserved
+    character in the `regex` must be matched exactly, in the exact order that it appears.
+    Notably, a `regex` that's nothing but a normal character must be an exact match
+    on the entire string.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You do multiple things with a `regex`. Sometimes, you may require that the entire
+    target strings match. Other times, you may want to find if and where a substring
+    of the target string matches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here''s a table of `regex` pattern matches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Regex** | **String** | **Matches?** | **Matches substring?** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| abc | abc | Yes | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| abc | abcd | No | Yes (abcd) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| abc | def | No | No |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Let''s look for an exact match on the `aardvark` string in the review titles
+    of our test dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The red-highlighted content is the matched content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/23b0669d-2c44-4eab-93c6-9d9d9315f664.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Character sets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After an exact string, you might want to match one of a couple of characters
+    instead of one exactly. To do this, we use the `characters []` bracket to enclose
+    the list of characters that we might want to match. We can only match one of the
+    possible characters inside the brackets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here''s a table of `regex` pattern matches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Regex** | **String** | **Matches?** | **Matches substring?** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `ab[cd]` | `abc` | Yes | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `ab[cd]` | `abcd` | No | Yes (abcd) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `ab[cd]` | `abe` | No | No |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Let''s see whether there are any examples of a capitalized `aardvark` in our
+    review data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The red-highlighted content is the matched content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c901a393-5b7d-40c3-b4d0-fe629d6545c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dot the i (or anything else)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The dot character, `.`, is a one-character wildcard character. It will match
+    anything. There are also restricted wildcards that only match certain types of
+    characters: `\d` matches a digit, `\w` matches any alphanumeric character or an
+    underscore, and `\s` matches whitespace.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here''s a table of `regex` pattern matches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Regex** | **String** | **Matches?** | **Matches substring?** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `\s..ick` | The trick | Yes | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `...` | `abcd` | No | Yes (abcd) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `abc\ddef` | `abc_def` | No | No |'
+  prefs: []
+  type: TYPE_TB
+- en: 'We could have done the last search for a capital A (or anything else starting
+    our `ardvark` string) using a dot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The red-highlighted content is the matched content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d292d85e-ddff-49c1-a060-c797d3556100.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Capture groups
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can set apart groups of characters with parentheses. While not terribly useful
+    on their own, these groups can be combined with other operators to do very useful
+    things. We call these groups capture groups because the `regex` engine captures
+    what was matched inside the group. Later on, you can use what was captured to
+    match something else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will show some examples of using capture groups later, in the section on
+    `awk`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Either or, neither nor
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The pipe character, `|`, lets us match one or the other of something. We can
+    delineate where the pair starts by using a capture group. Invoke the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The red-highlighted content is the matched content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6480d26b-d9f3-4f7e-addb-5041be827137.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Repetition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are three heavily-used operators that let us match repetitions. They are
+    the question mark, `?`, the plus, `+`, and the asterisk, `*`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The question mark, `?`, matches exactly `0` or `1` instances of the thing it''s
+    applied to (a character, set, or group). Invoke the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The red-highlighted content is the matched content:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4a31491c-6988-4137-b270-b5205d76d60e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The plus operator, `+`, matches one or more things, and the asterisk operator, `*`,
+    matches `0` or more things. Invoke the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/df2cda4b-b1c1-4a2a-8a76-b78999c0c692.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Other operators
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You can match many things with `regex`, and each implementation of `regex`
+    is a little different. I suggest looking at these resources for a full treatment
+    of each kind of `regex` and what you can do with them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A great, comprehensive site with many examples: [https://www.regular-expressions.info/](https://www.regular-expressions.info/)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A site to test and debug different types of `regex`: [https://regex101.com/](https://regex101.com/)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Another `regex` test site: [https://www.regexpal.com/](https://www.regexpal.com/)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A library of `regex` instances that others have created: [http://www.regexlib.com](http://www.regexlib.com)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Putting it all together
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a recap, we have the following operators:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Operator** | **Use** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `Brackets []` | Specifies sets of characters to match |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `Capture Group ()` | Groups characters, and pulls out what was matched later
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Or `&#124;` | Matches one of two things |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `?` | Matches zero or one times |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `+` | Matches one or more times |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `*` | Matches zero or more times |'
+  prefs: []
+  type: TYPE_TB
+- en: awk, sed, and tr
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will be looking at `awk`, `sed`, and `tr`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: awk
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`awk` (including the `gnu` implementation, `gawk`) is designed for streaming
+    text processing, data extraction, and reporting. An `awk` program is structured
+    as a set of patterns that are matched, and actions to take when those patterns
+    are matched:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: For each record (usually each line of text passed to `awk`), each pattern is
+    tested to see whether the record matches, and if so, the action is taken. Additionally,
+    each record is automatically split into a list of fields by a delimiter (any run
+    of whitespace by default). The default action, if none is given, is to print the
+    record. The default pattern is to match everything. There are two special patterns, `BEGIN`
+    and `END`, which are matched only before any records are processed, or after,
+    respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`awk` is very good at doing certain kinds of math on input streams, which we''ll
+    discuss later in the book. For strings, `awk` is great at filtering an input stream
+    on complex conditions, doing transformations on input data, and combinations of
+    these things.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Filtering on a complex condition is as easy as supplying the filter condition
+    as a pattern and the default action (which is to say, nothing). `awk` will then,
+    by default, print out the whole line. As an example, we might want to simulate
+    grep by matching on a regular expression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ebf9e265-3ffd-4e1d-aba3-bcd60ea6c6e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, the forward slashes indicate that the string inside is a `regex`. We
+    can even get rid of `cut` here, as `awk` itself can look for the tab field separators.
+    If we do this, we need to tell `awk` that we''re looking for substrings of the
+    appropriate field. The special variables, `$1`, `$2`, and so on, represent the
+    fields of each record. `$0` is the entire record. Invoke the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0be2ce9f-7e36-44b3-867a-a8707bba9734.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We printed the entire record here since we didn''t cut it in advance, and we
+    told `awk` to do the default, which is printing the entire record. Maybe we want
+    to just print out the title, field `6`, when we match `aardvark` in the review
+    description. We have to add a non-default action to our filter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code generates this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/64f4b185-df59-4540-bebc-9e24b7817197.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can also do things such as picking out the fields we want, re-ordering them,
+    and printing them out with a different field separator which we define in the
+    `BEGIN` pattern:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code looks like this in the Terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/dd9317e4-7700-4761-9633-b0b38182733b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: More information on `awk` can be found at [https://www.gnu.org/software/gawk/manual/gawk.html](https://www.gnu.org/software/gawk/manual/gawk.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: sed
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`sed` is an alternative to `awk` for line-by-line stream editing. One of the
+    most common uses of `sed` is for easy `regex` replacement. For example, we can
+    pipe the strings that contain `aardvark` that we found in the review descriptions
+    and replace them with `giraffe`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code should output the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/567245f3-acb2-4465-be62-ceb3e62cd023.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`sed` can also delete lines matching a pattern:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b3975028-dff4-4139-81e5-bb8425379ce7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sed has almost 30 commands in addition to more complex stream processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More information on sed can be found at [https://www.gnu.org/software/sed/manual/sed.html](https://www.gnu.org/software/sed/manual/sed.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: tr
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The `tr` command is somewhat simpler than `awk` or `sed`, but sometimes it''s
+    just what''s needed: `tr` translates or deletes characters from a stream.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Say we really hate the letter `a` and we''d like to replace all of them with `b`.
+    With `tr`, this is simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/825ec6c8-1621-4d4a-ac2f-33f2484ad312.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: sort and uniq
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After `awk`, `sed`, and `tr`, `sort`, and `uniq` are going to be a breeze.
+  prefs: []
+  type: TYPE_NORMAL
+- en: sort
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`sort`, well, sorts a stream of strings (or numbers). It won''t remove duplicates,
+    it keeps them. By default, `sort` puts things in alphabetical order.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see `sort` in action by piping one column of data (using `cut`) from
+    a few lines (using head) from our example data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2f690674-0a78-4f50-84ab-1212b346b303.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you pass `sort` the `-n` flag, it will `sort` numerically instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/43d738f9-6aa3-461a-8045-84dedd6a3871.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Sometimes, you might want to sort on just a part of the data. In this way,
+    you can start to treat these streams of data more like a database. You can use
+    the `-k` option to sort data by columns, along with the `-t` option if your data
+    is delimited by something other than tabs. We can use this, for example, to find
+    the review with the most helpful votes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces lots of output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/9673d4fc-1004-47d1-95fc-e623312d4002.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, we pass the `-k9n`, `9` option to sort from column `9` to column `9` (just
+    the one column), and we pass `n` to sort numerically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can also sort on more than one column. Say we wanted to sort first by column
+    `9` descending, but them by column `10` ascending:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/91fb911a-2eca-48e5-b168-92f0ee848968.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this example, we found the review with the least helpful votes but the most
+    total votes as a tiebreak.
+  prefs: []
+  type: TYPE_NORMAL
+- en: uniq
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`uniq` is a funny little program that usually just removes adjacent identical
+    lines in a stream of data. We put it in with `sort` because, usually, you see
+    it used with data piped from `sort` to count the unique values in a stream of
+    data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It produces this counting sequence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/076eac1e-ac25-49aa-ae3e-8ee71e2f8056.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see the only possible star ratings are `1` through `5`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`uniq` has some other uses, but this is by far the main use of `uniq`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we covered the breadth of bash's control structures and dived
+    into input/output redirection. These features can be leveraged to enhance your
+    command-line functions and enable small scripts that process data in loops without
+    having to resort to a full-fledged programming language for some simple data processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also looked at a lot of ways to slice and dice characters and strings. While
+    many use cases may be covered using string manipulation alone, often we'll want
+    to delve a little deeper into the data represented by these streams to extract
+    useful information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we'll look at doing this by using the command line and
+    data streams as a database.
+  prefs: []
+  type: TYPE_NORMAL

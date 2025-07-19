@@ -1,0 +1,791 @@
+- en: Chapter 12. Exporting and Presenting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, will cover how to export results and nicely present them through
+    the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exporting data to a CSV file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Exporting data as JSON
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using SQLite to store data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Saving data to a MongoDB database
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Presenting results in an HTML web page
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating a LaTeX table to display results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Personalizing messages using a text template
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Exporting matrix values to a file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![Introduction](img/ch12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: After gathering, cleaning, representing, and analyzing, the last important step
+    in data analysis is to export and present the data in a usable format. The recipes
+    in this chapter will cover how to save a data structure on disk for later use
+    by other programs. Moreover, we will show how to present the data elegantly with
+    Haskell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exporting data to a CSV file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sometimes, it's more convenient to view data using a spreadsheet program such
+    as LibreOffice, Microsoft Office Excel, or Apple Numbers. A standard way to export
+    and import simple spreadsheet tables is through **Comma Separated Values** (**CSVs**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will use the `cassava` package to easily encode a CSV file
+    out of a data structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the Cassava CSV package from cabal, using the following command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the relevant packages using the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define an association list of data that will be exported as CSV. For this recipe,
+    we will pair letters and numbers together, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the `encode` function to convert the data structure into a lazy ByteString
+    CSV representation, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A CSV file is simply a list of records. The `encode` function in the Cassava
+    library takes a list of items that implement the `ToRecord` typeclass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we can see that tuples of size 2 such as `('A', 1)` are valid
+    arguments to the `encode` function. By default, tuples of size 2 to 7 are supported
+    along with lists of arbitrary sizes. Each element of the tuple or list must implement
+    the `ToField` typeclass, which most built-in primitive data types support by default.
+    More details on the package can be found at [https://hackage.haskell.org/package/cassava](https://hackage.haskell.org/package/cassava).
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to easily convert a data type into CSV, we can implement the `ToRecord`
+    typeclass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, the Cassava documentation shows the following example of converting
+    a `Person` data type into a CSV record:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For JSON instead, refer to the following *Exporting data as JSON* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exporting data as JSON
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A convenient way to store data that may not adhere to a strict schema is through
+    JSON. To accomplish this, we will use a painless JSON library called **Yocto**.
+    It sacrifices performance for readability and small size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will export a list of points as JSON.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the Yocto JSON encoder and decoder from cabal using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Start by creating a new file, which we call `Main.hs` and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant data structures, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a data structure for 2D points:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Convert a `Point` data type into a JSON object, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create the points and construct a JSON array out of them:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Write the JSON array to a file, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'When running the code, we will find the `points.json` file created, as seen
+    in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For a more efficient JSON encoder, see the Aeson package located at [http://hackage.haskell.org/package/aeson](http://hackage.haskell.org/package/aeson).
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To export data to CSV, refer to the previous recipe titled *Exporting data to
+    a CSV file*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using SQLite to store data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: SQLite is one of the most popular databases for compactly storing structured
+    data. We will use the SQL binding for Haskell to store a list of strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We must first install the SQLite3 database on our system. On Debian-based systems,
+    we can issue the following installation command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install the SQLite package from cabal, as shown in the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Create an initial database called `test.db` that sets up the schema. In this
+    recipe, we will only be storing integers with strings as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the relevant libraries, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a `FromRow` typeclass implementation for `TestField`, the data type
+    we will be storing, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function to retrieve everything form the database just for
+    debugging purposes, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function to insert a string into the database, as shown in
+    the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Connect to the database, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Set up the string data we want to insert, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Insert each of the elements to the database, as shown in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out the database, using the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'We can verify that the database contains the newly inserted data by evoking
+    the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For another type of database, refer to the following *Saving data to a MongoDB
+    database* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Saving data to a MongoDB database
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: MongoDB can very naturally store unstructured data using the JSON syntax. In
+    this recipe, we will store a list of people to MongoDB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We must first install MongoDB on our machine. The installation files can be
+    downloaded from [http://www.mongodb.org](http://www.mongodb.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need to make a directory for the database using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, start the MongoDB daemon on that directory using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install the MongoDB package from cabal using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file called `Main.hs` and perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the libraries as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a data type for the names of people as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Set up a couple of data items we wish to store as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Connect to the MongoDB instance and store all the data as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Convert the `Person` data type into the proper MongoDB type as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'We must ensure that a MongoDB daemon is running. If not, we can create a process
+    that listens to the directory of our choice using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'After running the code, we can double-check if the operation was successful
+    by navigating to MongoDB using the following commands:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For SQL usage, refer to the previous *Using SQLite to store data* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Presenting results in an HTML web page
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sharing data online is one of the quickest ways to reach a broad audience. However,
+    typing data into HTML directly can be time consuming. This recipe will generate
+    a web page using the Blaze Haskell library to present data results. For more documentation
+    and tutorials, visit the project webpage at [http://jaspervdj.be/blaze/](http://jaspervdj.be/blaze/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the Blaze package from cabal using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file called `Main.hs`, perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import all the necessary libraries as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Convert the list of string into an HTML unordered list as shown in the following
+    code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a list of strings to render as an HTML web page as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code to generate the HTML file to open using a browser as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output will be as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![How to do it…](img/6331OS_12_01.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To present data as a LaTeX document and consequently as a PDF, refer to the
+    following *Creating a LaTeX table to display results* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a LaTeX table to display results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This recipe will create a table in LaTeX programmatically to facilitate document
+    creation. We can create a PDF out of the LaTeX code and share it as we please.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install `HaTeX`, the Haskell LaTeX library, from cabal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a file named `Main.hs` and follow these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the libraries as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Save a LaTeX file with our specifications as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the document, which is split up into a preamble and a body, as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The preamble contains author data, title, and formatting options, among other
+    things, as presented in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the list of data we would like to convert into a LaTeX table as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the body as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Set up the title and section, and construct the table as shown in the following
+    code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'After running the code using the following commands, we can obtain the PDF
+    and view it:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output will be as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![How to do it…](img/6331OS_12_02.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To construct a web page instead, refer to the previous recipe titled *Presenting
+    results in an HTML web page*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Personalizing messages using a text template
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sometimes we have a large list of usernames and relating data and we wish to
+    individually send each person a message. This recipe will create a text template
+    that will be filled out from the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `template` library using cabal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Perform the following steps in a new file called `Main.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the libraries as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the data we are dealing with as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the template for the data as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function to convert data items to a template as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Match each data item to the template and print everything out to a text file,
+    as shown in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code to see the resulting file:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Exporting matrix values to a file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In data analysis and machine learning, matrices are a popular data structure
+    that often need to be exported and imported into the program. In this recipe,
+    we will export a sample matrix using the Repa I/O library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `repa-io` library using cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we name `Main.hs`, and insert the code explained in
+    the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant libraries as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a 4 x 3 matrix as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Write the matrix to a file as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The matrix is represented simply as a list of its elements in row-major order.
+    The first two lines of the file define the type of data and the dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To read a matrix back from this file, we can use the `readMatrixFromTextFile`
+    function to retrieve the two-dimensional matrix. More documentation about this
+    package is available at [https://hackage.haskell.org/package/repa-io](https://hackage.haskell.org/package/repa-io).
+  prefs: []
+  type: TYPE_NORMAL

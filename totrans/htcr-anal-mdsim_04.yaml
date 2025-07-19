@@ -1,0 +1,1016 @@
+- en: Computing Foundations – Databases
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter will introduce you to databases and the **Structured Query Language**
+    (**SQL**). It is mainly for healthcare professionals and beginner data scientists
+    and programmers who are interested in working with healthcare databases. By the
+    end of the chapter, you will know what a database is and how to use basic SQL
+    to extract and manipulate information in clinical databases. We will present an
+    example task and SQL statements useful for manipulating data in a sample mini-database
+    of five patients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to databases
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A **database** can be defined as a collection of related data (Elmasri and Navathe,
+    2010). Databases are often subcategorized as **SQL databases** or **NoSQL databases**.
+    In SQL databases, data is recorded in tables and consists of rows and columns.
+    The related data may be distributed across several tables in a trade-off between
+    efficient storage and convenience. The **database management system** (**DBMS**)
+    is a piece of software that enables the database to serve several functions. For
+    one thing, it allows for the *retrieval* of data using the SQL language (for SQL
+    databases). Another function is to update the data when needed, also using SQL.
+    Additional functions of a DBMS include protecting and securing the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Database management is a complex field of its own. In this book, we will place
+    an emphasis on *using SQL to retrieve and update clinical data that is usually
+    distributed across multiple related tables*. For additional comprehensive resources
+    on databases, see the *References* section at the end of this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data engineering with SQL – an example case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this chapter, let's pretend you secured a predictive analytics assignment
+    with a cardiology practice located in the United States. The practice wants you
+    to predict which patients are at risk of dying within 6 months of their visit
+    to the clinic. They make their data available to you in the form of a database
+    that includes six tables. For simplicity, we truncate the database to include
+    the information for five patients only. Our task is to manipulate the data using
+    the SQL language to consolidate it into a single table so that it can be used
+    for machine learning. We will first go over the patients in the database and the
+    database structure. Then, we will introduce basic SQL concepts for engineering
+    and manipulate the data into a form amenable to machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Case details – predicting mortality for a cardiology practice
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The cardiology practice you are working with has two physicians on staff: Dr.
+    Johnson and Dr. Wu. While the practice has many patients, they are interested
+    in identifying which patients who visit are at high risk of all-cause mortality
+    within the next 6 months. Having an outpatient visit sometime in 2016 makes up
+    the inclusion criteria for the analytics. The target variable is whether the patient
+    passed away within 6 months of their visit.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we've reviewed the details of the modeling assignment, let's take a
+    look at the five patients in the database. The preliminary data sent to you by
+    the cardiology practice includes information on five patients, distributed across
+    six tables. The following are case vignettes for each of the patients. Note that
+    this section is heavy on clinical terminology related to cardiovascular diseases.
+    We encourage you to use available online resources to answer your questions about
+    this terminology. A comprehensive clinical reference is *Harrison's Principles
+    of Internal Medicine* (Kasper et al., 2005), the information for which is given
+    at the end of the chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following is the information about the patients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Patient ID-1**: Patient #1 in the database is a 65-year-old male who has
+    **congestive heart failure** (**CHF**), a chronic condition in which the heart
+    is unable to pump blood properly to the rest of the body. He also has hypertension
+    (high blood pressure), which is a risk factor for CHF. He visited his cardiologist,
+    Dr. Johnson, on 9/1/2016 and 17/1/2016\. On his January 9th visit, he was found
+    to have an elevated BP (154/94) and an elevated B-natriuretic peptide (BNP) lab
+    value of 350\. BNP is a marker of CHF severity. He was subsequently placed on
+    lisinopril and furosemide, which are first-line treatments for CHF and hypertension.
+    Unfortunately, he passed away on May 15th, 2016.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Patient ID-2**: Patient #2 is a 39-year-old female with a history of angina
+    pectoris (cardiovascular-related chest pain upon exercising) and diabetes mellitus.
+    Diabetes mellitus is a risk factor for myocardial infarction (heart attack; a
+    late, often fatal manifestation of atherosclerotic heart disease), and angina
+    pectoris can be seen as an early manifestation of atherosclerotic heart disease.
+    She visited her cardiologist, Dr. Wu, on January 15th, 2016, at which time she
+    was found to have an elevated blood glucose level of 225, a sign of uncontrolled
+    diabetes. She was started on metformin for her diabetes, as well as nitroglycerin,
+    aspirin, and metoprolol for her angina.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Patient ID-3**: Patient #3 is a 32-year-old female who sees Dr. Johnson for
+    management of her hypertension. During her visit on February 1st, 2016 her blood
+    pressure was elevated at 161/100\. She was started on valsartan/hydrochlorothiazide,
+    an anti-hypertensive combination.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Patient ID: 4**: Patient #4 is a 51-year-old male who has severe CHF with
+    pulmonary hypertension. He saw Dr. Wu on February 27th, 2016\. During that visit,
+    his weight was 211 lbs and his blood pressure was slightly elevated at 143/84\.
+    His BNP level was highly elevated at 1,000\. He was given lisinopril and furosemide
+    for his CHF as well as diltiazem for his pulmonary hypertension. Unfortunately,
+    he passed away on June 8th, 2016.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Patient ID-5**: The last patient in our database, patient #5, is a 58-year-old
+    male who presented to Dr. Wu on March 1st, 2016 with a history of CHF and diabetes
+    mellitus Type 2\. During the visit, his glucose was elevated at 318 and BNP was
+    moderately elevated at 400\. He was started on lisinopril and furosemide for his
+    CHF and metformin for his diabetes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The clinical database
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we''ve gotten to know the five patients whose information is contained
+    in our database, we can describe the table structure and fields contained in the
+    database, for six mock tables: `PATIENT`, `VISIT`, `MEDICATIONS`, `LABS`, `VITALS`,
+    and `MORT`. Although every clinical database is different, I''ve tried to use
+    a structure that is commonly seen in healthcare. Typically, tables are presented
+    by clinical domains (for an example of a research study that received tables in
+    such a distributed format, see Basole et al., 2015). For example, there is often
+    one table that contains demographic and personal information, one table for lab
+    results, one for medications, and so on, so that is how we constructed the database
+    in this example. They tend to be tied together by a common identifier, which in
+    our case is the `Pid` field.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we describe the tables, we must keep our end-goal of the data engineering
+    phase in mind–to combine the relevant information from the six tables into a single
+    table, whose columns include the target variable (mortality in this case) in addition
+    to predictor variables, which should be useful for predicting the target variable.
+    This will enable us to make a machine learning model with popular packages such
+    as Python's `scikit-learn`. With this in mind, we will highlight selected fields
+    that will be useful for our assignment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The PATIENT table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In our example, the `PATIENT` table, which we can see in the following screenshot,
+    contains the demographic and identifying information of our patients–their names,
+    contact information, birthdays, and biological sex. In this example, there are
+    only five observations and 11 columns; in real practice, this table would contain
+    all of the patients affiliated with the healthcare organization. The number of
+    rows in this table might range from hundreds to hundreds of thousands, while the
+    table could potentially include dozens of columns containing detailed demographic
+    information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/46661fa9-00b7-42a5-8c7b-ad93ecf6056c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the database, every unique patient is assigned to an identifier (the field
+    labeled as `Pid`), which in our case is simply numbered 1 - 5\. The `Pid` column
+    allows us to keep track of the patients across different tables. Also, notice
+    that there is one and only one entry for each distinct patient ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After identifying the indispensable identifer column, the focus should be on
+    which variables to keep and which to discard. Certainly, age and sex are important
+    demographic predictors of mortality. If race were in this table, that would be
+    another important demographic variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another notable variable in this table is the zip code. Increasingly, socioeconomic
+    data is being used in machine learning analyses. The zip code can potentially
+    be tied to publicly available census data; that data can then be joined to the
+    data in this table on the zip code and could potentially provide information on
+    the average education level, income, and healthcare coverage for each patient's
+    zip code. There are even organizations who sell household-level information; however,
+    with that data comes a great responsibility for privacy protection and data security.
+    For this example, we will omit the zip code to keep our final table simple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Information we'll leave out from our final table includes names, street addresses,
+    and phone numbers. As long as we have the patient ID, these fields shouldn't have
+    much of a predictive impact on our target variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The VISIT table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While the `PATIENT` table contains basic administrative information about each
+    patient, our assignment is to predict the mortality risk on the basis of each
+    *visit*. The `VISIT` table contains one observation for each patient visit, along
+    with some clinical information about each visit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4ba30aec-3223-4a93-af82-f720bd647816.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Notice that the patient ID is no longer the primary identifier of this table,
+    since Patient #1 had two visits; instead, there is a `Visit_id` field that is
+    numbered from `10001` to `10006` in this example, with one distinct ID per visit.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This table also contains `Visit_date`. Since the cardiology practice indicated
+    they want to know the mortality risk within 6 months of the patient visit, we
+    will have to use this field later when we compute the target variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two of the fields in this table contain ICD (diagnosis) codes. Actual tables
+    may contain dozens of codes for each visit. For each coded field, there is a corresponding
+    name field that contains the name of the condition that the code represents. A
+    popular approach in healthcare is to make, in the final table, a column for every
+    clinical code we are interested in tracking (Futoma et al., 2015; Rajkomar et
+    al., 2018). We will adopt this approach later in the chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we note that the name of the attending physician is included, which
+    can be used to measure physician performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MEDICATIONS table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The `MEDICATIONS` table contains one entry for every medication being taken
+    by our five patients. In this example, there is no single column that serves as
+    a primary key for this table. As we can see in the following screenshot, this
+    table includes information about the medication name, dose, frequency, route,
+    prescribing physician, and prescription date. The NDC code of each medication
+    is also included; we covered NDC codes in [Chapter 2](71c31b0a-fa9e-4b31-8b58-f563a815e338.xhtml),
+    *Healthcare Foundations*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/07e90df1-dec5-4169-988a-82198225d7ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Including medications in our final table will not be straightforward. For example,
+    the information in the tables does not indicate the class of each medication.
+    The NDC code is present, but the NDC code is even more granular than the medication
+    name since it includes the route of administration and dosage in making each unique
+    code; therefore, multiple forms of lisinopril could have different NDC codes.
+    In order to make a column for each medication, we could potentially separately
+    make a table for each medication, which contains all of the medications that compose
+    it, and then merge that information into our table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we choose to include dosage information, that field will require some cleaning.
+    Notice that Patient #3 is receiving an anti-hypertensive combination drug–the
+    valsartan component has a dosage of 160 mg, while the hydrochlorothiazide component
+    has a dosage of 12.5 mg. This could possibly be coded as two separate drugs, but
+    creating a script that splits combination drugs into two rows is not trivial.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The LABS table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Laboratory information is an important part of clinical diagnostics, and many
+    laboratory test results make for good predictor variables (Donze et al., 2013;
+    Sahni et al., 2018). The `LABS` table includes fields that describe the laboratory
+    test name, abbreviation, LOINC code, and result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/70660895-ce3a-4f59-a96c-3a7720579f59.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There are some different approaches to including lab information in the final
+    table. One way would be to include the raw lab result as a continuous variable.
+    However, this leads to a problem because the result would be NULL for most labs.
+    We could potentially navigate around this issue by imputing a value in the normal
+    range when it is missing. Another approach would be to have a binary variable
+    for a lab test result that is in the abnormal range. This solves the missing data
+    problem, since if the result is missing it would be zero. However, a BNP value
+    of 1,000 (which indicates severe CHF) would be no different than a BNP value of
+    350 (which indicates mild CHF) with this method. We will demonstrate both approaches
+    in this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also note that the `Lab_value` field sometimes contains special characters,
+    for example in the troponin result. These will need to be removed and the lab
+    values interpreted accordingly. Culture results (not included in this example)
+    are completely textual, often naming specific bacterial strains instead of numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we repeat that this is a simplified example and that many of the common
+    labs that would be drawn for these patients (for example, WBC count, hemoglobin,
+    sodium, potassium, and so on) are excluded here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The VITALS table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Vital signs are important indicators of a patient's health status and can be
+    good predictors in healthcare machine learning models (Sahni et al., 2018). Vital
+    signs are typically taken at every patient visit, so they can easily be included
+    in their raw (numerical) form to preserve granularity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following screenshot of the table, we notice that while height and weight
+    are present, the **body mass index** (**BMI**) is missing. We will demonstrate
+    the calculation of the BMI in [Chapter 5](12ee77f2-0655-4dc5-abb1-2868d6fcc386.xhtml),
+    *Computing Foundations – Introduction to Python*. Second, Visit #10004 is missing
+    a temperature reading. This is common in healthcare and may be caused by an oversight
+    in care:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d0320c9d-5191-414e-b101-76ba65cc2243.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The VITALS table
+  prefs: []
+  type: TYPE_NORMAL
+- en: Later in the chapter, we will impute the normal temperature for this visit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MORT table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Finally, we come to the table that contains the target variable. The `MORT`
+    table contains just two fields, the patient identifier, and the date the patient
+    passed away. Patients not listed in this table can be assumed to be living:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/55885bd2-47e9-4317-992a-4dc302a4aee6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Later, we will learn how to transfer the information from this table into a
+    binary target variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Starting an SQLite session
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The database engine we will use to transform our database is **SQLite**. In
+    [Chapter 1](b15b2b73-d2bb-410f-ab55-5f0f1e91730e.xhtml), *Introduction to Healthcare
+    Analytics*, we went over installation instructions as well as basic SQLite commands.
+    It should be mentioned that SQL comes in many variants, and the SQL specific to
+    SQLite has minor differences to that specific to MySQL or SQL Server databases.
+    However, the underlying principles remain constant across all SQL dialects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this time, do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Navigate to the directory containing the `sqlite3.exe` program in your shell
+    or command prompt (using the `cd` command).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Type `sqlite3 mortality.db` and press *Enter*. You should see a prompt that
+    looks like the following: `sqlite>`. This prompt indicates that you are in the
+    SQLite program.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Throughout the remainder of this chapter, we are going to create some tables
+    and execute some SQLite commands on them in the SQLite program.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To exit the session at any time, type `.exit` and press *Enter*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Data engineering, one table at a time with SQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's now look at how to perform data engineering with SQLite. First, we have
+    to create our tables in the database. Then, we will manipulate them, one by one,
+    to get the desired final table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #0 – creating the six tables'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this mock assignment, let's pretend that the portal at which the data can
+    be downloaded from the cardiology practice is not working. Instead, one of the
+    technicians sends you SQLite commands that you can use to create the six tables.
+    You can follow along with the book and type each command manually. Alternatively,
+    you can go to the book's official code repository and download the commands from
+    there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #0a – creating the PATIENT table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One way to create a table in our database is to specify its schema manually.
+    Let''s do that here with our first table, the `PATIENT` table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, notice that the name of the table appears after the
+    `CREATE TABLE` phrase. Following that, there is an open parenthesis, and on each
+    line a new column is named (for example, `Pid` and `Fname`). On each line, following
+    the column names, are the types of each column. We use `VARCHAR(![](img/132125d6-1eb7-42e6-9fb1-55b899cf2b65.png))`
+    for most columns in this example, where ![](img/719756ac-ad5e-4df0-b962-c416cf4860ff.png) is
+    the maximum number of characters that the column contains. A `CHAR` column contains
+    just one character. Finally, some of the important fields (such as names and identifiers)
+    we will not allow to be blank, and we specify that for those columns by using
+    the `NOT NULL` phrase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we created the schema of our table, the next step is to populate the
+    table with data. As we said, in the database we just have five patients, therefore
+    the `PATIENT` table will have five rows. We use an `INSERT` command to insert
+    each row into the table as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that the `INSERT` statements first specify that fields that will be inserted,
+    before using the `VALUES` keyword, after which the actual data elements are listed.
+    If `VARCHAR` or `CHAR` is used, the data elements should be surrounded by single
+    quotes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #0b – creating the VISIT table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s now make the `VISIT` table. Again, first we use a `CREATE TABLE` statement,
+    followed by six `INSERT` statements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #0c – creating the MEDICATIONS table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To create the `MEDICATIONS` table, use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #0d – creating the LABS table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To create the `LABS` table, use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #0e – creating the VITALS table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Notice that the `VITALS` table uses numeric types such as `FLOAT` and `INT`.
+    To create the `VITALS` table, use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #0f – creating the MORT table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To create the `MORT` table, use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #0g – displaying our tables'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To confirm that a table (for example, `PATIENT`) was made correctly, we can
+    use the `SELECT * FROM PATIENT;` query (we will explain this syntax further in
+    Query Set #2):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #1 – creating the MORT_FINAL table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first query we write will create the table using a `CREATE TABLE` statement.
+    In one version of a `CREATE TABLE` statement, each variable is spelled out with
+    its corresponding datatype. We used this version to create our six tables from
+    scratch in the previous examples. Alternatively, one can create a table by copying
+    from an existing table. We will opt for the second option here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we''ve answered that question, a second one remains–which table should
+    we copy from? It might be tempting to copy the patient information from the `PATIENT`
+    table to our final table, since it contains one row for each patient, and it contains
+    basic demographic information. However, we must remember that the use case is
+    based on each *visit*, not patient. Therefore, if a patient has two visits (such
+    as Patient #1), technically that patient will receive two risk scores: one for
+    each visit. Therefore, we should start by copying information from the `VISIT`
+    table. This will create a table with six rows, one for each visit.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So we start our query using a `CREATE TABLE` clause, with `MORT_FINAL` being
+    the name of our new table. Then we use the `AS` keyword. The next two lines of
+    the query specify which information to copy using a `SELECT-FROM-WHERE` construct:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: A `SELECT-FROM-WHERE` statement is a systematic way of selecting the information
+    we want from a table. The `SELECT` part acts as a *column* selector–following
+    the `SELECT` keyword are the columns that we want to copy into the new table.
+    Note that we left out the names of the diagnoses (`Pri_dx_name`, `Sec_dx_name`)
+    since those technically aren't predictor variables, as long we have each code
+    and we can refer to their meanings. The `FROM` keyword specifies the table name
+    from which we wish to copy (`VISIT`, in this case). The `WHERE` keyword is an
+    optional clause that allows us to select only those *rows* that meet certain conditions.
+    For example, if we were interested in restricting our model to those visits in
+    which the patient had heart failure, we could say `WHERE Pri_dx_code == 'I50.9'`.
+    Because we are interested in including all visits in this example, we do not need
+    a WHERE clause for this query. We will see the WHERE clause in action in the next
+    query set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #2 – adding columns to MORT_FINAL'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will demonstrate two ways to add additional columns. One
+    method uses an `ALTER TABLE` statement, while the second method uses a `JOIN`
+    operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #2a – adding columns using ALTER TABLE'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we've populated information from the `VISIT` table into the `MORT_FINAL`
+    table, it's time to start integrating the other tables as well. We'll start with
+    the `PATIENT` table; specifically, we would like to add in the birthdate and sex
+    from this table. We start with the birthdate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Query Set #2, we demonstrate the basic query pattern for adding a new column
+    (the birthdate) to our table. We start with an `ALTER TABLE` statement, followed
+    by the name of the table, the operation (`ADD COLUMN`, in this case), the name
+    of our new column, and the variable type. Although standard SQL supports a `DATE`
+    variable type for dates, in SQLite, we use the `TEXT` type. Dates are always specified
+    in `YYYY-MM-DD` format.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After we've initialized the new column with our `ALTER TABLE` statement, the
+    next step is to populate the actual birthdates from the `PATIENT` table. For this,
+    we use an `UPDATE` statement. We specify the table we are updating, followed by
+    a `SET` statement and the name of the column we are modifying, with an equals
+    sign.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `SELECT-FROM-WHERE` block is the basic *retrieval* query of the SQL language.
+    We are trying to *retrieve* information from the `PATIENT` table and populate
+    into our new `Bdate` column, so we use a `SELECT-FROM-WHERE` statement, enclosed
+    in parentheses, after the equals sign. Think of the SQL statement as issuing the
+    following order to the database with its `SELECT` statement: "For every row in
+    the `MORT_FINAL` table, find me the birthdate from the `PATIENT` table where the
+    `Pid` in the `PATIENT` table equals the `Pid` in the `MORT_FINAL` table."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Following the `UPDATE` statement for the `Bdate` column, we use the same sequence
+    of queries (`ALTER TABLE` and `UPDATE`) to retrieve the `Sex` column from the
+    `PATIENT` table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #2b – adding columns using JOIN'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While the `ALTER TABLE` and `UPDATE` sequence is a good way to add columns to
+    a table one at a time, it can be tedious when you want to copy many columns from
+    the same table. A `JOIN` operation gives us a second option for copying many columns
+    from the same table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a `JOIN` operation, two tables are combined to produce a single table. In
+    the following example query, the selected columns of the `VITALS` table are appended
+    on the end of the `MORT_FINAL` table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, the `MORT_FINAL` table and `VITALS` table both contain several rows.
+    How does the query know which rows of each table correspond to each other? This
+    is specified using an `ON` clause (at the end of the query). The `ON` clause says,
+    "When joining the tables, combine those rows where the visit IDs are equal." So
+    for each row of the `MORT_FINAL` table, there will be one and only one row of
+    the `VISITS` table to which it corresponds: the row that has the same visit ID.
+    This makes sense because we are interested in collecting the information from
+    individual visits in their own separate rows.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another thing to know about JOINs is that there are four different JOIN types
+    in standard SQL: LEFT JOINs, RIGHT JOINs, INNER JOINs, and OUTER JOINs. A LEFT
+    JOIN (referred to as a LEFT OUTER JOIN in SQLite) is the type we use here; it
+    says, "For every row of the first table (`MORT_FINAL`, in this case), add the
+    corresponding VISIT columns where the visit IDs are equal, and add NULL values
+    if there is no corresponding visit ID in the VISIT table." In other words, all
+    of the rows of the first table are preserved, whether or not there is a corresponding
+    row in the right table. Visits that have a row in the second table but are missing
+    from the first table are discarded.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a RIGHT JOIN, the opposite is true: unique visit IDs of the second table
+    are preserved, and they are aligned to the corresponding visit IDs of the first
+    table. Visit IDs present in the first table but missing in the second table are
+    discarded. INNER JOINs include in the final result: only visit IDs that are present
+    in both tables. OUTER JOINs include all rows of both tables and replace all missing
+    entries with NULL values. As a note, we should add that RIGHT JOINs and OUTER
+    JOINs are not supported in SQLite.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So why did we choose a LEFT JOIN? Fundamentally, our job is to specify a prediction
+    for every single visit, whether or not vital signs were recorded at that visit.
+    Therefore, every visit ID present in the `MORT_FINAL` table should be in the final
+    result, and the LEFT JOIN ensures that will be true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following code, we see that by using a JOIN, only one total query is
+    needed to add eight columns of the `VITALS` table. What are the downsides of this
+    method? For one thing, notice that a new table is created: `MORT_FINAL_2`. We
+    cannot append to the old `MORT_FINAL` table; a new table must be created. Also,
+    notice that we have to type out each column that we wish to preserve in the final
+    result. In SQL, the asterisk (*) indicates to add *all* columns from both tables;
+    we could have written `SELECT * FROM MORT_FINAL ...`. However, if we used an asterisk,
+    there would be duplicate columns (for example, the `Visit_id` column would be
+    present twice, since it is in both tables).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then we would have to exclude the duplicate columns with a `SELECT` statement.
+    Nevertheless, JOINs are useful when there are many columns in a second table that
+    you would like to merge into a first table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #3 – date manipulation – calculating age'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'So far, our `MORT_FINAL_2` table contains 16 columns: 6 from the `VISIT` table,
+    2 from the `PATIENT` table, and 8 from the `VITALS` table (you can verify this
+    by using the `SELECT * FROM MORT_FINAL_2;` command). In this query set, we transform
+    one of these variables, the birthdate variable, into a usable form using date
+    manipulation: we calculate the patients'' age.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we said earlier in Query Set #2a, dates are stored in SQLite as `TEXT` variable
+    types and are in the `YYYY-MM-DD` format. Calculating the age takes two calls
+    to the `julianday()` function. In SQLite, the `julianday()` function takes a date
+    in `YYYY-MM-DD` as input and returns the number of days since November 24th, 4714
+    BC 12:00 PM as a float. By itself, it may not seem very useful, but when used
+    in combination with another `julianday()` call and a subtraction sign, it allows
+    you to find the number of days that have elapsed between two dates. Following
+    that, we calculate the Julian day difference between the visit date and the birthdate
+    and divide the result by 365.25 to give us the patient ages in years. We also
+    apply the `ROUND()` function to this result and round to two places after the
+    decimal point (which is what the `2` indicates before the final parentheses are
+    closed):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #4 – binning and aggregating diagnoses'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our example database, the `VISIT` table contains the diagnostic codes for
+    the visit. Although they didn't get their own table in our example, the diagnostic
+    codes are among the most important pieces of information for many analytics problems.
+    For one thing, they allow us to select the observations that are relevant to our
+    model. For example, if we were building a model to predict malignant cancers,
+    we would need the diagnosis codes to tell us which patients have cancer and to
+    filter out the other patients. Second, they often serve as good predictor variables
+    (Futoma et al., 2015). For example, as we will see in [Chapter 7](d029d858-9c6e-4bf0-b793-87cdc4395e86.xhtml), *Making
+    Predictive Models in Healthcare*, many chronic diseases increase the likelihood
+    of poor healthcare outcomes by a large amount. Clearly, we must leverage the information
+    given to us in the diagnostic codes to optimize our predictive models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will introduce two transformations for coded variables here. The first transformation,
+    **binning**, converts the categorical variable to a series of binary variables
+    for specific diagnoses. The second transformation, **aggregating**, groups many
+    of the binary binned variables into a single binary or numerical variable. These
+    transformations apply not only to diagnostic codes, but to the procedure, medication,
+    and laboratory codes as well. The following are examples of both of these transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #4a – binning diagnoses for CHF'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here, we see the binning transformation for congestive heart failure diagnoses.
+    First, we initialize the new column, `Chf_dx`, as an integer using an `ALTER TABLE`
+    statement. The `DEFAULT 0` statement means that all rows are initialized to be
+    zero. Next, we set the column equal to 1 if and only if there is a code corresponding
+    to CHF in the `Pri_dx_icd` column or the `Sec_dx_icd` column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #4b – binning diagnoses for other diseases'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here, we see the same type of transformation for every single diagnosis code
+    in our five-patient dataset. The queries for binning hypertension, angina, diabetes,
+    and pulmonary hypertension are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #4c – aggregating cardiac diagnoses using SUM'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While binning is important for separating out individual diagnoses, in practice,
+    we often want to group similar or near-identical diagnostic codes together as
+    a single variable. Aggregating combines two or more binary variables into a single
+    binary/numeric variable. Here, we aggregate all cardiac diagnostic codes in our
+    dataset (CHF, hypertension, and angina are cardiac diseases) using the `+` operator.
+    The result is a count of the number of total cardiac diagnoses for each of the
+    five patients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #4d – aggregating cardiac diagnoses using COUNT'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In Query Sets #4b and #4c, we binned and then aggregated three diagnostic codes
+    using the `+` operator on the column names individually. However, we may be interested
+    in binning and aggregating dozens, hundreds, or even thousands of diagnostic codes.
+    The method of Query Sets #4b and #4c quickly becomes impractical for large aggregations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, we use the `COUNT` function and a supplemental table to aggregate the
+    diagnostic codes listed in the table. We first use a `CREATE TABLE` statement
+    to create a `CARDIAC_DX` table. The format of this `CREATE TABLE` statement is
+    a bit different than that of Query Set #1\. In that example, we simply created
+    a table by copying columns from an existing table. Here, we create the table from
+    scratch by including parentheses and the column name, variable type, and `NOT
+    NULL` statement enclosed in parentheses. If there were more than one column, they
+    would be separated by commas within the parentheses.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After creating the table, we insert our three diagnostic codes into it using
+    an `INSERT` statement: `I50.9`, `I10`, and `I20.9`. Then we add a column to our
+    `MORT_FINAL_2` table called `Num_cardiac_dx_v2`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final query updates the `Num_cardiac_dx_v2` column by adding the number
+    of codes from the table that are present in the `Pri_dx_icd` or `Sec_dx_icd` column.
+    It accomplishes that by using a `SELECT-FROM-WHERE` block for each column, inside
+    the original `UPDATE` statement. Therefore, this type of query is called a *nested*
+    query. Within each `SELECT` block, the `COUNT(*)` statement simply returns the
+    number of rows of the resulting query as an integer. So for example, in Visit
+    #10001, there is a cardiac code in the `Pri_dx_icd` column and there is also one
+    match in the `Sec_dx_icd` column. The first `SELECT` block would return a value
+    of `1`, since the query without `COUNT` would have returned a table with 1 row.
+    By wrapping `COUNT` around `*`, `1` is returned as an integer. The second `SELECT`
+    block also detects a match and returns a value of `1`. The `+` operator makes
+    `2` the final result. By comparing the `Num_cardiac_dx` and `Num_cardiac_dx_2` columns,
+    we see the result is exactly the same. So, which method is better? For small,
+    simple aggregations, the first method is easier, because one simply has to make
+    a column for each code and then aggregate them in a single statement with the
+    + operator. However, in practice, you may wish to edit which codes are aggregated
+    together to create features quite frequently. In this case, the second method
+    is easier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #5 – counting medications'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now we''ll move on to the medications. Let''s add a feature that simply tallies
+    the number of medications each patient is taking. In Query Set #5 (as follows)
+    we first add the `Num_meds` column using an `ALTER TABLE` statement. Then, we
+    use a `SELECT-FROM-WHERE` block inside of an `UPDATE` statement to find the number
+    of medications for each patient. The query works by tallying, for each patient
+    ID in the `MORT_FINAL_2` table, the number of rows in the `MEDICATIONS` table
+    where the corresponding patient ID is equal. Again, we use the `COUNT` function
+    to get the number of rows. We introduce a new function in this query, `DISTINCT`.
+    `DISTINCT` removes any rows containing duplicate values for the column in parentheses.
+    So for example, if `LISINOPRIL` was listed twice for a patient, the `DISTINCT(Rx_name)`
+    function call would ensure it is only counted once:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #6 – binning abnormal lab results'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Several research articles have found lab values to be important predictors for
+    clinical outcomes such as readmission (Donze et al., 2013). Lab results are problematic,
+    however, because they are missing in most patients. No lab result type will be
+    present for every patient; for example, in our example, not every patient got
+    blood drawn for lab tests during their visit. Indeed, of the three different types
+    of lab tests present in our data, the most common test was the BNP, drawn in four
+    out of six patients. What do we do with the other two patients?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One way around this is to set up a "flag" for the presence of an abnormal result.
+    This is accomplished in Query Set #6 for the glucose lab test. After the first
+    query adds the `Abnml_glucose` column with an `ALTER TABLE` statement, the next
+    query sets the result equal to the number of times that specific lab test exceeds
+    a value of 200 for each patient visit. Notice the multiple `AND` clauses; they
+    are necessary for selecting the right patient, date, and lab test of interest.
+    So, only visits with an excessive result will have a value greater than zero for
+    this feature. Notice we use the `CAST()` function to convert the values from `TEXT`
+    to `FLOAT` before testing the value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'While this solves the missing lab data problem, a limitation of this method
+    is that it treats missing results and normal results as being the same. In Query
+    Set #7, we will study basic methods for filling in missing values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #7 – imputing missing variables'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While the method presented in Query Set #6 solves the missing data problems
+    for labs, all of the information contained in the actual lab values is discarded.
+    For BNP, for example, only two of the patients don''t have a value, and for the
+    temperature vital sign, only one patient is missing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some previous studies have experimented with this principle and have obtained
+    good results with predictive models while using it. In (Donze et al., 2013), some
+    of the patient discharges (around 1%) had missing data. This data was filled in
+    by assuming it was in the normal range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In SQL, **single imputation** can easily be done. We demonstrate this here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Query Set #7a – imputing missing temperature values using normal-range imputation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here, we use an `UPDATE` statement to set the temperature variable to `98.6`
+    where it is missing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #7b – imputing missing temperature values using mean imputation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here, we use **mean imputation** instead of normal-value imputation to fill
+    in the missing temperature value. As such, the `98.6` value from Query Set #7a
+    is replaced with a `SELECT-FROM-WHERE` block that finds the mean of the temperature
+    variable (`98.4`, in this case) where it is not missing. The `AVG()` function
+    returns the mean of a collection of values. The `AVG()` function and similar functions
+    (`MIN()`, `MAX()`, `COUNT()`, `SUM()`, and so on) are termed **aggregate functions**
+    because they describe an aggregation of values using a single value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #7c – imputing missing BNP values using a uniform distribution'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While imputing the single missing temperature value was not difficult in our
+    example, imputing the two missing BNP values is more problematic for a number
+    of reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a higher proportion of visits that have a missing BNP value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While the normal temperature range is simply 98.6, BNP has a huge normal range
+    of 100 - 400 pg/mL. How do we select which value to impute when doing normal-value
+    imputation?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The mean of the BNP values in our dataset is 462.5, which is, in fact, abnormal.
+    This means that if we tried mean imputation with this variable, we would be imputing
+    an abnormal value for all patients who didn't have blood drawn, a highly unlikely
+    scenario.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'While there is no perfect answer for this problem, if we do try to salvage
+    the raw BNP values (which means imputing the missing values), in this query set,
+    we impute from a uniform distribution of values in the normal range:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #8 – adding the target variable'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We are almost done with our table. We''ve gone through all of the data. The
+    only thing left to add is the target variable. See the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query Set #9 – visualizing the MORT_FINAL_2 table'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To visualize our end result, we can do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned how to engineer healthcare data in a database format
+    using SQL. We downloaded and installed SQLite, and wrote some SQL queries to get
+    the data in a format that we want for modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, in [Chapter 5](12ee77f2-0655-4dc5-abb1-2868d6fcc386.xhtml), *Computing
+    Foundations – Introduction to Python*, we will continue our discussion of computing
+    foundations with an exploration of the Python programming language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References and further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Basole RC, Braunstein ML, Kumar V, Park H, Kahng M, Chau DH, Tamersoy A, Hirsh
+    DA, Serban N, BostJ, Lesnick B, Schissel BL, Thompson M (2015). Understanding
+    variations in pediatric asthma care processes in the emergency department using
+    visual analytics. *Journal of the American Medical Informatics Association *22(2):
+    318–323, [https://doi.org/10.1093/jamia/ocu016.](https://doi.org/10.1093/jamia/ocu016)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Donze J, Aujesky D, Williams D, Schnipper JL (2013). Potentially avoidable
+    30-day hospital readmissions in medical patients: derivation and validation of
+    a prediction model. *JAMA Intern Med *173(8): 632-638.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Elmasri R, Navathe S (2010). Fundamentals of Database Systems, 6th Edition.
+    Boston, MA: Addison Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Futoma J, Morris J, Lucas J (2015). A comparison of models for predicting early
+    hospital readmissions. *Journal of Biomedical Informatics *56: 229-238.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kasper DL, Braunwald E, Fauci AS, Hauser SL, Longo DL, Jameson JL (2005), eds. *Harrison''s
+    Principles of Internal Medicine, *16e. New York, NY: McGraw-Hill.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rajkomar A, Oren E, Chen K, Dai AM, Hajaj N, Hardt M, et al. (2018). Scalable
+    and accurate deep learning with electronic health records. *npj Digital Medicine *1:18;
+    doi:10.1038/s41746-018-0029-1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sahni N, Simon G, Arora R (2018). *J Gen Intern Med* 33: 921\. [https://doi.org/10.1007/s11606-018-4316-y](https://doi.org/10.1007/s11606-018-4316-y)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQLite Home Page. [http://www.sqlite.org/](http://www.sqlite.org/). Accessed
+    04/03/2017.
+  prefs: []
+  type: TYPE_NORMAL

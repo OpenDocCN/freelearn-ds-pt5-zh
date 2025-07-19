@@ -1,0 +1,516 @@
+- en: Statistical Modeling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter we are taking raw data and attempting to interpret the information
+    by building a statistical model. Once we have a model built then it is usually
+    easier to see commonalities. We can determine trends as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting JSON to CSV
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this chapter, we will be using the Yelp data available from the challenge
+    at [https://www.yelp.com/dataset/challenge](https://www.yelp.com/dataset/challenge).
+    This section uses the dataset from *round 9* of the challenge. For background,
+    Yelp is a site for rating different products and services where Yelp publishes
+    the ratings to users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset file is a very large (a few gigabytes) amount of ratings. There
+    are several sets of rating information in the download-for business ratings, reviews,
+    tips (as in this would be a nice place to visit), and a user set. We are interested
+    in the review data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When dealing with such large files it may be useful to find and use a large
+    file editor so you can poke into the data file. On Windows, most of the standard
+    editors are limited to a few megabytes. I used the Large Text File Viewer program
+    to open these JSON files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All of the files are in JSON format. JSON is a human readable format with structured
+    elements—for example, a city object containing street objects. While it is convenient
+    to read JSON the format is clumsy when dealing with large numbers of elements.
+    In the `reviews` file there are a few million rows. So, we first convert the JSON
+    to a flat CSV format to allow for easier processing using this script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: I am printing out the start and end times to get an idea of how long this takes.
+    For my machine it took 1.5 minutes to convert the file. I had tried several versions
+    of this code before I got the preceding code working at a satisfactory pace. While
+    developing this script I took a small subset of the original data file (2000 rows)
+    and worked with that file until things progressed sufficiently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, I am reading the raw JSON file as provided from Yelp and writing
+    out a corresponding CSV file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The script reads each line of the JSON (one line contains an entire object)
+    and writes out the corresponding CSV. I stripped out the review text as I was
+    not evaluating the text of reviews and the review text took a lot of space. The
+    review file size dropped from 3 gigabytes to 300 megabytes using this coding.
+    Other than that we made sure to write the headers out to the CSV as the first
+    record. I then used a separate script/notebook entry to read in the CSV and process
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating Yelp reviews
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We read in the processed Yelp reviews using this script and print out some
+    statistics of the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I usually take a look at some of the data once loaded to visually check that
+    things are working as expected. We can do this with a `head()` function call:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/09cb5819-0baa-4030-a0a9-0dd5f1c0b7b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'All of the columns appear to be correctly loading. Now, we can look at summary
+    statistics for the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/6c4b4dcb-c158-443d-9ecf-284c2a8e23b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'There are several points in the summary worth noting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some of the data points I had assumed would be just `TRUE`/`FALSE`, `0`/`1`
+    have ranges instead; for example, `funny` has a max value over 600; `useful` has
+    a max 1100, `cool` has 500.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All of the IDs (users, businesses) have been mangled. We could use the user
+    file and the business file to come up with exact references.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Star ratings are `1`-`5`, as expected. However, the mean and median are about
+    a `4`, which I take as many people only take the time to write good reviews.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Review spread
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can get an idea of the spread of the reviews using a simple histogram using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which generates the histogram inline as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8debff02-3663-4852-bc33-364dfdb5d145.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, we see the predilection for only making positive reviews (but the number
+    of bad reviews is pretty large).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the top rated firms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can find the businesses with the most top ratings (5's) using the following
+    script. This script uses SQL-like access to data frames. SQL has built-in mechanisms
+    for searching and selecting and ordering of the data components as needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this script we are building a computed data frame with two columns: `business_id`
+    and review `count`. The data frame is ordered with the top rated firms appearing
+    first. Once created, we display the head of the data frame to get at the top rated
+    businesses in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/013b833a-9e6e-48e5-9c9f-e7476e9ed6a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is remarkable that the top five businesses had such a skewed amount of ratings
+    (number `1` had close to double the number `6` business). You wonder if there
+    is some collusion in the ratings process for such a divergence. Again, the names
+    are mangled so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the most rated firms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'So, those companies had the most, best ratings. Which had the most ratings?
+    We can use a similar script to determine the most rated firms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this script we do not qualify the rating in order to determine its membership
+    resulting in the set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b73e0bee-b06e-4043-984a-f77b32ba3d9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, similarly we see a small number of firms with many more ratings than average.
+    Also, the names are mangled, but we do see four of the top-rated firms also being
+    included in the most rated at all list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding all ratings for a top rated firm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'What if we looked at one of the top-rated firms to see where the ratings spread
+    is? We could use the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The script takes one of the top rated IDs, accesses all of their ratings, and
+    displays a histogram of the same:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2d273b55-7ee7-4df8-8627-45d6786a1e9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, for one of the top rated firms there are very few low ratings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining the correlation between ratings and number of reviews
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We could look at the correlation between star rating and just number of reviews
+    using the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/ecff2c15-703b-4421-ac50-96da44de87d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, we see three times as many `5` star reviews as `1` star reviews. We also
+    see a very high correlation between number of reviews and number of stars (`0.8632361`).
+    People are only bothering to rate good firms. That makes it interesting to use
+    Yelp only to determine if the firm is reviewed at all. If the firm is not rated
+    (or not rated much) the unwritten reviews are bad.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could visualize the relationship between ratings and number of reviews for
+    companies using the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Where the `business_rating` data frame is a list of businesses and average
+    star ratings. The resultant histogram is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c655a534-70c4-41dc-a754-c20eb5a58cc0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks like a Poisson distribution. It is interesting that the distribution
+    of firm ratings takes such a natural dispersion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a model of reviews
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can build a model from the dataset to estimate how many stars a rating may
+    entail. However, the data points available within a review are only:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`funny`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`useful`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`cool`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'These would not appear to be good indicators for a rating number. We can use
+    a model, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This produces the statistics of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f3f26dfe-c6d7-448c-ab60-667862cebcd3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As expected, we don''t have enough information to work with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over four million degrees of freedom, just about one per review
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*P* values are very small—the probability that we have estimated correctly
+    is non-existent'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`3.7` intercept (close to the halfway point of the range)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Such low affect rates (under one times each factor) meaning we aren't moving
+    far from the intercept
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Python to compare ratings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous examples we used R to work through data frames that were built
+    from converted JSON to CSV files. If we were to use the Yelp businesses rating
+    file we could use Python directly, as it is much smaller and produces similar
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, we gather cuisines from the Yelp file based on whether the
+    business category includes restaurants. We accumulate the ratings for all cuisines
+    and then produce averages for each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We read in the JSON file into separate lines and convert each line into a Python
+    object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We convert each line to Unicode with the `errors=ignore` option. This is due
+    to many erroneous characters present in the data file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We use a dictionary for the ratings for a cuisine. The key of the dictionary
+    is the name of the cuisine. The value of the dictionary is a list of ratings for
+    that cuisine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have gathered all of the ratings, we can produce a new dictionary
+    of cuisines with average ratings. We also accumulate a total to produce an overall
+    average and track the highest rated cuisine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/e80bdc66-bc55-4baf-820c-2012d9c8af6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is interesting that `Personal Chefs` is the highest rated. I have only heard
+    about celebrities having a personal chef, but the data shows it may be worthwhile.
+    An average of 1.6 is abysmal for all cuisines. The data did not appear to have
+    a balance of high and low ratings when we looked earlier. However, looking through
+    the resulting output, there are many items that are not cuisines, even though
+    the `Restaurants` key is present. I had tried to eliminate the bad data by only
+    counting cuisines with 10 or more ratings, which eliminated some of the bad data,
+    but there are still many erroneous records in play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing average ratings by cuisine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have the cuisine averages computed, we can display them in a histogram
+    to get an idea of their spread. We first convert the dictionary to a data frame.
+    Then plot the `Rating` column of the data frame into a histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are using five bins to correspond to the five possible ratings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/a9061c63-4075-4999-ad47-ea9082abf982.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, we see a clear mark towards high average values. I had tried to get a
+    better gradient on the data display to no avail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Arbitrary search of ratings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since we have the data in an easily loadable format we can search for arbitrary
+    conditions, such as `Personal Chefs` that allow dogs-maybe they will custom cook
+    for your dog.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could use a script as follows: for line in lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Where we do something useful with the items that filter out. This script would
+    display the attributes only for `Personal Chefs`. As can be seen in the following
+    display:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/860a2adf-7ef2-455f-a64c-2ef842363ec6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could just as easily performed some calculation or other manipulation to
+    narrow down and focus on a very specific portion of the data easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining relationships between number of ratings and ratings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Given the preceding results it appears that people mostly only vote in a positive
+    manner. We can look to see if there is a relationship between how many votes a
+    company has received and their rating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we accumulate the dataset using the following script, extracting the
+    number of votes and rating for each firm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: This coding just builds the data frame with our two variables. We are using
+    NumPy as it more easily adds a row to a data frame. Once we are done with all
+    records we convert the NumPy data frame back to a pandas data frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The column names have been lost in the translation, so we put those back in
+    and draw some summary statistics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the output shown as follows we see the layout of the reviews and rating
+    data we have collected. Yelp has not constrained its data entry for this dataset.
+    There should 5 unique values for rating:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3d98ddaa-d308-4916-b27c-c22be314918e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, we plot the data for a visual clue to the relationship, using the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/38df285c-e486-4332-8705-267f3d36a0f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, the data after all, appears to have a clear Poisson distribution as compared
+    to the earlier `business_rating` histogram.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we compute the regression parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/67c5be55-8ce5-472e-8d6a-fca1bfa58923.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We computed intercepts for all rating values. I had expected a single value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we determine the range of the observed data using the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/14084c18-6acd-4077-9214-72af8b7ff4f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, as we guessed earlier, some businesses have a very large number of reviews.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/7bb710de-262f-4151-b1d0-e7f757d35cdf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We are seeing a much bigger range of predicted values than expected. Plot out
+    the observed and predicted data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the plot displayed as follows, there does not appear to be a relationship
+    between the number of reviews and the review score for a firm. It appears to be
+    a numbers game—if you get people to review your firm, on average they will give
+    you a high score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a4200469-5647-47cb-9e45-a9a5a1c4c8c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There does not appear to be a relationship between the number of reviews and
+    the review score for a firm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we used data and converted a JSON file to a CSV file. We evaluated
+    the Yelp cuisine review dataset determining the top rated and most rated firms.
+    We saw the distribution of ratings. We used Python to perform a similar evaluation
+    of Yelp business ratings, finding very similar distributions of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will look at machine learning under Jupyter.
+  prefs: []
+  type: TYPE_NORMAL

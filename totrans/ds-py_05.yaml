@@ -1,0 +1,1995 @@
+- en: Chapter 5. Python and PixieDust Best Practices and Advanced Concepts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '"In God we Trust, all others bring data."'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: – *W. Edwards Deming*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the remaining chapters of this book, we will do a deep dive into the architecture
+    of industry use cases, including the implementation of sample data pipelines,
+    heavily applying the techniques we''ve learned so far. Before we start looking
+    at the code, let''s complete our toolbox with a few best practices and advanced
+    PixieDust concepts that will be useful in the implementation of our sample applications:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calling third-party Python libraries with `@captureOutput` decorator
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Increasing modularity and code reuse of your PixieApp
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: PixieDust support of streaming data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Adding dashboard drill-downs with PixieApp events
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Extending PixieDust with a custom display renderer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Debugging:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Line-by-line Python code debugging running on the Jupyter Notebook using pdb
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visual debugging with PixieDebugger
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the PixieDust logging framework to troubleshoot issues
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tips for client-side JavaScript debugging
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Running Node.js inside a Python Notebook
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use @captureOutput decorator to integrate the output of third-party Python libraries
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Suppose that you want to reuse your PixieApp in a third-party library that you
+    have been using for a while in order to perform a certain task, such as, for example,
+    computing clusters with the scikit-learn machine learning library ([http://scikit-learn.org](http://scikit-learn.org))
+    and displaying them as a graph. The problem is that most of the time, you are
+    calling a high-level method that doesn't return data, but rather directly draws
+    something on the cell output area, such as a chart or a report table. Calling
+    this method from a PixieApp route will not work because the contract for routes
+    is to return an HTML fragment string that will be processed by the framework.
+    In this case, the method most likely doesn't return anything since it is writing
+    the results directly in the cell output. The solution is to use the `@captureOutput`
+    decorator—which is part of the PixieApp framework—in the route method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a word cloud image with @captureOutput
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To better illustrate the `@captureOutput` scenario described earlier, let's
+    take a concrete example where we want to build a PixieApp that uses the `wordcloud`
+    Python library ([https://pypi.python.org/pypi/wordcloud](https://pypi.python.org/pypi/wordcloud))
+    to generate a word cloud image from a text file provided by the user via a URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We first install the `wordcloud` library by running the following command in its own cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Make sure to restart the kernel when the installation of the `wordcloud`
+    library is complete.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for the PixieApp looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode1.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode1.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice that by simply adding the `@captureOutput` decorator to the `generate_word_cloud`
+    route, we don''t need to return an HTML fragment string any more. We can simply
+    invoke the Matplotlib `imshow()` function that sends the image to the system output.
+    The PixieApp framework will take care of capturing the output and package it as
+    an HTML fragment string that will be injected in the correct div placeholder.
+    The result is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: We use the following input URL coming from the `wordcloud` repo on
+    GitHub:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/amueller/word_cloud/blob/master/examples/constitution.txt](https://github.com/amueller/word_cloud/blob/master/examples/constitution.txt)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Another good link to use is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://raw.githubusercontent.com/amueller/word_cloud/master/examples/a_new_hope.txt](https://raw.githubusercontent.com/amueller/word_cloud/master/examples/a_new_hope.txt)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Create a word cloud image with @captureOutput](img/B09699_05_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple PixieApp that generates a word cloud from a text
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Any function that draws directly to the cell output can be used with the `@captureOutput`
+    decorator. For example, you can use the Matplotlib `show()` method or the IPython
+    `display()` method with the HTML or JavaScript classes. You can even use the `display_markdown()`
+    method to output rich text using the Markdown markup language ([https://en.wikipedia.org/wiki/Markdown](https://en.wikipedia.org/wiki/Markdown))
+    as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This produces the following result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Create a word cloud image with @captureOutput](img/B09699_05_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: PixieApp using @captureOutput with Markdown
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increase modularity and code reuse
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Breaking up your application into smaller, self-contained components is always
+    a good development practice because it makes the code reusable and easier to maintain.
+    The PixieApp framework provides two ways to create and run reusable components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamically invoking other PixieApps with the `pd_app` attribute
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Packaging part of an application as a reusable widget
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the `pd_app` attribute, you can dynamically invoke another PixieApp (we'll
+    call it child PixieApp from here on) by its fully qualified class name. The output
+    of the child PixieApp is placed in the host HTML element (usually a div element)
+    or in a dialog by using the `runInDialog=true` option. You can also initialize
+    the child PixieApp using the `pd_options` attribute, in which case the framework
+    will invoke the corresponding route.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To better understand how `pd_app` works, let's rewrite our `WordCloud` application
+    by refactoring the code that generates the `WordCloud` image in its own PixieApp
+    that we'll call `WCChildApp`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code implements `WCChildApp` as a regular PixieApp, but notice
+    that it doesn''t contain a default route. It only has a route called `generate_word_cloud`
+    that is supposed to be called by another PixieApp using a `url` argument:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode2.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode2.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now build the main PixieApp that will invoke the `WCChildApp` when the
+    user clicks on the **Go** button after specifying the URL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode3.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode3.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the preceding code, the `Go` button has the following attributes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`pd_app="WCChildApp"`: Use the class name for the child PixieApp. Note that
+    if your child PixieApp lives in an imported Python module, then you''ll need to
+    use the fully qualified name.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`pd_options="url=$val(url{{prefix}})"`: Store the URL entered by the user as
+    an initialization option to the child PixieApp.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`pd_target="wordcloud{{prefix}}"`: Tell PixieDust to place the output of the
+    child PixieApp in the div with the ID `wordcloud{{prefix}}`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `pd_app` attribute is a powerful way to modularize your code by encapsulating
+    the logic and presentation of a component. The `pd_widget` attribute provides
+    another way to achieve similar results, but this time the component is not invoked
+    externally, but rather by inheritance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each method has pros and cons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `pd_widget` technique is implemented as a route and is certainly more lightweight
+    than `pd_app,` which requires the creation of an entirely new PixieApp instance.
+    Note that both `pd_widget` and `pd_app` (through the `parent_pixieapp` variable)
+    have access to all variables contained in the host app.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `pd_app` attribute provides a cleaner separation between the components
+    and more flexibility than widgets. You could, for example, have a button that
+    dynamically invokes multiple PixieApps based on some user selection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: As we''ll see later in this chapter, this is actually what the PixieDust
+    display uses for the options dialog.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: If you find yourself in need of having multiple copies of the same component
+    in a PixieApp, ask yourself whether the component requires its state to be maintained
+    in a class variable. If that's the case, it is preferable to use `pd_app,` but,
+    if not, then using `pd_widget` would work as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a widget with pd_widget
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To create a widget, you can use the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a PixieApp class that contains a route tagged with a special argument
+    called `widget`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make the main class inherit from the PixieApp widget
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Invoke the widget using the `pd_widget` attribute on a div element
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Again, as an illustration, let''s rewrite the `WordCloud` app with the widget:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode4.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode4.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice in the preceding code that `url` is now referenced as a class variable
+    because we assume that the base class will provide it. The code has to test whether
+    `url` is `None,` which would be the case on startup. We implement it this way
+    because `pd_widget` is an attribute that cannot easily be dynamically generated
+    (you would have to use a secondary route that generates the div fragment with
+    the `pd_widget` attribute).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main PixieApp class now looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode5.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode5.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The div that contains the `pd_widget` attribute is rendered on start, but since
+    `url` is still `None`, no word cloud is actually generated. The `Go` button has
+    a `pd_script` attribute that set the `self.url` to the value provided by the user.
+    It also has a `pd_refresh` attribute sets to the `pd_widget` div that will call
+    the `wordcloud` widget again, but this time with a URL initialized to the correct
+    value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we've seen two ways to modularize your code for reuse, as well
+    as the pros and cons for both. I strongly recommend that you play with the code
+    to get a feel of when to use each technique. Don't worry if you feel this is still
+    a little fuzzy; it will hopefully become clearer when we use these techniques
+    in the sample code of the chapters ahead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we change gears and look at streaming data support in PixieDust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PixieDust support of streaming data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the rise of **IOT** devices (**Internet of Things**), being able to analyze
+    and visualize live streams of data is becoming more and more important. For example,
+    you could have sensors such as thermometers in machines or portable medical devices
+    like pacemakers, continuously streaming data to a streaming service such as Kafka.
+    PixieDust makes it easier to work with live data inside Jupyter Notebooks by providing
+    simple integration APIs to both the PixieApp and the `display()` framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a visualization level, PixieDust uses Bokeh ([https://bokeh.pydata.org](https://bokeh.pydata.org))
+    support for efficient data source updates to plot streaming data into live charts
+    (note that at the moment, only line chart and scatter plot are supported, but
+    more will be added in the future). The `display()` framework also supports geospatial
+    visualization of streaming data using the Mapbox rendering engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To activate streaming visualizations, you need to use a class that inherits
+    from `StreamingDataAdapter,` which is an abstract class that is part of the PixieDust
+    API. This class acts as a generic bridge between the streaming data source and
+    the visualization framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: I recommend spending time looking at the code for `StreamingDataAdapter`
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/pixiedust/pixiedust/blob/0c536b45c9af681a4da160170d38879298aa87cb/pixiedust/display/streaming/__init__.py](https://github.com/pixiedust/pixiedust/blob/0c536b45c9af681a4da160170d38879298aa87cb/pixiedust/display/streaming/__init__.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram shows how the `StreamingDataAdapter` data structure fits
+    into the `display()` framework:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![PixieDust support of streaming data](img/B09699_05_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: StreamingDataAdapter architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: When implementing a subclass of `StreamingDataAdapter`, you must override the
+    `doGetNextData()` method provided by the base class, which will be called repeatedly
+    to fetch new data to update the visualization. You can also optionally override
+    the `getMetadata()` method to pass context to the rendering engine (we'll use
+    this method later to configure the Mapbox rendering).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The abstract implementation of `doGetNextData()` looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode6.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode6.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The preceding docstring explains the different types of data that is allowed
+    to be returned from `doGetNextData()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, we want to visualize the location of a fictitious drone wandering
+    around the earth on a map and in real time. Its current location is provided by a REST
+    service at: [https://wanderdrone.appspot.com](https://wanderdrone.appspot.com).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The payload uses GeoJSON ([http://geojson.org](http://geojson.org)), for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode7.json](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode7.json)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To render our drone location in real time, we create a `DroneStreamingAdapter`
+    class that inherits from `StreamingDataAdapter` and simply return the drone location
+    service URL in the `doGetNextData()` method as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode8.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode8.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the `getMetadata()` method, we return the Mapbox specific style properties
+    (as documented here: [https://www.mapbox.com/mapbox-gl-js/style-spec](https://www.mapbox.com/mapbox-gl-js/style-spec))
+    that uses a rocket Maki icon ([https://www.mapbox.com/maki-icons](https://www.mapbox.com/maki-icons))
+    as a symbol for the drone.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With a few lines of code, we were able to create a real-time geospatial visualization
+    of a drone location, with the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![PixieDust support of streaming data](img/B09699_05_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Real-time geospatial mapping of a drone
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the complete Notebook for this example in the PixieDust repo at
+    this location:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/pixiedust/pixiedust/blob/master/notebook/pixieapp-streaming/Mapbox%20Streaming.ipynb](https://github.com/pixiedust/pixiedust/blob/master/notebook/pixieapp-streaming/Mapbox%20Streaming.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding streaming capabilities to your PixieApp
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In the next example, we show how to visualize streaming data coming from an
+    Apache Kafka data source, using the `MessageHubStreamingApp` PixieApp provided
+    out of the box by PixieDust: [https://github.com/pixiedust/pixiedust/blob/master/pixiedust/apps/messageHub/messageHubApp.py](https://github.com/pixiedust/pixiedust/blob/master/pixiedust/apps/messageHub/messageHubApp.py).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: `MessageHubStreamingApp` works with the IBM Cloud Kafka service called
+    Message Hub ([https://console.bluemix.net/docs/services/MessageHub/index.html#messagehub](https://console.bluemix.net/docs/services/MessageHub/index.html#messagehub)),
+    but it can easily be adapted to any other Kafka service.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Don''t worry if you are not familiar with Apache Kafka as we''ll cover aspects
+    of this in [Chapter 7](ch07.xhtml "Chapter 7. Analytics Study: NLP and Big Data
+    with Twitter Sentiment Analysis"), *Analytics Study: NLP and Big Data with Twitter
+    Sentiment Analysis*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This PixieApp lets the user choose a Kafka topic associated with a service instance
+    and display the events in real-time. Assuming that the events payload from the
+    selected topic uses a JSON format, it presents a schema inferred from sampling
+    the events data. The user can then choose a particular field (must be numerical)
+    and a real-time chart showing the average of the values for this field over time
+    is displayed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Adding streaming capabilities to your PixieApp](img/B09699_05_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Real-time visualization of streaming data
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The key PixieApp attribute needed to provide streaming capabilities is `pd_refresh_rate,`
+    which executes a particular kernel request at specified intervals (pull model).
+    In the preceding application, we use it to update the real-time chart, as shown
+    in the following HTML fragment returned by the `showChart` route:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode9.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode9.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The preceding div is bound to the `avgChannelData` entity via the `pd_entity`
+    attribute and is responsible for creating the real-time chart that is updated
+    every second (*pd_refresh_rate=1000 ms*). In turn, the `avgChannelData` entity
+    is created via a call to `getStreamingChannel(),` which is passed to the `self`.
+    The `computeAverage` function is responsible for updating the average value for
+    all the data being streamed. It is important to note that `avgChannelData` is
+    a class that inherits from `StreamingDataAdapter` and, therefore, can be passed
+    to the `display()` framework for building real-time charts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The last piece of the puzzle is for the PixieApp to return a `displayHandler`
+    needed by the `display()` framework. This is done by overriding the `newDisplayHandler()`
+    method as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode10.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode10.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the preceding code, we use it to create an instance of `LineChartStreamingDisplay`
+    provided by PixieDust in the `pixiedust.display.streaming.bokeh` package ([https://github.com/pixiedust/pixiedust/blob/master/pixiedust/display/streaming/bokeh/lineChartStreamingDisplay.py](https://github.com/pixiedust/pixiedust/blob/master/pixiedust/display/streaming/bokeh/lineChartStreamingDisplay.py)),
+    passing the `avgChannelData` entity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you want to see this application in action, you need to create a Message
+    Hub service instance on IBM Cloud ([https://console.bluemix.net/catalog/services/message-hub](https://console.bluemix.net/catalog/services/message-hub))
+    and, using its credentials, invoke this PixieApp in a Notebook with the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you are interested in knowing more about PixieDust streaming, you can find
+    other streaming application examples here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A simple PixieApp that demonstrate how to create streaming visualizations from
+    randomly generated data: [https://github.com/pixiedust/pixiedust/blob/master/notebook/pixieapp-streaming/PixieApp%20Streaming-Random.ipynb](https://github.com/pixiedust/pixiedust/blob/master/notebook/pixieapp-streaming/PixieApp%20Streaming-Random.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'PixieApp that shows how to build live visualization of stock tickers: [https://github.com/pixiedust/pixiedust/blob/master/notebook/pixieapp-streaming/PixieApp%20Streaming-Stock%20Ticker.ipynb](https://github.com/pixiedust/pixiedust/blob/master/notebook/pixieapp-streaming/PixieApp%20Streaming-Stock%20Ticker.ipynb)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The next topic will cover PixieApp events that let you add interactivity between
+    different components of your application.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Adding dashboard drill-downs with PixieApp events
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The PixieApp framework supports sending and receiving events between different
+    components using the publish-subscribe pattern available in browsers. The great
+    advantage of using this model, which borrows from the loose coupling pattern ([https://en.wikipedia.org/wiki/Loose_coupling](https://en.wikipedia.org/wiki/Loose_coupling)),
+    is that it allows the sending and receiving components to remain agnostic of each
+    other. Therefore, their implementation can be executed independently from one
+    another and will not be sensitive to changes in requirements. This can be very
+    useful when your PixieApp is using components from different PixieApps built by
+    different teams, or if the events are coming from the user interacting with a
+    chart (for instance, clicking on a map) and you want to provide drill-down features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each event carries a JSON payload of arbitrary keys and values. The payload
+    must have at least one of the following keys (or both):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`targetDivId`: A DOM ID identifying the element sending the event'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`type`: A string identifying the event type'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Publishers can trigger events in two ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Declarative**: Use the `pd_event_payload` attribute to specify the payload
+    content. This attribute follows the same rules as `pd_options`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each key/value pair must be encoded using the `key=value` notation
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The event will be triggered by a click or a change event
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Support must be provided for the `$val()` directive to dynamically inject user-entered
+    input
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use the `<pd_event_payload>` child to enter raw JSON
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Example:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Alternatively, we can use this:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode11.html](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode11.html)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Programmatic**: In some cases, you may want to directly trigger an event
+    via JavaScript. In this case, you can use the `sendEvent(payload, divId)` method
+    of the `pixiedust` global object. The `divId` is an optional argument that specifies
+    the origin of the event. If the `divId` argument is omitted, then it defaults
+    to the `divId` of the element that is currently sending the event. As a result,
+    you should always use `pixiedust.sendEvent` without a `divId` from a JavaScript
+    handler of a user event such as click, and hover.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Example:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode12.html](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode12.html)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Subscribers can listen to an event by declaring a `<pd_event_handler>` element
+    that can accept any of the PixieApp Kernel execution attributes, such as `pd_options`
+    and `pd_script`. It must also use the `pd_source` attribute to filter which events
+    they want to process. The `pd_source` attribute can contain one of the following
+    values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`targetDivId`: Only events originating from the element with the specified
+    ID will be accepted'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`type`: Only events with the specified type will be accepted'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`"*"`: Denotes that any event will be accepted'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode13.html](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode13.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram shows how components interact with one another:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Adding dashboard drill-downs with PixieApp events](img/B09699_05_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sending/receiving events between components
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following code sample, we illustrate the PixieDust eventing system by building
+    two publishers, a button element and a table, where each row is an event source.
+    We also have two listeners implemented as div elements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode14.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode14.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The preceding code produces the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Adding dashboard drill-downs with PixieApp events](img/B09699_05_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: User interaction flow for PixieApp events
+  prefs: []
+  type: TYPE_NORMAL
+- en: PixieApp events enable you to create sophisticated dashboards with drill-down
+    capabilities. It is also good to know that you can leverage events that are automatically
+    published for some of the charts generated by the `display()` framework. For example,
+    built-in renderers, such as Google Maps, Mapbox, and Table, will automatically
+    generate events when the user clicks somewhere on the chart. This is very useful
+    for rapidly building all kinds of interactive dashboards with drill-down capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next topic, we'll discuss how to use the PixieDust extensibility APIs
+    to create custom visualizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extending PixieDust visualizations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: PixieDust is designed to be highly extensible. You can create your own visualization
+    and control when it can be invoked, based on the entity being displayed. There
+    are multiple extensibility layers provided by the PixieDust framework. The lowest
+    and most powerful one lets you create your own `Display` class. However, the majority
+    of visualizations have a lot of properties in common, such as standard options (aggregation,
+    max rows, title, and so on), or a caching mechanism to prevent recomputing everything
+    if the user only selected a minor option that doesn't require reprocessing of
+    the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To prevent users from reinventing the wheel every time, PixieDust offers a second
+    extensibility layer called **renderer** that includes all the facilities described
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram illustrates the different layers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Extending PixieDust visualizations](img/B09699_05_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: PixieDust extension layers
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To start working with the **Display Extension Layer**, you''ll need to get
+    your visualization presented in the menu by creating a class that inherits from
+    `pixiedust.display.DisplayHandlerMeta`. This class contains two methods that need
+    to be overridden:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`getMenuInfo(self,entity,dataHandler)`: Return an empty array if the entity
+    passed as an argument is not supported, otherwise an array containing a set of
+    JSON objects with information about the menu. Each JSON object must contain the
+    following information:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`id`: A unique string that identifies your tool.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`categoryId`: A unique string that identifies the menu category or group. A
+    full list of all the built-in categories is provided a little later on.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`title`: An arbitrary string that describes the menu.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`icon`: The name of a font-awesome icon, or a URL for an image.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`newDisplayHandler(self,options,entity)`: When your menu is activated by the
+    user, the `newDisplayHandler()` method is called. This method must return a class
+    instance that inherits from `pixiedust.display.Display`. The contract is for this
+    class to implement the `doRender()` method, which is responsible for creating
+    the visualization.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let''s take the example of creating a custom table rendering for a pandas DataFrame.
+    We first create the `DisplayHandlerMeta` class that configures the menu and the
+    factory method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode15.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode15.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the preceding `SimpleDisplayMeta` class needs to be decorated with
+    `@PixiedustDisplay,` which is required to add this class to the internal PixieDust
+    registry of plugins. In the `getMenuInfo()` method, we first check whether the
+    entity type is *pandas DataFrame* and, if not, return an empty array signifying
+    that this plugin doesn't support the current entity and will therefore not contribute
+    anything to the menu. If the type is correct, we return an array with one JSON
+    object containing the menu info.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The factory method `newDisplayHandler()` gets passed the `options` and `entity`
+    as parameters. The `options` argument is a dictionary of key/value pairs containing
+    the various choices made by the users. As we'll see later, the visualization can
+    define arbitrary key/value pairs reflecting its capabilities, and the PixieDust
+    framework will automatically persist them in the cell metadata.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, you could add an option for displaying HTTP links as clickable
+    in the UI. In our example, we return a `SimpleDisplay` instance as defined here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode16.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode16.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As stated before, the `SimpleDisplay` class must inherit from the `Display`
+    class and implement the `doRender()` method. Within the implementation of this
+    method, you have access to the `self.entity` and `self.options` variables to adjust
+    how the information is rendered on screen. In the preceding sample, we use the
+    `self._addHTMLTemplateString()` method to create the HTML fragment that will render
+    the visualization. As is the case for PixieApp routes, the string being passed
+    to `self._addHTMLTemplateString()` can leverage the Jinja2 template engine and
+    have automatic access to variables such as `entity`. If you don't want to hardcode
+    the template string in the Python file, you can extract it into its own file that
+    you must place in a directory called `templates` that must be located in the same
+    directory as the calling Python file. You would then need to use the `self._addHTMLTemplate()`
+    method that takes the name of the file as an argument (without specifying the
+    `templates` directory).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The other advantage of externalizing the HTML fragment into its own file is
+    that you don't have to restart the kernel every time you make a change, which
+    can save you a lot of time. Because of the way Python works, the same cannot be
+    said if the HTML fragment is embedded in the source code, in which case you would
+    have to restart the kernel for any changes made in the HTML fragment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is also important to note that `self._addHTMLTemplate()` and `self._addHTMLTemplateString()`
+    accept keyword arguments that will be passed to the Jinja2 template. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now run a cell that displays, for example, the `cars` dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The **Simple Table** extension only works with pandas, not Spark
+    DataFrame. Therefore, you would need to use `forcePandas = True` when calling
+    `sampleData()` if your Notebook is connected to Spark.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Extending PixieDust visualizations](img/B09699_05_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Running a custom visualization plugin on a pandas DataFrame
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in the PixieDust extension layer architecture diagram, you can also
+    extend PixieDust using the **Renderer Extension Layer**, which is more prescriptive
+    than the **Display Extension Layer** but provides many more capabilities out of
+    the box, such as options management and interim data computation caching. From
+    the user interface perspective, users can switch between renderers using a **Renderer**
+    drop-down in the upper right-hand corner of the chart area.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PixieDust comes with a few built-in renderers, such as Matplotlib, Seaborn,
+    Bokeh, Mapbox, Brunel, and Google Maps, but it doesn't declare any hard dependency
+    on the underlying visualization libraries, including Bokeh, Brunel, or Seaborn.
+    Therefore, it is incumbent on the user to manually install them, otherwise, they
+    won't show up in the menus.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot illustrates the mechanism to switch between renderers
+    for a given chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Extending PixieDust visualizations](img/B09699_05_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Switching between renderers
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Adding a new renderer is similar to adding a display visualization (it''s using
+    the same APIs), though it''s actually simpler since you only have to build one
+    class (no need to build the metadata class). Here are the steps you need to follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a Display class that inherits from the specialized `BaseChartDisplay
+    class`. Implement the required `doRenderChart()` method.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the `@PixiedustRenderer` decorator to register the `rendererId` (which must
+    be unique across all renderers) and the type of chart being rendered.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Note that the same `rendererId` can be reused for all the charts included in the
+    renderer. PixieDust provides a set of core chart types:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`tableView`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`barChart`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`lineChart`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`scatterPlot`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`pieChart`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`mapView`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`histogram`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*(Optional)* Create a set of dynamic options using the `@commonChartOptions`
+    decorator.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*(Optional)* Customize the options dialog by overriding the `get_options_dialog_pixieapp()`
+    method to return the fully qualified name of a PixieApp class inheriting from
+    the `BaseOptions` class in the `pixiedust.display.chart.options.baseOptions` package.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'As an example, let''s rewrite the preceding custom `SimpleDisplay` table visualization
+    using the renderer extension layer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode17.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode17.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We decorate the class with the `@PixiedustRenderer` decorator, specifying a
+    unique `rendererId` called `simpletable,` and associating it with the `tableView`
+    chart type defined by the PixieDust framework. We return `None` for the `get_options_dialog_pixieapp()`
+    method to signify that this extension does not support custom options. As a result,
+    the **Options** button will not be shown. In the `doRenderChart()` method, we
+    return the HTML fragment. Since we want to use Jinja2, we need to render it using
+    the `self.renderTemplateString` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now test this new renderer using the `cars` dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Again, when running the code, make sure that you're loading the `cars` dataset
+    as a pandas DataFrame. If you have already run the first implementation of the
+    **Simple Table** and are reusing the Notebook, it is possible that you will still
+    see the old **Simple Table** menu. If that's the case, you will need to restart
+    the kernel and try again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the simple table visualization as a renderer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Extending PixieDust visualizations](img/B09699_05_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing the renderer implementation of the Simple Table
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find more material about this topic at: [https://pixiedust.github.io/pixiedust/develop.html](https://pixiedust.github.io/pixiedust/develop.html).
+    Hopefully, by now, you have a good idea about the type of customization you can
+    write to integrate your own visualization in the `display()` framework.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the next section, we''ll discuss a very important topic for developers:
+    debugging.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debugging
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Being able to rapidly debug an application is critical to the success of your
+    project. If not, most—if not all—of the gains we've made in term of productivity
+    and collaboration, by breaking the silo between data science and engineering,
+    will be lost. It is also important to note that our code runs in different places,
+    that is, Python on the server side, and JavaScript on the client side, and that
+    debugging must take place in both places. For Python code, let's look at two ways
+    to troubleshoot programming errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debugging on the Jupyter Notebook using pdb
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pdb ([https://docs.python.org/3/library/pdb.html](https://docs.python.org/3/library/pdb.html))
+    is an interactive command- line Python debugger that comes as standard with every
+    Python distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are multiple ways to invoke the debugger:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At launch, from the command line:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Programmatically, in the code:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'By setting an explicit breakpoint in the code with the `set_trace()` method:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode18.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode18.py)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Post-mortem, after an exception has occurred, by calling `pdb.pm()`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once in the interactive debugger, you can invoke commands, inspect variables,
+    run statements, set breakpoints, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'A complete list of commands can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://docs.python.org/3/library/pdb.html](https://docs.python.org/3/library/pdb.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The great news is that Jupyter Notebooks provide first-class support for the
+    interactive debugger. To invoke the debugger, simply use the `%pdb` cell magic
+    command to turn it on/off, and, if an exception is triggered, then the debugger
+    will automatically stop execution at the offending line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Magic commands ([http://ipython.readthedocs.io/en/stable/interactive/magics.html](http://ipython.readthedocs.io/en/stable/interactive/magics.html))
+    are constructs specific to the IPython kernel. They are language agnostic and
+    therefore can theoretically be available in any language supported by the kernel
+    (for example, Python, Scala, and R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two types of magic commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Line magics**: The syntax is `%<magic_command_name> [optional arguments]`for
+    example, `%matplotlib inline`, which configures Matplotlib to output the charts
+    inline in the Notebook output cell.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'They can be invoked anywhere in the cell code, and can even return values that
+    can be assigned to Python variables, for example:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find a list of all the line magics here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[http://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics](http://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Cell magics**: The syntax is `%%<magic_command_name> [optional arguments]`.
+    For example, we call the HTML cell magic to display HTML on the output cell:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Cell magics must be located at the top of the cell; any other location would
+    result in an execution error. Everything below the cell magic is passed as an
+    argument to the handler to be interpreted according to the cell magic specification.
+    For example, the HTML cell magic expects the rest of the cell content to be HTML.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'The following code example calls a function that raises a `ZeroDivisionError`
+    exception, with `pdb` automatic calling activated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Once you turn `pdb` on, it stays on for the duration of the Notebook session.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Debugging on the Jupyter Notebook using pdb](img/B09699_05_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive command-line debugging
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are some important `pdb` commands that can be used to troubleshoot an
+    issue:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`s(tep)`: Step into the function being called and stop at the next statement
+    line.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`n(ext)`: Continue to the next line, without entering into a nest function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`l(list)`: List code surrounding the current line.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`c(ontinue)`: Keep running the program and stop at the next breakpoint, or
+    if another exception is raised.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`d(own)`: Move down the stack frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`u(p)`: Move up the stack frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`<any expression>`: Evaluate and display an expression within the context of the
+    current frame. For example, you can use `locals()` to get a list of all the local
+    variables scoped to the current frame.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If an exception occurred and you didn''t set the automatic `pdb` calling, you
+    can still invoke the debugger after the fact by using `%debug` magic in another
+    cell, as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Debugging on the Jupyter Notebook using pdb](img/B09699_05_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Doing a post-mortem debugging session with %debug
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similar to a regular Python script, you can also explicitly set a breakpoint
+    programmatically with the `pdb.set_trace()` method. However, it is recommended
+    using the enhanced version of `set_trace()` provided by the IPython core module
+    that provides syntax coloring:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Debugging on the Jupyter Notebook using pdb](img/B09699_05_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Explicit breakpoint
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next topic, we look at an enhanced version of the Python debugger provided
+    by PixieDust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visual debugging with PixieDebugger
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Using the standard command line-oriented Python pdb to debug your code is a
+    nice tool to have in our tool belt, but it has two major limitations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's command line-oriented, which means that commands have to be entered manually
+    and results are sequentially appended to the cell output, making it impractical
+    when it comes to advanced debugging
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It doesn't work with PixieApps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The PixieDebugger capability addresses both issues. You can use it with any
+    Python code running in a Jupyter Notebook cell to visually debug the code. To
+    invoke the PixieDebugger in a cell, simply add the `%%pixie_debugger` cell magic
+    at the top of the cell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: If you have not already done so, don''t forget to always import `pixiedust`
+    in a separate cell before attempting to use `%%pixie_debugger`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, the following code is trying to compute how many cars have the
+    name `chevrolet` in the `cars` dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode19.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode19.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Running the cell with the preceding code will trigger the visual debugger shown
+    in the following screenshot. The user interface lets you step into the code line
+    by line, with the ability to inspect local variables, evaluate Python expressions,
+    and set breakpoints. The code execution toolbar provides buttons for managing
+    code execution: resume execution, step over the current line, step into the code
+    a particular function, run to the end of the current function, and display the
+    stack frame up and down one level:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visual debugging with PixieDebugger](img/B09699_05_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: PixieDebugger in action
+  prefs: []
+  type: TYPE_NORMAL
+- en: With no parameter, the `pixie_debugger` cell magic will stop at the first executable
+    statement in the code. However, you can easily configure it to stop at specific
+    locations using the `-b` switch, followed by a list of breakpoints that could
+    be either a line number or a method name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Starting from the preceding example code, let''s add breakpoints at the `count_cars()`
+    method and line **11**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode20.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode20.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Running the preceding code will now trigger the PixieDebugger to stop at the
+    first executable statement of the `count_cars()` method. It also added a breakpoint
+    at line 11, which will cause the execution flow to stop there if the user resumes,
+    as can be seen in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visual debugging with PixieDebugger](img/B09699_05_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: PixieDebugger with predefined breakpoints
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: To run to a specific line of code without setting an explicit breakpoint,
+    simply hover over the line number in the gutter in the left-hand pane and click
+    on the icon that appears.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like the `%debug` line magic, you can also invoke the PixieDebugger to do post-mortem
+    debugging by using the `%pixie_debugger` line magic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debugging PixieApp routes with PixieDebugger
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'PixieDebugger is fully integrated into the PixieApp framework. Whenever an
+    exception happens while triggering a route, the resulting traceback is augmented
+    with two extra buttons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Post Mortem**: Invoke the PixieDebugger to start a post-mortem troubleshooting
+    session that lets you inspect variables and analyses the stack frames'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Debug Route**: Replay the current route stopping at the first executable
+    statement in the PixieDebugger'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As an example, let''s consider the following code for implementing a PixieApp
+    that lets the user search the `cars` dataset by providing a column name and a
+    search query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode21.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode21.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The default value for the search column is `name`, but if the user enters a
+    column name that doesn''t exist, a traceback is generated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Debugging PixieApp routes with PixieDebugger](img/B09699_05_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Enhanced traceback with buttons for invoking the PixieDebugger
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clicking on the **Debug Route** will automatically start the PixieDebugger
+    and stop at the first executable statement of the route, as shown in the following
+    screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Debugging PixieApp routes with PixieDebugger](img/B09699_05_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Debugging a PixieApp route
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You could also deliberately have the PixieDebugger stop at the `display_screen()`
+    route without waiting for a traceback to happen by using the `debug_route` keyword
+    argument to the `run` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: PixieDebugger is the first visual Python debugger for Jupyter Notebook, providing
+    a feature that has long been requested by the Jupyter user community. However,
+    using live debugging is not the only tool that developers use. In the next section,
+    we will look at debugging by inspecting logging messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Troubleshooting issues using PixieDust logging
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'It is always good practice to instrument your code with logging messages, and
+    the PixieDust framework provides an easy way to create and read back logging messages
+    directly from the Jupyter Notebook. To start off, you''ll need to create a logger
+    by calling the `getLogger()` method as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode22.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode22.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can use anything as an argument to the `getLogger()` method. However, to better
+    identify where a particular message comes from, it is recommended using the `__name__`
+    variable, which returns the name of the current module. The `my_logger` variable
+    is a standard Python logger object that provides logging methods with various
+    levels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`debug(msg, *args, **kwargs)`: Logs a message with the `DEBUG` level.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`info(msg, *args, **kwargs)`: Logs a message with the `INFO` level.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`warning(msg, *args, **kwargs)`: Logs a message with the `WARNING` level.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`error(msg, *args, **kwargs)`: Logs a message with the `ERROR` level.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`critical(msg, *args, **kwargs)`: Logs a message with the `CRITICAL` level.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`exception(msg, *args, **kwargs)`: Logs a message with the `EXCEPTION` level.
+    This method should only be called from within an exception handler.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: You can find more information about the Python logging framework
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://docs.python.org/2/library/logging.html](https://docs.python.org/2/library/logging.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can then query the log messages directly from the Jupyter Notebook using
+    the `%pixiedustLog` cell magic, which takes the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`-l`: Filter by log level, for example, `CRITICAL`, `FATAL`, `ERROR`, `WARNING`,
+    `INFO`, and `DEBUG`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`-f`: Filter a message that contains a given string, for example, `Exception`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`-m`: Maximum number of log messages returned'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In the following example, we use the `%pixiedustLog` magic to display all the
+    debug messages, limiting these to the last five messages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Troubleshooting issues using PixieDust logging](img/B09699_05_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Display the last five log messages
+  prefs: []
+  type: TYPE_NORMAL
+- en: For convenience, when working with Python classes, you can also use the `@Logger`
+    decorator, which automatically creates a logger using the class name as its identifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a code example that uses the `@Logger` decorator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode23.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode23.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After running the preceding PixieApp in a cell, you can invoke the `%pixiedustLog`
+    magic to display the messages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Troubleshooting issues using PixieDust logging](img/B09699_05_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Querying the log with a specific term
+  prefs: []
+  type: TYPE_NORMAL
+- en: This completes our discussion on server-side debugging. In the next section,
+    we look at a technique for performing client-side debugging
+  prefs: []
+  type: TYPE_NORMAL
+- en: Client-side debugging
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: One of the design principles of the PixieApp programming model is to minimize
+    the need for developers to write JavaScript. The framework will automatically
+    trigger kernel requests by listening to user input events, such as click or change
+    events. However, there will be cases where writing a little bit of JavaScript
+    is inevitable. These JavaScript snippets are usually part of a particular route
+    HTML fragment and are dynamically injected into the browser, which makes it very
+    difficult to debug.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One popular technique is to sprinkle `console.log` calls in the JavaScript code
+    in order to print messages to the browser developer console.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Each browser flavor has its own way of invoking the developer console.
+    For example, in Google Chrome, you would use **View** | **Developer** | **JavaScript
+    Console,** or the *Command* + *Alt* + *J* shortcut.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One other debugging technique that I particularly like is to programmatically
+    insert in a breakpoint in the JavaScript code using the `debugger;` statement.
+    This statement has no effect unless the browser developer tools are open and source
+    debugging is enabled, in which case, the execution will automatically break at
+    the `debugger;` statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following PixieApp example uses a JavaScript function to resolve a dynamic
+    value referenced by the `$val()` directive:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode24.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%205/sampleCode24.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the preceding code, the button is dynamically setting the value of a state
+    using the `FooJS` JavaScript function that contains a debugger statement. Executing
+    the app and clicking on the button while the developer tool is open will automatically
+    start a debugging session on the browser:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Client-side debugging](img/B09699_05_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Debugging JavaScript code on the client side with a debugger; statement
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run Node.js inside a Python Notebook
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Even though I've clearly stated at the beginning of this book that Python has
+    emerged as a clear leader in the field of data science, it is still only marginally
+    used by the developer community where traditional languages, such as Node.js,
+    are still preferred. Recognizing that, for some developers, learning a new language,
+    such as Python, is a cost of entry to data science that may be too high, I partnered
+    with my IBM colleague, Glynn Bird, to build an extension library to PixieDust
+    called `pixiedust_node` ([https://github.com/pixiedust/pixiedust_node](https://github.com/pixiedust/pixiedust_node))
+    that would let developers run Node.js/JavaScript code inside cells in a Python
+    Notebook. The goal of this library is to ease developers into the Python world
+    by allowing them to reuse their favourite Node.js libraries, for example, to load
+    and process data from existing data sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To install the `pixiedust_node` library, simply run the following command in
+    its own cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Don''t forget to restart the kernel once the installation is complete.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Important**: You need to make sure that a Node.js runtime version 6 or higher
+    is installed on the same machine as the Jupyter Notebook Server.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once the kernel has restarted, we import the `pixiedust_node` module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see information about both PixieDust and `pixiedust_node` in the
+    output as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Run Node.js inside a Python Notebook](img/B09699_05_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: pixiedust_node welcome output
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When `pixiedust_node` is imported, a Node subprocess is created from the Python
+    side along with a special thread that reads the output of the subprocess and passes
+    it to the Python side to be displayed in the cell currently executing in the Notebook.
+    This subprocess is responsible for starting an **REPL** session (**Read-Eval-Print
+    Loop**: [https://en.wikipedia.org/wiki/Read-eval-print_loop](https://en.wikipedia.org/wiki/Read-eval-print_loop))
+    that will execute all the scripts sent from the Notebook and make any created
+    classes, functions, and variables reusable across all executions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It also defines a set of functions that are designed to interact with the Notebook
+    and the PixieDust `display()` API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`print(data)`: Outputs the value of data in the cell currently executing in
+    the Notebook.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`display(data)`: Calls the PixieDust `display()` API with a pandas DataFrame
+    converted from data. If data cannot be converted into a pandas DataFrame, then
+    it defaults to the `print` method.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`html(data)`: Displays the data as HTML in the cell currently executing in
+    the Notebook.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`image(data)`: Expects data to be a URL to an image and displays it in the
+    cell currently executing in the Notebook.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`help()`: Displays a list of all the preceding methods.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In addition, `pixiedust_node` makes two variables, called `npm` and `node,`
+    globally available in the Notebook:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`node.cancel()`: Stops the current execution of code in the Node.js subprocess.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`node.clear()`: Resets the Node.js session; all existing variables will be
+    deleted.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`npm.install(package)`: Installs an npm package and makes it available to the
+    Node.js session. The package is persisted across sessions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`npm.uninstall(package)`: Removes the npm package from the system and the current
+    Node.js session.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`npm.list()`: Lists all npm packages currently installed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`pixiedust_node` creates a cell magic that lets you run arbitrary JavaScript
+    code. Simply use the `%%node` magic at the top of the cell and run it as usual.
+    The code will then be executed in the Node.js subprocess REPL session.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code displays a string that includes the current datetime using
+    the JavaScript `Date` object ([https://www.w3schools.com/Jsref/jsref_obj_date.asp](https://www.w3schools.com/Jsref/jsref_obj_date.asp)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This outputs the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following diagram illustrates the execution flow of the preceding cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Run Node.js inside a Python Notebook](img/B09699_05_23.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The life cycle of a Node.js script execution
+  prefs: []
+  type: TYPE_NORMAL
+- en: The JavaScript code is processed by the `pixiedust_node` magic and sent to the
+    Node subprocess for execution. As the code is being executed, its output is read
+    by the special thread and displayed back in the cell currently executing in the
+    Notebook. Note that the JavaScript code may make an asynchronous call, in which case
+    the execution will return right away before the asynchronous calls have finished.
+    In this case, the Notebook will indicate that the cell code is done, even though
+    more output may be generated later by the asynchronous code. There is no way to
+    deterministically know when an asynchronous code is done. Therefore it is incumbent
+    upon the developer to manage this state carefully.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`pixiedust_node` also has the ability to share variables between the Python
+    side and the JavaScript side, and vice-versa. Therefore, you could declare a Python
+    variable (such as an array of integers, for example), apply a transformation in
+    JavaScript (perhaps using your favorite library), and have it processed back in Python.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code is run in two cells, one in pure Python declaring an array
+    of integers, and one in JavaScript that multiplies each element by 2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Run Node.js inside a Python Notebook](img/B09699_05_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The reverse direction also works the same. The following code starts by creating
+    a JSON variable in JavaScript in a node cell, and then creates and displays a
+    pandas DataFrame in the Python cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, in a Python cell, we use PixieDust `display()`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the following options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Run Node.js inside a Python Notebook](img/B09699_05_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: display() options for data created from a node cell
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And we get the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Run Node.js inside a Python Notebook](img/B09699_05_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bar chart from data created in a node cell
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could also have arrived at the same results directly from the Node cell
+    by using the `display()` method made available by `pixiedust_node`, as shown in the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you are interested in knowing more about `pixiedust_node`, I strongly recommend
+    this blog post: [https://medium.com/ibm-watson-data-lab/nodebooks-node-js-data-science-notebooks-aa140bea21ba](https://medium.com/ibm-watson-data-lab/nodebooks-node-js-data-science-notebooks-aa140bea21ba).
+    As always, I encourage the reader to get involved with improving these tools,
+    either by contributing code or ideas for enhancement.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we've explored various advanced concepts, tools, and best practices that
+    added more tools to our toolbox, ranging from advanced techniques for PixieApps
+    (Streaming, how to implement a route by integrating third-party libraries with
+    `@captureOutput`, PixieApp events, and better modularity with `pd_app`), to essential
+    developer tools like the PixieDebugger. We've also covered the details of how
+    to create your own custom visualization using the PixieDust `display()` API. We
+    also discussed `pixiedust_node,` which is an extension of the PixieDust framework
+    that lets developers who are more comfortable with JavaScript work with data in
+    their favorite language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Throughout the remainder of this book, we are going to put all these lessons
+    learned to good use by building industry use case data pipelines, starting with
+    a *Deep Learning Visual Recognition* application in [Chapter 6](ch06.xhtml "Chapter 6. Analytics
+    Study: AI and Image Recognition with TensorFlow"), *Analytics Study: AI and Image
+    Recognition with TensorFlow*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A developer quick-reference guide for the PixieApp programming model is provided
+    in [Appendix](apa.xhtml "Appendix A. PixieApp Quick-Reference"), *PixieApp Quick-Reference*
+    at the end of this book.
+  prefs: []
+  type: TYPE_NORMAL

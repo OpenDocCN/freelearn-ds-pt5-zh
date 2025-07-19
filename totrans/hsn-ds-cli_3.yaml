@@ -1,0 +1,552 @@
+- en: Shell Workflows, and Data Acquisition and Massaging
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we're going to work on an actual dataset and do some basic
+    analysis. We'll learn how to download files straight from the command line, determine
+    what type of file it is, and parse the data using a number of commands. We'll
+    also cover how to perform non-interactive detached processing and review some
+    common terminal multiplexers that enable us to prettify the command line as well
+    as organize detached processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we''ll cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to download a dataset using the command line
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using built-in tools to inspect the data and its type
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to perform a word count in bash
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Analyzing a dataset with some simple commands
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detached processing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Terminal multiplexers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Download the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have an understanding of the command line, let''s do something
+    cool with it! Say we had a couple datasets full of book reviews from Amazon, and
+    we wanted to only view the reviews about Packt Publishing. First, let''s go ahead
+    and grab the data (if you are using the Docker container, the data is located
+    in `/data`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f2aac57a-082c-4cb7-ba6a-9c13f894ce67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We are introducing a couple of new commands and features here to download the
+    files. First, we call the `curl` command to download the file. You can run `curl
+    --help` to view all of the options available, or `man curl`, but we wanted to
+    download a remote file and save it as the original filename, so we used the `-O`
+    option. Second, notice the double ampersands (`&&`)? Since we want to download
+    both files at the same time (with no errors), the double ampersand allows us to
+    combine two commands together. If the first command fails, the second command
+    won't run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now you might be asking yourself, "What if I want to run multiple commands
+    and I don’t care whether the first command fails, I want to it to run anyway!"
+    Well, you''re in luck! If you replace the double ampersands with a semicolon, `ecoh
+    "this isn''t a command" ; echo "but this is"`, you should see the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/178e9c6d-cb55-4576-9177-79b9a81a46b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Ubuntu comes with a nice little helper if you mistype a command and recommends
+    what command you probably should have typed. If you''re running this on another
+    system, you might not see it, but you will see ecoh: command not found.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the file command
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Once the data is done downloading, let''s take a look and see what we''ve got.
+    Go ahead and run `ls -al amazon*` to make sure the files actually downloaded:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8da6abca-a1c2-4a65-a2d5-a72c05f82cb5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you have anything else in this directory named `amazon`, that will show
+    up as well. Now that the files are downloaded, let''s introduce a new command,
+    called `file`. Go ahead and run the following `file amazon*` command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d1768b27-0145-4e30-a424-deb99b199182.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Wow, without any parameters set, the `file` command was able to figure out that
+    this is a compressed archive. You'll use the `file` command a lot to determine
+    the type of files you're working with. Let's decompress the files so we can work
+    with them. This might take a little bit, depending on the speed of your system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do so, run the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Go ahead and run the `file` command again against the new datasets. Notice
+    anything different? Check out the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/59ae892f-d678-4bc0-bc81-c8981092b201.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Very cool! The `file` command was able to verify that we are working with text
+    files, and it seems like a lot of text with very long lines. Let''s take a look
+    and sample one of the datasets to see what we''re working with. To do so, we can
+    use the `more` command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''ll just sample the first file we downloaded:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/92bf324d-0b42-4afd-9d1e-af2d62b1ab62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very long lines indeed! You can keep hitting the spacebar to view the file (it
+    might take you a while to read the entire thing) and if you want to exit, just
+    hit the *Q* key. Don't forget to `man more` for more information on more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing a word count
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have some data to work with, let''s combine the two files together
+    into a single file. To do so, perform the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is what you should see once you run the preceding command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7241018d-c54e-44cf-a83b-42d2aa0548bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Excellent. Let''s say we wanted to count how many words or lines are in this
+    file. Let''s introduce the `wc` command. `wc` is short for (you guessed it) word
+    count. Let''s quickly `man wc` to see the options available:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ccaeedfb-24a9-4743-bf3e-6882e82f1dd3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Looks like `wc` can count the lines and also the words of a file. Let''s see
+    how many lines our file actually has:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is what you should see once you run the preceding command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/590cf303-43ef-4450-8c3e-b9a74e1b171a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'That''s a lot of lines! What about words? Run the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/3102dce5-0d23-4a24-874b-bd1bb0baa943.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This looks like a great dataset to use. It''s not big data by any means, but
+    there''s a lot of cool stuff we can do with it. For example, did you notice the
+    header in the file from earlier? It''s kind of hard to see since there''s a lot
+    of data being displayed on the screen. Let''s strip just the headers out and see
+    what we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is what you should see once you run the preceding command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2be15f92-0612-418c-aa9e-c2cdf4ac61fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Great, now we have a list of the headers we can use. Let's clean this up a bit.
+    Imagine we're only interested in the `produce_title`, `star_rating`, `review_headline`,
+    and `review_body` columns. Copying and pasting throughout the file would take
+    hours, so let's introduce a new command called `cut`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to cut
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s break the command down before you run it. The `cut` command removes
+    sections from each line of a file. The `-d` parameter tells `cut` we are working
+    with a **tsv** (**tab separated values**), and the `-f` parameter tells `cut`
+    what fields we are interested in. Since `product_title` is the sixth field in
+    our file, we started with that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Unlike most programs, cut starts at 1 instead of 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3e5b9e97-0f2a-4fbb-9c21-2b7957964837.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Much better! Let''s go ahead and save this as a new file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is what you should see once you run the preceding command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/77975be4-837b-4a39-8e4f-46160cdcc79b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s see how many times the word `Packt` shows up in this dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is what you should see once you run the preceding command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/90e2c665-7957-43fa-8979-1218f20e686c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s convert this from `.tsv` to `.csv` so we have a little more structure
+    to work with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is what you should see once you run the preceding command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1225f008-e7ca-4da8-8622-78cac6a5fb68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now let''s go ahead and filter out all of the reviews that have the word `Packt`
+    in them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is what you should see once you run the preceding command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e81a3ebe-053f-4949-ab4b-aa82d86d1bc0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interesting! Using the commands you just learned, go ahead and play with this
+    dataset for a bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will talk more about the `tr` command in [Chapter 5](df05c890-510b-4e7e-8cc2-200f68f2febf.xhtml),
+    *Loops, Functions, and String Processing*; for now, don't worry about it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detached processing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Detached processing runs a command in the background. This means that terminal
+    control is immediately returned to the shell process while the detached process
+    runs in the background. With job control, these back grounded processes can be
+    resumed in the foreground or killed directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to background a process
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Remember when we used the double ampersand to conditionally execute two commands
+    that run one after another? By using a single ampersand, you can fork a process
+    in the background and let it run. Let''s use the command to save to a new file
+    and run in the background:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will take the example from earlier but run it in the background, like
+    so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/30558519-96e7-416c-b387-e890277b52bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Notice to `<output> [1] 1504</output>` that was printed (avoiding all the output!)
+    this shows you that the job was run successfully in the background. You can run
+    `tail -F background_words.txt` to view the data in real time as it runs in the
+    background:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/195ad611-7a1f-4fce-aeeb-afb903f2507e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To bring the job back from the **bg** (**background**), type `fg` and you brought
+    the process back to the foreground like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0a4a5258-a18d-4b27-bd0f-00f72371b60b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Go ahead and run a couple of commands in the background. You can use the `jobs` command
+    to view them all. Feel free to check the manual page for the `jobs` command by
+    entering `man jobs` for more options.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disregarding SIGHUP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Commands are attached to their controlling command-line terminal by default.
+    When the command line terminates, child processes (backgrounded or not) are sent
+    a SIGHUP and should terminate. Let's say you wanted to run a command and keep
+    it running if you log out. `nohup` comes in handy, especially if you're working
+    on remote systems and have a need to log out, or you're worried about your connection
+    to the server that keeps disconnecting (I'm looking at you, Amtrak WiFi).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Go ahead and run the command we ran earlier, but add `nohup` to the beginning,
+    like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, log out of your shell by typing `logout` or by using `control-d`, and then
+    bring the shell back up and run `tail` `-f background_words.txt`. You’ll notice
+    that the command is still running in the background and the file is being updated.
+    You might have tried to bring the command back by issuing `fg` and noticed it
+    didn't work. Keep that in mind as `nohup` the command will run until completion
+    or failure or until you `kill` the process. Feel free to check out the manual
+    page for `kill` by doing a `man kill`, as there's a lot of options to choose from.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Terminal multiplexers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's now take a look at the `screen` command, it will give you the ability
+    to do many different things, as we will see in the following section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to screen
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far, you've learned how to run a command in the background and you've mastered `nohup`.
+    Now it's time to talk about the `screen` command. `screen` gives you the ability
+    to attach and detach sessions on the fly, keep a shell active even with network
+    disruptions, disconnect and reconnect to a shell from multiple locations, share
+    a shell with a remote user, and keep a long-running process running without maintaining
+    an active session.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let''s make sure you have `screen` and `tmux` (we will use `tmux` later)
+    installed. In Ubuntu, run the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You might already have it installed (depending on which version of Ubuntu you
+    are running), but better safe than sorry. Now, let''s go ahead and fire up `screen`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b957ab2c-0c8b-4874-a95b-f51200776821.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Go ahead and send the team some pizza and beer (really, these folks are great!)
+    and hit the spacebar to continue. You'll notice... well, nothing really changed.
+    The command prompt is still the same, just some information about copyrights and
+    where to send beer money appeared. Let's go ahead and run a new command, called
+    `top`. The top command (table of processes) shows you all of the processes that
+    are currently running. Go ahead and give it a try!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Your output will look slightly different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Execute the `top`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With `top` running:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5af8c382-7786-4d5c-ac7a-01744ce80e75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Admire the awesomeness of `top`. This is a great command to use if you ever
+    what to know what’s taking up a lot of the system's resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While `top` is running, let''s go ahead and detach from `screen`. Type the
+    following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice that the screen went back to a clean shell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b32fa950-cfaa-4680-9f4d-c295bd9d4f2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To check whether the `screen` session is still active, let's go ahead and run `screen
+    -r`. Notice that the `top` command didn't die—it ran in a screen session. What's
+    great is that you can log out of this session, reconnect, and attach the `screen` session
+    like nothing happened. It's very useful for running long processes from a laptop
+    or any place where you'll need to disconnect for a bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go ahead and run multiple `screen` sessions. You can view them by running `screen
+    -list`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing a screen session between multiple users
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We''ve all been there: trying to troubleshoot someone''s code remotely when
+    you’re unable to see what’s going on is a very painful process. A user can create
+    a shared session by doing the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And while you''re logged into the same machine, go ahead and type the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Introduction to tmux
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`tmux` is the newest terminal multiplexer on the block, with a lot of great
+    features to enhance your command line skills and provides a lot of features over
+    just the standard shell. Let''s fire it up and check it out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see something like this when you run `tmux`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/51786fc8-18b1-432b-9ff5-269c8b6ea57d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output for tmux command
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing to keep in mind is that, by default, all `tmux` commands require the
+    prefix *Ctrl* +* B* before you can run `tmux` commands. For example, let's try
+    a couple out. Having one shell window is great, but how about two?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0e3240d0-30a9-4e40-9f9c-0bef63e3bf16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output for tmux command with two shells
+  prefs: []
+  type: TYPE_NORMAL
+- en: How about two more but on the bottom?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/9e72c8f3-2699-496e-9b27-9837ea9f0f57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pretty awesome, right? Go ahead and customize your `tmux` session to your liking.
+    There's a bunch of options located in the `man` page, `man tmux`, to choose from.
+    Our personal favorites are `<key>Ctrl+b</key> : setw` `synchronize-panes` on `<key>enter</key>`.
+    Now, go ahead and type `top`. Did you notice that all of the panes are the same?
+    This comes in handy when you're logged into multiple servers and need to run a
+    command across them all manually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we only scratched the surface on what we can do with the command
+    line. We were able to download a dataset, save it, inspect the file type, and
+    perform some simple analytics. The word count example is considered the "Hello,
+    World" of data science and we saw just how easy it is to perform in bash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then took your shell customization to the next level by using terminal multiplexers
+    and background processes. Think of it like using an IDE, but for the command line.
+    It will make working with bash a lot easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Being able to control processes and workflows will improve productivity. Detached
+    processing ensures programs can complete without interruption. The terminal multiplexer
+    provides a means of maximizing the use of screen real-estate, while also providing
+    a detached processing environment, which is a double win for all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we'll explore reusable shell bash scripts and functions.
+  prefs: []
+  type: TYPE_NORMAL

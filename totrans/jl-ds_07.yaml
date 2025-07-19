@@ -1,0 +1,1216 @@
+- en: Chapter 7. Unsupervised Machine Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous chapter, we learned about supervised machine learning algorithms
+    and how we can use them in real-world scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unsupervised learning is a little bit different and harder. The aim is to have
+    the system learn something, but we ourselves don't know what to learn. There are
+    two approaches to the unsupervised learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One approach is to find the similarities/patterns in the datasets. Then we can
+    create clusters of these similar points. We make the assumption that the clusters
+    that we found can be classified and can be provided with a label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm itself cannot assign names because it doesn't have any. It can
+    only find the clusters based on the similarities, but nothing more than that.
+    To actually be able to find meaningful clusters, a good size of dataset is required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is used extensively in finding similar users, recommender systems, text classification,
+    and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will discuss various clustering algorithms in detail. In this chapter, we
+    will learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Working with unlabeled data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is unsupervised learning?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is clustering?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Different types of clustering.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The K-Means algorithm and Bisecting K-means. Its strengths and weaknesses.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hierarchical clustering.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Agglomerative clustering. Its strengths and weaknesses.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The DBSCAN algorithm.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We should also discuss the second approach before we can start delving deep
+    into clustering. It will tell us how different clustering is from this approach
+    and the use cases. The second approach is a kind of reinforcement learning. This
+    involves rewards to indicate success to the algorithm. There are no explicit categorizations
+    done. This type of algorithm is best suited for real-world algorithms. In this
+    algorithm, the system behaves on the previous rewards or the punishments it got.
+    This kind of learning can be powerful because there is no prejudice and there
+    are no pre-classified observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This calculates the possibility of every action and knows beforehand what action
+    will lead to what kind of result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This trial and error method is computationally intensive and consumes a lot
+    of time. Let's discuss the clustering approach that is not based on trial and
+    error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Clustering is a technique to divide data into groups (clusters) that are useful
+    and meaningful. The clusters are formed capturing the natural structure of the
+    data, which have meaningful relations with each other. It is also possible that
+    this is only used at the preparation or the summarization stage for the other
+    algorithms or further analysis. Cluster analysis has roles in many fields, such
+    as biology, pattern recognition, information retrieval, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clustering has applications in different fields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Information retrieval**: To segregate the information into particular clusters
+    is an important step in searching and retrieving information from the numerous
+    sources or a big pool of data. Let''s use the example of news aggregating websites.
+    They create clusters of similar types of news making it easier for the user to
+    go through the interesting sections.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These news types can also have sub-classes creating a hierarchical view. For
+    example, in the sports news section, we can have Football, Cricket, and Tennis,
+    and other sports.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Biology**: Clustering finds a great use in biology. After years of research,
+    biologists have classified most of the living things in hierarchies. Using the
+    features of these classes, unknowns can be classified. Also, the existing data
+    can be used to find similarities and interesting patterns.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Marketing**: Companies use customer and sales data to create clusters of
+    similar users or segments where targeted promotions/campaigns can be run to get
+    the maximum return on  investment.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Weather**: Cluster analysis is used extensively in climate and weather analysis.
+    Weather stations generate huge amount of data. Clustering is used to generate
+    insights on this data and find out the patterns and important information.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How are clusters formed?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many methods to form clusters. Let''s discuss some basic approaches
+    of cluster creation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start with grouping the data objects. This grouping should only happen based
+    on the data that is describing the objects.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Similar objects are grouped together. They may show a relationship with each
+    other.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dissimilar objects are kept in other clusters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![How are clusters formed?](img/image_07_001.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding plot clearly shows us some distinct clusters that are formed when
+    there are more similarities between different data objects in a cluster and dissimilarities
+    with data objects from other clusters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![How are clusters formed?](img/image_07_002.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: But in this particular representation of the data points, we can see that there
+    are no definite clusters that can be formed. This is when there is some similarity
+    between the data objects of the different clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Types of clustering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are different types of clustering mechanisms depending on the various
+    factors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nested or un-nested—hierarchical or partitional
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Overlapping, exclusive, and fuzzy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Partial versus complete
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hierarchical clustering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If the clusters do not form subsets, then the cluster is said to be un-nested.
+    Therefore, partitional clustering is defined as the creation of well-defined clusters,
+    which do not overlap with each other. In such a cluster, the data points are located
+    in one and only one cluster alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the clusters have subclusters within them, then it is called hierarchical
+    clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Hierarchical clustering](img/B05321_07_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding diagram represents a hierarchical cluster. Hierarchical clusters
+    are the clusters organized as a tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, each cluster has its own child cluster. Each node can also be thought
+    of as an individual system, having its own clusters obtained through partitioning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overlapping, exclusive, and fuzzy clustering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The techniques which leads to creation of different types of clusters can be
+    categorized into three approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Exclusive clusters**: In the section, How are clusters formed? We saw two
+    images representing two different types of clusters. In the first image, we saw
+    that the clusters are well defined and have a good separation between them. These
+    are called exclusive clusters. In these clusters, the data points have a definite
+    dissimilarity from the data points of the other clusters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Overlapping clusters**: In the second image, we saw that there is no such
+    definite boundary to separate two clusters. Here some of the data points can exist
+    in any of the clusters. This situation comes when there is no such feature to
+    distinguish the data point into any of the clusters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fuzzy clustering**: Fuzzy clustering is a unique concept. Here the data point
+    belongs to each and every cluster and its relationship is defined by the weight
+    which is between 1 (belongs exclusively) to 0 (doesn''t belong). Therefore, clusters
+    are considered as fuzzy sets. By the probabilistic rule, a constraint is added
+    that the sum of weights of all the data points should be equal to 1.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fuzzy clustering is also known as probabilistic clustering. Generally, to have
+    a definite relation, the data point is associated with the cluster for whom it
+    has the highest membership weight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differences between partial versus complete clustering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In complete clustering, all the data points are assigned to a cluster because
+    they accurately represent features of the cluster. These types of clusters are
+    called complete clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There can be some data points that may not belong to any of the clusters. This
+    is when these data points represent noise or are outliers to the cluster. Such
+    data points are not taken in any of the clusters, and this is called partial clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-means clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: K-means is the most popular of the clustering techniques because of its ease
+    of use and implementation. It also has a partner by the name of K-medoid. These
+    partitioning methods create level-one partitioning of the dataset. Let's discuss
+    K-means in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-means algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: K-means start with a prototype. It takes centroids of data points from the dataset.
+    This technique is used for the objects lying in the n-dimensional space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The technique involves choosing the K number of centroids. This K is specified
+    by the user and is chosen considering various factors. It defines how many clusters
+    we want. So, choosing a higher or lower than the required K can lead to undesired
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now going forward, each point is assigned to its nearest centroid. As many points
+    get associated with a specific centroid, a cluster is formed. The centroid can
+    get updated depending on the points that are part of the current cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This process is done repeatedly until the centroid gets constant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithm of K-means
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Understanding K-means algorithm will give us a better view of how to approach
+    the problem. Let''s understand step by step the K-means algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As per the defined K, select the number of centroids.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assign data points to the nearest centroid. This step will form the clusters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the centroid of the cluster again.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat steps 2 and 3 until the centroid gets constant.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the first step, we use the mean as the centroid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 4 says to repeat the earlier steps of the algorithm. This can sometimes
+    lead to a large number of iterations with very little change. So, we generally
+    use repeat steps 2 and 3 only if the newer computed centroid has more than 1%
+    change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Associating the data points with the closest centroid
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: How do we measure the distance between the computed centroid and the data point?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the Euclidean (L2) distance as the measure, and we assume that the data
+    points are in the Euclidean space. We can also use different proximity measures
+    if required, for example, Manhattan (L1) can also be used for the Euclidean space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the algorithm processes similarities with the different data points, it is
+    good to have only the required set of features of the data points. With higher
+    dimensional data, the computation increases drastically as it has to compute for
+    each and every dimension iteratively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are some choices of the distance measure that can be used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Manhattan (L1)**: This takes a median as the centroid. It works on the function
+    to minimize the sum of the L1 distance of an object from the centroid of its cluster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Squared Euclidean (L2^2)**: This takes a mean as the centroid. It works on
+    the function to minimize the sum of the squared of the L2 distance of an object
+    from the centroid of the cluster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Cosine**: This takes a mean as the centroid. It works on the function to
+    maximize the sum of the cosine similarity of an object from the centroid of the
+    cluster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Bregman divergence**: This takes a mean as the centroid. It minimizes the
+    sum of the Bregman divergence of an object from the centroid of the cluster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to choose the initial centroids?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: This is a very important step in the K-means algorithm. We start off by choosing
+    the initial centroids randomly. This generally results in very poor clusters.
+    Even if these centroids are well distributed, we do not get even close to the
+    desired clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a technique to address this problem—multiple runs with different initial
+    centroids. After this, the set of the clusters is chosen, which has the minimum
+    **Sum of Squares error** (**SSE**). This may not always work well and may not
+    always be feasible because of the size of the dataset and the computation power
+    required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In repeating the random initializing, the centroid may not be able to overcome
+    the problem, but we have other techniques that we can use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using hierarchical clustering, we can start with taking some sample points
+    and use hierarchical clustering to make a cluster. Now we can take out the K number
+    of clusters from this clustering and use the centroids of these clusters as the
+    initial centroids. There are some constraints to this approach:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The sample data should not be large (expensive computation).
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With the number of the desired clusters, K should be small.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Another technique is to get the centroid of all the points. From this centroid,
+    we find the point that is separated at maximum. We follow this process to get
+    the maximum distant centroids, which are also randomly chosen. But there are some
+    issues with this approach:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is computationally intensive to find out the farthest point.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This approach sometimes produces undesirable results when there are outliers
+    in the dataset. Therefore, we may not get the dense regions as required.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Time-space complexity of K-means algorithms
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: K-means doesn't require that much space as we only need to store the data points
+    and the centroids.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The storage requirement of a K-means algorithm *O((m+K)n)*, where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*m* is number of points'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*n* is number of attributes'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The time requirements of the K-means algorithm may vary, but generally they
+    too are modest. The time increases linearly with the number of data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Time requirements of a K-means algorithm: *O(I*K*m*n)*, where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*I* is number of iterations required to converge to a centroid'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: K-means works best if the number of clusters required is significantly smaller
+    than the number of data points on which the K-means is directly proportional to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Issues with K-means
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are some issues associated with the basic K-means clustering algorithm.
+    Let's discuss these issues in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empty clusters in K-means
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'There can be a situation where we get empty clusters. This is when there are
+    no points allocated to a particular given cluster during the phase where points
+    are assigned. This can be resolved as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We choose a different centroid to the current choice. If it is not done, the
+    squared error will be much larger than the threshold.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To choose a different centroid, we follow the same approach of finding the farthest
+    such point from the current centroid. This generally eliminates the point that
+    was contributing to the squared error.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If we are getting multiple empty clusters, then we have to repeat this process
+    again several times.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Outliers in the dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: When we are working with the squared error, then the outliers can be the decisive
+    factor and can influence the clusters that are formed. This means that when there
+    are outliers in the dataset, then we may not achieve the desired cluster or the
+    cluster that truly represents the grouped data points may not similar features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This also leads to a higher sum of squared errors. Therefore, a common practice
+    is to remove the outliers before applying the clustering algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There can also be some situations where we may not want to remove the outliers.
+    Some of the points, such as unusual activity on the Web, excessive credit, and
+    so on, are interesting and important to the business.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Different types of cluster
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are limitations with K-means. The most common limitation of K-means is
+    that it faces difficulty in identifying the natural clusters. By natural clusters
+    we mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Non-spherical/circular in shape
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clusters of different sizes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clusters of different densities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: K-means can fail if there are few denser clusters and a not so dense cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a diagram of clusters of different sizes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Different types of cluster](img/image_07_004.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding figure has two images. In the first image, we have original points
+    and in the second image, we have three K-means clusters. We can see that these
+    are not accurate. This happens when clusters are of different sizes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a diagram of clusters of different densities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Different types of cluster](img/image_07_005.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding figure has two images. In the first image, we have original points
+    and in the second image, we have three K-means clusters. The clusters are of different
+    densities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a diagram of non-globular clusters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Different types of cluster](img/image_07_006.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding figure has two images. In the first image, we have original points
+    and in the second image, we have two K-means clusters. The clusters are non-circular
+    or non-globular in nature and the K-means algorithm was not able to detect them
+    properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-means – strengths and weaknesses
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'There are many strengths and a few weaknesses of K-means. Let''s discuss the
+    strengths first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-means can be used for various types of data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is simple to understand and implement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is efficient, even with repeated and multiple iterations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bisecting K-means, a variant of simple K-means is more efficient. We will discuss
+    that later in more detail.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Some weaknesses or drawbacks of K-means clustering include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is not suitable for every type of data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As seen in the previous examples, it doesn't work well for clusters of different
+    densities, sizes, or non-globular clusters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are issues when there are outliers in the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: K-means has a big constraint in that it makes the cluster by computing the center.
+    Therefore, our data should be such that can have a "center".
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bisecting K-means algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bisecting K-means is an extension of the simple K-means algorithm. Here we find
+    out the K clusters by splitting the set of all points into two clusters. Then
+    we take one of these clusters and split it again. The process continues until
+    the K clusters are formed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithm of bisecting K-means is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we need to initialize the list of clusters that will have the cluster
+    consisting of all the data points.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Repeat the following:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now we remove one cluster from the list of the clusters
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We now do trials of bisecting the cluster multiple times
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For n=1 to the number of trials in the previous step
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The cluster is bisected using K-means:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Two clusters are selected from the result that has the lowest total sum of squared
+    errors
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These two clusters are added to the list of the clusters
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The previous steps are performed until we have the K clusters in the list.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'There are several ways we can split a cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Largest cluster
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cluster which has the largest sum of squared errors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Both
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We will use the iris dataset from the RDatasets for this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bisecting K-means algorithm](img/image_07_007.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is a simple example of the famous iris dataset. We are clustering the data
+    points using `PetalLength` and `PetalWidth`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bisecting K-means algorithm](img/image_07_008.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Getting deep into hierarchical clustering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This is the second most used clustering technique after K-means. Let''s take
+    the same example again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting deep into hierarchical clustering](img/B05321_07_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, the top most root represents all the data points or one cluster. Now we
+    have three sub-clusters represented by nodes. All these three clusters have two
+    sub-clusters. And these sub-clusters have further sub-clusters in them. These
+    sub-clusters help in finding the clusters that are pure - that means, those which
+    share most of the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two ways with which we can approach hierarchical clustering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Agglomerative**: This is based on the concept of cluster proximity. We initially
+    start with treating each point as the individual cluster and then step by step
+    we merge the closest pairs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Divisive**: Here we start with one cluster containing all the data points
+    and then we start splitting it until clusters having individual points are left.
+    In this case, we decide how the splitting should be done.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hierarchical clusters are represented as a tree-like diagram, also known as
+    a dendogram. This is used to represent a cluster-subcluster relationship and how
+    the clusters are merged or split (agglomerative or divisive).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Agglomerative hierarchical clustering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the bottom-up approach of hierarchical clustering. Here, each observation
+    is treated as an individual cluster. Pairs of these clusters are merged together
+    on the basis of similarity and we move up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These clusters are merged together based on the smallest distance. When these
+    two clusters are merged, they are treated as a new cluster. These steps are repeated
+    when there is one single cluster left in the pool of data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithm of agglomerative hierarchical clustering is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, the proximity matrix is computed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The two closest clusters are merged.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The proximity matrix created in the first step is updated after the merging
+    of the two clusters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Step 2 and step 3 are repeated until there is only one cluster remaining.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How proximity is computed
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Step 3 in the previous algorithm is a very important step. It is the proximity
+    measure between the two clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are various ways to define this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MIN**: The two closest points of different clusters define the proximity
+    of these clusters. This is the shortest distance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MAX**: Opposite to MIN, MAX takes the farthest point in the clusters and
+    computes the proximity between these two which is taken as the proximity of these
+    clusters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Average**: One other approach is to take the average of all the data points
+    of the different clusters and compute the proximity according to these points.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![How proximity is computed](img/B05321_07_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding diagram depicts the proximity measure using MIN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How proximity is computed](img/B05321_07_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding diagram depicts the proximity measure using MAX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How proximity is computed](img/B05321_07_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding diagram depicts the proximity measure using Average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These methods are also known as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Single Linkage**: MIN'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Complete Linkage**: MAX'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Average Linkage**: Average'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is also another method known as the centroid method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the centroid method, the proximity distance is computed using two mean vectors
+    of the clusters. At every stage, the two clusters are combined depending on which
+    has the smallest centroid distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How proximity is computed](img/B05321_07_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The preceding diagram shows seven points in an x-y plane. If we start to do
+    agglomerative hierarchical clustering, the process would be as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '{1},{2},{3},{4},{5},{6},{7}.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '{1},{2,3},{4},{5},{6},{7}.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '{1,7},{2,3},{4},{5},{6},{7}.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '{1,7},{2,3},{4,5},{6}.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '{1,7},{2,3,6},{4,5}.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '{1,7},{2,3,4,5,6}.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '{1,2,3,4,5,6,7}.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This was broken down into seven steps to make the complete whole cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This can also be shown by the following dendogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How proximity is computed](img/image_07_014.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This represents the previous seven steps of the agglomerative hierarchical clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Strengths and weaknesses of hierarchical clustering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The hierarchical clustering discussed earlier is sometimes more or less suited
+    to a given problem. We will be able to comprehend this by understanding strengths
+    and weaknesses of the hierarchical clustering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Agglomerative clustering lacks a global objective function. Such algorithms
+    get the benefit of not having the local minima and no issues in choosing the initial
+    points.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Agglomerative clustering handles clusters of different sizes well.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is considered that agglomerative clustering produces better quality clusters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Agglomerative clustering is generally computationally expensive and doesn't
+    work well with high-dimensional data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding the DBSCAN technique
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**DBSCAN** refers to **Density-based Spatial Clustering of Applications with
+    Noise**. It is a data clustering algorithm that uses density-based expansion of
+    the seed (starting) points to find the clusters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It locates the regions of high density and separates them from the others using
+    the low densities between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, what is density?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the center-based approach, the density is computed at a particular point
+    in the dataset by using the number of points in the specified radius. This is
+    easy to implement and the density of the point is dependent on the specified radius.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, a large radius corresponds to the density at point *m*, where m
+    is the number of data points inside the radius. If the radius is small, then the
+    density can be 1 because only one point exists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How are points classified using center-based density
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Core point**: The points that lie inside the density-based cluster are the
+    core points. These lie in the interior of the dense region.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Border point**: These points lie within the cluster, but are not the core
+    points. They lie in the neighborhood of the core points. These lie on the boundary
+    or edge of the dense region.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Noise points**: The points that are not the core points or the border points
+    are the noise points.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DBSCAN algorithm
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Points very close to each other are put together in the same cluster. Points
+    lying close to these points are also put together. Points that are very far (noise
+    points) are discarded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithm of the DBSCAN is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Points are labeled as core, border, or noise points.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Noise points are eliminated.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: An edge is formed between the core points using the special radius.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These core points are made into a cluster.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Border points associated to these core points are assigned to these clusters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Strengths and weaknesses of the DBSCAN algorithm
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The hierarchical clustering discussed earlier is sometimes more or less suited
+    to a given problem. We will be able to comprehend this by understanding strengths
+    and weaknesses of the hierarchical clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DBSCAN can handle clusters of different shapes and sizes. It is able to do this
+    because it creates the definition of the cluster using the density.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is resistant to noise. It is able to perform better than K-means in terms
+    of finding more clusters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DBSCAN faces issues with datasets that have varied densities.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, it has issues dealing with high-dimensional data because it becomes difficult
+    to find densities in such data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It's computationally intensive when computing nearest neighbors.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cluster validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Cluster validation is important as it tells us that the generated clusters
+    are relevant or not. Important points to consider when dealing with the cluster
+    validation include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It has the ability to distinguish whether non-random structure in the data actually
+    exists or not
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It has the ability to determine the actual number of clusters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It has the ability to evaluate how the data is fit to the cluster
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It should be able to compare two sets of clusters to find out which cluster
+    is better
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will be using `ScikitLearn.jl` in our example of agglomerative hierarchical
+    clustering and DBSCAN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As discussed previously, `ScikitLearn.jl` aims to provide a similar library
+    such as the actual scikit-learn for Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will first add the required packages to our environment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This also requires us to have the scikit-learn in our Python environment. If
+    it is not already installed, we can install it using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After this, we can start with our example. We will try out the different clustering
+    algorithms available in `ScikitLearn.jl`. This is provided in the examples of
+    `ScikitLearn.jl`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We imported the datasets from the official scikit-learn library and the clustering
+    algorithms. As some of these are dependent on the distance measure of neighbors,
+    we also imported kNN:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This particular snippet will generate the required datasets. The dataset generated
+    will be of good enough size to test these different algorithms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We assigned names to these algorithms and colors to fill the image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we assign how the images will be formed for different algorithms and datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Example](img/B05321_07_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, we are normalizing the dataset to easily select the parameters, and initializing
+    the `kneighbors_graph` for the algorithms requiring the distance measure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Example](img/B05321_07_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, we are creating the clustering estimators, which are required by the
+    algorithms to behave accordingly to the use case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Example](img/B05321_07_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The similar estimators for different algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After this, we use these algorithms on our datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result obtained is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Example](img/image_07_018.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that agglomerative clustering and DBSCAN performed really well in
+    the first two datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Agglomerative clustering didn't perform well in the third dataset, whereas DBSCAN
+    did
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Agglomerative clustering and DBSCAN both performed poorly on the fourth dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned about unsupervised learning and how it is different
+    from Supervised learning. We discussed various use cases where Unsupervised learning
+    is used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We went through the different Unsupervised learning algorithms and discussed
+    their algorithms, and strengths and weaknesses over each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We discussed various clustering techniques and how clusters are formed. We learned
+    how different the clustering algorithms are from each other and how they are suited
+    to particular use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We learned about K-means, Hierarchical clustering, and DBSCAN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will learn about Ensemble learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://github.com/JuliaLang/julia](https://github.com/JuliaLang/julia)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/JuliaStats/Clustering.jl](https://github.com/JuliaStats/Clustering.jl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[http://juliastats.github.io/](http://juliastats.github.io/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/stevengj/PyCall.jl](https://github.com/stevengj/PyCall.jl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/cstjean/ScikitLearn.jl](https://github.com/cstjean/ScikitLearn.jl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

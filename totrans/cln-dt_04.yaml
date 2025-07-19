@@ -1,0 +1,970 @@
+- en: Chapter 4. Speaking the Lingua Franca – Data Conversions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Last summer, I took a cheese-making class at a local cooking school. One of
+    the first things we made was ricotta cheese. I was thrilled to learn that ricotta
+    can be made in about an hour using just milk and buttermilk, and that buttermilk
+    itself can be made from milk and lemon juice. In a kitchen, ingredients are constantly
+    transformed into other ingredients, which will in turn be transformed into delicious
+    meals. In our data science kitchen, we will routinely perform conversions from
+    one data format to another. We might need to do this in order to perform various
+    analyses, when we want to merge datasets together, or if we need to store a dataset
+    in a new way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A lingua franca** is a language that is adopted as a common standard in a
+    conversation between speakers of different languages. In converting data, there
+    are several data formats that can serve as a common standard. We covered some
+    of these in [Chapter 2](part0020.xhtml#aid-J2B82 "Chapter 2. Fundamentals – Formats,
+    Types, and Encodings"), *Fundamentals – Formats, Types, and Encodings*. JSON and
+    CSV are two of the most common. In this chapter, we will spend some time learning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to perform some quick conversions into JSON and CSV from software tools
+    and languages (Excel, Google Spreadsheets, and phpMyAdmin).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to write Python and PHP programs to generate different text formats and
+    convert between them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to implement data conversions in order to accomplish a real`-`world task.
+    In this project, we will download a friend network from Facebook using the netvizz
+    software, and we will clean the data and convert it into the JSON format needed
+    to build a visualization of your social network in D3\. Then, we will clean the
+    data in a different way, converting it into the Pajek format needed by the social
+    network package called **networkx**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Quick tool-based conversions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of the quickest and easiest ways to convert a small to medium amount of
+    data is just to ask whatever software tool you are using to do it for you. Sometimes,
+    the application you are using will already have the option to convert the data
+    into the format you want. Just as with the tips and tricks in [Chapter 3](part0024.xhtml#aid-MSDG2
+    "Chapter 3. Workhorses of Clean Data – Spreadsheets and Text Editors"), *Workhorses
+    of Clean Data – Spreadsheets and Text Editors*, we want to take advantage of these
+    hidden features in our tools, if at all possible. If you have too much data for
+    an application-based conversion, or if the particular conversion you want is not
+    available, we will cover programmatic solutions in the upcoming sections, *Converting
+    with PHP* and *Converting with Python*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spreadsheet to CSV
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Saving a spreadsheet as a delimited file is quite straightforward. Both Excel
+    and Google spreadsheets have **File** menu options for **Save As**; in this option,
+    select **CSV (MS DOS)**. Additionally, Google Spreadsheets has the options to
+    save as an Excel file and save as a tab-delimited file. There are a few limitations
+    with saving something as CSV:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In both Excel and Google Spreadsheets, when you use the **Save As** feature,
+    only the current sheet will be saved. This is because, by nature, a CSV file describes
+    only one set of data; therefore, it cannot have multiple sheets in it. If you
+    have a multiple-sheet spreadsheet, you will need to save each sheet as a separate
+    CSV file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In both these tools, there are relatively few options for how to customize the
+    CSV file, for example, Excel saves the data with commas as the separator (which
+    makes sense as it is a CSV file) and gives no options to enclose data values in
+    quotation marks or for different line terminators.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spreadsheet to JSON
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: JSON is a little trickier to contend with than CSV. Excel does not have an easy
+    JSON converter, though there are several converter tools online that purport to
+    convert CSV files for you into JSON.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google Spreadsheets, however, has a JSON converter available via a URL. There
+    are a few downsides to this method, the first of which is that you have to publish
+    your document to the Web (at least temporarily) in order to access the JSON version
+    of it. You will also have to customize the URL with some very long numbers that
+    identify your spreadsheet. It also produces a lot of information in the JSON dump—probably
+    more than you will want or need. Nonetheless, here are some step-by-step instructions
+    to convert a Google Spreadsheet into its JSON representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – publish Google spreadsheet to the Web
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: After your Google spreadsheet is created and saved, select **Publish to the
+    Web** from the **File** menu. Click through the subsequent dialogue boxes (I took
+    all the default selections for mine). At this point, you will be ready to access
+    the JSON for this file via a URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – create the correct URL
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The URL pattern to create JSON from a published Google spreadsheet looks like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://spreadsheets.google.com/feeds/list/key/sheet/public/basic?alt=json](http://spreadsheets.google.com/feeds/list/key/sheet/public/basic?alt=json)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are three parts of this URL that you will need to alter to match your
+    specific spreadsheet file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**list**: (optional) You can change `list` to, say, cells if you would prefer
+    to see each cell listed separately with its reference (A1, A2, and so on) in the
+    JSON file. If you want each row as an entity, leave `list` in the URL.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**key**: Change `key` in this URL to match the long, unique number that Google
+    internally uses to represent your file. In the URL of your spreadsheet, as you
+    are looking at it in the browser, this key is shown as a long identifier between
+    two slashes, just after the **/spreadsheets/d** portion of the URL, shown as follows:![Step
+    two – create the correct URL](img/image00268.jpeg)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**sheet**: Change the word sheet in the sample URL to `od6` to indicate that
+    you are interested in converting the first sheet.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'What does `od6` mean? Google uses a code to represent each of the sheets. However,
+    the codes are not strictly in numeric order. There is a lengthy discussion about
+    the numbering scheme on the question on this Stack Overflow post and its answers:
+    [http://stackoverflow.com/questions/11290337/](http://stackoverflow.com/questions/11290337/)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'To test this procedure, we can create a Google spreadsheet for the universities
+    and the counts that we generated from the exercise at the end of the example project
+    in [Chapter 3](part0024.xhtml#aid-MSDG2 "Chapter 3. Workhorses of Clean Data –
+    Spreadsheets and Text Editors"), *Workhorses of Clean Data – Spreadsheets and
+    Text Editors*. The first three rows of this spreadsheet look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Yale University | 26 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Princeton University | 25 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cornell University | 24 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'My URL to access this file via JSON looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://spreadsheets.google.com/feeds/list/1mWIAk_5KNoQHr4vFgPHdm7GX8Vh22WjgAUYYHUyXSNM/od6/public/basic?alt=json](http://spreadsheets.google.com/feeds/list/1mWIAk_5KNoQHr4vFgPHdm7GX8Vh22WjgAUYYHUyXSNM/od6/public/basic?alt=json)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pasting this URL into the browser yields a JSON representation of the data.
+    It has 231 entries in it, each of which looks like the following snippet. I have
+    formatted this entry with added line breaks for easier reading:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Even with my reformatting, this JSON is not very pretty, and many of these
+    name-value pairs will be uninteresting to us. Nonetheless, we have successfully
+    generated a functional JSON. If we are using a program to consume this JSON, we
+    will ignore all the extraneous information about the spreadsheet itself and just
+    go after the title and content entities and the `$t` values (`Yale University`
+    and `_cokwr: 26`, in this case). These values are highlighted in the JSON shown
+    in the preceding example. If you are wondering whether there is a way to go from
+    a spreadsheet to CSV to JSON, the answer is yes. We will cover how to do exactly
+    that in the *Converting with PHP* and *Converting with Python* sections later
+    in this chapter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQL to CSV or JSON using phpMyAdmin
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, we'll discuss two options for writing JSON and CSV directly
+    from a database, MySQL in our case, without using any programming.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, phpMyAdmin is a very common web-based frontend for MySQL databases.
+    If you are using a modern version of this tool, you will be able to export an
+    entire table or the results of a query as a CSV or JSON file. Using the same enron
+    database we first visited in [Chapter 1](part0014.xhtml#aid-DB7S1 "Chapter 1. Why
+    Do You Need Clean Data?"), *Why Do You Need Clean Data?*, consider the following
+    screenshot of the **Export** tab, with **JSON** selected as the target format
+    for the entire **employeelist** table (CSV is also available in this select box):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![SQL to CSV or JSON using phpMyAdmin](img/image00269.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: PhpMyAdmin JSON export for entire tables
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The process to export the results of a query is very similar, except that instead
+    of using the **Export** tab on the top of the screen, run the SQL query and then
+    use the **Export** option under **Query results operations** at the bottom of
+    the page, shown as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![SQL to CSV or JSON using phpMyAdmin](img/image00270.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: PhpMyAdmin can export the results of a query as well
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a simple query we can run on the `employeelist` table to test this
+    process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When we export the results as JSON, phpMyAdmin shows us 151 values formatted
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The phpMyAdmin tool is a good one, and it is effective for converting moderate
+    amounts of data stored in MySQL, especially as the results of a query. If you
+    are using a different RDBMS, your SQL interface will likely have a few formatting
+    options of its own that you should explore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another strategy is to bypass phpMyAdmin entirely and just use your MySQL command
+    line to write out a CSV file that is formatted the way you want:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will write a comma-delimited file with the name specified (`employees.csv`).
+    It will be written into the current directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about JSON? There is no very clean way to output JSON with this strategy,
+    so you should either use the phpMyAdmin solution shown previously, or use a more
+    robust solution written in PHP or Python. These programmatic solutions are covered
+    in further sections, so keep reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting with PHP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our [Chapter 2](part0020.xhtml#aid-J2B82 "Chapter 2. Fundamentals – Formats,
+    Types, and Encodings"), *Fundamentals – Formats, Types, and Encodings*, in a discussion
+    on JSON numeric formatting, we briefly showed how to use PHP to connect to a database,
+    run a query, build a PHP array from the results, and then print the JSON results
+    to the screen. Here, we will first extend this example to write a file rather
+    than print to the screen and also to write a CSV file. Next, we will show how
+    to use PHP to read in JSON files and convert to CSV files, and vice versa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQL to JSON using PHP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this section, we will write a PHP script to connect to the `enron` database,
+    run a SQL query, and export is as a JSON-formatted file. Why write a PHP script
+    for this instead of using phpMyAdmin? Well, this strategy will be useful in cases
+    where we need to perform additional processing on the data before exporting it
+    or where we suspect that we have more data than what a web-based application (such
+    as phpMyAdmin) can run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code writes a JSON-formatted output file to the location you specify in
+    the `file_put_contents()` line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQL to CSV using PHP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following code snippet shows how to use the PHP file output stream to create
+    a CSV-formatted file of the results of a SQL query. Save this code as a `.php`
+    file in the script-capable directory on your web server, and then request the
+    file in the browser. It will automatically download a CSV file with the correct
+    values in it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results are formatted as follows (these are the first three lines only):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you are wondering whether Phillip''s e-mail is really supposed to have two
+    dots in it, we can run a quick query to find out how many of Enron''s e-mails
+    are formatted like that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: It turns out that 24 of the e-mail addresses have double dots like that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: JSON to CSV using PHP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here, we will use PHP to read in a JSON file and convert it to CSV and output
+    a file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code will create a CSV with each line in it, just like the previous example.
+    We should be aware that the `file_get_contents()` function reads the file into
+    the memory as a string, so you may find that for extremely large files, you will
+    need to use a combination of the `fread()`, `fgets()`, and `fclose()`PHP functions
+    instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: CSV to JSON using PHP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another common task is to read in a CSV file and write it out as a JSON file.
+    Most of the time, we have a CSV in which the first row is a header row. The header
+    row lists the column name for each column in the file, and we would like each
+    item in the header row to become the keys for the JSON-formatted version of the
+    file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result of this code on the `enronEmail.csv` file created earlier, with
+    a header row, is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: For this example, of the 151 results in the actual CSV file, only the first
+    three rows are shown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting with Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we describe a variety of ways to manipulate CSV into JSON,
+    and vice versa, using Python. In these examples, we will explore different ways
+    to accomplish this goal, both using specially installed libraries and using more
+    plain-vanilla Python code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: CSV to JSON using Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We have found several ways to convert CSV files to JSON using Python. The first
+    of these uses the built-in `csv` and `json` libraries. Suppose we have a CSV file
+    that has rows like this (only the first three rows shown):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can write a Python program to read these rows and convert them to JSON:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resulting JSON will look like this (only the first two rows are shown):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: One nice thing about using this method is that it does not require any special
+    installations of libraries or any command-line access, apart from getting and
+    putting the files you are reading (CSV) and writing (JSON).
+  prefs: []
+  type: TYPE_NORMAL
+- en: CSV to JSON using csvkit
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The second method of changing CSV into JSON relies on a very interesting Python
+    toolkit called **csvkit**. To install csvkit using Canopy, simply launch the Canopy
+    terminal window (you can find it inside Canopy by navigating to **Tools** | **Canopy
+    Terminal**) and then run the `pip install csvkit` command. All the dependencies
+    for using csvkit will be installed for you. At this point, you have the option
+    of accessing csvkit via a Python program as a library using `import csvkit` or
+    via the command line, as we will do in the following snippet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This command takes a `enronEmail.csv` CSV file and transforms it to a JSON `enronEmail.csvkit.json`
+    file quickly and painlessly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are several other extremely useful command-line programs that come with
+    the csvkit package, including `csvcut`, which can extract an arbitrary list of
+    columns from a CSV file, and `csvformat`, which can perform delimiter exchanges
+    on CSV files or alter line endings or similar cleaning procedures. The `csvcut`
+    program is particularly helpful if you want to extract just a few columns for
+    processing. For any of these command-line tools, you can redirect its output to
+    a new file. The following command line takes a file called `bigFile.csv`, cuts
+    out the first and third column, and saves the result as a new CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Additional information about csvkit, including full documentation, downloads,
+    and examples, is available at [http://csvkit.rtfd.org/](http://csvkit.rtfd.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python JSON to CSV
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'It is quite straightforward to use Python to read in a JSON file and convert
+    it to CSV for processing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: This program takes a JSON file called `enronEmailPy.json` and exports a CSV-formatted
+    version of this file using the keys for the JSON as the header row new file, called
+    `enronEmailPy.csv`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example project
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have focused on converting data from one format to another,
+    which is a common data cleaning task that will need to be done time and again
+    before the rest of the data analysis project can be completed. We focused on some
+    very common text formats (CSV and JSON) and common locations for data (files and
+    SQL databases). Now, we are ready to extend our basic knowledge of data conversions
+    with a sample project that will ask us to make conversions between some less standardized—
+    but still text-based—data formats.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this project, we want to investigate our Facebook social network. We will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download our Facebook social network (friends and relationships between them)
+    using netvizz into a text-based file format called **Graph Description Format**
+    (**GDF**).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Build a graphical representation of a Facebook social network showing the people
+    in our network as nodes and their friendships as connecting lines (called *edges*)
+    between these nodes. To do this, we will use the D3 JavaScript graphing library.
+    This library expects a JSON representation of the data in the network.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate some metrics about the social network, such as the size of the network
+    (known as the *degree* of the network) and the shortest path between two people
+    our network. To do this, we will use the `networkx` package in Python. This package
+    expects data in a text-based format, called the **Pajek** format.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The primary goal of this project will be to show how to reconcile all these
+    different expected formats (GDF, Pajek, and JSON) and perform conversions from
+    one format to another. Our secondary goal will be to actually provide enough sample
+    code and guidance to perform a small analysis of our social network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – download Facebook data as GDF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For this step, you will need to be logged into your Facebook account. Use Facebook''s
+    search box to find the netvizz app, or use this URL to directly link to the netvizz
+    app: [https://apps.facebook.com/netvizz/](https://apps.facebook.com/netvizz/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once on the netvizz page, click on **personal network**. The page that follows
+    explains that clicking on the **start** button will provide a downloadable file
+    with two items in it: a GDF format file that lists all your friends and the connections
+    between them and a tab-delimited **Tab Separated Values** (**TSV**) stats file.
+    We are primarily interested in the GDF file for this project. Click on the **start**
+    button, and on the subsequent page, right-click on the GDF file to save it to
+    your local disk, as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step one – download Facebook data as GDF](img/image00271.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The netvizz Facebook app allows us to download our social network as a GDF file
+  prefs: []
+  type: TYPE_NORMAL
+- en: It may be helpful to also give the file a shorter name at this point. (I called
+    my file `personal.gdf` and saved it in a directory created just for this project.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – look at the GDF file format in a text editor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Open the file in your text editor (I am using Text Wrangler for this), and
+    note a few things about the format of this file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The file is divided into two parts: nodes and edges.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The nodes are found in the first part of the file, preceded by the word `nodedef`.
+    The list of nodes is a list of all my friends and some basic facts about them
+    (their gender and their internal Facebook identification number). The nodes are
+    listed in the order of the date when the person joined Facebook.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The second part of the file shows the edges or connections between my friends.
+    Sometimes, these are also called links. This section of the file is preceded by
+    the word `edgedef`. The edges describe which of my friends are linked to which
+    other friends.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Here is an excerpt of what a nodes section looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is an excerpt of what an edges section looks like. It shows that `Bugs`
+    (`1234`) and `Daffy` (`2345`) are friends, and `Bugs` is also friends with `Minnie`
+    (`3456`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Step three – convert the GDF file into JSON
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The task we want to perform is to build a representation of this data as a social
+    network in D3\. First, we need to look at the dozens of available examples of
+    D3 to build a social network, such as those available in the D3 galleries of examples,
+    [https://github.com/mbostock/d3/wiki/Gallery](https://github.com/mbostock/d3/wiki/Gallery)
+    and [http://christopheviau.com/d3list/](http://christopheviau.com/d3list/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These examples of social network diagrams rely on JSON files. Each JSON file
+    shows nodes and the edges between them. Here is an example of what one of these
+    JSON files should look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The most important thing about this JSON code is to note that it has the same
+    two main chunks as the GDF file did: nodes and edges. The nodes are simply the
+    person''s name. The edges are a list of number pairs representing friendship relations.
+    Instead of using the Facebook identification number, though, these pairs use an
+    index for each item in the nodes list, starting with `0`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We do not have a JSON file at this point. We only have a GDF file. How will
+    we build this JSON file? When we look closely at the GDF file, we can see that
+    it looks a lot like two CSV files stacked on top of one another. From earlier
+    in this chapter, we know we have several different strategies to convert from
+    CSV to JSON.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, we decide to convert GDF to CSV and then CSV to JSON.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Wait; what if that JSON example doesn't look like the JSON files I found online
+    to perform a social network diagram in D3?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some of the examples of D3 social network visualizations that you may find
+    online will show many additional values for each node or link, for example, they
+    may include extra attributes that can be used to signify a difference in size,
+    a hover feature, or a color change, as shown in this sample: [http://bl.ocks.org/christophermanning/1625629](http://bl.ocks.org/christophermanning/1625629).
+    This visualization shows relationships between paid political lobbyists in Chicago.
+    In this example, the code takes into account information in the JSON file to determine
+    the size of the circles for the nodes and the text that is displayed when you
+    hover over the nodes. It makes a really nice diagram, but it is complicated. As
+    our primary goal is to learn how to clean the data, we will work with a pared
+    down, simple example here that does not have many of these extras. Do not worry,
+    though; our example will still build a nifty D3 diagram!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To convert the GDF file to JSON in the format we want, we can follow these
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use a text editor to split the `personal.gdf` file into two files, `nodes.gdf`
+    and `links.gdf.`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Alter the header row in each file to match the column names we eventually want
+    in the JSON file:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use the `csvcut` utility (part of csvkit discussed previously) to extract the
+    first and second columns from the `nodes.gdf` file and redirect the output to
+    a new file called `nodesCut.gdf`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, we need to give each edge pair an indexed value rather than their full
+    Facebook ID value. The index just identifies this node by its position in the
+    node list. We need to perform this transformation so that the data will easily
+    feed into the D3 force network code examples that we have, with as little refactoring
+    as possible. We need to convert this:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'into this:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Here is a small Python script that will create these index values automatically:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, go back to the `nodesCut.csv` file and remove the `id` column:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct a small Python script that takes each of these files and writes them
+    out to a complete JSON file, ready for D3 processing:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Step four – build a D3 diagram
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This section shows how to feed our JSON file of nodes and links into a boilerplate
+    example of building a force-directed graph in D3\. This code example came from
+    the D3 website and builds a simple graph using the JSON file provided. Each node
+    is shown as a circle, and when you hover your mouse over the node, the person''s
+    name shows up as a tooltip:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: The following screenshot shows an example of this social network. One of the
+    nodes has been hovered over, showing the tooltip (name) of that node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step four – build a D3 diagram](img/image00272.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Social network built with D3
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step five – convert data to the Pajek file format
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far, we have converted a GDF file to CSV, and then to JSON, and built a D3
+    diagram of it. In the next two steps, we will continue to pursue our goal of getting
+    the data in such a format that we can calculate some social network metrics on
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this step, we will take the original GDF file and tweak it to become a valid
+    `Pajek` file, which is the format that is needed by the social network tool called
+    networkx.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The word *pajek* means *spider* in Slovenian. A social network can be thought
+    of as a web made up of nodes and the links between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The format of our Facebook GDF file converted to a Pajek file looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here are a few important things to notice right away about this Pajek file
+    format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is space-delimited, not comma-delimited.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Just like in the GDF file, there are two main sections of data, and these are
+    labeled, starting with an asterisk `*`. The two sections are the vertices (another
+    word for nodes) and the edges.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is a count of how many total vertices (nodes) there are in the file, and
+    this count goes next to the word vertices on the top line.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each person's name has spaces removed and replaced with underscores.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The other columns are optional in the node section.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To convert our GDF file into Pajek format, let''s use the text editor, as these
+    changes are fairly straightforward and our file is not very large. We will perform
+    the data cleaning tasks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Save a copy of your GDF file as a new file and call it something like `fbPajek.net`
+    (the `.net` extension is commonly used for Pajek network files).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Replace the top line in your file. Currently, it looks like this:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'You will need to change it to something like this:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Make sure the number of vertices matches the number you have in your actual
+    file. This is the count of nodes. There should be one per line in your GDF file.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Replace the edges line in your file. Currently, it looks like this:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'You will need to change it to look like this:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Starting at line 2, replace every instance of a space with an underscore. This
+    works because the only spaces in this file are in the names. Take a look at this:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'This action will turn the preceding into this:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, use find and replace to replace all the instances of a comma with a space.
+    The result for the nodes section will be:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The result for the edges section will be:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'One last thing; use the find feature of the text editor to locate any of your
+    Facebook friends who have an apostrophe in their name. Replace this apostrophe
+    with nothing. Thus, `Cap''n_Crunch` becomes:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: This is now a fully cleaned, Pajek-formatted file.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Step six – calculate simple network metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At this point, we are ready to run some simple social network metrics using
+    a Python package like networkx. Even though **Social Network Analysis** (**SNA**)
+    is beyond the scope of this book, we can still perform a few calculations quite
+    easily without delving too deeply into the mysteries of SNA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we should make sure that we have the `networkx` package installed. I
+    am using Canopy for my Python editor, so I will use the Package Manager to search
+    for networkx and install it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, once networkx is installed, we can write some quick Python code to read
+    our Pajek file and output a few interesting facts about the structure of my Facebook
+    network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result for my network looks like the following output. The top ten nodes
+    are listed, along with a count of how many of my other nodes each of these links
+    to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: This shows that `Bambi` is connected to `134` of my other friends, but `Prince_Charming`
+    is only connected to `42` of my other friends.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If you get any Python errors about missing quotations, double-check your Pajek
+    format file to ensure that all node labels are free of spaces and other special
+    characters. In the cleaning procedure explained in the preceding example, we removed
+    spaces and the quotation character, but your friends may have more exotic characters
+    in their names!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, there are many more interesting things you can do with networkx and
+    D3 visualizations, but this sample project was designed to give us a sense of
+    how critical data-cleaning processes are to the successful outcome of any larger
+    analysis effort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned many different ways to convert data from one format
+    to another. Some of these techniques are simple, such as just saving a file in
+    the format you want or looking for a menu option to output the correct format.
+    At other times, we will need to write our own programmatic solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many projects, such as the sample project we implemented in this chapter, will
+    require several different cleaning steps, and we will have to carefully plan out
+    our cleaning steps and write down what we did. Both networkx and D3 are really
+    nifty tools, but they do require data to be in a certain format before we are
+    ready to use them. Likewise, Facebook data is easily available through netvizz,
+    but it too has its own data format. Finding easy ways to convert from one file
+    format to the other is a critical skill in data science.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we performed a lot of conversions between structured and semistructured
+    data. But what about cleaning messy data, such as unstructured text?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [Chapter 5](part0033.xhtml#aid-VF2I1 "Chapter 5. Collecting and Cleaning
+    Data from the Web"), *Collecting and Cleaning Data from the Web*, we will continue
+    to fill up our data science cleaning toolbox by learning some of the ways in which
+    we can clean pages that we find on the Web.
+  prefs: []
+  type: TYPE_NORMAL

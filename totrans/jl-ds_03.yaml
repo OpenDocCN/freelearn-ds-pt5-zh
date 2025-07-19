@@ -1,0 +1,982 @@
+- en: Chapter 3. Data Exploration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When we first receive a dataset, most of the times we only know what it is related
+    to—an overview that is not enough to start applying algorithms or create models
+    on it. Data exploration is of paramount importance in data science. It is the
+    necessary process prior to creating a model because it gives a highlight of the
+    dataset and definitely makes clear the path to achieving our objectives. Data
+    exploration familiarizes the data scientist with the data and helps to know what
+    general hypothesis we can infer from the dataset. So, we can say it is a process
+    of extracting some information from the dataset, not knowing beforehand what to
+    look for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will study:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sampling, population, and weight vectors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Inferring column types
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summary of a dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Scalar statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Measures of variation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data exploration using visualizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data exploration involves descriptive statistics. Descriptive statistics is
+    a field of data analysis that finds out patterns by meaningfully summarizing data.
+    This may not lead to the exact results or the model that we intend to build, but
+    it definitely helps to understand the data. Suppose there are 10 million people
+    in New Delhi and if we calculate the mean of the heights of 1,000 people taken
+    at random living there, it wouldn't be the average height of the people of New
+    Delhi, but it would definitely give an idea.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Julia can effectively be used for data exploration. Julia provides a package
+    called `StatsBase.jl`, which contains the necessary functions for statistics.
+    We would presume throughout the chapter that you have added the package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous example, we spoke about calculating the mean height of 1,000
+    people out of the 10 million people living in New Delhi. While gathering the data
+    of these 10 million people, let's say we started from a particular age or community,
+    or in any sequential manner. Now, if we take 1,000 people who are consecutive
+    in the dataset, there is a high probability that they would have similarities
+    among them. This similarity would not give us the actual highlight of the dataset
+    that we are trying to achieve. So, taking a small chunk of consecutive data points
+    from the dataset wouldn't give us the insight that we want to gain. To overcome
+    this, we use sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sampling is a technique to randomly select data from the given dataset such
+    that they are not related to each other, and therefore we can generalize the results
+    that we generate on this selected data over the complete dataset. Sampling is
+    done over a population.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Population
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A population in statistics refers to the set of all the data points that are
+    there in the dataset and which have at least one common property. In the previous
+    example, the people have the common property of being from the same geographic
+    region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take the example of the iris dataset. Although it has just 150 records,
+    it would give us an idea on how to take a sample from the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will use the RDatasets package, which contains the iris dataset, and will
+    load it into a DataFrame. So, this DataFrame contains the "population" and we
+    want to take a sample from it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `sample()` function can be used to return a random value from the dataset
+    or an array of randomly chosen values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `replace` and `ordered` arguments are used in specific cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`replace`: This is used if the replacement is done when a same value is returned
+    (`default=true`)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`ordered`: This is used when the values returned are in ascending order (`default=false`)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ideally, the sample taken from the given dataset should represent the population.
+    But mostly, it under—or over—represents many groups present in the dataset. Let's
+    take the earlier example, what if we were unable to gather the complete data for
+    ages between 50-70 and from community X? Therefore, our dataset doesn't represent
+    the exact population. Something has to be done to correct the observed dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Weighting adjustment is one of the very common correction techniques. In this
+    technique, an adjustment weight is assigned to each record. The record or group
+    that we think is under-represented gets a weight larger than 1 and the record
+    or group that we think is over-represented gets a weight smaller than 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Weight vectors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Julia has a type, WeightVec, to represent weight vectors to facilitate the
+    assignment of weights to samples. The need for a specialized data type for weight
+    vectors was:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To explicitly distinguish the role of this particular vector from other data
+    vectors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To save computation cycles by storing the sum of the weights and avoiding recomputing
+    the sum of the weights again
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Weight vectors can be constructed like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have provided the sum of the weights as the second argument. It is optional
+    and is done to save computation time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For simplicity, `WeightVec` supports a few general methods. Let `wv` be of
+    the type `WeightVec`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`eltype` is used to get the type of the values in `WeightVec`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Other methods are self-explanatory. As the sum is already stored by `WeightVec`,
+    it is returned instantaneously without any computation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inferring column types
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To understand the dataset and move any further, we need to first understand
+    what type of data we have. As our data is stored in columns, we should know their
+    type before performing any operations. This is also called creating a data dictionary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have used the classic dataset of iris here. We already know the type of the
+    data in these columns. We can apply the same function to any similar dataset.
+    Suppose we were only given columns without labels; then it would have been hard
+    to determine the type of data these columns contain. Sometimes, the dataset looks
+    as if it contains numeric digits but their data type is `ASCIIString`. These can
+    lead to errors in further steps. These errors are avoidable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic statistical summaries
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although, we are currently using RDatasets, about which we have sufficient details
+    and documentation, these methods and techniques can be extended to other datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s use a different dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Basic statistical summaries](img/B05321_03_8.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We are using another dataset from the RDatasets package. These are exam scores
+    from Inner London. To get some information about the dataset, we will use the
+    `describe()` function, which we have already discussed in previous chapters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Basic statistical summaries](img/B05321_03_9.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The columns are described as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Length` refers to the number of records (rows).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Type` refers to the data type of the column. Therefore, `School` is of the `Pooled
+    ASCIIString` data type.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`NA` and `NA%` refer to the number and percentage of the `NA` values present
+    in the column. This is really helpful as you don''t need to manually check for
+    missing records now.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Unique` refers to the number of unique records present in the column.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Min` and `Max` are the minimum and maximum values present in the column (this
+    does not apply to columns having `ASCIIStrings`). These are the values at the
+    0% and 100% of the data points. `Min` and `Max` define the range of data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1st quantile and 3rd quantile refer to the value at 25% and 75% of the data
+    points respectively. Similarly, median refers to the value at the 50% of the data
+    points.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculating the mean of the array or dataframe
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Julia provides different kinds of mean functions. Each has its own use case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`geomean(arr)`: This computes the geometric mean of `arr`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Calculating the mean of the array or dataframe](img/B05321_03_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`harmmean(arr)`: This computes the harmonic mean of `arr`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Calculating the mean of the array or dataframe](img/B05321_03_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`trimmean(arr, fraction)`: This is used to compute the mean of the trimmed
+    dataset. The second argument is used to provide the fraction over which the dataset
+    will be trimmed. For example, if the value provided in `fraction` is 0.3, the
+    mean will be computed by neglecting the top 30% and bottom 30% values. It''s generally
+    used to remove outliers:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Calculating the mean of the array or dataframe](img/B05321_03_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The mean function is also extended. It can take a weighted vector as an argument
+    to compute the weighted mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the mean of the array or dataframe](img/B05321_03_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scalar statistics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Various functions are provided by Julia's package to compute various statistics.
+    These functions are used to describe data in different ways as required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standard deviations and variances
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The mean and median we earlier computed (in the `describe()` function) are measures
+    of central tendency. Mean refers to the center computed after applying weights
+    to all the values and median refers to the center of the list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is only one piece of information and we would like to know more about the
+    dataset. It would be good to have knowledge about the spread of data points across
+    the dataset. We cannot use just the min and max functions as we can have outliers
+    in the dataset. Therefore, these min and max functions will lead to incorrect
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variance is a measurement of the spread between data points in a dataset. It
+    is computed by calculating the distance of numbers from the mean. Variance measures
+    how far each number in the set is from the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following is the formula for variance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Standard deviations and variances](img/B05321_03_14.jpg)![Standard deviations
+    and variances](img/B05321_03_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can also have a variance along a specific dimension, which is useful for
+    DataFrames:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Standard deviations and variances](img/B05321_03_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, the second argument is the dimension along which we want to compute the
+    variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Standard deviation is the measurement of the spread or dispersion of the values
+    in the dataset. It is square root of the variance. If it is close to 0, that means
+    the dataset has very little dispersion from the mean. And greater values define
+    high dispersion of the values from the mean. Standard deviation is different from
+    variance as it has the same units as the mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Standard deviations and variances](img/B05321_03_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can also calculate the standard deviation along a dimension such as variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Julia provides a function to calculate mean and variance, and also mean and
+    standard deviation together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Standard deviations and variances](img/B05321_03_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Statistical analysis involves characterization of data based on skewness and
+    kurtosis. Skewness is the measure of the lack of symmetry from the center point
+    of the dataset or the distribution. So, a distribution can be skewed to the left
+    or it can be skewed to the right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kurtosis is the measure of the flatness of the distribution or the dataset
+    as compared to a normal distribution. So, a distribution with a high peak at the
+    center (mean) and a sharp decline to both the sides is said to have high kurtosis,
+    and a distribution with a flatter peak at the mean is said to have low kurtosis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Standard deviations and variances](img/B05321_03_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A moment in statistics is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 0th moment is the  total probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1st moment is the mean
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2nd central moment is the variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3rd moment is the skewness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4th moment is the kurtosis (with shift and normalization)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Standard deviations and variances](img/B05321_03_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here we are calculating the k-th order central moment. It is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Measures of variation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It is good to have knowledge of the variation of values in the dataset. Various
+    statistical functions facilitate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`span(arr)`: span is used to calculate the total spread of the dataset, which
+    is `maximum(arr)` to `minimum(arr)`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Measures of variation](img/B05321_03_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`variation(arr)`: Also called the coefficient of variance. It is the ratio
+    of the standard deviation to the mean of the dataset. In relation to the mean
+    of the population, CV denotes the extent of variability. Its advantage is that
+    it is a dimensionless number and can be used to compare different datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Measures of variation](img/B05321_03_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Standard error of mean: We work on different samples drawn from the population.
+    We compute the means of these samples and call them sample means. For different
+    samples, we wouldn''t be having the same sample mean but a distribution of sample
+    means. The standard deviation of the distribution of these sample means is called
+    standard error of mean.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Julia, we can compute standard error of mean using `sem(arr)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mean absolute deviation is a robust measure of central tendency. Robustness
+    refers to not being affected by outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Measures of variation](img/B05321_03_23.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can provide the center as a second argument.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Z-scores
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A z-score refers to the relationship with the mean of the scores. It is calculated
+    by how many standard deviations an element is above or below the mean. A 0 z-score
+    means it is the same as the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is given by the formula *z = (X - μ) / σ*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On this dataset, we can calculate the z-score like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Z-scores](img/B05321_03_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The mean and the standard deviation are calculated by themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Entropy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Entropy is the measure of disorder in the dataset and provides the approximate
+    measure of randomness in the system. It increases with randomness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s create a probability vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Entropy](img/B05321_03_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have created a rather small array:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Entropy](img/B05321_03_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The sum of the elements of the probability vector is 1\. It is tending to 1
+    here. We now calculate the entropy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Entropy](img/B05321_03_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The entropy computation is done using natural logarithms. We can also provide
+    the base of the logarithm if needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Entropy](img/B05321_03_28.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The second argument that we have provided is for the base of the logarithm.
+    We can also compute cross-entropy, which is considered an effective alternative
+    to a squared error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Quantiles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To understand the dataset better, we want to know the lowest and highest points
+    in the dataset. We can use min and max functions for that. So, we can also say
+    that the min and max data points are at 0% and at 100%. If we want to find out
+    any data point at n% of the dataset we use the `quantile` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Quantiles can be very useful in scenarios where there are outliers. For example,
+    for `a` we are analyzing the response times of various browsers for a website:
+    98% of the traffic comes from the desktop and it is able to load the page in less
+    than a second; 2% of the remaining traffic is from mobile, where it takes 5 seconds
+    to load the page. Here, we might want to ignore this 2% (if the use case allows
+    us) to analyze the actual traffic of the website.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Quantiles](img/B05321_03_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now, to compute the quantile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Quantiles](img/B05321_03_30.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, we have received five values. These five values represent data points
+    at 0%, 25%, 50%, 75%, and 100% of the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Interquartile range is the measure of the variability and is calculated by
+    having the difference of the upper and lower quartiles, which is Q3-Q1\. It is
+    computed as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Quantiles](img/B05321_03_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Percentile is a common term in statistics and is used to represent where the
+    data point falls in the dataset. It can be calculated as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Quantiles](img/B05321_03_32.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have used the same dataset and calculated where 0.5 would lie in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is another important function, `nquantile`. It is used to create a vector
+    of quantiles defined by us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Quantiles](img/B05321_03_33.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Modes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'While exploring the dataset, we would want to know which data is frequently
+    repeated in the dataset. This is the value that has the maximum probability to
+    come in the sample. Julia provides a function to calculate the mode:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Modes](img/B05321_03_34.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We calculated the mode on the same dataset that we used in the previous example.
+    So, `0.2566` appears most often in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary of datasets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Earlier we discussed the `describe()` function, which prints the summary of
+    the dataset. Julia also provides another function, `summarystats()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using `summarystats(a)` on the same dataset of the previous example, we get
+    the following result. So, we now don't have to calculate them individually and
+    it gives an idea of what kind of dataset we have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Summary of datasets](img/B05321_03_35.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scatter matrix and covariance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Covariance is used very often by data scientists to find out how two ordered
+    sets of data follow in the same direction. It can very easily define whether the
+    variables are correlated or not. To best represent this behavior, we create a
+    covariance matrix. The unnormalized version of the covariance matrix is the scatter
+    matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To create a scatter matrix, we use the `scattermat(arr)` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The default behavior is to treat each row as an observation and column as a
+    variable. This can be changed by providing the keyword arguments `vardim` and
+    `mean`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Vardim`: `vardim=1 (default)` means each column is a variable and each row
+    is an observation. vardim=2 is the reverse.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`mean`: The mean is computed by `scattermat`. We can use a predefined mean
+    to save compute cycles.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can also create a weighted covariance matrix using the `cov` function. It
+    also takes vardim and mean as optional arguments for the same purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computing deviations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'StatsBase.jl provides various functions to compute deviations between two datasets.
+    This can be calculated using other functions, but to facilitate and for ease of
+    use, StatsBase provides these efficiently implemented functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Mean absolute deviation**: For two datasets, `a` and `b`, it is calculated
+    as `meanad(x,y)` which is a wrapper over `mean(abs(x-y))`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Maximum absolute deviation**: For two datasets, `a` and `b`, it is calculated
+    as `maxad(x,y)`, which is a wrapper over `maximum(abs(x-y))`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Mean squared deviation**: For two datasets, `a` and `b`, it is calculated
+    as `msd(x,y)`, which is a wrapper over `mean(abs2(x-y))`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Root mean squared deviation**: For two datasets, `a` and `b`, it is calculated
+    as `rmsd(a,b)`, which is a wrapper over `sqrt(msd(a, b))`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rankings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When a dataset is sorted in ascending order, a rank is assigned to each value.
+    Ranking is a process where the dataset is transformed and values are replaced
+    by their ranks. Julia provides functions for various types of rankings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In ordinal ranking, all items in the dataset are assigned a distinct value.
+    Items that have equal values are assigned a ranking arbitrarily. In Julia, this
+    is done using the `ordinalrank` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Rankings](img/B05321_03_36.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Suppose this is our dataset and we want to do ordinal ranking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Rankings](img/B05321_03_37.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using the `ordinalrank(arr)` function, we've got the ordinal ranking. Similarly,
+    StatsBase also provides functions to find other types of rankings, such as `competerank()`,
+    `denserank()`, and `tiedrank()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Counting functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In data exploration, counting over a range is often done. It helps to find
+    out the most/least occurring value. Julia provides the counts function to count
+    over a range. Let''s say we have an array of values. For our convenience, we will
+    now use the random function to create an array:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Counting functions](img/B05321_03_38.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have created an array of 30 values ranging from 1 to 5\. Now we want to
+    know how many times they occur in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Counting functions](img/B05321_03_39.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using the `count` function, we found that 1(`7`), 2(`1`), 3(`5`), 4(`11`), and
+    5(`6`). counts take different arguments to suit the use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `proportions()` function is used to compute the proportions of the values
+    in the dataset and  Julia provides the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Counting functions](img/B05321_03_40.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We calculated proportions on the same dataset that we used in the previous examples.
+    It shows that the ratio of value 1 in the dataset is `0.23333`. This can also
+    be seen as the probability of finding the value in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Other count functions include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`countmap(arr)`: This is a map function that maps the values to the number
+    of occurrences (or total weights) in the dataset:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Counting functions](img/B05321_03_41.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`proportionmap(arr)`: This is a map function similar to `countmap(arr)` but
+    maps values to their proportions:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![Counting functions](img/B05321_03_42.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Applying `countmap` and `proportionmap` to our dataset gave these values. Both
+    these functions return a dictionary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Histograms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data exploration after a basic understanding can also be done with the aid of
+    visualizations. Plotting a histogram is one of the most common ways of data exploration
+    through visualization. A histogram type is used to tabulate data over a real plane
+    separated into regular intervals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A histogram is created using the fit method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`fit` takes the following arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`data`: Data is passed to the `fit` function in the form of a vector, which
+    can either be one-dimensional or n-dimensional (tuple of vectors of equal length).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`weight`: This is the optional argument. A `WeightVec` type can be passed as
+    an argument if values have different weights. The default weight of values is
+    1.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`edges`: This is a vector used to give the edges of the bins along each dimension.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'It also takes a keyword argument, `nbins`, which is used to define the number
+    of bins that the histogram should use along each side:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Histograms](img/image_03_036.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this example, we used two random value generators and `nbins` to define
+    the number of bins. We created a histogram on the randomly generated data. Let''s
+    try this on a dataset from the `RDatasets` package. This package is explained
+    here: [https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/sleep.html](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/sleep.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Histograms](img/image_03_037.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We are using a dataset called `sleepstudy` from the `RDatasets` package. It
+    contains three columns: `Reaction (Float64)`, `Days (Integer)`, and `Subject (Integer)`.
+    We will create a histogram on this data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Histograms](img/image_03_038.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can now realize that it is easier to understand the data through visualizations.
+    Visualization is an important part of data exploration. To be actually able to
+    visualize data, the necessary data munging and some understanding of variables
+    are required. In this particular visualization, we can observe which areas are
+    denser and the reaction times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We discussed the scatter matrix earlier. We can create a scatter plot and will
+    try to find out if it helps us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Histograms](img/image_03_039.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can very well observe that the reaction times of the subjects are increasing
+    day by day. We were able to get to this conclusion very quickly; otherwise, it
+    would have taken some significant amount of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's drill down more into this dataset. Suppose we want to know how each individual
+    subject has performed. As all the subjects are not the same, some might have performed
+    quite differently from others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a large dataset, we can do a grouping or clustering; but here, as have a
+    small dataset, we can individually analyze subjects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Histograms](img/image_03_040.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is evident that subject `309`, even after being deprived of sleep for many
+    days, had a very low reaction time. These are small insights that we sometimes
+    miss through analyzing a dataset that is exposed through visualizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will discuss visualizations in detail in [Chapter 5](ch05.xhtml "Chapter 5. Making
+    Sense of Data Using Visualization"), *Making Sense of Data Using Visualization*.
+    We will explore various packages available with Julia for visualization and also
+    how can we call R and Python's packages if needed for visualizations. We will
+    also go through some basic D3.js examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is easy to create basic plots in Julia, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Histograms](img/image_03_041.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s now try some visualizations on the iris dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Although it is not completely visible now, we can see there are visible clusters.
+    Maybe, we can differentiate between various species using these clusters. Therefore,
+    visualizations can be very helpful in finding these kinds of insights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Correlation analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Julia provides some functions to facilitate correlation analysis. Correlation
+    and dependence are two common terms in statistics. Dependence refers to one variable
+    having a statistical relationship with another variable, whereas correlation is
+    one variable having a much wider class of relationship with the other variable,
+    which may also include dependence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `autocov(x)` function is used to compute auto-covariance of `x`. It returns
+    a vector of the same size as `x`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Correlation analysis](img/B05321_03_50.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is a dataset we generated. We can apply `autocov` on this dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Correlation analysis](img/B05321_03_51.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To compute auto-correlation, we use the `autocor` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Correlation analysis](img/B05321_03_52.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Similarly, we can also compute cross-covariance and cross-correlation. For
+    that, we will generate another random array of the same size:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Correlation analysis](img/B05321_03_53.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cross-covariance and cross-correlation of 2 arrays of length=6 results in arrays
+    of lengths=11.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we discussed why data exploration is important and how can
+    we perform exploratory analysis on datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These are the various important techniques and concepts that we discussed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sampling is a technique to randomly select unrelated data from the given dataset
+    so that we can generalize the results that we generate on this selected data over
+    the complete dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Weight vectors are important when the dataset that we have or gather doesn't
+    represent the actual data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why it is necessary to know the column types and how summary functions can be
+    really helpful in getting the gist of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mean, median, mode, standard deviation, variance, and scalar statistics, and
+    how they are implemented in Julia.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Measuring the variations in a dataset is really important and z-scores and entropy
+    can be really useful.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After some basic data cleaning and some understanding, visualization can be
+    very beneficial and insightful.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[http://julia.readthedocs.io/en/latest/manual/](http://julia.readthedocs.io/en/latest/manual/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://dataframesjl.readthedocs.io/en/latest/](https://dataframesjl.readthedocs.io/en/latest/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/JuliaStats/StatsBase.jl](https://github.com/JuliaStats/StatsBase.jl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[http://dcjones.github.io/Gadfly.jl/](http://dcjones.github.io/Gadfly.jl/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

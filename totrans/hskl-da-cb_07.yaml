@@ -1,0 +1,1369 @@
+- en: Chapter 7. Statistics and Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One core motivation to analyze big data is to find intrinsic patterns. This
+    chapter contains recipes that answer questions about data deviation from the norm,
+    existence of linear and quadratic trends, and probabilistic values of a network.
+    Some of the most fascinating results can be uncovered by the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating a moving average
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculating a moving median
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Approximating a linear regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Approximating a quadratic regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Obtaining the covariance matrix from samples
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finding all unique pairings in a list
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the Pearson correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluating a Bayesian network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating a data structure for playing cards
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using a Markov chain to generate text
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating *n*-grams from a list
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Constructing a neural network perception
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![Introduction](img/ch07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first two recipes deal with summarizing a series of data. For example, assume
+    someone asks, "How old is everyone?". A valid response could be to enumerate through
+    the age of each person, but depending on the number of people, this could take
+    minutes if not hours. Instead, we can answer in terms of the average or in terms
+    of the median to summarize all the age values in one simple number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next two recipes are about approximating an equation that most closely fits
+    a collection of points. Given two series of coordinates, we can use a linear or
+    quadratic approximation to predict other points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can detect relationships between numerical data through covariance matrices
+    and Pearson correlation calculations as demonstrated in the corresponding recipes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `Numeric.Probability.Distribution` library has many useful functions for
+    deeper statistical understanding as demonstrated in the Bayesian network and playing
+    cards recipes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also use Markov chains and *n*-grams for further interesting results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we will create a neural network from scratch to learn a labelled set
+    of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating a moving average
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Summarizing a list of numbers into one representative number can be done by
+    calculating the average. The equation for the arithmetic mean is to add up all
+    the values and divide by the number of values. However, if the values being summed
+    over are extremely large, the total sum may overflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Haskell, the range for `Int` is at least from *-2^29* to *2^29-1*. Implementations
+    are allowed to have an `Int` type with a larger range. If we try to naively average
+    the numbers *2^29-2* and *2^29-3* by first calculating their sum, the sum may
+    overflow, producing an incorrect calculation for the average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A moving average (or running average) tries to escape this drawback. We will
+    use an exponential smoothing strategy, which means numbers that were seen previously
+    contribute exponentially less to the value of the running mean. An exponential
+    moving average reacts faster to recent data. It can be used in situations for
+    detecting price oscillations or spiking a neuron in a neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The equation of a running mean is as follows, where **α** is a smoothening
+    constant, **s[t]** is the moving average value at time *t*, and *x* is the value
+    of the raw data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating a moving average](img/6331OS_07_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create an `input.txt` file with a list of numbers separated by lines. We will
+    be computing the moving average over these numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a helper function to convert the raw text input into a list of `Double`
+    as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Calculate the moving average of a list of numbers using an exponential smoothing
+    technique. We **hardcode** the smoothening constant `a` to be `0.95` as shown
+    here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the true arithmetic mean to compare differences in the following manner:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out the results of computing the moving average and arithmetic mean to
+    notice how the values are not equal, but reasonably close:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'We will see the following output:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The smoothening constant should be changed according to the fluctuation of the
+    data. A small smoothening constant remembers previous values better and produces
+    an average influenced by the grander structure of the data. On the other hand,
+    a larger value of the smoothening constant puts superior emphasis on recent data,
+    and easily forgets stale data. We should use a larger smoothening constant if
+    we want our average to be more sensitive to new data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another way to summarize a list of numbers is explained in the *Calculating
+    a moving median* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating a moving median
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The median of a list of numbers has an equal number of values less than and
+    greater than it. The naive approach of calculating the median is to simply sort
+    the list and pick the middle number. However, on a very large dataset, such a
+    computation would be inefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another approach of finding a moving median is to use a combination of a **minheap**
+    and a **maxheap** to sort the values while running through the data. We can insert
+    numbers in either heap as they are seen, and whenever needed, the median can be
+    calculated by adjusting the heaps to be of equal or near equal size. When the
+    heaps are of equal size, it is simple to find the middle number, which is the
+    median.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a file, `input.txt`, with some numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Also, install a library for dealing with heaps using Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the heap data structure:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Convert the raw input as a list of numbers as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Segregate the numbers in the list into the appropriate heaps. Put small numbers
+    in the maxheap, and big numbers in the minheap, as shown in the following code
+    snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'When there are no more numbers to read, start manipulating the heaps until
+    both are of equal size. The median will be the number between the values in both
+    heaps, as presented in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test out the code in `main` as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we traverse the list of numbers to build up a minheap and maxheap in
+    an attempt to efficiently separate the stream of incoming numbers. Then we move
+    values between the minheap and maxheap until their sizes differ by at most one
+    item. The median is the extra item, or otherwise the average of the minheap and
+    maxheap values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For summarizing a list of numbers differently, refer to the *Calculating a moving
+    average* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Approximating a linear regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Given a list of points, we can estimate the best fit line using a handy library,
+    `Statistics.LinearRegression`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It computes the least square difference between points to estimate the best
+    fit line. An example of a linear regression of points can be seen in the following
+    figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Approximating a linear regression](img/6331OS_07_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: A best-fit line is drawn through five points using linear regression
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the appropriate library using cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a series of points from their coordinates, and feed it to the `linearRegression`
+    function, as shown in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The resulting linear equation will be as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can look up the source code for the `linearRegression` function from the
+    `Statistics.LinearRegression` library, [http://hackage.haskell.org/package/statistics-linreg-0.2.4/docs/Statistics-LinearRegression.html](http://hackage.haskell.org/package/statistics-linreg-0.2.4/docs/Statistics-LinearRegression.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Wikipedia article on least square approximations ([http://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)](http://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)))
+    puts it best in writing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*"The least squares approach to solving this problem is to try to make as small
+    as possible the sum of squares of "errors" between the right- and left-hand sides
+    of these equations, that is, to find the minimum of the function"*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The core calculations involve finding the mean and variance of the two random
+    variables, as well as the covariance between them. Thorough mathematics behind
+    the algorithm is detailed in [http://www.dspcsp.com/pubs/euclreg.pdf](http://www.dspcsp.com/pubs/euclreg.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we take a look at the library''s source code, we can discover the underling
+    equations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*α = µY - β * µX*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*β = covar(X,Y)/σ2X*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*f(x) = βx + α*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the data does not follow a linear trend, try the *Approximating a quadratic
+    regression* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Approximating a quadratic regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Given a collection of points, this recipe will try to find a best fit quadratic
+    equation. In the following figure, the curve is a best fit quadratic regression
+    of the points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Approximating a quadratic regression](img/6331OS_07_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `dsp` package to use `Matrix.LU` as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: In order to perform a quadratic regression, we will use the least square polynomial
+    fitting algorithm described in Wolfram MathWorld available at [http://mathworld.wolfram.com/LeastSquaresFittingPolynomial.html](http://mathworld.wolfram.com/LeastSquaresFittingPolynomial.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Implement the quadratic regression algorithm, as shown in the following code
+    snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test out the function as follows, using some **hardcoded** data:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The following values of the quadratic equation *3x² + 2x + 1* is printed:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this recipe, a design matrix, `mat`, multiplied with a parameter vector
+    that we desire to find produces the response vector, `vec`. We can visualize each
+    of these arrays and matrices in the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/6331OS_07_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: After constructing the design matrix and the response vector, we use the `dsp`
+    library to solve this matrix equation and obtain a list of coefficients for our
+    polynomial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the data follows a linear trend, refer to the *Approximating a linear regression*
+    recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obtaining the covariance matrix from samples
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A covariance matrix is a symmetric square matrix whose elements in row *i* and
+    column *j* correspond to how related they are. More specifically, each element
+    is the covariance of the variables represented by its row and column. Variables
+    that move together in the same direction have a positive covariance, and variables
+    with the opposite behavior have a negative covariance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s assume we are given four sets of data of three variables as shown in
+    the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Obtaining the covariance matrix from samples](img/6331OS_07_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how **Feature 1** and **Feature 3** appear to be similar in their patterns,
+    yet **Feature 1** and **Feature 2** appear to be uncorrelated. Similarly, **Feature
+    2** and **Feature 3** are significantly correlated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The covariance matrix will be a 3 x 3 symmetric matrix with the following elements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Obtaining the covariance matrix from samples](img/6331OS_07_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `hstats` library using cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Alternatively, install the package by performing the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the source code of the package from [http://hackage.haskell.org/package/hstats-0.3/hstats-0.3.tar.gz](http://hackage.haskell.org/package/hstats-0.3/hstats-0.3.tar.gz).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove the `haskell98` dependency from the cabal file, `hstats.cabal`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In the same directory, run the following command line:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the `hstats` package as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a matrix out of a list of lists, and run the `covMatrix` function on
+    it using the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Check the output:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Notice how the uncorrelated features have a zero value, as we expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding all unique pairings in a list
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Comparing all pairs of items is a common idiom in data analysis. This recipe
+    will cover how to create a list of element pairs out of a list of elements. For
+    example, if there is a list [1, 2, 3], we will create a list of every possible
+    pair-ups [(1, 2), (1, 3), (2, 3)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the order of pairing does not matter. We will create a list of unique
+    tuple pairs so that we can compare each item to every other item in the list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we call `Main.hs`, and insert the code explained in
+    the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct all unique pairs from a list of items as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out all unique pairings of the following list:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output will be as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can apply the `pairs` algorithm to the *Using the Pearson correlation coefficient*
+    recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the Pearson correlation coefficient
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Pearson correlation coefficient is a number that ranges between -1.0 and
+    1.0, signifying the linear relationship of two numerical series. A value of 1.0
+    means strong linear correlation, a -1.0 is a strong negative correlation, and
+    a 0.0 means the series is uncorrelated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A brilliantly informative diagram was created by Kiatdd on [http://en.wikipedia.org/wiki/File:Correlation_coefficient.gif](http://en.wikipedia.org/wiki/File:Correlation_coefficient.gif),
+    which is shown in the following figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using the Pearson correlation coefficient](img/6331OS_07_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: For example, Nick is quite a generous movie critic who consistently awards movies
+    with high ratings. His friend John might be a more dramatic critic who offers
+    a wider range of ratings, yet the two friends tend to always agree on which movies
+    they prefer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use the Pearson correlation coefficient to detect that there is a strong
+    linear correspondence between how these two rate movies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `hstats` library using cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create a file with five star rating values on each line, corresponding to the
+    rating given by different people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our example, three people have given five ratings each, using the following
+    command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how the first two people rate in similar trends, but the third person
+    has a very different rating trend. The algorithm in this recipe will compute the
+    Pearson correlation coefficient pairwise and sort the results to find the two
+    people who rate most similarly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a function as follows to calculate the similarities from a list of lists:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Convert a list of `String` to a list of `Double` as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create all possible pairs from a list of items as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test the code by finding the two people who rate items most similarly to each
+    other, as shown in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output will be as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Evaluating a Bayesian network
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A Bayesian network is a graph of probabilistic dependencies. Nodes in the graph
+    are events, and edges represent conditional dependence. We can build a network
+    from prior knowledge to find out new probabilistic properties of the events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use Haskell's probabilistic functional programming library to evaluate
+    such a network and find interesting probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `probability` library using cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will be representing the following network. Internalize the following figure
+    to get an intuitive grasp of the variable names:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_07_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Event **C** depends on events **A** and **B**. Meanwhile, events **D** and **E**
+    depend on event **C**. Through the power of the Probabilistic Functional Programming
+    library, in this recipe, we will find the probability of event **E** given only
+    information about event **D**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function to define conditional probabilities as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the probability of variable A, P(A) as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the probability of variable B, P(B) as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the probability of variable C given A and B, P(C | AB) as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the probability of D given C, P(D | C) as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the probability of E given C, P(E | C) as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a data structure for the network as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct the network according to the preceding figure:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Calculate the probability of E given D, P(E | D) as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output represented as a fraction is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Creating a data structure for playing cards
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Many probability and statistic problems are posed using playing cards. In this
+    recipe, we will create a data structure and useful functions for the cards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are a total of 52 playing cards in a standard deck. Each card has one
+    of the following four suits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spades
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hearts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Diamonds
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clubs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Also, each card has one out of 13 ranks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integers between 2 and 10 inclusive
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Jack
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Queen
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: King
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ace
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `probability` library using cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: Review the sample code on the `probability` package about collections at [http://hackage.haskell.org/package/probability-0.2.4/docs/src/Numeric-Probability-Example-Collection.html](http://hackage.haskell.org/package/probability-0.2.4/docs/src/Numeric-Probability-Example-Collection.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The recipe is based heavily on the probability example given in the link.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a data structure of the suits on a card as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a data structure for the ranks of a card as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a shortcut type for a card to be a tuple of a rank and a suit as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Describe the plain cards as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Describe the face cards as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function as follows to detect whether it is a face card:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function as follows to detect whether it is a plain card:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define all the rank cards as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the suit cards as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a deck of cards out of ranks and suits as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function as follows to select an item from a list for probability
+    measurements:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a function as follows to select some cards from the deck:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function as follows to remove each of the items from a list:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test out the deck of cards as follows with the probability functions created:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The probability of selecting those two cards from the deck is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Using a Markov chain to generate text
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A Markov chain is a system that predicts future outcomes of a system given current
+    conditions. We can train a Markov chain on a corpus of data to generate new text
+    by following the states.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A graphical representation of a chain is shown in the following figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using a Markov chain to generate text](img/6331OS_07_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Node E has a 70% probability to end up on node A, and a 30% probability to remain
+    in place
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `markov-chain` library using cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: Download a big corpus of text, and name it `big.txt`. In this recipe, we will
+    be using the text downloaded from [http://norvig.com/big.txt](http://norvig.com/big.txt).
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Train a Markov chain on a big input of text and then run it as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'We can run the Markov chain and see the output as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The code prints our text trained by the corpus, which is fed into the Markov
+    chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first character-by-character Markov chain, it tries to generate the next
+    letter based on the previous three letters. Notice how most phrases don't make
+    sense and some tokens aren't even English words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second Markov chain is generated word by word and only infers based on the
+    previous two words. As we see, it emulates English phrases a bit more naturally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These texts are purely generated by evaluating probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating n-grams from a list
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An *n*-gram is a sequence of *n* items that occur adjacently. For example, in
+    the following sequence of number [1, 2, 5, 3, 2], a possible 3-gram is [5, 3,
+    2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*n*-grams are useful in computing probability tables to predict the next item.
+    In this recipe, we will be creating all possible *n*-grams from a list of items.
+    A Markov chain can easily be trained by using *n*-gram computation from this recipe.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Define the *n*-gram function as follows to produce all possible *n*-grams from
+    a list:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test it out on a sample list as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The printed 3-gram is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Creating a neural network perceptron
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A perceptron is a linear classifier that uses labelled data to converge to its
+    answer. Given a set of inputs and their corresponding expected output, a perceptron
+    tries to linearly separate the input values. If the input is not linearly separable,
+    then the algorithm may not converge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this recipe, we will deal with the following list of data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[(0,0), (0,1), (1,0), (1,1)].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each item is labelled with an expected output as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`(0,0)` is expected to output a `0`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`(0,1)` is expected to output a `0`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`(1,0)` is expected to output a `0`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`(1,1)` is expected to output a `1`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Graphically, we are trying to find a line that separates these points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating a neural network perceptron](img/6331OS_07_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Review the concept of a perceptron by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading the Wikipedia article on the perceptron available at [http://en.wikipedia.org/wiki/Perceptron](http://en.wikipedia.org/wiki/Perceptron)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Skimming the Haskell implementation by Moresmau available at [http://jpmoresmau.blogspot.com/2007/05/perceptron-in-haskell.html](http://jpmoresmau.blogspot.com/2007/05/perceptron-in-haskell.html)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import `replicateM`, `randomR`, and `getStdRandom` for handling random number
+    generation in our neural network as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define types to help describe the variables fed into each helper method as
+    follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a function to generate an output value of a neuron that takes in a series
+    of inputs, corresponding weights, and a threshold value. The neuron fires a `1`
+    if the dot product of the weight vector with the input vector is above the threshold,
+    and `0` otherwise, as presented in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a function to adjust weights of a neuron given expected and actual results.
+    The weights are updated using a learning rule, as presented in the following code
+    snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Step through one iteration of the perceptron cycle to update weights as follows.
+    For this recipe, assume each neuron has a threshold of 0.2:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function as follows to compute weight changes per step:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE81]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run through the steps using `epoch` until the weights converge. Weight convergence
+    is detected simply by noticing the first instance when weights no longer significantly
+    change values. This is presented in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Initialize a weight vector as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test the perceptron network to separate an AND Boolean structure as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE84]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'A valid output may be:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE85]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: We can verify that this output is correct since the weights sum to a value greater
+    than the threshold value of 0.2, while each weight value individually is less
+    than the threshold of 0.2\. Therefore, the output will trigger only when the input
+    is (1, 1) as desired.
+  prefs: []
+  type: TYPE_NORMAL

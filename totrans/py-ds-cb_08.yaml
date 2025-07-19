@@ -1,0 +1,1234 @@
+- en: Chapter 8. Ensemble Methods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will look at the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding Ensemble – the bagging Method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding Ensemble – the boosting Method, AdaBoost
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding Ensemble – the gradient Boosting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we are going to look at recipes covering the ensemble methods.
+    When we are faced with the challenge of uncertainty while making a decision in
+    real life, we typically approach multiple friends for opinion. We make our decision
+    based on the collective knowledge that we receive from those friends. Ensemble
+    is a similar concept in machine learning. In the previous chapters, we built a
+    single model for our datasets, and used the prediction of that model on unseen
+    test data. What if we build a lot of models on that data and make our final prediction
+    based on the prediction from all these individual models? This is the idea behind
+    Ensemble. Using the Ensemble approach for a given problem, we proceed with building
+    a lot of models, and use all of them to make our final prediction on unseen datasets.
+    For a regression problem, the final output may be the average prediction value
+    from all the models. In a classification context, a majority vote is taken to
+    decide the output class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fundamental idea is to have a lot of models, each one of them producing
+    slightly different results on the training dataset. Some models learn certain
+    aspects of the data very well as compared to the others. The belief is that the
+    final output from all these models should be better than the output produced by
+    just any one of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned earlier, the idea of ensemble is to combine many models together.
+    These models can be of the same or of different types. For example, we can combine
+    a neural network model output with a Bayesian model. We will restrict our discussions
+    to using an ensemble of the same type of models in this chapter. Combining the
+    same kind of models is vastly used in the Data Science community through techniques
+    like Bagging and Boosting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bootstrap aggregation, commonly known as Bagging, is an elegant technique for
+    generating a lot of models and combining their output to make a final prediction.
+    Every model in a Bagging ensemble uses only a portion of the training data. The
+    idea behind Bagging is to reduce the overfitting of data. As stated before, we
+    want each of the model to be slightly different from the others. So we sample
+    the data with replacement for training each of the models, and thus introduce
+    variability. Another way to introduce variation in the model is to sample the
+    attributes. We don't provide all the attributes to the model, but different models
+    get a different set of attributes. Bagging can be easily parallelized. Based on
+    the parallel processing framework available, models can be constructed in parallel
+    with different samples of the training dataset. Bagging doesn't work with linear
+    predictors like linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Boosting is an ensemble technique which produces a sequence of increasingly
+    complex models. It works sequentially by training the newer models based on the
+    errors in the previous models. Every model that is trained is associated with
+    a weight, which is calculated based on how well the model has performed on the
+    given data. When the final prediction is made, these weights decides the amount
+    of influence that a particular model has over the final output. Boosting does
+    not lend itself to parallelism as naturally as Bagging. Since the models are built
+    in a sequence, it cannot be parallelized. Errors made by classifiers coming early
+    in the sequence are considered as hard instances to classify. The framework is
+    designed in such a way that models coming later in the sequence pick up those
+    misclassified or erroneous predictions made by the previous predictor, and try
+    to improve upon them. Typically, very weak classifiers are used in Boosting, for
+    example a decision stump, which is a decision tree with a single splitting node
+    and two leaves, is used inside the ensemble. A very famous success story about
+    Boosting is the Viola Jone Face Detection algorithm where several weak classifiers
+    (decision stumps) were used to find good features. You can read more about this
+    success story at the following website:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Viola%E2%80%93Jones_object_detection_framework](https://en.wikipedia.org/wiki/Viola%E2%80%93Jones_object_detection_framework)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we will study the Bagging and Boosting Methods in detail. We
+    will extend our discussion to a special type of Boosting called Gradient Boosting
+    in the final recipe. We will also take a look at both regression and classification
+    problems, and see how they can be addressed by ensemble learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding Ensemble – Bagging Method
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ensemble methods belong to the family of methods known as committee-based learning.
+    Instead of leaving the decision of classification or regression to a single model,
+    a group of models is used to make decisions in an ensemble. Bagging is a famous
+    and widely used ensemble method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bagging is also known as bootstrap aggregation. Bagging can be made effective
+    only if we are able to introduce variability in the underlying models, that is,
+    if we can successfully introduce variability in the underlying dataset, it will
+    lead to models with slight variations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We leverage Bootstrapping to fed to these models variability in our dataset.
+    Bootstrapping is the process by which we randomly sample the given dataset for
+    a specified number of instances, with or without replacement. In bagging, we leverage
+    bootstrapping to generate, say, `m` is the different datasets and construct a
+    model for each of them. Finally, we average the output of all the models to produce
+    the final prediction in case of regression problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us say we bootstrap the data m times, we would have `m` models, that is,
+    `y m` values, and our final prediction would be as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Bagging Method](img/B04041_08_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In case of classification problems, the final output is decided based on voting.
+    Let us say we have one hundred models in our ensemble, and we have a two-class
+    classification problem with class labels as {+1,-1}. If more than 50 models predict
+    the output as +1, we declare the prediction as +1\.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Randomization is another technique by which variability can be introduced in
+    the model building exercise. An example is to pick randomly a subset of attributes
+    for each model in the ensemble. That way, different models will have different
+    sets of attributes. This technique is called the random subspaces method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With very stable models, Bagging may not achieve very great results. Bagging
+    helps most if the underlying classifier is very sensitive to even small changes
+    to the data. For example, Decision trees, which are very unstable. Unpruned decision
+    trees are a good candidate for Bagging. But say a Nearest Neighbor Classifier,
+    K, is a very stable model. However, we can leverage the random subspaces, and
+    introduce some instability into the nearest neighbor methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following recipe, you will learn how to leverage Bagging and Random subspaces
+    on a K-Nearest Neighbor algorithm. We will take up a classification problem, and
+    the final prediction will be based on majority voting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will leverage the Scikit learn classes' `KNeighborsClassifier` for classification
+    and `BaggingClassifier` for applying the bagging principle. We will generate data
+    for this recipe using the `make_classification` convenience function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us import the necessary libraries, and write a function `get_data()` to
+    provide us with a dataset to work through this recipe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us proceed to write three functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Function build_single_model to make a simple KNearest neighbor model with the
+    given data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Function build_bagging_model, a function which implements the Bagging routine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The function view_model to inspect the model that we have built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our main function, which will call the other functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us start with the main method. We first call the `get_data` function to
+    return the dataset as a matrix x of predictors and a vector y for the response
+    variable. Let us look into the `get_data` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Take a look at the parameters passed to the `make_classification` method. The
+    first parameter is the number of instances required; in this case, we say we need
+    500 instances. The second parameter is the number of, attributes that are required
+    per instance. We say that we need `30` of them as defined by the variable `no_features`.
+    The third parameter, `flip_y`, randomly interchanges 3 percent of the instances.
+    This is done to introduce some noise in our data. The next parameter specifies
+    the number of features out of those `30` that should be informative enough to
+    be used in our classification. We have specified that 60 percent of our features,
+    that is, 18 out of 30 should be informative. The next parameter is about redundant
+    features. These are generated as a linear combination of the informative features
+    in order to introduce a correlation among the features. Finally, repeated features
+    are the duplicate features which are drawn randomly from both informative features
+    and redundant features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us split the data into a training and a testing set using `train_test_split`.
+    We reserve 30 percent of our data for testing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again we leverage train_test_split to split our test data into dev and
+    test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Having divided the data for building, evaluating, and testing the model, we
+    proceed to build our models. We are going to initially build a single model using
+    `KNeighborsClassifier` by invoking the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Inside this function, we create an object of type `KNeighborsClassifier` and
+    fit our data, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As explained in the previous section, `KNearestNeighbor` is a very stable algorithm.
+    Let us see how this model performs. We perform our predictions on the training
+    data and look at our model metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`classification_report` is a convenient function under the module metric in
+    Scikit learn. It gives a table for `precision`, `recall`, and `f1-score`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Out of `350` instances, our precision is 87 percent. With this figure, let
+    us proceed to build our bagging model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We invoke the function `build_bagging_model` with our training data to build
+    a bag of classifiers, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Inside the method, we invoke the `BaggingClassifier` class. Let us look at the
+    arguments that we pass to this class to initialize it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first argument is the underlying estimator or model. By passing `KNeighborClassifier`,
+    we are telling the bagging classifier that we want to build a bag of `KNearestNeighbor`
+    classifiers. The next parameter specifies the number of estimators that we will
+    build. In this case, we are saying we need `100` of them. The `random_state` argument
+    is the seed to be used by the random number generator. In order to be consistent
+    during different runs, we set this to an integer value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our next parameter is max_samples, where we specify the number of instances
+    to be selected for one estimator when we bootstrap from our input dataset. In
+    this case, we are asking the bagging routine to select all the instances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, the parameter max_features specifies the number of attributes that are
+    to be included while bootstrapping for an estimator. We say that we want to include
+    only 70 percent of the attributes. So for each estimator/model inside the ensemble,
+    it will be using a different subset of the attributes to build the model. This
+    is the random space methodology that we introduced in the previous section. The
+    function proceeds to fit the model and return the model to the calling function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us look at the model accuracy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see a big jump in the model metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we test our models with our dev dataset, let us look at the attributes
+    that were allocated to the different models, by invoking the view_model function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We print the attributes selected for the first ten models, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can make out from the result, we have assigned attributes to every estimator
+    pretty much randomly. In this way, we introduced variability into each of our
+    estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us proceed to check how our single classifier and bag of estimators have
+    performed in our dev set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As expected, our bag of estimators has performed better in our dev set as compared
+    to our single classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we said earlier, in the case of classification, the label with the majority
+    number of votes is considered as the final prediction. Instead of the voting scheme,
+    we can ask the constituent models to output the prediction probabilities for the
+    labels. An average of the probabilities can be finally taken to decide the final
+    output label. In Scikit''s case, the documentation of the API provides the details
+    on how the final prediction is performed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*''The predicted class of an input sample is computed as the class with the
+    highest mean predicted probability. If base estimators do not implement a *predict
+    phobia* method, then it resorts to voting.''*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingClassifier.html](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingClassifier.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the last chapter, we discussed cross validation. Although cross validation
+    may look very similar to bagging, they have different uses in reality. In cross
+    validation, we create K-Folds and, based on the model output from those folds,
+    we may choose our parameters for the model, as we selected the alpha value for
+    ridge regression. This is done primarily to avoid exposing our test data in the
+    model building exercise. Cross validation can be used in Bagging to determine
+    the number of estimators we need to add to our bagging module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, a drawback with Bagging is that we loose the interpretability of a
+    model. Consider a Simple Decision tree derived after pruning. It is very easy
+    to explain the decision tree model. But once we have a bag of 100 such models,
+    it become a black box. For increased accuracy, we do a trading of interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please refer to the following paper by Leo Breiman for more information about
+    bagging:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Leo Breiman. 1996\. Bagging predictors.*Mach. Learn.*24, 2 (August 1996),
+    123-140\. DOI=10.1023/A:1018054314350 http://dx.doi.org/10.1023/A:1018054314350*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Using cross validation iterators* recipe in [Chapter 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning 2*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Building Decision Trees to solve Multi-Class Problems* recipe in [Chapter
+    6](ch06.xhtml "Chapter 6. Machine Learning 1"), *Machine Learning 1*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding Ensemble – Boosting Method
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Boosting is a powerful ensemble technique. It's pretty much used in most of
+    the Data Science applications. In fact, it is one of the most essential tools
+    in a Data Scientist tool kit. The Boosting technique utilizes a bag of estimators
+    similar to Bagging. But that is where the similarity ends. Let us quickly see
+    how Boosting acts as a very effective ensemble technique before jumping into our
+    recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take the familiar two-class classification problem, where the input
+    is a set of predictors (`X`) and the output is a response variable (`Y`) which
+    can either take `0` or `1` as value. The input for the classification problem
+    is represented as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The job the classifier is to find a function which can approximate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The misclassification rate of the classifier is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let us say we build a very weak classifier whose error rate is slightly better
+    than random guessing. In Boosting, we build a sequence of weak classifiers on
+    a slightly modified set of data. We modify the data slightly for every classifier,
+    and finally, we end up with M classifiers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Finally, the predictions from all of them are combined through a weighted majority
+    vote:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This method is called AdaBoost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The weight alpha and the sequential way of model building is where Boosting
+    differs from Bagging. As mentioned earlier, Boosting builds a sequence of weak
+    classifiers on a slightly modified data set for each classifier. Let us look at
+    what that slight data modification refers to. It is from this modification that
+    we derive our weight alpha.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Initially for the first classifier, m=1, we set the weight of each instance
+    as 1/N, that is, if there are a hundred records, each record gets a weight of
+    0.001\. Let us denote the weight by w—now we have a hundred such weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'All the records now have an equal chance of being selected by a classifier.
+    We build the classifier, and test it against our training data to get the misclassification
+    rate. Refer to the misclassification rate formula given earlier in this section.
+    We are going to change it slightly by including the weights, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Where abs stands for the absolute value of the results. With this error rate,
+    we calculate our alpha (model weight) as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where epsilon is a very small value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us say our model 1 has got an error rate of 0.3, that is, the model was
+    able to classify 70 percent of the records correctly. Therefore, the weight for
+    that model will be 0.8, approximately, which, is a good weight. Based on this,
+    we go will back and set the weights of individual records, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Boosting Method](img/B04041_08_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the weights of all the attributes which were misclassified will
+    increase. This increases the chance of the misclassified record being selected
+    by the next classifier. Thus, the classifier coming next in the sequence selects
+    the instances with more weight and tries to fit it. In this way, all the future
+    classifiers start concentrating on the records misclassified by the previous classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the power of boosting. It is able to turn several weak classifiers into
+    one powerful ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us see boosting in action. As we proceed with our code, we will also see
+    a small variation to AdaBoost known as SAMME.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Started…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will leverage the scikit learn classes `DecisionTreeClassifier` for classification
+    and the `AdaBoostClassifier` for applying the Boosting principle. We will generate
+    data for this recipe using the `make_classification` convenience function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let us import the necessary libraries, and write a function `get_data()` to
+    provide us with a dataset to work through this recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us proceed and write the following three functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function build_single_model to make a simple Decision Tree model with the
+    given data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function build_boosting_model, a function which implements the Boosting
+    routine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function view_model, to inspect the model that we have built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then write a function called number_estimators_vs_err_rate. We use this function
+    to see how our error rates change with respect to the number of models in our
+    ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we will write our main function, which will call the other functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us start with the main method. We first call the `get_data` function to
+    return the dataset as a matrix x of predictors and a vector y for the response
+    variable. Let us look into the `get_data` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Take a look at the parameters passed to the `make_classification` method. The
+    first parameter is the number of instances required; in this case, we say we need
+    500 instances. The second parameter gives the number of attributes that are required
+    per instance. We say that we need 30 of them, as defined by the variable `no_features`.
+    The third parameter `flip_y`, randomly interchanges 3 percent of the instances.
+    This is done to introduce some noise in our data. The next parameter specifies
+    the number of features out of those 30 which should be informative enough to be
+    used in our classification. We have specified that 60 percent of our features,
+    that is, 18 out of 30 should be informative. The next parameter is about redundant
+    features. These are generated as a linear combination of the informative features
+    for introducing a correlation among the features. Finally, repeated features are
+    the duplicate features which are drawn randomly from both, informative features
+    and redundant features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us split the data into a training and a testing set using `train_test_split`.
+    We reserve 30 percent of our data for testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, we leverage train_test_split to split our test data into dev and
+    test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Having divided the data for building, evaluating, and testing the model, we
+    proceed to build our models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us start by fitting a single decision tree, and look at the performance
+    of the tree on training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: We build a model by invoking `build_single_model` function with the predictors
+    and response variable. Inside this we fit a single decision tree and return the
+    tree back to the calling function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us evaluate how good the model is using `classification_report`, a utility
+    function from Scikit learn which displays a set of metrics including `precision`,
+    `recall` and `f1-score`; we also display the misclassification rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see, our decision tree model has done a perfect job of fitting the
+    data—our misclassification rate is 0\. Before we test this model on our dev data,
+    let us build our ensemble:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the method build_boosting_model, we build our ensemble as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We leverage `AdaBoostClassifier` from Scikit learn to build our Boosting ensemble.
+    We instantiate the class with the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An estimator—in our case, we say we want to build an ensemble of decision trees.
+    Hence, we pass the `DecisionTreeClassifier` object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`max_depth`—We don''t want to have fully grown trees in our ensemble. We need
+    only stumps—trees with just two leaf nodes and one splitting node. Hence, we set
+    the `max_depth` parameter to 1\.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the n_estimators parameters, we specify the number of trees that we want
+    to grow; in this case, we will grow 86 trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we have a parameter called algorithm, which is set to `SAMME`. `SAMME`
+    stands for Stage wise Additive Modeling using Multi-class Exponential loss function.
+    `SAMME` is an improvement over the AdaBoosting algorithm. It tries to put more
+    weights on the misclassified records. The model weight alpha is where `SAMME`
+    differs from AdaBoost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have ignored the constant 0.5 in the preceding formula. Let us look at the
+    new addition: log (K-1). If K = 2, then the preceding equation reduces to AdaBoost.
+    Here, K is the number of classes in our response variable. For a two-class problem,
+    SAMME reduces to AdaBoost, as stated earlier.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us fit the model, and return it to our calling function. We run this model
+    on our training dataset, and once again look at how the model has performed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The result is not very different from our original model. We have correctly
+    classified almost 98 percent of the records with this ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before testing it on our dev set, let us proceed to look at the Boosting ensemble
+    that we have built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Inside view_model, we first print out the weights assigned to each classifier
+    in our ensemble:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here we have shown the weights of the first 20 ensembles. Based on their misclassification
+    rate, we have assigned different weights to these estimators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us proceed to plot a graph showing the estimator weight versus the error
+    thrown by each estimator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the models which are classifying properly are assigned more
+    weights than the ones with higher errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us now look at the way single tree and the bag of tree have performed against
+    the dev data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Pretty much as we did with the training data, we print the classification report
+    and the misclassification rate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the single tree has performed poorly. Though it displayed a
+    100 percent accuracy with the training data, with the dev data it has misclassified
+    almost 40 percent of the records—a sign of overfitting. In contrast, the Boosting
+    model is able to make a better fit of the dev data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we go about improving the Boosting model? One way to do it is to test
+    the error rate in the training set against the number of ensembles that we want
+    to include in our bagging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following function proceeds to fit with the increasing number of ensembles
+    and plot the error rate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we declare a list, starting with 20 and ending with 120 in step
+    size of 10s. Inside the `for` loop, we pass each element of this list as the number
+    of estimator parameter to `build_boosting_model`, and then proceed to access the
+    error rate of the model. We then check the error rates in the dev set. Now we
+    have two lists—one which has all the error rates from the training data and another
+    with the error rates from the dev data. We plot them both, where the *x* axis
+    is the number of estimators and *y* axis is the misclassification rate in the
+    dev and train sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding plot gives a clue that in around 30 to 40 estimators, the error
+    rate in dev is very low. We can further experiment with the tree model parameters
+    to arrive at a good model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Boosting was introduced in the following seminal paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Freund, Y. & Schapire, R. (1997), ''A decision theoretic generalization of
+    on-line learning and an application to boosting'', Journal of Computer and System
+    Sciences 55(1), 119–139.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Initially, most of the Boosting methods reduced the multiclass problems into
+    two-class problems and multiple two-class problems. The following paper extends
+    AdaBoost to the multiclass problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Multi-class AdaBoost Statistics and Its Interface, Vol. 2, No. 3\. (2009),
+    pp. 349-360,doi:10.4310/sii.2009.v2.n3.a8 by Trevor Hastie, Saharon Rosset, Ji
+    Zhu, Hui Zou*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This paper also introduces SAMME, the method that we have used in our recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Building Decision Trees to solve Multi-Class Problems* recipe in [Chapter
+    6](ch06.xhtml "Chapter 6. Machine Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Using cross validation iterators* recipe in[Chapter 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Understanding Ensemble – Bagging Method* recipe in[Chapter 8](ch08.xhtml "Chapter 8. Ensemble
+    Methods"), *Model Selection and Evaluation*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding Ensemble – Gradient Boosting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us recall the Boosting algorithm explained in the previous recipe. In boosting,
+    we fitted an additive model in a forward, stage-wise manner. We built the classifiers
+    sequentially. After building each classifier, we estimated the weight/importance
+    of the classifiers. Based on weights/importance, we adjusted the weights of the
+    instances in our training set. Misclassified instances were weighted higher than
+    the correctly classified ones. We would like the next model to pick those incorrectly
+    classified instances and train on them. Instances from the dataset which didn't
+    fit properly were identified using these weights. Another way of looking at it
+    is that those records were the shortcomings of the previous model. The next model
+    tries to overcome those shortcomings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient Boosting uses gradients instead of weights to identify those shortcomings.
+    Let us quickly see how we can use gradients to improve models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us take a simple regression problem, where we are given the required predictor
+    variable *X* and the response *Y*, which is a real number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Gradient Boosting](img/B04041_08_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Gradient boosting proceeds as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It starts with a very simple model, say, mean value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Gradient Boosting](img/B04041_08_23.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The predicted value is simply the mean value of the response variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It then proceeds to fit the residuals. Residual is the difference between the
+    actual value y and the predicted value y hat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Gradient Boosting](img/B04041_08_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The next classifier is trained on the data set as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Gradient Boosting](img/B04041_08_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The subsequent model is trained on the residual of the previous model, and thus,
+    the algorithm proceeds to build the required number of models inside the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us try and understand why we train on residuals. By now it should be clear
+    that Boosting makes additive models. Let us say we build two models `F1 (X)` and
+    `F2(X)` to predict `Y1`. By the additive principle, we can combine these two models
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Gradient Boosting](img/B04041_08_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: That is, we combine the prediction from both the models to predict Y_1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Equivalently, we can say that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Gradient Boosting](img/B04041_08_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Residual is the part where the model has not done well, or to put it simply,
+    residuals are the short comings of the previous model. Hence, we use the residual
+    improve our model, that is, improving the shortcomings of the previous model.
+    Based on this discussion, you would wonder why the method is called Gradient Boosting
+    instead of Residual Boosting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given a function which is differentiable, Gradient stands for the first-order
+    derivatives of that function at certain values. In the case of regression, the
+    objective function is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding Ensemble – Gradient Boosting](img/B04041_08_28.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: where `F(xi)` is our regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The linear regression problem is about minimizing this preceding function.
+    We find the first-order derivative of that function at value `F(xi)`, and if we
+    update our weights'' coefficients with the negative of that derivative value,
+    we will move towards a minimum solution in the search space. The first-order derivative
+    of the preceding cost function with respect to `F(xi)` is `F(xi ) – yi`. Please
+    refer to the following link for the derivation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Gradient_descent](https://en.wikipedia.org/wiki/Gradient_descent)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`F(xi ) – yi`, the gradient, is the negative of our residual `yi – F(xi)`,
+    and hence the name Gradient Boosting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this theory in mind, let us jump into our recipe for gradient boosting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Started…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We are going to use the Boston dataset to demonstrate Gradient Boosting. The
+    Boston data has 13 attributes and 506 instances. The target variable is a real
+    number, the median value of houses in thousands. the Boston data can be downloaded
+    from the UCI link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names](https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We intend to generate Polynomial Features of degree 2, and consider only the
+    interaction effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us import the necessary libraries and write a function `get_data()` to
+    provide us with a dataset to work through this recipe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us write the following three functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function build _model, which implements the Gradient Boosting routine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The functions view_model and model_worth, which are used to inspect the model
+    that we have built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we write our main function which will call the other functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us start with the main module and follow the code. We load the predictor
+    x and response variable y using the get_data function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function invokes the Scikit learn's convenience function `load_boston()`
+    to retrieve the Boston house pricing dataset as numpy arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We proceed to divide the data into the train and test sets using the train_test_split
+    function from Scikit library. We reserve 30 percent of our dataset for testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Out of this 30 percent, we again extract the dev set in the next line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We proceed to build the polynomial features as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we have set interaction_only to True. By having interaction_only
+    set to true, given say x1 and x2 attribute, only x1*x2 attribute is created. Square
+    of x1 and square of x2 are not created, assuming that the degree is 2\. The default
+    degree is 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the transform function, we transform our train, dev, and test datasets
+    to include polynomial features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us proceed to build our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Inside the build_model function, we instantiate the GradientBoostingRegressor
+    class as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us look at the parameters. The first parameter is the number of models in
+    the ensemble. The second parameter is verbose—when this is set to a number greater
+    than 1, it prints the progress as every model, trees in this case is built. The
+    next parameter is subsample, which dictates the percentage of training data that
+    will be used by the models. In this case, 0.7 indicates that we will use 70 percent
+    of the training dataset. The next parameter is the learning rate. It's the shrinkage
+    parameter to control the contribution of each tree. Max_depth, the next parameter,
+    determines the size of the tree built. The random_state parameter is the seed
+    to be used by the random number generator. In order to stay consistent during
+    different runs, we set this to an integer value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we have set our verbose parameter to more than 1, as we fit our model,
+    we see the following results on the screen during each model iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the training loss reduces with each iteration. The fourth column
+    is the out-of-bag improvement score. With the subsample, we had selected only
+    70 percent of the dataset; the OOB score is calculated with the rest 30 percent.
+    There is an improvement in loss as compared to the previous model. For example,
+    in iteration 2, we have an improvement of 10.32 when compared with the model built
+    in iteration 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us proceed to check performance of the ensemble on the training data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_30.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, our boosting ensemble has fit the training data perfectly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model_worth function prints some more details of the model. They are as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The score of each of the different models, which we saw in the verbose output
+    is stored as an attribute in the model object, and is retrieved as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us plot this in a graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *x* axis represents the model number and the y axis displays the training
+    score. Remember that boosting is a sequential process, and every model is an improvement
+    over the previous model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_32.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see in the graph, the mean square error, which is the model score
+    decreases with every successive model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we can also see the importance associated with each feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us see how the features are stacked against each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_33.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Gradient Boosting unifies feature selection and model building into a single
+    operation. It can naturally discover the non-linear relationship between features.
+    Please refer to the following paper on how Gradient boosting can be used for feature
+    selection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Zhixiang Xu, Gao Huang, Kilian Q. Weinberger, and Alice X. Zheng. 2014\. Gradient
+    boosted feature selection. In *Proceedings of the 20th ACM SIGKDD international
+    conference on Knowledge discovery and data mining*(KDD ''14). ACM, New York, NY,
+    USA, 522-531\.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Let us apply the dev data to the model and look at its performance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_08_34.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finally, we look at the test set performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_08_35.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, our ensemble has performed extremely well in our test set as
+    compared to the dev set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For more information about Gradient Boosting, please refer to the following
+    paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Friedman, J. H. (2001). Greedy function approximation: a gradient boosting
+    machine. Annals of Statistics, pages 1189–1232.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*In this receipt we explained gradient boosting with a squared loss function.
+    However Gradient Boosting should be viewed as a framework and not as a method.
+    Any differentiable loss function can be used in this framework. Any learning method
+    and a differentiable loss function can be chosen by users and apply it into the
+    Gradient Boosting framework.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Scikit Learn also provides a Gradient Boosting method for classification,
+    called GradientBosstingClassifier.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Understanding Ensemble, Bagging Method* recipe in [Chapter 8](ch08.xhtml "Chapter 8. Ensemble
+    Methods"), *Model Selection and Evaluation*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Understanding Ensemble*, *Boosting Method AdaBoost* recipe in [Chapter 8](ch08.xhtml
+    "Chapter 8. Ensemble Methods"), *Model Selection and Evaluation*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Predicting real valued numbers using regression* recipe in [Chapter 7](ch07.xhtml
+    "Chapter 7. Machine Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Variable Selection using LASSO Regression* recipe in[Chapter 7](ch07.xhtml
+    "Chapter 7. Machine Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Using cross validation iterators* recipe in [Chatper 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

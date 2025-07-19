@@ -1,0 +1,1311 @@
+- en: Implementing ModelOps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we will look at ModelOps and its closest cousin—DevOps. We
+    will explore how to build development pipelines for data science and make projects
+    reliable, experiments reproducible, and deployments fast. To do this, we will
+    familiarize ourselves with the general model training pipeline, and see how data
+    science projects differ from software projects from the development infrastructure
+    perspective. We will see what tools can help to version data, track experiments,
+    automate testing, and manage Python environments. Using these tools, you will
+    be able to create a complete ModelOps pipeline, which will automate the delivery
+    of new model versions, while taking care of reproducibility and code quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding ModelOps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Looking into DevOps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Managing code versions and quality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Storing data along with code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Managing environments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tracking experiments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The importance of automated testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Continuous model training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A power pack for your projects
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding ModelOps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'ModelOps is a set of practices for automating a common set of operations that
+    arise in data science projects, which include the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model training pipeline
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data management
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Version control
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Experiment tracking
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deployment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Without ModelOps, teams are forced to waste time on those repetitive tasks.
+    Each task in itself is fairly easy to handle, but a project can suffer from mistakes
+    in those steps. ModelOps helps us to create project delivery pipelines that work
+    like a precise conveyor belt with automated testing procedures that try to catch
+    coding errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's start by discussing ModelOps' closest cousin—DevOps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking into DevOps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**DevOps** stands for **development operations**. Software development processes
+    include many repetitive and error-prone tasks that should be performed each time
+    software makes a journey from the source code to a working product.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s examine a set of activities that comprise the software development pipeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing checks for errors, typos, bad coding habits, and formatting mistakes.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Building the code for one or several target platforms. Many applications should
+    work on different operating systems.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Running a set of tests that check that the code works as intended, according
+    to the requirements.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Packaging the code.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Deploying packaged software.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Continuous integration and continuous deployment** (**CI/CD**) states that
+    all of those steps can and should be automated and run as frequently as possible.
+    Smaller updates that are thoroughly tested are more reliable. And if everything
+    goes wrong, it is much easier to revert such an update. Before CI/CD, the throughput
+    of software engineers who manually executed software delivery pipelines limited
+    the deployment cycle speed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, highly customizable CI/CD servers rid us of manual labor, and completely
+    automate all necessary activities. They run on top of a source code version control
+    system, and monitor for new code changes. Once a new code change is present, a
+    CI/CD server can launch the delivery pipeline. To implement DevOps, you need to
+    spend time writing automated tests and defining software pipelines, but after
+    that, the pipeline just works, every time you need it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DevOps took the software development world by storm, producing many technologies
+    that make software engineers more productive. Like any technology ecosystem, an
+    expert needs to devote time to learning and integrating all tools together. Over
+    time, CI/CD servers became more complicated and feature-rich, and many companies
+    felt the need to have a full-time expert capable of managing delivery pipelines
+    for their projects. Thus, they came up with the role of DevOps engineer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many tools from the DevOps world are becoming much easier to use, requiring
+    only a couple of clicks in a user interface. Some CI/CD solutions such as GitLab
+    aid you in creating simple CI/CD pipelines automatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many benefits of CI/CD infrastructure apply to data science projects; however,
+    many areas remain uncovered. In the next sections of this chapter, we will look
+    at how data science projects can use CI/CD infrastructure, and what tools you
+    can use to make the automation of data science project delivery more complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring the special needs of data science project infrastructure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A modern software project will likely use the following infrastructure to implement
+    CI/CD:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Version control—Git
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Code collaboration platform—GitHub, GitLab
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Automated testing framework—dependent on the implementation language
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CI/CD server—Jenkins, Travis CI, Circle CI, or GitLab CI
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'All of these technologies miss several core features that are critical for
+    data science projects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data management—tools for solving the issue of storing and versioning large
+    amounts of data files
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Experiment tracking—tools for tracking experiment results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Automated testing—tools and methods for testing data-heavy applications
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Before covering solutions to the preceding issues, we will familiarize ourselves
+    with the data science delivery pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data science delivery pipeline
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Data science projects consist of multiple data processing pipelines that are
+    dependent on each other. The following diagram displays the general pipeline of
+    a data science project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/939b8432-da8e-45bc-9227-01a32fe4253b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s quickly sum up all of the stages in the preceding diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each model pipeline starts with the **Raw data**, which is stored in some kind
+    of data source.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then, data scientists perform **exploratory data analysis** (**EDA**)and create **EDA
+    Reports** to deepen the understanding of the dataset and discover possible issues
+    with the data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The **Data processing pipeline**transforms raw data into an intermediate format
+    that is more suitable for creating datasets for training, validating, and testing
+    models.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The **Model dataset pipeline** creates ready-to-use datasets for training and
+    testing models.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The **Model training pipeline **uses prepared datasets to train models, assess
+    their quality by performing offline testing, and generate **Model quality reports **that
+    contain detailed information about model testing results.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: At the end of the pipeline, you get the final artifact—a **Trained model **that
+    is saved on a hard disk or a database.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now, we are ready to discuss implementation strategies and example tools for
+    ModelOps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Managing code versions and quality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data science projects deal with a lot of code, so data scientists need to use
+    **source version control** (**SVC**) systems such as Git as a mandatory component.
+    The most obvious way of using Git is to employ a code collaboration platform such
+    as GitLab or GitHub. Those platforms provide ready-to-use Git servers, along with
+    useful collaboration tools for code reviews and issue management, making working
+    on shared projects easier. Such platforms also offer integrations with CI/CD solutions,
+    creating a complete and easily configurable software delivery pipeline. GitHub
+    and GitLab are free to use, and GitLab is available for on-premises installations,
+    so there is no excuse for your team to miss the benefits of using one of those
+    platforms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many teams synonymize Git with one of the popular platform offerings, but it
+    is sometimes useful to know that it is not the only option you have. Sometimes,
+    you have no internet access or the ability to install additional software on server
+    machines but still want the benefits of storing code in a shared repository. You
+    can still use Git in those restricted environments. Git has a useful feature called
+    **file remotes** that allow you to push your code basically everywhere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, you can use a USB stick or a shared folder as a remote repository:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: By changing the `file:///` path to the `ssh:///` path, you can also push code
+    to the remote SSH machines on your local network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most data science projects are written in Python, where static code analysis
+    and code build systems are not as widespread as in other programming languages.
+    Those tools allow you to groom code automatically and check it for critical errors
+    and possible bugs each time you try to build a project. Python has such tools
+    too—look at pre-commit ([https://pre-commit.com](https://pre-commit.com)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot demonstrates the running of pre-commit on a Python
+    code repository:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/07a4c0aa-e54b-40ab-9d85-eb90b5dc742f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Having covered the main recommendations for handling code, let's now see how
+    we can achieve the same results for data, which is an integral part of any data
+    science project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing data along with the code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As you have seen previously, we can structure code in data science projects
+    into a set of pipelines that produce various artifacts: reports, models, and data.
+    Different versions of code produce changing outputs, and data scientists often
+    need to reproduce results or use artifacts from past versions of pipelines.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This distinguishes data science projects from software projects and creates
+    a need for managing data versions along with the code: **Data Version Control**
+    (**DVC**). In general, different software versions can be reconstructed by using
+    the source code alone, but for data science projects this is not sufficient. Let''s
+    see what problems arise when you try to track datasets using Git.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tracking and versioning data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To train and switch between every version of your data science pipeline, you
+    should track data changes along with the code. Sometimes, a full project pipeline
+    can take days to calculate. You should store and document not only incoming but
+    also intermediate datasets for your project to save time. It is handy to create
+    several model training pipelines from a single dataset without waiting for the
+    dataset pipeline to finish each time you need it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Structuring pipelines and intermediate results is an interesting topic that
+    deserves special attention. The pipeline structure of your project determines
+    what intermediate results are available for use. Each intermediate result creates
+    a branching point, from where several other pipelines can start. This creates
+    the flexibility of reusing intermediate results, but at the cost of storage and
+    time. Projects with lots of intermediate steps can consume a lot of disk space
+    and will take more time to calculate, as disk input/output takes a lot of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be aware that model training pipelines and production pipelines should be different.
+    A model training pipeline might have a lot of intermediate steps for research
+    flexibility, but a production pipeline should be highly optimized for performance
+    and reliability. Only intermediate steps that are strictly necessary to execute
+    the finalized production pipeline need to be executed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing data files is necessary for reproducing results but is not sufficient
+    for understanding them. You can save yourself a lot of time by documenting data
+    descriptions, along with all reports that contain summaries and conclusions that
+    your team draws from data. If you can, store those documents in a simple textual
+    format so that they can be easily tracked in your version control system along
+    with the corresponding code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can use the following folder structure to store the data in your projects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Project root:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Data:'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Raw—raw data from your customer
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interim—intermediate data generated by the processing pipeline
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Preprocessed—model datasets or output files
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reports—project reports for EDA, model quality, and so on
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References—data dictionaries and data source documentation
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Storing data in practice
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have explored why it is important to store and manage data artifacts along
+    with the code but did not look at how we can do it in practice. Code version control
+    systems such as Git are ill-suited for this use case. Git was developed specifically
+    for storing source code changes. Internally, each change in Git is stored as a
+    `diff` file that represents changed lines of a source code file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can see a simple example of a `diff` file in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/186ed2d9-af3c-402d-a2be-b9a513b47f2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The highlighted lines marked with + represent added lines, while highlighted
+    lines marked with – stand for deleted lines. Adding large binary or text files
+    in Git is considered bad practice because it results in massive redundant `diff`
+    computations, which makes repositories slow to work with and large in size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`diff` files serve a very specific problem: they allow developers to browse,
+    discuss, and switch between sets of changes. `diff` is a line-based format that
+    is targeted at text files. On the contrary, small changes in binary data files
+    will result in a completely different data file. In such cases, Git will generate
+    a massive `diff` for each small data modification.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In general, you needn''t browse or discuss changes to a data file in a line-based
+    format, so calculating and storing `diff` files for each new data version is unnecessary:
+    it is much simpler to store the entire data file each time it changes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A growing desire for data versioning systems produced several technical solutions
+    to the problem, the most popular being GitLFS and DVC. GitLFS allows you to store
+    large files in Git without generating large diffs, while DVC goes further and
+    allows you to store data at various remote locations, such as Amazon S3 storage
+    or a remote SSH server. DVC goes beyond just implementing data version control
+    and allows you to create automated reproducible pipelines by capturing code along
+    with its input data, output files, and metrics. DVC also handles pipeline dependency
+    graphs, so that it can automatically find and execute any previous steps of the
+    pipeline to generate files that you need as input for your code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we are equipped with the tools to handle data storage and versioning,
+    let's look at how to manage Python environments so that your team won't waste
+    time with package conflicts on a server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Managing environments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data science projects depend on a lot of open source libraries and tools for
+    doing data analysis. Many of those tools are constantly updated with new features,
+    which sometimes break APIs. It is important to fix all dependencies in a shareable
+    format that allows every team member to use the same versions and build libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Python ecosystem has multiple environment management tools that take care
+    of different problems. Tools overlap in their use cases and are often confusing
+    to choose from, so we will cover each briefly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**pyenv** ([https://github.com/pyenv/pyenv](https://github.com/pyenv/pyenv))
+    is a tool for managing Python distributions on a single machine. Different projects
+    may use different Python versions, and pyenv allows you to switch between different
+    Python versions between projects.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**virtualenv** ([https://virtualenv.pypa.io](https://virtualenv.pypa.io)) is
+    a tool for creating virtual environments that contain different sets of Python
+    packages. Virtual environments are useful for switching contexts between different
+    projects, as they may require the use of conflicting versions of Python packages.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**pipenv** ([https://pipenv-searchable.readthedocs.io](https://pipenv-searchable.readthedocs.io))
+    is a step above virtualenv. Pipenv cares about automatically creating a sharable
+    virtual environment for a project that other developers may easily use.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Conda** ([https://www.anaconda.com/distribution/](https://www.anaconda.com/distribution/))
+    is another environment manager like pipenv. Conda is popular in the data science
+    community for several reasons:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It allows sharing environments with other developers via the `environment.yml`
+    file.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It provides the Anaconda Python distribution, which contains gigabytes of pre-installed
+    popular data science packages.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It provides highly optimized builds of popular data analysis and machine learning
+    libraries. Scientific Python packages often require building dependencies from
+    the source code.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conda can install the CUDA framework along with your favorite deep learning
+    framework. CUDA is a specialized computation library that is required for optimizing
+    deep neural networks on a GPU.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Consider using conda for managing data science project environments if you
+    are not doing so already. It will not only solve your environment management problems
+    but also save time by speeding up the computation. The following plot shows the
+    performance difference between using the TensorFlow libraries installed by **pip**
+    and **conda** (you can find the original article by following this link: [https://www.anaconda.com/tensorflow-in-anaconda/](https://www.anaconda.com/tensorflow-in-anaconda/)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a1f3b1e7-4599-4dcb-97ae-7c7486879d5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Next, we will cover the topic of experiment tracking. Experiments are a natural
+    part of every data science project. A single project might contain the results
+    of hundreds or even thousands of experiments. It is important to keep a record
+    so that you can make correct conclusions about experiment results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tracking experiments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Experimentation lies at the core of data science. Data scientists perform many
+    experiments to find the best approach to solving the task at hand. In general,
+    experiments exist in sets that are tied to data processing pipeline steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, your project may comprise the following experiment sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature engendering experiments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Experiments with different machine learning algorithms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hyperparameter optimization experiments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each experiment can affect the results of other experiments, so it is crucial
+    to be able to reproduce each experiment in isolation. It is also important to
+    track all results so your team can compare pipeline variants and choose the best
+    one for your project according to the metric values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A simple spreadsheet file with links to data files and code versions can be
+    used to track all experiments, but reproducing experiments will require lots of
+    manual work and is not guaranteed to work as expected. Although tracking experiments
+    in a file requires manual work, the approach has its benefits: it is very easy
+    to start and pleasant to version. For example, you can store the experiment results
+    in a simple CSV file, which is versioned in Git along with your code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A recommended minimum set of columns for a metric tracking file is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiment date
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Code version (Git commit hash)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model name
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training dataset size
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training dataset link
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Validation dataset size (fold number for cross-validation)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Validation dataset link (none for cross-validation)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Test dataset size
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Test dataset link
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Metric results (one column per metric; one column per dataset)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Output file links
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Experiment description
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Files are easy to work with if you have a moderate amount of experiments, but
+    if your project uses multiple models, and each requires a large amount of experimentation,
+    using files becomes cumbersome. If a team of data scientists performs simultaneous
+    experiments, tracking files from each team member will require manual merges,
+    and data scientists are better off spending time on carrying out more experiments
+    rather than merging other teammates'' results. Special frameworks for tracking
+    experiment results exist for more complex research projects. These tools integrate
+    into the model training pipeline and allow you to automatically track experiment
+    results in a shared database so that each team member can focus on experimentation,
+    while all bookkeeping happens automatically. Those tools present a rich user interface
+    for searching experiment results, browsing metric plots, and even storing and
+    downloading experiment artifacts. Another benefit of using experiment tracking
+    tools is that they track a lot of technical information that might become handy
+    but is too tedious to collect by hand: server resources, server hostnames, script
+    paths, and even environment variables present on the experiment run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data science community uses three major open source solutions that allow
+    the tracking of experiment results. These tools pack much more functionality than
+    experiment tracking, and we will briefly cover each:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sacred**: This is an advanced experiment tracking server with modular architecture.
+    It has a Python framework for managing and tracking experiments that can be easily
+    integrated into the existing code base. Sacred also has several UIs that your
+    team can use to browse experiment results. Out of all the other solutions, only
+    Sacred focuses fully on experiment tracking. It captures the widest set of information,
+    including server information, metrics, artifacts, logs, and even experiment source
+    code. Sacred presents the most complete experiment tracking experience, but is
+    hard to manage, since it requires you to set up a separate tracking server that
+    should always be online. Without access to the tracking server, your team won''t
+    be able to track experiment results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MLflow**: This is an experimentation framework that allows tracking experiments,
+    serving models, and managing data science projects. MLflow is easy to integrate
+    and can be used both in a client-server setup or locally. Its tracking features
+    lag a bit behind Sacred''s powerhouse but will be sufficient for most data science
+    projects. MLflow also provides tools for jumpstarting projects from templates
+    and serving trained models as APIs, providing a quick way to publish experiment
+    results as a production-ready service.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DVC**: This is a toolkit for data versioning and pipeline management. It
+    also provides basic file-based experiment tracking functionality, but it is subpar
+    in terms of usability compared to MLflow and Sacred. The power of DVC lies in
+    experiment management: it allows you to create fully versioned and reproducible
+    model training pipelines. With DVC, each team member is able to pull code, data,
+    and pipelines from a server and reproduce results with a single command. DVC has
+    a rather steep learning curve but is worth learning, as it solves many technical
+    problems that arise in collaboration on data science projects. If your metric
+    tracking requirements are simple, you can rely on DVC''s built-in solution, but
+    if you need something more rich and visual, combine DVC with MLflow or Sacred
+    tracking—those tools are not mutually exclusive.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now you should have a complete understanding of what tools can be used to track
+    code, data, and experiments as a single entity in your project. Next, we will
+    cover the topic of automated testing in data science projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The importance of automated testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Automated testing is considered to be mandatory in software engineering projects.
+    Slight changes in software code can introduce unintended bugs in other parts,
+    so it is important to check that everything works as intended as frequently as
+    possible. Automated tests that are written in a programming language allow testing
+    the system as many times as you like. The principle of CI advises running tests
+    each time a change in code is pushed to a version control system. A multitude
+    of testing frameworks exists for all major programming languages. Using them,
+    developers can create automated tests for the backend and frontend parts of their
+    product. Large software projects can include thousands of automated tests that
+    are run each time someone changes the code. Tests can consume significant resources
+    and require a lot of time for completion. To solve this problem, CI servers can
+    run tests in parallel on multiple machines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In software engineering, we can divide all tests into a hierarchy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: End-to-end tests perform a full check of a major function of a system. In data
+    science projects, end-to-end tests can train a model on a full dataset and check
+    whether the metrics values suffice minimum model quality requirements.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Integration tests check that every component of the system works together as
+    intended. In a data science system, an integration test might check that all of
+    the steps of the model testing pipeline finish successfully and provide the desired
+    result.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Unit tests check individual classes and functions. In a data science project,
+    a unit test can check the correctness of a single method in a data processing
+    pipeline step.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the world of software testing is so technologically developed, can data science
+    projects benefit from automated tests? The main difference between data science
+    code and software testing code is the reliability of data. A fixed set of test
+    data that is generated before a test run is sufficient for most software projects.
+    In data science projects, the situation is different. For a complete test of the
+    model training pipeline, you may need gigabytes of data. Some pipelines may run
+    for hours or even days and require distributed computation clusters, so testing
+    them becomes impractical. For this reason, many data science projects avoid automated
+    testing. Thus, they suffer from unexpected bugs, ripple effects, and slow change
+    integration cycles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A ripple effect is a common software engineering problem when a slight change
+    in one part of the system can affect other components in an unexpected way, causing
+    bugs. Automated tests are an efficient solution for detecting ripple effects before
+    they cause any real damage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite the difficulties, the benefits of automated testing are too great to
+    ignore. Ignoring tests turns out to be much more costly than building them. This
+    is true for data science projects and software projects. The benefits of automated
+    testing grow with project size, complexity, and team size. If you lead a complex
+    data science project, consider automating testing as a mandatory requirement for
+    your project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's look at how we can approach testing data science projects. End-to-end
+    testing for model training pipelines might be impractical, but what about testing
+    individual pipeline steps? Apart from the model training code, each data science
+    project will have some business logic code and data processing code. Most of this
+    code can be abstracted away from distributed computation frameworks in isolated
+    classes and functions that are easy to test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you architect a project's code base with tests in mind from the start, it
+    will be much easier to automate testing. Software architects and lead engineers
+    on your team should take the testability of the code as one of the main acceptance
+    criteria for code reviews. If the code is properly encapsulated and abstracted,
+    testing becomes easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, let's take the model training pipeline. If we separate it into
+    a series of steps with clearly defined interfaces, we can then test data preprocessing
+    code separately from model training code. And if data preprocessing takes a lot
+    of time and requires expensive computation resources, you can at least test individual
+    parts of the pipeline. Even basic function-level tests (unit tests) can save you
+    a lot of time, and it is much easier to transition to full end-to-end tests from
+    the basis of unit tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To benefit from automated testing in your projects, start from the following
+    guidelines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Architect your code for better testability.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Start small; write unit tests.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consider building integration and end-to-end tests.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Keep at it. Remember that testing saves time—especially those nights when your
+    team has to fix unexpected bugs in freshly deployed code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have seen how to manage, test, and maintain code quality in data science
+    projects. Next, let's look at how we can package code for deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Packaging code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When deploying Python code for data science projects, you have several options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regular Python scripts**: You just deploy a bunch of Python scripts to the
+    server and run them. This is the simplest form of deployment, but it requires
+    a lot of manual preparation: you need to install all required packages, fill in
+    configuration files, and so on.While those actions can be automated by using tools
+    such as Ansible ([https://www.ansible.com/)](https://www.ansible.com/), it''s
+    not recommended to use this form of deployment for anything but the simplest projects
+    with no long-term maintainability goals.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Python packages**: Creating a Python package using a `setup.py`file is a
+    much more convenient way to package Python code. Tools such as PyScaffold provide
+    ready-to-use templates for Python packages, so you won''t need to spend much time
+    structuring your project. In the case of Python packages, Ansible still remains
+    a viable option for automating manual deployment actions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Docker image**:Docker ([https://www.docker.com/](https://www.docker.com/)) is
+    based on a technology called Linux containers. Docker allows packaging your code
+    into an isolated portable environment that can be easily deployed and scaled on
+    any Linux machine. It''s like packaging, shipping, and running your application
+    along with all dependencies, including a Python interpreter, data files, and an
+    OS distribution without entering the world of heavyweight virtual machines. Docker
+    works by building a **Docker image** from a set of commands specified in a **Dockerfile***. *A
+    running instance of a Docker imageis called a **Docker container***.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, we are ready to integrate all tools for dealing with code, data, experiments,
+    environments, testing, packaging, and deployment into a single coherent process
+    for delivering machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continuous model training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The end goal of applying CI/CD to data science projects is to have a continuous
+    learning pipeline that creates new model versions automatically. This level of
+    automation will allow your team to examine new experiment results right after
+    pushing the changed code. If everything works as expected, automated tests finish,
+    and model quality reports show good results, the model can be deployed into an
+    online testing environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s describe the steps of continuous model learning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'CI:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform static code analysis.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Launch automated tests.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Continuous model learning:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fetch new data.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Generate EDA reports.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Launch data quality tests.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform data processing and create a training dataset.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train a new model.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Test the model's quality.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fix experiment results in an experiment log.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'CD:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Package the new model version.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Package the source code.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Publish the model and code to the target server.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Launch a new version of the system.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: CI/CD servers can automate all parts of the preceding pipeline. CI/CD steps
+    should be easy to handle, as they are what CI/CD servers were created for. Continuous
+    model learning should not be hard either, as long as you structure your pipeline
+    so that it can be launched automatically from the command line. Tools such as
+    DVC can aid you in creating reproducible pipelines, which makes it an attractive
+    solution for the continuous model learning pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let's look at how we can build a ModelOps pipeline in a data science project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Case study – building ModelOps for a predictive maintenance system
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Oliver is a team leader of a data science project for a large manufacturing
+    company called MannCo, whose plants can be found in multiple cities around the
+    country. Oliver's team developed a predictive maintenance model that can help
+    MannCo to forecast and prevent expensive equipment breakages, which result in
+    costly repairs and long production line outages. The model takes measurements
+    of multiple sensors as input and outputs a package probability that can be used
+    to plan a diagnostics and repair session.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This example contains some technical details. If you are unfamiliar with the
+    technologies mentioned in this case study, you may want to follow links to get
+    a better understanding of the details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each piece of this equipment is unique in its own way because it operates under
+    different conditions on each one of MannCo's plants. This meant that Oliver's
+    team would need to constantly adapt and retrain separate models for different
+    plants. Let's look at how they solved this task by building a ModelOps pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There were several data scientists on the team, so they needed a tool for sharing
+    the code with each other. The customer requested that, for security purposes,
+    all code should be stored in local company servers, and not in the cloud. Oliver
+    decided to use GitLab ([https://about.gitlab.com/](https://about.gitlab.com/)),
+    as it was a general practice in the company. In terms of the overall code management
+    process, Oliver suggested using GitFlow ([https://danielkummer.github.io/git-flow-cheatsheet/](https://danielkummer.github.io/git-flow-cheatsheet/)).
+    It provided a common set of rules for creating new features, releases, and hotfixes
+    for every team member.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oliver knew that a reliable project structure would help his team to properly
+    organize code, notebooks, data, and documentation, so he advised his team to use
+    PyScaffold ([https://pyscaffold.readthedocs.io/](https://pyscaffold.readthedocs.io/))
+    along with the plugin for data science projects ([https://github.com/pyscaffold/pyscaffoldext-dsproject](https://github.com/pyscaffold/pyscaffoldext-dsproject)).
+    PyScaffold allowed them to bootstrap a project template that ensured a uniform
+    way to store and version data science projects. PyScaffold already provided the `environment.yml`file,
+    which defined a template Anaconda ([https://www.anaconda.com/distribution/](https://www.anaconda.com/distribution/))
+    environment, so the team did not forget to lock the package dependencies in a
+    versioned file from the start of the project. Oliver also decided to use DVC ([https://dvc.org/](https://dvc.org/))
+    to version datasets using the company's internal SFTP server. They also used a `--gitlab`
+    flag for the `pyscaffold` command so that they would have a ready-to-use GitLab
+    CI/CD template when they needed it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The project structure looked like this (taken from the `pyscaffold-dsproject`
+    documentation):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The project team quickly discovered that they would need to perform and compare
+    many experiments to build models for different manufacturing plants. They evaluated
+    DVC''s metric tracking capabilities. It allowed tracking all metrics using a simple
+    versioned text file in Git. While the feature was convenient for simple projects,
+    it would be hard to use it in a project with multiple datasets and models. In
+    the end, they decided to use a more advanced metric tracker—MLflow ([https://mlflow.org](https://mlflow.org)).
+    It provided a convenient UI for browsing experiment results and allowed using
+    a shared database so that every team member would be able to quickly share their
+    results with the team. MLflow was installed and configured as a regular Python
+    package, so it easily integrated into the existing technology stack of the project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bcceca06-f47b-4ed5-92d5-5c4213c99aba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The team also decided to leverage DVC pipelines to make each experiment easily
+    reproducible. The team liked to prototype models using Jupyter notebooks, so they
+    decided to use papermill ([https://papermill.readthedocs.io/en/latest/](https://papermill.readthedocs.io/en/latest/))
+    to work with notebooks as they were a set of parametrized Python scripts. Papermill
+    allows executing Jupyter notebooks from the command line without starting Jupyter''s
+    web interface. The team found the functionality very convenient to use along with
+    the DVC pipelines, but the command line for running a single notebook started
+    to be too long:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To solve this problem, they wrote a Bash script to integrate DVC with papermill
+    so that the team members could create reproducible experiments with less typing
+    in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: When using several open source ModelOps tools in a single project, your team
+    might need to spend some time integrating them together. Be prepared, and plan
+    accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Over time, some parts of the code started to duplicate inside the notebooks.
+    The PyScaffold template provides a way to solve this problem by encapsulating
+    repeated code in the project''s package directory—`src`*.* This way, the project
+    team could quickly share code between notebooks. To install the project''s package
+    locally, they simply used the following command from the project''s root directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Closer to the project release date, all stable code bases migrated to the project's
+    `src` and `scripts` directories. The `scripts` directory contained a single entry
+    point script for training a new model version that was output into the `models` directory,
+    which was tracked by DVC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be sure that new changes did not break anything important, the team wrote
+    a set of automated tests using `pytest` ([https://docs.pytest.org/](https://docs.pytest.org/)) for
+    the stable code base. The tests also checked model quality on a special test dataset
+    created by the team. Oliver modified a GitLab CI/CD template that was generated
+    by PyScaffold so that tests would be run with each new commit that was pushed
+    in a Git repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The customer requested a simple model API, so the team decided to use an MLflow
+    server ([https://mlflow.org/docs/latest/models.html](https://mlflow.org/docs/latest/models.html)),
+    as MLflow was already integrated into the project. To further automate the deployment
+    and packaging process, the team decided to use Docker along with GitLab CI/CD.
+    To do this, they followed GitLab's guide for building Docker images ([https://docs.gitlab.com/ee/ci/docker/using_docker_build.html)](https://docs.gitlab.com/ee/ci/docker/using_docker_build.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The overall ModelOps process for the project contained the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create new changes in the code.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run pre-commit tests for code quality and styling (provided by PyScaffold).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run pytest tests in GitLab CI/CD.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Package code and trained models into a Docker image in GitLab CI/CD.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Push the Docker image into the Docker registry in GitLab CI/CD.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After manual confirmation in the GitLab UI, run the `update` command on the
+    customer server. This command simply pushes the new version of the Docker image
+    from the registry to the customer's server and runs it instead of the old version.
+    If you're wondering how you can do this in GitLab CI/CD, take a look here: [https://docs.gitlab.com/ee/ci/environments.html#configuring-manual-deployments](https://docs.gitlab.com/ee/ci/environments.html#configuring-manual-deployments).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Please note that, in real projects, you may want to split the deployment into
+    several stages for at least two different environments: staging and production.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating an end-to-end ModelOps pipeline streamlined the deployment process
+    and allowed the team to spot bugs before they went into production so that the
+    team was able to focus on building models instead of carrying out repetitive actions
+    to test and deploy new versions of a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a conclusion to this chapter, we'll look at a list of tools that you can
+    use to build ModelOps pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A power pack for your projects
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data science community has a great number of open source tools that can
+    help you in building ModelOps pipelines. Sometimes, it is hard to navigate the
+    never-ending list of products, tools, and libraries so I thought this list of
+    tools would be helpful and beneficial for your projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For static code analysis for Python, see these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Flake8 ([http://flake8.pycqa.org](http://flake8.pycqa.org))—a style checker
+    for Python code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MyPy ([http://www.mypy-lang.org](http://www.mypy-lang.org))—static typing for
+    Python
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: wemake ([https://github.com/wemake-services/wemake-python-styleguide](https://github.com/wemake-services/wemake-python-styleguide))—a
+    set of enhancements for Flake8
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'here are some useful Python tools:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyScaffold ([https://pyscaffold.readthedocs.io/](https://pyscaffold.readthedocs.io/))—a
+    project templating engine. PyScaffold can set up a project structure for you.
+    The `dsproject` extension ([https://github.com/pyscaffold/pyscaffoldext-dsproject](https://github.com/pyscaffold/pyscaffoldext-dsproject))
+    contains a good data science project template.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: pre-commit ([https://pre-commit.com](https://pre-commit.com))—a tool that allows
+    you to set up Git hooks that run each time you commit the code. Automatic formatting,
+    style cakes, code formatting, and other tools can be integrated into your build
+    pipeline even before you decide to use a CI/CD server.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: pytest ([https://docs.pytest.org/](https://docs.pytest.org/))—a Python testing
+    framework that allows you to structure your tests using reusable fixtures. It
+    comes in handy when testing data science pipelines with many data dependencies.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hypothesis ([https://hypothesis.works](https://hypothesis.works))—a fuzz testing
+    framework for Python that creates automated tests based on metadata about your
+    functions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For CI/CD servers, see these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jenkins ([https://jenkins.io](https://jenkins.io))—a popular, stable, and old
+    CI/CD server solution. It packs lots of features but is a bit cumbersome to use
+    compared to more modern tools.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GitLab CI/CD ([https://docs.gitlab.com/ee/ci/](https://docs.gitlab.com/ee/ci/))—is
+    a free CI/CD server with cloud and on-premises options. It is easy to set up and
+    easy to use, but forces you to live in the GitLab ecosystem, which might not be
+    a bad decision, since GitLab is one of the best collaboration platforms out there.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Travis CI ([https://travis-ci.org](https://travis-ci.org)) and Circle CI ([https://circleci.com](https://circleci.com))—cloud
+    CI/CD solutions. Useful if you develop in cloud environments.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For experiment tracking tools, see these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLflow ([https://mlflow.org](https://mlflow.org))—experiment tracking framework
+    that can be used both locally and in a shared client-server setup
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sacred ([https://github.com/IDSIA/sacred](https://github.com/IDSIA/sacred))—a
+    feature-packed experiment tracking framework
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DVC ([https://dvc.org/doc/get-started/metrics](https://dvc.org/doc/get-started/metrics))—file-based
+    metric tracking solution that uses Git
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For data version control, see these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: DVC ([https://dvc.org/](https://dvc.org/))—data version control for data science
+    projects
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GitLFS ([https://git-lfs.github.com](https://git-lfs.github.com))—a general
+    solution for storing large files in Git
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For pipeline tools, see these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reproducible pipelines for data science projects:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: DVC ([https://dvc.org/doc/get-started/pipeline](https://dvc.org/doc/get-started/pipeline))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MLflow Projects ([https://mlflow.org/docs/latest/projects.html](https://mlflow.org/docs/latest/projects.html))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For code collaboration platforms, see these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitHub ([https://github.com/](https://github.com/))—the world's largest open
+    source repository, and one of the best code collaboration platforms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GitLab ([https://about.gitlab.com](https://about.gitlab.com))—feature-packed
+    code collaboration platforms with cloud and on-premises deployment options
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Atlassian Bitbucket ([https://bitbucket.org/](https://bitbucket.org/))—code
+    collaboration solution from Atlassian, which integrates well with their other
+    products, Jira issue tracker and Confluence wiki
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For deploying your code, see these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker ([https://www.docker.com/](https://www.docker.com/))—a tool for managing
+    containers and packaging your code into an isolated portable environment that
+    could be easily deployed and scaled on any Linux machine
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Kubernetes ([https://kubernetes.io/](https://kubernetes.io/))—a container orchestration
+    platform that automates deployment, scaling, and the management of containerized
+    applications
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ansible ([https://www.ansible.com/](https://www.ansible.com/) )—a configuration
+    management and automation tool that's handy to use for deployment automation and
+    configuration if you do not use containers in your deployment setup
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we covered ModelOps – a set of practices for automating a common
+    set of operations that arise in data science projects. We explored how ModelOps
+    relates to DevOps and described major steps in the ModelOps pipeline. We looked
+    at strategies for managing code, versioning data, and sharing project environments
+    between team members. We also examined the importance of experiment tracking and
+    automated testing for data science projects. As a conclusion, we outlined the
+    full CI/CD pipeline with continuous model training and explored a set of tools
+    that can be used to build such pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will look at how to build and manage a data science
+    technology stack.
+  prefs: []
+  type: TYPE_NORMAL

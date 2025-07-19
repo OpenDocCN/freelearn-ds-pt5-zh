@@ -1,0 +1,1173 @@
+- en: Chapter 4. Data Hashing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hashing a primitive data type
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hashing a custom data type
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Running popular cryptographic hash functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Running a cryptographic checksum on a file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performing fast comparisons between data types
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using a high-performance hash table
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Google's CityHash hash functions for strings
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Computing Geohash for location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using a bloom filter to remove unique items
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Running MurmurHash, a simple but speedy hashing algorithm
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Measuring image similarity with perceptual hashes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![Introduction](img/ch04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: A **hash** is a lossy way of representing an object into a small and typically
+    fixed-length value. Hashing data embellishes us with speedy lookups and lightweight
+    handling of massive datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of a hashing function is referred to as a **digest**. One of the
+    principal properties of a good hashing function is that it must be deterministic,
+    which means a given input must always produce the same corresponding output. Sometimes,
+    two different inputs may end up producing the same output, and we call that a
+    **collision**. Given a hash alone, we cannot invert the process to rediscover
+    the object within an adequate time. To minimize the chances of a collision, another
+    property of a hash function called **uniformity** is used. In other words, the
+    probability of each output occurring should be nearly the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will start by first producing a simple digest from an input. Then in the
+    next recipe, we will run the hashing algorithm on our custom-made data type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another important application of hashing is in cryptography. We will cover some
+    of the most popular cryptographic hashing algorithms such as SHA-512\. We will
+    also apply these hashes on files for computing checksums to ensure file integrity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, we will cover many nontraditional hashing approaches including CityHash,
+    GeoHashing, bloom filters, MurmurHash, and pHash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hashing a primitive data type
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This recipe demonstrates how to use a simple hash function on various primitive
+    data types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `Data.Hashable` package from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the hashing function with the following line:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test the `hash` function on a string as follows; this function is actually
+    a wrapper around the `hashWithSalt` function with a default salt value:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test out the `hashWithSalt` functions using different initial salt values as
+    follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'We can also hash tuples and lists as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Notice in the following output how the first three hashes produce different
+    results even though their input is the same:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Hashing with a salt means applying the hash function only after slightly modifying
+    it. It's as if we "salted up" the input before processing it through the hash
+    function. Even the slightest change in salt values produces dramatically different
+    hashed digests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need this concept of a salt for better password security. Hash functions
+    always produce the same output for the same input, and this is both good and bad.
+    There are databases of rainbow tables for every commonly used password in existence
+    for all major hashing algorithms. If a website with a login system service (such
+    as Packt Publishing) stores the password using cryptographic hashes, but without
+    being salted, then it's no better than plain text if the password itself is considered
+    weak. If a service such as Packt Publishing uses salt in its cryptographic hashing
+    (and it should), then it's an added layer of security and rainbow tables are rendered
+    useless.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The previous code produced a hash of a string, but the algorithm is not limited
+    to just strings. The following data types also implement `hashable`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bool
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Char
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Int
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Int8
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Int16
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Int32
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Int64
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Word
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Word8
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Word16
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Word32
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Word64
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ByteString
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: List of hashable items
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tuple of hashable items
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maybe of a hashable item
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For using a hash function on a custom-made data type, refer to the *Hashing
+    a custom data type* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hashing a custom data type
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Even a custom-defined data type can be hashed easily. Dealing with hashed digests
+    is often useful when the data itself is too space consuming to manage directly.
+    By referencing a data by its digest, we can easily skip the cost of carrying around
+    whole data types. This is especially useful in data analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `Data.Hashable` package from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Use the GHC language extension `DeriveGeneric` to autodefine the hash functions
+    for our custom data types as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Import the relevant packages using the following lines of code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a custom data type and let `GHC` autodefine its hashable instance as
+    follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'In `main`, create three points. Let two of them be the same, and let the third
+    point be different, as shown in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print the hash values of identical points as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print the hash values of different points as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output will be as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can define a custom hashing function on our own data types by providing
+    an instance for Hashable. The Hashable instance only requires the implementation
+    of `hashWithSalt :: Int -> a -> Int`. To help implement `hashWithSalt`, we also
+    have two useful functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hashing a pointer with salt is performed as shown in the following code snippet:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Hashing a byte array with salt is performed as shown in the following code
+    snippet:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To hash a built-in primitive, refer to the *Hashing a primitive data type* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running popular cryptographic hash functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A cryptographic hash function has specific properties that make it different
+    from other hash functions. First of all, producing a possible input message from
+    a given hash digest output should be intractable, meaning that it must take an
+    exponentially long time to solve in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if a hash produces the digest `66fc01ae071363ceaa4178848c2f6224`,
+    then in principle, discovering the content used to generate a digest should be
+    difficult.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, some hash functions are easier to crack than others. For example,
+    MD5 and SHA-1 are considered trivial to crack and should not be used, but are
+    demonstrated later for completeness. More information about how MD5 and SHA-1
+    are insecure can be found at [http://www.win.tue.nl/hashclash/rogue-ca](http://www.win.tue.nl/hashclash/rogue-ca)
+    and [https://www.schneier.com/blog/archives/2005/02/cryptanalysis_o.html](https://www.schneier.com/blog/archives/2005/02/cryptanalysis_o.html)
+    respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `Crypto.Hash` package from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the cryptographic hash function library as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define each hash functions by explicitly associating the data types as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test out each cryptographic hash function on the same input, as shown in the
+    following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The final output can be seen in the following screenshot:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![How to do it…](img/6331OS_04_05.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To run one of these cryptographic hash functions on a file to perform an integrity
+    check, refer to the *Running a cryptographic checksum on a file* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running a cryptographic checksum on a file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of the most effective methods to determine whether a file on a computer
+    is different from another file elsewhere is by comparing their cryptographic hashes.
+    If the two hashes are equal, it's only highly probable that the files are equal,
+    but not strictly necessary due to the possibility of collisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After downloading a file online, such as Arch Linux from [https://www.archlinux.org/download](https://www.archlinux.org/download),
+    it is a good idea to ensure the cryptographic hashes match up. For example, have
+    a look at the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Running a cryptographic checksum on a file](img/6331OS_04_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding screenshot shows the corresponding hashes for the Arch Linux download
+    as of late May, 2014.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice how both MD5 and SHA1 hashes are provided. This recipe will show how
+    to compute these hashes in Haskell to ensure data integrity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will compute the SHA256, SHA512, and MD5 hashes of its own source file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `Crypto.Hash` package from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a file named `Main.hs` and insert the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the relevant packages as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the `MD5` hash function as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the `SHA256` hash function as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the `SHA512` hash function as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Open a file of the `ByteString` type using the `readFile` function provided
+    by the `Data.ByteString` package as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test out the various hashes on the file as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The following output is generated:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To apply the cryptographic hash functions on data types instead, refer to the
+    *Running popular cryptographic hash functions* recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing fast comparisons between data types
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The `StableName` package allows us to establish constant time comparisons of
+    arbitrary data types. The Hackage documentation elegantly describes this ([http://hackage.haskell.org/package/base-4.7.0.0/docs/System-Mem-StableName.html](http://hackage.haskell.org/package/base-4.7.0.0/docs/System-Mem-StableName.html)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*"Stable names solve the following problem: suppose you want to build a hash
+    table with Haskell objects as keys, but you want to use pointer equality for comparison;
+    maybe because the keys are large and hashing would be slow, or perhaps because
+    the keys are infinite in size. We can''t build a hash table using the address
+    of the object as the key, because objects get moved around by the garbage collector,
+    meaning a re-hash would be necessary after every garbage collection."*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the built-in `StableName` package as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a custom data type as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'In `main`, define two points as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Get the stable name of each point and display it using the following set of
+    commands:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Notice in the following result how we can easily obtain the stable name of
+    arbitrary data types:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Using a high-performance hash table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Haskell already comes with a `Data.Map` module based on size-balanced binary
+    trees. There exist better-optimized hash table libraries such as `Data.HashMap`
+    from the unordered-containers package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, both `Data.Map` and `Data.HashMap` have insertion and lookup time
+    complexities of O(log n); however, the latter uses a large base, so in practice
+    these operations are constant time. More documentation on `Data.HashMap` can be
+    found at [http://hackage.haskell.org/package/unordered-containers-0.2.4.0/docs/Data-HashMap-Lazy.html](http://hackage.haskell.org/package/unordered-containers-0.2.4.0/docs/Data-HashMap-Lazy.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will use the unordered-contains library from Hackage to create
+    a mapping of word size to a set of words of that size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Download a large corpus of text and name the file `big.txt` as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install the `Data.HashMap` package using Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the `HashMap` package as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function to define an empty hash map using the following line
+    of code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a function to insert a word to the hash map using the following code
+    snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Find all words of a specific length from a map as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct the hashmap from a corpus of text using the following line of code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Read the large corpus of text, construct the hash map, and print the number
+    of words of each length, as shown in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'If we plot the data, we can discover an interesting trend as shown in the following
+    figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How to do it…](img/6331OS_04_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Technical specifics about the library are explained in the following blog post
+    by the author:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://blog.johantibell.com/2012/03/announcing-unordered-containers-02.html](http://blog.johantibell.com/2012/03/announcing-unordered-containers-02.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Google's CityHash hash functions for strings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Google's CityHash hash functions are optimized for hashing strings, but are
+    not meant to be cryptographically secure. CityHash is ideal for implementing a
+    hash table dealing with strings. We will use it in this recipe to produce both
+    64-bit and 128-bit digests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `cityhash` package from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the relevant packages as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test the various hashing function on an input string using the following code
+    snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Display the output as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Google describes its package on its blog announcement at [http://google-opensource.blogspot.com/2011/04/introducing-cityhash.html](http://google-opensource.blogspot.com/2011/04/introducing-cityhash.html)
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*"The key advantage of our approach is that most steps contain at least two
+    independent mathematical operations. Modern CPUs tend to perform best with this
+    type of code."*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To see a more generic hashing function, refer to the *Hashing a primitive data
+    type* and *Hashing a custom data type* recipes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computing a Geohash for location coordinates
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A Geohash is a practical encoding of latitude-longitude coordinates. It does
+    not behave like a typical hash function since minor changes in location only produce
+    minor changes in the output digest. Geohash allows efficient proximity search
+    and arbitrary precision determined by the specified length of the digest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the Geohashing library as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the `Geohash` library as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a geohash of a latitude-longitude coordinate pair as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Display the geohash using the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a geohash of another similar latitude-longitude coordinate pair as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Display the geohash using the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: The output is as follows. Notice how the geohash appears to share the same prefix
+    due to their closeness.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Using a bloom filter to remove unique items
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A bloom filter is an abstract data type that tests whether an item exists in
+    a set. Unlike a typical hash map data structure, a bloom filter only takes up
+    a constant amount of space. The advantage comes in handy when dealing with billions
+    of data, such as representations of DNA strands as strings: "GATA", "CTGCTA",
+    and so on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this recipe, we will use a bloom filter to try to remove unique DNA strands
+    from a list. This is often desired because a typical DNA sample may contain thousands
+    of strands that only appear once. The major disadvantage of a bloom filter is
+    that false positive results for membership are possible. The bloom filter may
+    accidentally claim that an element exists. Though false negatives are not possible:
+    a bloom filter will never claim that an element does not exist when it actually
+    does.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the bloom filter package from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the bloom filter package as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a function to remove the unique elements from a list. First check to
+    see if each item exists in the bloom filter; if so, add it to a hash map. If not,
+    add it to the bloom filter, as presented in the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the algorithm on a couple of DNA strand examples as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'We see the following strands that likely occur at least twice:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A bloom filter is composed of a couple of hashing functions and a list of numbers
+    initialized at zero. When inserting an element to this data structure, hashes
+    are computed from each of the hashing functions and the corresponding item in
+    the list is updated. Membership tests on a bloom filter are conducted by computing
+    each of the hash functions in the input and testing whether all corresponding
+    list elements are above some threshold value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/6331OS_04_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: For example, in the preceding figure, three hash functions are applied to every
+    input. When a hash is calculated for **x**, **y**, and **z**, the corresponding
+    element in the list representing the bloom filter is incremented. We can determine
+    whether **w** exists in this bloom filter by computing the three hashes and checking
+    if corresponding indices are all at a desired value. In this case, **w** does
+    not exist in the bloom filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running MurmurHash, a simple but speedy hashing algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sometimes, the priority of a hashing function should be in maximizing its computation
+    speed. The MurmurHash algorithm exists for this reason. When dealing with massive
+    **data sets**, speed is essential.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: There are negative qualities of a fast hashing algorithm. If hashing algorithm
+    A is 10 times faster than hashing algorithm B, then it's also 10 times faster
+    to stumble upon the content used to create a digest with A than with B using a
+    random content search. A hashing algorithm should be fast, but not so fast as
+    to impact the security of the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the Murmur hashing algorithm from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the Murmur hashing algorithm as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a custom data type and implement an instance to use Murmur as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the hashing algorithm on various inputs, using the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The following hashes are produced:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Measuring image similarity with perceptual hashes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A perceptual hash produces a small digest from an image file where slight changes
+    in the images only produce a slight change in the hash. This can be useful to
+    quickly compare thousands of images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the `pHash` library from [www.phash.org](http://www.phash.org). On
+    a Debian-based system, we can install it by using `apt-get` as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install the `phash` library from Cabal as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Find three nearly identical images. We will use the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_04_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the second image that we will be using
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_04_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And the following image is the third:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_04_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the `phash` library as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Hash an image as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Hash a similar image as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Hash a slightly different image as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the similarity of the first two images using the following code snippet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the similarity of the first to the third image as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output hashes are as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It's much easier to visualize how similar these hashes are in hexadecimal (or
+    binary), since Hamming distance operates in bits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The hexadecimal representation of the three images are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Image 1**: c316b1bc36947e1c'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Image 2**: c912b1fc36947e1c'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Image 3**: 851639bc3650fe9c'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By comparing these values, we can see that images 1 and 2 differ by only four,
+    whereas images 1 and 3 differ by a whopping 10 characters.
+  prefs: []
+  type: TYPE_NORMAL

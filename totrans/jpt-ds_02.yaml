@@ -1,0 +1,778 @@
+- en: Working with Analytical Data on Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Jupyter does none of the heavy lifting for analyzing data: all the work is
+    done by programs written in a selected language. Jupyter provides the framework
+    to run a variety of programming language modules. So, we have a choice how we
+    analyze data in Jupyter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A popular choice for data analysis programming is Python. Jupyter does have
+    complete support for Python programming. We will look at a variety of programming
+    solutions that might tax such a support system and see how Jupyter fairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data scraping with a Python notebook
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A common tool for data analysis is gathering the data from a public source such
+    as a website. Python is adept at scraping websites for data. Here, we look at
+    an example that loads stock price information from Google Finance data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, given a stock symbol, we want to retrieve the last year of price
+    ranges for that symbol.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of the pages on the Google Finance site will give the last years'' worth
+    of price data for a security company. For example, if we were interested in the
+    price points for **Advanced Micro Devices** (**AMD**), we would enter the following
+    URL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.google.com/finance/historical?q=NASDAQ:AMD](https://www.google.com/finance/historical?q=NASDAQ:AMD)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, `NASDAQ` is the stock exchange that carries the AMD security. On the resultant
+    Google page, there is a table of data points of interest, as seen in the following
+    partial screenshot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like many sites that you will be attempting to access, there is a lot of other
+    information on the page as well, like headers and footers and ads, as you can
+    see in the following screenshot. The web pages are built for human readers. Fortunately,
+    Google and these other companies realize you are scraping their data and keep
+    the data in the same format, so you will not have to change scripts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e182ed98-6941-4bd4-a5f8-a0e0e9b8d940.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Be forewarned that you may be blocked from access to a page or an entire site
+    if you were to access the site too frequently. Frequency is a matter for discussion
+    with the particular site you are accessing. Again, the sites know that you are
+    scraping and are okay with that occurring as long as it doesn't interfere with
+    their normal human web traffic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a clear table on that web page. If we look at the underlying HTML used
+    to generate the web page, we find a lot of header, footer, and sidebar information
+    but, more importantly, we find an HTML `div` tag with the id `price_data`. Within
+    that `div` tag, we see an HTML table where each row has the value of `date`, `opening
+    price`, `high`, `low`, `close`, and `volume` for that data as seen on screen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use a standard Python library package, `lxml`, to load and parse the
+    web page text into constituent HTML Python components that we can work with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, for each day of data, we pull out the columns information and add it to
+    our data list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, you might run this script once a day and store the newest day's information
+    in your local database for further analysis. In our case, we are just printing
+    out the last day's values on screen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Python script used is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Running this script in a Jupyter console, we see results as in the following
+    partial screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/99fd09bc-4410-420c-9fbb-3fa54d6a5061.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using heavy-duty data processing functions in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Python has several groups of processing functions that can tax computer system
+    power. Let us use some of these in Jupyter and determine if the functionality
+    performs as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using NumPy functions in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: NumPy is a package in Python providing multidimensional arrays and routines
+    for array processing. We bring in the NumPy package using `import * from numpy`
+    statement. In particular, the NumPy package defines the `array` keyword, referencing
+    a NumPy object with extensive functionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The NumPy array processing functions run from the mundane, such as `min()` and
+    `max()` functions (which provide the minimum and maximum values over the array
+    dimensions provided), to more interesting utility functions for producing histograms
+    and calculating correlations using the elements of a data frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With NumPy, you can manipulate arrays in many ways. For example, we will go
+    over some of these functions with the following scripts, where we will use NumPy
+    to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create an array
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the max value in the array
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the min value in the array
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Determine the sum across the second axis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we transfer this script into a Python notebook, we see a display like the
+    following when we execute the cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ec44e745-7bc8-4ad1-857f-9a797fc90400.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can use the use the following script to work over arrays with the more interesting
+    `histogram` and `correlate` functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this script, we are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Populating a two-column array with random numbers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Producing a histogram of the values from both columns within 100 point ranges
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And, finally, determining the correlation between the two columns (which should
+    be a very high correlation)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'After entering this script into a Jupyter Notebook and executing the cell,
+    we have an output as follows. It makes sense that the buckets are very close in
+    size:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0f075102-b8aa-4769-84f1-785978d00395.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using pandas in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'pandas is an open source library of high-performance data analysis tools available
+    in Python. Of particular interest are the functions to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read text files
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Read Excel files
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Read from SQL database
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Operate on data frames
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use pandas to read text files in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The most common type of text file that will have analysis data is a CSV file.
+    There are a large variety of datasets available on the internet in this format.
+    We will look at the Titanic survivor data found at [https://vincentarelbundock.github.io/Rdatasets/csv/datasets/Titanic.csv](https://vincentarelbundock.github.io/Rdatasets/csv/datasets/Titanic.csv).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Like most of the pandas, the function call is very easy to use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'However, again like many pandas, there is an extensive set of optional parameters
+    that could be passed into the `read_csv` function, that are defaulted to the most
+    commonly used features so we can write small code like used previously to get
+    our work done. Some of the additional parameters we could use allow us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Skip rows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Skip/define column headings
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And change index field(s) (Python always wants to keep a main indexing field
+    within a data frame to speed access)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The resultant script execution under Jupyter is shown in the following screenshot.
+    (Note, I am only printing the first and last 30 rows of the table using the `head`
+    function):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1207b94f-8cab-48e3-b966-6f5aa8939dc6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Use pandas to read Excel files in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Similarly, we can load Microsoft Excel files just as easily. For example, the
+    Excel file for the same Titanic dataset is available at `vandebilt.edu` (full
+    link in following script). We have the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There is also an extensive set of optional parameters for reading Excel files
+    as well, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select the sheet within the excel file to read
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Skip rows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Specify the handling of NA values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The resultant flow under Jupyter is as follows. The dataset looks very similar
+    to the prior CSV file read in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/784da942-bd77-4059-97a0-f2a5fb3ed3b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using pandas to work with data frames
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Once we have a data frame available, there are several pandas available to
+    further process the data. We will look at pandas to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`groupby` function'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Manipulate the columns
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the groupby function in a data frame
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The `groupby` function can be used to group (and count) the number of records
+    in a data frame that meet your criteria.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continuing with our Titanic dataset, we can use `groupby` to count the number
+    of people by age.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The resultant display under Jupyter is as follows. I had not realized there
+    were so many babies on board.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ee2eacb5-02ba-4c5a-b30e-3a63167043fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Manipulating columns in a data frame
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An interesting column manipulation is to sort. We can sort the prior age count
+    data to determine the most common ages for travelers on the boat using the `sort_values`
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The script is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The resultant Jupyter display is as follows. From the data, there were many
+    younger travelers on board. In light of this, it makes more sense why there were
+    so many babies as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3d0961a3-ca9c-4f1e-99a9-a17d339f55e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Calculating outliers in a data frame
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can calculate outliers using standard calculations as to whether the absolute
+    value of the difference from the mean value is greater than 1.96 times the standard
+    deviation. (This assumes a normal Gaussian distribution of the data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, using the same Titanic dataset loaded previously, we can determine
+    which passengers were outliers based on age.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Python script is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And under Jupyter the results show as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, given there were about 1,300 passengers, we have about 5% outliers, which
+    means that there may be a normal distribution of the ages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using SciPy in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'SciPy is an open source library for mathematics, science and, engineering.
+    With such a wide scope, there are many areas we can explore using SciPy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integration
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Optimization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interpolation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fourier transforms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Linear algebra
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are several other intense sets of functionality as well, such as signal
+    processing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using SciPy integration in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A standard mathematical process is integrating an equation. SciPy accomplishes
+    this using a callback function to iteratively calculate out the integration of
+    your function. For example, suppose that we wanted to determine the integral of
+    the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/aadc0eca-28f9-4f32-978f-4a7ca3b28e47.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We would use a script like the following. We are using the definition of *pi*
+    from the standard `math` package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Again, this coding is very clean and simple, yet almost impossible to do in
+    many languages. Running this script in Jupyter we see the results quickly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1c39a9d5-6658-40b1-b999-675acc1602c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'I was curious how the `integrand` function is used during the execution. I
+    am using this to exercise a call back function. To see this work, I added some
+    debugging information to the script where we count how many iterations occur and
+    what display the values called each time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are using a counter at the global level, hence when referencing inside the
+    `integrand` function we use the `global` keyword. Otherwise, Python assumes it
+    is a local variable to the function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8b47fd44-b89b-45d9-bd3c-7e8fc7bcce26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The function was called 21 times to narrow down the solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using SciPy optimization in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With optimization, we are looking to determine a maximum or minimum value of
+    a function over several variables. So, let''s use an equation with an interesting
+    curve in it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4c9e403b-e373-4669-bc1a-210fe5388368.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: If we take that curve and plot it to see if there is an apparent minimum value,
+    we can use a script like the following that generates a plot as the result. (The
+    `%mathplotlib inline` makes the plot appear inline of the Jupyter session, rather
+    than creating the plot in a new window.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Running this script in Jupyter, we see there is a natural minimum at *x = 0*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0577e502-0d66-4039-8009-30049bede251.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using SciPy interpolation in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With interpolation, we are taking a guess at a value for a function given a
+    set of discrete points. For example, suppose that your test results showed something
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/4a9e616f-54a9-473d-bb9b-3c28b62ab5d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this case, we could interpolate the result of the function when *x* is `4`
+    using a script like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives us the result of `0.375`, which sounds correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/de8525db-3992-48ed-a8dd-9dc2fa806e57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using SciPy Fourier Transforms in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There is a set of functions for **FFT** (**Fourier Transforms**) in SciPy. They
+    are easy to use, given the amount of processing that needs to take place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can perform a FFT using coding as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, we have a small dataset to analyze. The data points represent a small
+    signal set we have to evaluate. When taken under Jupyter, we get a display as
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7ab8711b-d747-421a-a21b-d25bdb9a252f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that even for this small set of data, the transform operation was busy
+    for several seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could also use a generated dataset as in this coding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Running this script under Jupyter generates this graphic of the data points
+    in a new screen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c13afe26-ec8e-41d7-a8d9-5a22c5865b81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks along the lines of what we expected, with a big and small wave in
+    the display.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using SciPy linear algebra in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There is a complete set of linear algebra functions available. For example,
+    we can solve a linear system with steps such as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, the output under Jupyter looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/26926c8e-fedc-4bfa-96ba-22eca3a35238.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We validate the results with the final 0 matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expanding on panda data frames in Jupyter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are more functions built-in for working with data frames than we have
+    used so far. If we were to take one of the data frames from a prior example in
+    this chapter, the Titanic dataset from an Excel file, we could use additional
+    functions to help portray and work with the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a repeat, we load the dataset using the script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can then inspect the data frame using the `info` function, which displays
+    the characteristics of the data frame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/f46e0060-01bc-493f-a215-d7739984ed03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Some of the interesting points are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1309 entries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 14 columns
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Not many fields with valid data in the `body` column—most were lost
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Does give a good overview of the types of data involved
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can also use the `describe` function, which gives us a statistical breakdown
+    of the number columns in the data frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This produces the following tabular display:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8aa2a54b-aac2-419b-b1fd-a2dc906e93e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For each numerical column we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Count
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mean
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Standard deviation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 25, 50, and 75 percentile points
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Min, max values for the item
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can slice rows of interest using the syntax `df[12:13]`, where the first
+    number (defaults to first row in data frame) is the first row to slice off and
+    the second number (defaults to the last row in the data frame) is the last row
+    to slice off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Running this slice operation we get the expected results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/60ee61b4-aadf-4f9e-aadf-d77f71632457.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since we are effectively creating a new data frame when we select columns from
+    a data frame, we can then use the `head` function against that as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/12b482b9-82b2-4cd5-bfc9-cca0209d49ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sorting and filtering data frames in Jupyter/IPython
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data frames automatically allow you to easily sort and filter the dataset involved,
+    using existing functionality within the data frames themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Filtering a data frame
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can select/filter specific rows based on criteria (using the same Titanic
+    data frame):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: This means that we look into the data frame and select the rows where the age
+    of the person is below five years old. (Again, this is creating a new data frame
+    that can be manipulated as needed.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8f6445e5-cde0-4077-8a65-b10fa6fb6979.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If you think about this, you can apply almost any filter to a data frame. Then
+    you can do things like select part of one data frame and combine/join with parts
+    of another data frame. Very quickly, you end up with SQL-like manipulations that
+    can be performed on database tables. With that point of view, you are open to
+    a much wider spectrum of data manipulation than would appear in the base data
+    frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sorting a data frame
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sorting in most languages means re-organizing the dataset that you are working
+    with. In data frames, sorting can be accomplished by selecting another index to
+    access the data frame. All data frames start out with a basic incremental row
+    index built-in by NumPy. You can change the index used to access the data frame
+    and effectively sort the data frame in the manner that you want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we look at the display of the (Titanic) data frame, we notice the unnamed
+    first column of ordinal values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/cbed97cf-346a-445f-b8f5-54b02741ad09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If we were to assign another index to use on the data frame, we would sort
+    the data frame by that index. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/0535072b-540f-44fb-a0bf-0b4bf25a8981.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Remember, since we have not assigned this new data frame (with the name index)
+    we still have our original data frame intact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Along the lines of the prior section, there is actually a sorting operation
+    that can be performed against a data frame as well, using the `sort_values` method.
+    For example, if we were to use the following script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: This script takes the data frame, sorts it by the `home.dest` column in ascending
+    order and prints the first five records (in that order)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We would see results as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/645bc13d-ee0b-4aa5-a08f-3f51844b5cd3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we looked at some of the more compute intensive tasks that
+    might be performed in Jupyter. We used Python to scrape a website to gather data
+    for analysis. We used Python NumPy, pandas, and SciPy functions for in-depth computation
+    of results. We went further into pandas and explored manipulating data frames.
+    Lastly, we saw examples of sorting and filtering data frames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will make some predictions and use visualization to
+    validate our predictions.
+  prefs: []
+  type: TYPE_NORMAL

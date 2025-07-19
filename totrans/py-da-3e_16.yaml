@@ -1,0 +1,1128 @@
+- en: Analyzing Textual Data
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the age of information, data is produced at incredible speeds and volumes.
+    The data produced is not only structured or tabular types, it can also be in a
+    variety of unstructured types such as textual data, image or graphic data, speech
+    data, and video. Text is a very common and rich type of data. Articles, blogs,
+    tutorials, social media posts, and website content all produce unstructured textual
+    data. Thousands of emails, messages, comments, and tweets are sent by people every
+    minute. Such a large amount of text data needs to be mined. Text analytics offers
+    lots of opportunities for business people; for instance, Amazon can interpret
+    customer feedback on a particular product, news analysts can analyze news trends
+    and the latest issues on Twitter, and Netflix can also interpret reviews of each
+    movie and web series. Business analysts can interpret customer activities, reviews,
+    feedback, and sentiments to drive their business effectively using NLP and text
+    analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we will start with basic text analytics operations such as
+    tokenization, removing stopwords, stemming, lemmatization, PoS tagging, and entity
+    recognition. After this, we will see how to visualize your text analysis using
+    WordCloud. We will see how to find out the opinions of customers about a product
+    based on reviews, using sentiment analysis. Here, we will perform sentiment analysis
+    using text classification and assess model performance using accuracy, precision,
+    recall, and f1-score. Finally, we will focus on text similarity between two sentences
+    using Jaccard and cosine similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The topics of this chapter are listed as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing NLTK and SpaCy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Text normalization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tokenization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Removing stopwords
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Stemming and lemmatization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: POS tagging
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recognizing entities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dependency parsing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating a word cloud
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bag of words
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: TF-IDF
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sentiment analysis using text classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Text similarity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Technical requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter has the following technical requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find the code and the datasets at the following GitHub link: [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter12\.](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter12)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All the code blocks are available in the `ch12.ipynb` file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This chapter uses only one TSV file (`amazon_alexa.tsv`) for practice purposes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will use the NLTK, SpaCy, WordCloud, matplotlib, seaborn,
+    and scikit-learn Python libraries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Installing NLTK and SpaCy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'NLTK is one of the popular and essential Python packages for natural language
+    processing. It offers all the basic, as well as advanced, NLP operations. It comprises
+    common algorithms such as tokenization, stemming, lemmatization, part-of-speech,
+    and named entity recognition. The main features of the NLTK library are that it''s
+    open-source, easy to learn, easy to use, has a prominent community, and has well-organized
+    documentation. The NLTK library can be installed using the `pip install` command
+    running on the command line as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'NLTK is not a pre-installed library in Anaconda. We can directly install `nltk`
+    in the Jupyter Notebook. We can use an exclamation point (!) before the command
+    in the cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'SpaCy is another essential and powerful Python package for NLP. It offers a
+    common NLP algorithm as well as advanced functionalities. It is designed for production
+    purposes and develops applications for a large volume of data. The SpaCy library
+    can be installed using the `pip install` command running on the command line as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After installing spaCy, we need to install a `spacy` English-language model.
+    We can install it using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Spacy and its English model are not pre-installed in Anaconda. We can directly
+    install `spacy` using the following code. We can use the exclamation point (!)
+    before the command in the cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the preceding syntax, we can install `spacy` and its English model in
+    Jupyter Notebooks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text normalization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Text normalization converts text into standard or canonical form. It ensures
+    consistency and helps in processing and analysis. There is no single approach
+    to the normalization process. The first step in normalization is the lower case
+    all the text. It is the simplest, most applicable, and effective method for text
+    pre-processing. Another approach could be handling wrongly spelled words, acronyms,
+    short forms, and the use of out-of-vocabulary words; for example, "super," "superb,"
+    and "superrrr" can be converted into "super". Text normalization handles the noise
+    and disturbance in test data and prepares noise-free data. We also apply stemming
+    and lemmatization to normalize the words present in the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s perform a basic normalization operation by converting the text into
+    lowercase:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code block, we have converted the given input paragraph into
+    lowercase by using the `lower()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In NLP, text normalization deals with the randomness and converts text into
+    a standard form that improves the overall performance of NLP solutions. It also
+    reduces the size of the document term matrix by converting the words into their
+    root word. In the upcoming sections, we will focus on basic text preprocessing
+    operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tokenization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Tokenization is the initial step in text analysis. Tokenization is defined
+    as breaking down text paragraphs into smaller parts or tokens such as sentences
+    or words and ignoring punctuation marks. Tokenization can be of two types: sentence
+    tokenization and word tokenization. A sentence tokenizer splits a paragraph into
+    sentences and word tokenization splits a text into words or tokens.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s tokenize a paragraph using NLTK and spaCy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before tokenization, import NLTK and download the required files:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we will tokenize paragraphs into sentences using the `sent_tokenize()`
+    method of NLTK:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we have taken a paragraph and passed it as a parameter
+    to the `sent_tokenize()` method. The output of this method will be a list of sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s tokenize the paragraph into sentences using spaCy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we have imported the English language model
+    and instantiated it. After this, we created the NLP pipe using `sentencizer` and
+    added it to the pipeline. Finally, we created the NLP object and iterated through
+    the `sents` attribute of the NLP object to create a list of tokenized sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s tokenize paragraphs into words using the `word_tokenize()` function
+    of NLTK:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we have taken a paragraph and passed it as a parameter
+    to the `word_tokenize()` method. The output of this method will be a list of words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s tokenize the paragraph into words using spaCy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we imported the English language model and
+    instantiated it. After this, we created a text paragraph. Finally, we created
+    the NLP object using text paragraphs and iterated it to create a list of tokenized
+    words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s create the frequency distribution of tokenized words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s create a frequency distribution plot using matplotlib:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/97dbcf7d-d87a-44b7-9c08-6ca9aa665183.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we have generated the frequency distribution of tokens
+    using the `FreqDist` class. After sentence and word tokenization, we will learn
+    how to remove stopwords from the given text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removing stopwords
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Stopwords are counted as noise in text analysis. Any text paragraph has to have
+    verbs, articles, and propositions. These are all considered stop words. Stop words
+    are necessary for human conversation but they don't make many contributions in
+    text analysis. Removing stopwords from text is called noise elimination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how to remove stopwords using NLTK:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we imported the stopwords and loaded the English
+    word list. After this, we iterated the tokenized word list that we generated in
+    the previous section using a `for` loop and filtered the tokenized words from
+    the stop word list using the `if` condition. We saved the filtered words in the
+    `fltered_word_list` list object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how to remove stopwords using spaCy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we imported the stopwords and loaded the English
+    word list into the stopwords variable. After this, we iterated the NLP object
+    using a `for` loop and filtered each word with the property `"is_stop"` from the
+    stop word list using the `if` condition. We appended the filtered words in the
+    `fltered_token_list` list object. In this section, we have looked at removing
+    stopwords. Now, it's time to learn about stemming and lemmatization to find the
+    root word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stemming and lemmatization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Stemming is another step in text analysis for normalization at the language
+    level. The stemming process replaces a word with its root word. It chops off the
+    prefixes and suffixes. For example, the word connect is the root word for connecting,
+    connected, and connection. All the mentioned words have a common root: **connect**.
+    Such differences between word spellings make it difficult to analyze text data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lemmatization is another type of lexicon normalization, which converts a word
+    into its root word. It is closely related to stemming. The main difference is
+    that lemmatization considers the context of the word while normalization is performed,
+    but stemmer doesn't consider the contextual knowledge of the word. Lemmatization
+    is more sophisticated than a stemmer. For example, the word "geese" lemmatizes
+    as "goose." Lemmatization reduces words to their valid lemma using a dictionary.
+    Lemmatization considers the part of speech near the words for normalization; that
+    is why it is difficult to implement and slower, while stemmers are easier to implement
+    and faster but with less accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how to get stemmed and lemmatized using NLTK:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we imported `WordNetLemmatizer` for lemmatization
+    and instantiated its object. Similarly, we imported `PorterStemmer` to stem an
+    instantiate of its object. After this, we got the lemma using the `lemmatize()`
+    function and the stemmed word using the `stem()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how to get lemmatized words using spaCy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we imported the English language model and
+    instantiated it. After this, we created the NLP object and iterated it using a
+    `for` loop. In the loop, we got the text value and its lemma value using the `text`
+    and `lemma_` properties. In this section, we have looked at stemming and lemmatization.
+    Now, we will learn PoS tagging in the given document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: POS tagging
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: PoS stands for part of speech. The main objective of POS tagging is to discover
+    the syntactic type of words, such as nouns, pronouns, adjectives, verbs, adverbs,
+    and prepositions. PoS tagging finds the relationship among words within a sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how to get POS tags for words using NLTK:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we imported `word_tokenize` and `pos_tag`.
+    After this, we took a text paragraph and passed it as a parameter to the `word_tokenize()`
+    method. The output of this method will be a list of words. After this, generate
+    PoS tags for each token using the `pos_tag()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how to get POS tags for words using spaCy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we imported the English language model and
+    instantiated it. After this, we created the NLP object and iterated it using a
+    `for` loop. In the loop, we got the text value and its lemma value using the `text`
+    and `pos_` properties. In this section, we have looked at PoS tags. Now, it's
+    time to jump to recognizing named entities in the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recognizing entities
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Entity recognition means extracting or detecting entities in the given text.
+    It is also known as **Named Entity Recognition** (**NER**). An entity can be defined
+    as an object, such as a location, people, an organization, or a date. Entity recognition
+    is one of the advanced topics of NLP. It is used to extract important information
+    from text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how to get entities from text using spaCy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding example, first, we imported spaCy and loaded the English language
+    model. After this, we created the NLP object and iterated it using a `for` loop.
+    In the loop, we got the text value and its entity type value using the `text`
+    and `label_` properties. Let''s visualize the entities in the text using a spaCy
+    display class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/225347f8-1378-43ca-88aa-1f1d9a183188.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we imported the display class and called its `render()`
+    method with a NLP text object, `style` as `ent`, and `jupyter` as `True`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dependency parsing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Dependency parsing finds the relationship among words – how words are related
+    to each other. It helps computers to understand sentences for analysis; for example,
+    "Taj Mahal is one of the most beautiful monuments." We can''t understand this
+    sentence just by analyzing words. We need to dig down and understand the word
+    order, sentence structure, and parts of speech:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7c45d0f8-b69f-49ed-97ca-ad30f7862e69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we have imported the display class and called its
+    `render()` method with a NLP text object, `style` as '`dep`', `jupyter` as `True`,
+    and `options` as a dictionary with a distance key and a value of 150\. Now, we
+    will see how to visualize text data using a word cloud, based on the word's frequency
+    in the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a word cloud
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a data analyst, you need to identify the most frequent words and represent
+    them in graphical form to the top management. A word cloud is used to represent
+    a word-frequency plot. It represents the frequency by the size of the word, that
+    is, the more frequent word looks larger in size and less frequent words looks
+    smaller in size. It is also known as a tag cloud. We can create a word cloud using
+    the `wordcloud` library in Python. We can install it using the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or, alternatively, this one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s learn how to create a word cloud:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import libraries and load a stopwords list:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we imported `WordCloud`, `STOPWORDS`, and `matplotlib.pyplot`
+    classes. We also created the stopword set and defined the paragraph text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create and generate a word cloud:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: After this, the `WordCloud` object with the parameters `width`, `height`, `background_color`,
+    `stopwords`, and `min_font_size` are created and generated the cloud on the paragraph
+    text string.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Visualize the word cloud:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b0aa3f4f-1b10-49fd-b0ec-1843c67bacb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we visualized the word cloud using `matplotlib.pyplot`.
+    Let's learn how to convert text documents into a numeric vector using Bag of Words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bag of Words
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Bag of Words** (**BoW**) is one of the most basic, simplest, and popular
+    feature engineering techniques for converting text into a numeric vector. It works
+    in two steps: collecting vocabulary words and counting their presence or frequency
+    in the text. It does not consider the document structure and contextual information.
+    Let''s take the following three documents and understand BoW:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Document 1: I like pizza.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Document 2: I do not like burgers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Document 3: Pizza and burgers both are junk food.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we will create the **Document Term Matrix** (**DTM**). This matrix consists
+    of the document at rows, words at the column, and the frequency at cell values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | I | like | pizza | do | not | burgers | and | both | are | junk | food
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Doc-1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Doc-2 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Doc-3 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: In the preceding example, we generated the DTM using a single keyword known
+    as a unigram. We can also use a combination of continuous two keywords, known
+    as the bigram model, and three keywords, known as the trigram model. The generalized
+    form is known as the n-gram model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Python, scikit-learn offers `CountVectorizer` for generating the BoW DTM.
+    We'll see in the *Sentiment analysis using text classification* section how to
+    generate it using scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TF-IDF
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**TF-IDF** stands for **Term Frequency-Inverse Document Frequency.** It has
+    two segments: **Term Frequency** (**TF**) and **Inverse Document Frequency** (**IDF**).
+    TF only counts the occurrence of words in each document. It is equivalent to BoW.
+    TF does not consider the context of words and is biased toward longer documents.
+    **IDF** computes values that correspond to the amount of information kept by a
+    word.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d912905e-f510-41bd-a460-b50456eaa376.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'TF-IDF is the dot product of both segments – TF and IDF. TF-IDF normalizes
+    the document weights. A higher value of TF-IDF for a word represents a higher
+    occurrence in that document. Let''s take the following three documents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Document 1: I like pizza.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Document 2: I do not like burgers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Document 3: Pizza and burgers both are junk food.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we will create the DTM. This matrix consists of the document name in the
+    row headers, the words in the column headers, and the TF-IDF values in the cells:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | I | like | pizza | do | not | burgers | and | both | are | junk | food
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Doc-1 | 0.58 | 0.58 | 0.58 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Doc-2 | 0.58 | 0.58 | 0 | 1.58 | 1.58 | 0.58 | 0 | 0 | 0 | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Doc-3 | 0 | 0 | 0.58 | 0 | 0 | 0.58 | 1.58 | 1.58 | 1.58 | 1.58 | 1.58 |'
+  prefs: []
+  type: TYPE_TB
+- en: In Python, scikit-learn offers `TfidfVectorizer` for generating the TF-IDF DTM.
+    Let's see in the upcoming section how to generate it using scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sentiment analysis using text classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A business or data analyst needs to understand customer feedback and reviews
+    about a specific product. What did customers like or dislike? And how are sales
+    going? As a business analyst, you need to analyze these things with reasonable
+    accuracy and quantify customer reviews, feedback, opinions, and tweets to understand
+    the target audience. Sentiment analysis extracts the core information from the
+    text and provides people's perception of products, services, brands, and political
+    and social topics. Sentiment analysis is used to understand customers' and people's
+    mindset. It is not only used in marketing, we can also use it in politics, public
+    administration, policy-making, information security, and research. It helps us
+    to understand the polarity of people's feedback. Sentiment analysis also covers
+    words, tone, and writing style.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Text classification can be one of the approaches used for sentiment analysis.
+    It is a supervised method used to detect a class of web content, news articles,
+    blogs, tweets, and sentiments. The classification has a huge number of applications,
+    from marketing, finance, e-commerce, and security. First, we preprocess the text,
+    then we find the features of the preprocessed text, and then we feed features
+    and the labels to the machine learning algorithm to do the classification. The
+    following diagram explains the full idea of sentiment analysis using text classification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b96ae002-40f6-434b-87d2-747be7d03ea9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's classify the sentiments for Amazon Alexa product reviews. We can get data
+    from the Kaggle website ([https://www.kaggle.com/sid321axn/amazon-alexa-reviews](https://www.kaggle.com/sid321axn/amazon-alexa-reviews)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Alexa product reviews data is a tab-separated values file (TSV file). This
+    data has five columns or attributes – **rating**, **date**, **variation**, **verified_reviews**,
+    and **feedback**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `rating` column indicates the user ratings for Alexa products. The date
+    column is the date on which the review was given by the user. The `variation`
+    column represents the product model name. `verified_reviews` has the actual user
+    review about the product.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rating denotes the rating given by each user to the product. The date is
+    the date of the review, and variation describes the model name. `verified_reviews`
+    contains the text review written by the user, and the feedback column represents
+    the sentiment score, where 1 denotes positive and 0 denotes negative sentiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classification using BoW
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this subsection, we will perform sentiment analysis and text classification
+    based on BoW. Here, a bag of words is generated using the `scikit-learn` library.
+    Let''s see how we perform sentiment analysis using BoW features in the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The first step to build a machine learning model is to load the dataset. Let''s
+    first read the data using the pandas `read_csv()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/702b332e-734c-4789-be1e-23ba6ffcc4d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding output dataframe, we have seen that the Alexa review dataset
+    has five columns: **rating**, **date**, **variation**, **verified_reviews**, and
+    **feedback**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explore the dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s plot the **feedback** column count to see how many positive and negative
+    reviews the dataset has:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f17a8862-f0c7-4b8f-ae9e-ffe9c85ee309.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we drew the bar chart for the feedback column using the
+    seaborn `countplot()` function. This function counts and plots the values of the
+    **feedback** column. In this plot, we can observe that 2,900 reviews are positive
+    and 250 reviews are negative feedback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generating features using `CountVectorizer`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s generate a BoW matrix for the customer reviews using scikit-learn''s
+    `CountVectorizer`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we created a `RegexTokenizer` object with an input regular
+    expression that removes the special characters and symbols. After this, the `CountVectorizer`
+    object was created and performed the fit and transform operation on verified reviews.
+    Here, `CountVectorizer` takes parameters such as `lowercase` for converting keywords
+    into lowercase, `stop_words` for specifying a language-specific stopwords list,
+    `ngram_range` for specifying the unigram, bigram, or trigram, and `tokenizer`
+    is used to pass the `tokenizer` object. The `RegexTokenizer` object is passed
+    to the `tokenizer` parameter. Finally, we called the `fit_transform()` function
+    that converts text reviews into a DTM as per specified parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Split train and test set:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s split the feature set and target column into `feature_train`, `feature_test`,
+    `target_train`, and `target_test` using `train_test_split()`. `train_test_split()`
+    takes dependent, independent dataframes, `test_size` and `random_state`. Here,
+    `test_size` will decide the ratio of the train-test split (that is, `test_size
+    0.3` means 30% for the testing set and the remaining 70% will be the training
+    set), and `random_state` is used as a seed value for reproducing the same data
+    split each time. If `random_state` is `None`, then it will randomly split the
+    records each time, which will give different performance measures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we are partitioning the feature set and target column
+    into `feature_train`, `feature_test`, `target_train`, and `target_test` using
+    the `train_test_split()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Classification Model Building using Logistic Regression:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In this section, we will build the logistic regression model to classify the
+    review sentiments using BoW (or `CountVectorizer`). Let''s create the logistic
+    regression model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we imported `LogisticRegression` and created the `LogisticRegression`
+    object. After creating the model object, we performed the `fit()` operation on
+    the training data and `predict()` to forecast the sentiment for the test dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evaluate the Classification Model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s evaluate the classification model using the `metrics` class and its
+    methods – `accuracy_score`, `precision_score`, and `recall_score`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we have evaluated the model performance using accuracy,
+    precision, recall, and f1-score using the `scikit-learn metrics` function. All
+    the measures are greater than 94%, so we can say that our model is performing
+    well and classifying both the sentiment levels with a good amount of precision
+    and recall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classification using TF-IDF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this subsection, we will perform sentiment analysis and text classification
+    based on TF-IDF. Here, TF-IDF is generated using the `scikit-learn` library. Let''s
+    see how we perform sentiment analysis using TF-IDF features using the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The first step for building a machine learning model is to load the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s first read the data using the pandas `read_csv()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1812f01f-3a8c-499f-850d-1379a72097e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding output dataframe, we have seen that the Alexa review dataset
+    has five columns: **rating**, **date**, **variation**, **verified_reviews**, and
+    **feedback**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Feature generation using `TfidfVectorizer`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s generate a TF-IDF matrix for the customer reviews using scikit-learn''s
+    `TfidfVectorizer`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we created a `RegexTokenizer` object with an input regular
+    expression that removes the special characters and symbols. After this, the `TfidfVectorizer`
+    object was created and performed the fit and transform operation on verified reviews.
+    Here, `TfidfVectorizer` takes parameters such as `lowercase` for converting keywords
+    into lowercase, `stop_words` for a specified language-specific stopwords list,
+    `ngram_range` for specifying the unigram, bigram, or trigram, and `tokenizer`
+    is used to pass the `tokenizer` object. The `RegexTokenizer` object is passed
+    to the `tokenizer` parameter. Finally, we called the `fit_transform()` function
+    that converts text reviews into a DTM as per specified parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Split the training and testing datasets:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s split the feature set and target column into `feature_train`, `feature_test`,
+    `target_train`, and `target_test` using `train_test_split()`. `train_test_split()`
+    takes dependent, independent dataframes, `test_size` and `random_state`. Let''s
+    split the dataset into a training and testing set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we partition the feature set and target column into `feature_train`,
+    `feature_test`, `target_train`, and `target_test` using the `train_test_split()`
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Classification model building using logistic regression:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In this section, we will build the logistic regression model to classify the
+    review sentiments using TF-IDF. Let''s create the logistic regression model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we imported `LogisticRegression` and created the `LogisticRegression`
+    object. After creating the model object, we performed a `fit()` operation on the
+    training data and `predict()` to forecast the sentiment for the test dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evaluate the classification model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s evaluate the classification model using the `metrics` class and its
+    methods – `accuracy_score`, `precision_score`, and `recall_score`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we evaluated the model performance using accuracy, precision,
+    recall, and f1-score using the scikit-learn `metrics` function. All the measures
+    are greater than 94%, so we can say that our model is performing well and classifying
+    both sentiment levels with a good amount of precision and recall. In this section,
+    we have looked at sentiment analysis using text classification. Text classification
+    is performed using BoW and TF-IDF features. In the next section, we will learn
+    how to find similarities between two pieces of text, such as sentences or paragraphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text similarity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Text similarity is the process of determining the two closest texts. Text similarity
+    is very helpful in finding similar documents, questions, and queries. For example,
+    a search engine such as Google uses similarity to find document relevance, and
+    Q&A systems such as StackOverflow or a consumer service system use similar questions.
+    There are two common metrics used for text similarity, namely Jaccard and cosine
+    similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also use the similarity method available in spaCy. The `nlp` object''s
+    `similarity` method returns a score between two sentences. Let''s look at the
+    following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code block, we have found the similarity between two sentences
+    using spaCy''s `similarity()` function. Spacy''s similarity function does not
+    give better results with small models (such as the `en_core_web_sm` and `en` models);
+    that''s why you will get a warning: **UserWarning: [W007]****.** To remove this
+    warning, use larger models such as `en_core_web_lg`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jaccard similarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Jaccard similarity calculates the similarity between two sets by the ratio
+    of common words (intersection) to totally unique words (union) in both sets. It
+    takes a list of unique words in each sentence or document. It is useful where
+    the repetition of words does not matter. Jaccard similarity ranges from 0-100%;
+    the higher the percentage, the more similar the two populations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ac41da11-47fd-4a9e-9a21-f0a2c3abbea0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s look at a Jaccard similarity example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we have created a function, `jaccard_similarity()`,
+    which takes two arguments, `sent1` and `sent2`. It will find the ratio between
+    the intersection of keywords and the union of keywords between two sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cosine similarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Cosine similarity computes the cosine of the angle between two multidimensional
+    projected vectors. It indicates how two documents are related to each other. Two
+    vectors can be made of the bag of words or TF-IDF or any equivalent vector of
+    the document. It is useful where the duplication of words matters. Cosine similarity
+    can measure text similarity irrespective of the size of documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d115797f-04b8-49eb-99bb-9b7800a97ef5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s look at a cosine similarity example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, first, we import `TfidfVectorizer` and generate the
+    TF-IDF vector for given documents. After this, we apply the `cosine_similarity()`
+    metric on the document list and get similarity metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we explored text analysis using NLTK and spaCy. The main focus
+    was on text preprocessing, sentiment analysis, and text similarity. The chapter
+    started with text preprocessing tasks such as text normalization, tokenization,
+    removing stopwords, stemming, and lemmatization. We also focused on how to create
+    a word cloud, recognize entities in a given text, and find dependencies among
+    tokens. In later sections, we focused on BoW, TFIDF, sentiment analysis, and text
+    classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next chapter, Chapter 13, *Analyzing Image Data*, focuses on image processing,
+    basic image processing operations, and face detection using OpenCV. The chapter
+    starts with image color models, and image operations such as drawing on an image,
+    resizing an image, and flipping and blurring an image. In later sections, the
+    focus will be on face detection in a given input image.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,850 @@
+- en: Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Regression analysis is the process of estimating the relationship between dependent
+    variables. For example, if a variable *y* is linearly dependent on variable *x*,
+    then regression analysis tries to estimate the constants *a* and *b* in the equation ![](img/2dccd9f3-8947-4b52-80fd-556c55181b55.png),
+    which  expresses the linear relationship between the variables *y* and *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, you will learn about the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The core idea of regression by performing a simple linear regression on the
+    perfect data from first principles in a Fahrenheit and Celsius conversion example
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performing linear regression analysis by using the **least squares method**
+    from the  `scipy.linalg` Python library on perfect and real-world data in the
+    examples of Fahrenheit and Celsius conversion, weight prediction based on height,
+    and flight time duration prediction based on distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The *gradient descent algorithm* in order to find a regression model with the
+    best fit (using the least mean squares rule) and how to implement it in Python
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The establishment of a non-linear regression model using the least squares method
+    in a ballistic flight analysis example and *Problem 4*, *Bacteria population prediction*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fahrenheit and Celsius conversion – linear regression on perfect data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Fahrenheit and Celsius degrees are related in a linear way. Given a table with
+    pairs of both Fahrenheit and Celsius degrees, we can estimate the constants to
+    devise a conversion formula from degrees Fahrenheit to degrees Celsius, or vice
+    versa:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **⁰F** | **⁰C** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | -15 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 14 | -10 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 23 | -5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 32 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 41 | 5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 50 | 10 |'
+  prefs: []
+  type: TYPE_TB
+- en: Analysis from first principles
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We would like to derive a formula for converting *F* (degrees Fahrenheit) to
+    *C* (degrees Celsius), as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e6e06d66-a0f6-4acb-a168-3765aae8af12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *a* and *b* are the constants to be found. A graph of the ![](img/0f020fdd-0b0c-4ebc-9bee-9800243b9137.png) function
+    is a straight line and, thus, is uniquely determined by two points. Therefore,
+    we actually only need two points from the table, say, pairs *(F1,C1)* and *(F2,C2)*.
+    Then, we will have the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/86fac300-c064-4ed7-833e-34ee03a495e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/f738c092-095b-47bf-8d7f-38aebf40d624.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now, we have the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b1bcf1b4-439f-459c-8d45-a352ea779f93.png).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, we have the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/aebfa86b-a45d-4776-bead-fd0025af9103.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/0f1f0522-7709-49ad-8167-dade292c58c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, let''s take the first two pairs *(F1,C1)*=*(5,-15)* and *(F2,C2)*=*(14,-10)*.
+    This will give us the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d51f112b-dcfc-4cb1-9985-f4df4527229b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/e3897e5c-fb72-4d97-8ed2-4bb06a4f3d15.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, the formula to calculate degrees Celsius from degrees Fahrenheit
+    is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1fb314f6-9c9c-4b51-be2d-0940486a49a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s verify this against the data in the table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **⁰F** | **⁰C** | **(5/9)*F-160/9** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | -15 | -15 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 14 | -10 | -10 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 23 | -5 | -5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 32 | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 41 | 5 | 5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 50 | 10 | 10 |'
+  prefs: []
+  type: TYPE_TB
+- en: We can see that the formula fits 100% of our input data. The data we worked
+    with was perfect. In later examples, we will see that the formula that we derive
+    doesn't fit the data perfectly. The aim will be to derive a formula that fits
+    the data best so that the difference between the prediction and the actual data
+    is minimized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Least squares method for linear regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Given the input variables ![](img/e769f8d4-6c54-43f0-ae05-5eb65ed63e8c.png) and
+    the output variables ![](img/c2ad0f17-b24e-4e95-a031-f404790f46db.png), we would
+    like to find the variables a and b so that ![](img/ce5eac9f-5402-4186-8a36-a99bafc0a3e3.png) for
+    every value of *i* from 1 to *n*. If the data is perfect, this is possible. In
+    real-world data, we want *y[i]* to be as close to ![](img/c1e305eb-fbf2-40b1-9f18-d0c9d0a02b90.png) as
+    possible instead; that is, we want to minimize the absolute value of ![](img/7e6b02b2-3444-4227-96f5-9bcb8a55f5c6.png).
+    For one specific term, this is equivalent to minimizing  ![](img/b54cd9ca-24f3-4bd8-b937-8924134ab6b8.png).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A square function instead of an absolute value is often used, as it has more
+    desirable mathematical properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The least squares method finds a and b so that the following term, called **error**,
+    is minimized:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f95f7aee-f91e-47d6-acc1-867aa8cf3e5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Analysis using the least squares method in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We use the `lstsq` least squares method from the `scipy.linalg` Python library to
+    calculate the linear dependence relation between the degrees Celsius and degrees
+    Fahrenheit variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `lstsq` function is used as `lstsq(M,y)`, where *M* is a matrix of `M =
+    x[:, np.newaxis]**[0, 1]`, constructed from the input vector *x*, and *y* is the
+    output vector. In other words, *y* is the variable that's dependent on *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Therefore, we can see the following approximate linear dependence relation
+    between *C* (degrees Celsius) and *F* (degrees Fahrenheit):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3ae7bcce-d2d6-4dde-99a5-66fe0fc31168.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that this corresponds to our previous calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here is the linear model for predicting degrees Celsius from degrees Fahrenheit
+    via a linear line. Its meaning is that point *(F,C)* is on the green line if,
+    and only if, *F* converts to *C* and vice versa:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f88d19e6-3645-44d5-a5f2-8220e567b5d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Weight prediction from height – linear regression on real-world data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here, we are predicting the weight of a man from his height by using linear
+    regression on the following data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Height in cm** | **Weight in kg** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 180 | 75 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 174 | 71 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 184 | 83 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 168 | 63 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 178 | 70 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 172 | ? |'
+  prefs: []
+  type: TYPE_TB
+- en: We would like to estimate the weight of a man given that his height is 172 cm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous example of Fahrenheit and Celsius conversion, the data fitted
+    the linear model perfectly. Thus, we could perform even a simple mathematical
+    analysis (solving basic equations) to gain the conversion formula. Most data in
+    the real world does not fit a model perfectly. For such an analysis, it would
+    be good to find a model that fits the given data with minimal errors. We can use
+    the least squares method to find such a linear model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We put the data from the preceding table into the vectors and try to fit the
+    linear model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Thus, the formula expressing the linear relationship between weight and height
+    is as follows:  ![](img/81cec6b9-0970-4ad3-b255-304c7f8c1399.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, we estimate that a man with a height of 172 cm would have a weight
+    of ![](img/579661d9-3e22-4898-ac48-e45e1e769ff9.png).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent algorithm and its implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To understand how we may be able to predict a value by using linear regression
+    from first principles in an even better way, we need to study the gradient descent
+    algorithm and then implement it in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A gradient descent algorithm is an iterative algorithm that updates the variables
+    in the model to fit the data, making as few errors as possible. More generally,
+    it finds the minimum of a function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We would like to express the weight in terms of height by using a linear formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/35d1b776-24ea-4b9f-a743-c1055652655c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We estimate the parameter,  ![](img/ab3c0555-5e0e-47b7-b37d-46fa6859b84d.png), using
+    *n* data samples ![](img/1340e2f8-9993-4f60-a81c-1b5d3238f829.png) to minimize
+    the following square error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c65b1094-e420-4ff0-bd8c-c3ef34a5f831.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The gradient descent algorithm does this by updating the *p[i]* parameter in
+    the direction of *(∂/∂ p[j]) E(p)*, in particular:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3074ea29-31f0-44ac-90f1-9021e283b8c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *learning_rate* determines that the speed of the convergence of *E(p)*
+    is at the minimum. Updating the *p* parameter will result in the convergence of
+    *E(p)* to a certain value, providing that *learning_rate* is sufficiently small.
+    In the Python program, we use a *learning_rate* of 0.000001\. However, the drawback
+    of this update rule is that the minimum of *E(p)* may only be a local minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To update the *p* parameter programmatically, we need to unfold the partial
+    derivative on *E(p)*. Therefore, we update the *p* parameter as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/26a3025a-d100-4c83-b85b-33b58699e68b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/f3ad7ca4-f5c3-4d2a-bed2-95f42780acfa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We will keep updating the *p* parameter until it changes only very slightly;
+    that is, until the change in both *p[0]* and *p[1]* is less than some constant
+    *acceptable_error*. Once the *p* parameter stabilizes, we can use it to estimate
+    the weight from the height.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use the data from the table in the preceding example *Weight prediction
+    from height* and save it in a CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output for the linear model means that the weight can be expressed in terms
+    of the height as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c3a1c56e-580e-4ae1-a1b0-ee064eee9af0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Therefore, a man with a height of 172 cm is predicted to weigh the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/95a4a9a7-0ef4-4b4d-a4b3-3c89b657d68d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that this prediction of 71.455 kg is slightly different from the prediction
+    of 67.016 kg achieved when using the least squares method. This may be due to
+    the fact that the Python gradient descent algorithm found only a local minimum
+    in the prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualization – comparison of the least squares method and the gradient descent
+    algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'By using weight prediction based on height, we can visualize the linear prediction
+    models of the least squares method and of the gradient descent algorithm that
+    are implemented in Python as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/42ccbc48-8a35-4e86-b4db-d9e3e57050c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Flight time duration prediction based on distance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Given a table of flights with their origin, destination, and flight time, we
+    would like to estimate the length of a proposed flight from Bratislava, Slovakia,
+    to Amsterdam, the Netherlands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Origin** | **Destination** | **Distance in km** | **Flight duration** |
+    **Flight duration in hours** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| London | Amsterdam | 365 | 1 hr 10 m | 1.167 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| London | Budapest | 1462 | 2 hr 20 m | 2.333 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| London | Bratislava | 1285 | 2 hr 15 m | 2.250 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Bratislava | Paris | 1096 | 2 hr 5 m | 2.083 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Bratislava | Berlin | 517 | 1 hr 15 m | 2.250 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Vienna | Dublin | 1686 | 2 hr 50 m | 2.833 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Vienna | Amsterdam | 932 | 1 hr 55 m | 1.917 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Amsterdam | Budapest | 1160 | 2 hr 10 m | 2.167 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Bratislava | Amsterdam | 978 | ? | ? |'
+  prefs: []
+  type: TYPE_TB
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can reason that the flight duration time consists of two times—the first
+    is the time to take off and the landing time; the second is the time that the
+    airplane moves at a certain speed in the air. The first time is a constant. The
+    second time depends linearly on the speed of the plane, which we assume is similar
+    for all of the flights in the table. Therefore, the flight time can be expressed
+    by using a linear formula in terms of the flight distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: According to linear regression, the time between takeoff and landing for an
+    average flight is about 1.2335890 hours. To travel 1 km with the plane takes 0.0008387
+    hours; in other words, the speed of an airplane is 1,192 km per hour. The actual
+    usual speed of an airplane for short-distance flights, like the ones in the preceding
+    table, is about 850 km per hour. This leaves room for improvement in our estimation
+    (refer to *Problem 3*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, we derived the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ec93fd1d-dfbb-413d-8a23-5883d8de657a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using this, we estimate that the flight from Bratislava to Amsterdam, with a
+    distance of 978 km, would take about *0.0008387*978 + 1.2335890=2.0538376* hours,
+    or about 2 hours and 3 minutes, which is a little longer than from Vienna to Amsterdam
+    (1 hr 55 m), and a little shorter than from Budapest to Amsterdam (2 hr 10 m).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ballistic flight analysis – non-linear model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'An interplanetary spaceship lands on a planet with a negligible atmosphere
+    and fires three projectiles carrying exploratory bots at the planet, but at different
+    initial velocities. After the bots land on the surface, their distances are measured
+    and the data is recorded, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Velocity in m/s** | **Distance in m** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 400 | 38,098 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 600 | 85,692 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 800 | 152,220 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| ? | 300,000 |'
+  prefs: []
+  type: TYPE_TB
+- en: At what speed should the projectile carrying the fourth bot be fired in order
+    for it to land 300 km from the spacecraft?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For this problem, we need to understand the trajectory of the projectile. Since
+    the atmosphere on the planet is weak, the trajectory is almost equivalent to the
+    ballistic curve without any air drag. The distance, *d*, traveled by an object
+    fired from a point on the ground, neglecting the curvature of the planet''s surface,
+    is given approximately by the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c6236e1c-1fa2-4ae6-95f7-e00ab9bda0db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Where *v* is the initial velocity of the object, τ is the angle at which the
+    object was fired, and *g* is the gravitational force exerted by the planet on
+    the object. Note that the angle, *τ*, and the gravitational force, *g*, do not
+    change. Therefore, you can define a constant as ![](img/60fa7b3a-76a6-4093-aaf4-7667d2a191d8.png).
+    This means that the distance traveled on the explored planet can be explained
+    in terms of velocity by the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c739c20b-599b-436e-912d-77af2d0b48b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although *d* and *v* are not in a linear relationship, *d* and the square of
+    *v* are. Therefore, we can still apply linear regression to determine the relationship
+    between *d* and *v*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis by using the least squares method in Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Therefore, the relationship between the squared velocity and the distance is
+    predicted by the regression as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6d3bed92-2f2c-4346-a7c9-e81992170df2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The presence of the intercept term may be caused by errors in the measurements,
+    or by other forces in the equation. Since it is relatively small, the final velocity
+    should be estimated reasonably well. Adding the distance of 300 km into the equation,
+    we get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e835a7fc-168f-4465-806f-88237f5f322e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/0e3161f3-da46-4f98-9279-893ea26b801a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Therefore, for the projectile to reach 300 km from the source, we need to fire
+    it at a speed of approximately 1123.157 m/s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned about regression analysis. We can think of variables
+    as being dependent on each other in a functional way. For example, the *y* variable is
+    a function of *x* denoted by *y=f(x)*. The *f(x)* function has constant parameters.
+    If *y* depends on *x* linearly, then *f(x)=a*x+b*, where *a* and *b* are constant
+    parameters in the *f(x)* function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We saw that regression is a method to estimate these constant parameters in
+    such a way that the estimated *f(x)* follows *y* as closely as possible. This
+    is formally measured by the squared error between *f(x)* and *y* for *x* data
+    samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also covered the gradient descent method, which minimizes this error by updating
+    the constant parameters in the direction of the steepest descent (that is, the
+    partial derivative of the error), ensuring that the parameters converge to the
+    values resulting in minimal errors in the quickest possible way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we learned about the `scipy.linalg` Python library which supports the
+    estimation of linear regression using the `lstsq` function based on the least
+    squares method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, you will apply regression analysis to the analysis of time-dependent
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Problem 1: Cloud storage prediction cost**: Our software application generates
+    data on a monthly basis and stores this data in cloud storage, together with the
+    data from the previous months. We are given the following bills for cloud storage,
+    and would like to estimate the running costs for the first year of using it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Months using cloud storage** | **Monthly bill in euros** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 120.00 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 131.20 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 142.10 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 152.90 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 164.30 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 to 12 | ? |'
+  prefs: []
+  type: TYPE_TB
+- en: '**Problem 2: Fahrenheit and Celsius conversion**: In the example that we looked
+    at earlier in this chapter, we devised a formula for converting degrees Fahrenheit
+    to degrees Celsius. Devise a formula converting degrees Celsius into degrees Fahrenheit.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Problem 3: Flight time duration prediction based on distance**: Why do you
+    think that a linear regression model resulted in an estimation of the speed of
+    1,192 km/h, as opposed to the real speed of about 850 km/h? Can you suggest a
+    way to better model the estimation of the flight duration based on flight distances
+    and times?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Problem 4: Bacteria population prediction**: A bacteria, Escherichia coli,
+    has been observed in the laboratory, and the size of its population was estimated
+    by various measurements at 5-minute intervals, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Time** | **Size of population in millions** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10:00 | 47.5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10:05 | 56.5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10:10 | 67.2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10:15 | 79.9 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11:00 | ? |'
+  prefs: []
+  type: TYPE_TB
+- en: What is the expected number of bacteria at 11:00, assuming that the bacteria
+    continues to grow at the same rate?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Problem 1**: Every month, we have to pay for the data we have stored in the
+    cloud thus far, plus the new data that is added in that month. We will use linear
+    regression to predict the cost for a general month, and then we will calculate
+    the sum of the first 12 months to calculate the cost for the whole year.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This means that the base cost is *base_cost*=*109.01* euros, and then to store
+    the data added in 1 month costs an additional *month_data*=*11.03* euros. Therefore,
+    the formula for the *n*^(th) monthly bill is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/17aec100-d2ec-4d1d-9150-bc3be72b6c1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Remember that the sum of the first *n* numbers is ![](img/f1df1b67-7715-418a-b818-2acfe72ebb63.png).
+    Thus, the cost for the first *n* months will be as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/91de9956-7eb5-4a19-be32-f76d7769b26a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/62a1df79-5c3d-4778-9865-4a79243fe601.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/0d6e8440-a175-4c8a-be88-b39814a308c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/84b305f3-61ed-4281-a942-20f7bf60044c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For the whole year, the cost will be as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c2e56ce0-ad26-4d20-9bba-fb2afcaaddf0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Visualization**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following graph, we can observe the linearity of the model, which is
+    represented by the blue line. On the other hand, the sum of the points on the
+    linear line is quadratic in nature and is represented by the area beneath the
+    line:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/7b1e2ef5-6302-42ed-b800-e1a51869f8b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Problem 2**: There are many ways to obtain the formula for converting degrees
+    Celsius into degrees Fahrenheit. We could use the least squares method and, from
+    the initial Python file, take the following lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*M = fahrenheit[:, np.newaxis]**[0, 1]*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*model, _, _, _ = lstsq(M,celsius)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then change them to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*M = celsius[:, np.newaxis]**[0, 1]*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*model, _, _, _ = lstsq(M,fahrenheit)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we would obtain the desired reversed model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Therefore, degrees Fahrenheit can be expressed from degrees Celsius as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2ce39eee-b0db-4233-b64c-7017908266d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Alternatively, we may obtain the preceding formula by modifying the following
+    one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/692d4fcd-e9db-4ff6-9dba-f31ae315a8c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/33408aea-deeb-49a1-ba72-b42e9dd5b3fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/80aceb80-491b-4cee-bdb0-a363cba685c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Problem 3**: The estimated speed is so high because even flights over a short
+    distance take quite a long time; for example, the flight from London to Amsterdam,
+    where the distance between the two cities is only 365 km, takes about 1.167 hours.
+    But, on the other hand, if the distance changes only slightly, then the flight
+    time changes only slightly as well. This results in us estimating a very long
+    initial setup time. Consequently, the speed has to be very fast because there
+    is only a small amount of time left to travel a certain distance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we consider very long flights, where the initial setup time to flight time
+    ratio is much smaller, we could predict the flight speed more accurately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Problem 4**: The number of bacteria at the 5-minute intervals is 47.5, 56.5,
+    67.2, and 79.9 million. The differences between these numbers are 9, 10.7, and
+    12.7\. The sequence is increasing. Therefore, we need to look at the ratios of
+    the neighbor terms to see how the sequence grows: 56.5/47.5=1.18947, 67.2/56.5=1.18938,
+    and 79.9/67.2=1.18899\. The ratios of the successive terms are close to each other,
+    so we have reason to believe that the number of bacteria in the growing population
+    can be estimated by using the exponential distribution of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f690933f-84aa-4f42-9cd5-bb9f2493cbf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where *n* is the number of bacteria in millions, *b* is a constant (the base),
+    the letter *m* is the exponent expressing the number of minutes since 10:00, which
+    was the time of the first measurement, and 47.7 is the number of bacteria at that
+    time in millions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To estimate the constant, *b*, we use the ratios between the sequence terms.
+    We know that *b⁵* is approximately *(56.5/47.5 + 67.2/56.5 + 79.9/67.2)/3=1.18928*.
+    Therefore, the constant, *b*, is approximately *b=1.18928^(1/5)=1.03528*. Thus,
+    the number of bacteria in millions is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d7a4c750-dfdd-46ec-a922-af4ac8ab4ec0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'At 11:00, which is 60 minutes later than 10:00, the estimated number of bacteria
+    is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f26cd4e6-3dad-4109-9fd8-c182cf9c30bf.png)'
+  prefs: []
+  type: TYPE_IMG

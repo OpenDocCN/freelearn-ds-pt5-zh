@@ -1,0 +1,1307 @@
+- en: From Engagement to Conversion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we will expand your knowledge of explanatory analysis and show
+    you how to use **decision trees** to understand the drivers behind consumer behavior.
+    We will start by comparing and explaining the differences between logistic regression
+    and decision tree models, and then we will discuss how decision trees are built
+    and trained. Next, we will discuss how a trained decision tree model can be used
+    to extract information about the relationships between the attributes (or features)
+    of individual consumers and the target output variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For programming exercises, we will use the bank marketing dataset from the UCI
+    Machine Learning Repository to understand the drivers behind conversions. We will
+    start with some data analysis, so that you can better understand the dataset;
+    then, we will build decision tree models by using the `scikit-learn` package in
+    Python and the `rpart` package in R. Lastly, you will learn how to interpret these
+    trained decision tree models by visualizing them using the `graphviz` package
+    in Python and the `rattle` package in R. By the end of this chapter, you will
+    be familiar with decision trees and will have a better understanding of when and
+    how to use them with Python or R.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Decision trees and interpretations with Python
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Decision trees and interpretations with R
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous chapter, we discussed explanatory analysis and regression analysis.
+    We are going to continue with that theme and introduce another machine learning
+    algorithm that we can use to draw insights on customer behavior from data. In
+    this chapter, we will be discussing a machine learning algorithm called **decision
+    trees**:how they learn from the data and how we can interpret their results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logistic regression versus decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you recall from the previous chapter, a **logistic regression** model learns
+    from the data by finding the linear combination of the feature variables that
+    best estimates the log odds of an event occurring. Decision trees, as the name
+    suggests, learn from the data by growing a tree. We are going to discuss how decision
+    tree models grow and to build trees in more detail in the following section, but
+    the main difference between the logistic regression and decision tree models is
+    the fact that logistic regression algorithms search for a single best linear boundary
+    in the feature set, whereas the decision tree algorithm partitions the data to
+    find the subgroups of data that have high likelihoods of an event occurring. It
+    will be easier to explain this with an example. Let''s take a look at the following
+    diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8d0bb394-1e86-48ec-9bfd-8c8bda7e1d97.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is an example of a decision tree model. As you can see in this diagram,
+    it partitions the data with certain criteria. In this example, the root node is
+    split into child nodes by a criterion of `previous < 0.5`. If this condition is
+    met and true, then it traverses to the left child node. If not, then it traverses
+    to the right child node. The left child node is then split into its child nodes
+    by a criterion of `age < 61`. The tree grows until it finds pure nodes (meaning
+    that all of the data points in each node belong to one class) or until it meets
+    certain criteria to stop, such as the maximum depth of the tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see in this example, the data are split into seven partitions. The
+    leftmost node or partition at the bottom is for those data points with values
+    less than `0.5` for the `previous` variable and with values less than `61` for
+    the `age` variable. On the other hand, the rightmost node at the bottom is for
+    those data points with values greater than `0.5` for the `previous` variable and
+    with values other than `yes` for the `housing` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing that is noticeable here is that there are a lot of interactions between
+    different variables. No single leaf node in this example tree is partitioned with
+    one condition. Every partition in this tree is formed with more than one criterion
+    and interactions between different `feature` variables. This is the main difference
+    from logistic regression models. When there is no linear structure in the data,
+    logistic regression models will not be able to perform well, as they try to find
+    linear combinations among the feature variables. On the other hand, decision tree
+    models will perform better for non-linear datasets, as they only try to partition
+    the data at the purest levels they can.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Growing decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When we are growing decision trees, the trees need to come up with a logic to
+    split a node into child nodes. There are two main methods that are commonly used
+    for splitting the data: **Gini impurity** and **entropy information gain**. Simply
+    put, *Gini* impurity measures how impure a partition is, and entropy information
+    gain measures how much information it gains from splitting the data with the criteria
+    being tested.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take a quick look at the equation to compute the *Gini* impurity measure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/dcc06319-5223-49a9-bbff-b4475b53664f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *c* stands for the class labels, and *P[i]* stands for the probability
+    of a record with the class label *i* being chosen. By subtracting the sum of squared
+    probabilities from one, the *Gini* impurity measure reaches zero, that is, when
+    all records in each partition or node of a tree are pure with a single target
+    class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The equation to compute the *entropy* looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/85b079d0-d694-434a-a6eb-ae22b25f62f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Like before, *c* stands for the class labels, and *P[i]* stands for the probability
+    of a record with the class label *i* being chosen. When growing the tree, the
+    entropy of each possible split needs to be calculated and compared against the
+    entropy before the split. Then, the split that gives the biggest change in entropy
+    measures or the highest information gain will be chosen to grow the tree. This
+    process will be repeated until all of the nodes are pure, or until it meets the
+    stopping criteria.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision trees and interpretations with Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, you are going to learn how to use the `scikit-learn` package
+    in Python to build decision tree models and interpret the results via visualizations
+    using Python's `graphviz` package. For those readers that would like to use R
+    instead of Python for this exercise, you can skip to the next section. We will
+    start this section by analyzing the bank marketing dataset in depth, using the `pandas` and `matplotlib` packages,
+    and then we will discuss how to build and interpret decision tree models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this exercise, we will be using one of the publicly available datasets from
+    the UCI Machine Learning Repository, which can be found at [https://archive.ics.uci.edu/ml/datasets/bank+marketing](https://archive.ics.uci.edu/ml/datasets/bank+marketing).
+    You can follow the link and download the data in ZIP format. We will use the `bank.zip`
+    file for this exercise. When you unzip this file, you will see two CSV files: `bank.csv`
+    and `bank-full.csv`. We are going to use the `bank-full.csv` file for this Python
+    exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to load this data into your Jupyter Notebook, you can run the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code snippet, we use the `%matplotlib inline` command
+    to show plots on the Jupyter Notebook. Then, we import the `matplotlib` and `pandas`
+    packages that we are going to use for the data analysis step. Lastly, we can easily
+    read the data file by using the `read_csv` function in the `pandas` package. One
+    thing to note here is the `sep` argument in the `read_csv` function. If you look
+    at the data closely, you will notice that the fields in the `bank-full.csv` file
+    are separated by semicolons (`;`), not commas (`,`). In order to correctly load
+    the data into a `pandas` DataFrame, we will need to tell the `read_csv` function
+    to use semicolons as the separators, instead of commas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have loaded the data, it should look like the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/edd8cfd2-6ceb-4846-aab1-752933a982c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data analysis and visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before we start to analyze the data, we will first encode the output variable,
+    `y`, which has information about whether a customer has converted or subscribed
+    to a term deposit, with numerical values. You can use the following code to encode
+    the output variable, `y`, with zeros and ones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code snippet, you can use the `apply` function to encode
+    the output variable. We stored these encoded values in a new column, named `conversion`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversion rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s first take a look at the aggregate conversion rate. The **conversion
+    rate** is simply the percentage of customers that subscribed to a term deposit.
+    Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code snippet, we are grouping by a column, `conversion`,
+    which is encoded with `1` for those that have subscribed to a term deposit, and
+    with `0` for those that have not. Then, we are counting the number of customers
+    in each group and dividing it by the total number of customers in the dataset.
+    The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/99f9f19c-3871-4394-bd59-55c3fce7f530.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To make it easier to view, you can transpose the DataFrame by using the `T`
+    attribute of the `pandas` DataFrame. As you can see, only about 11.7% were converted
+    or subscribed to a term deposit. From these results, we can see that there is
+    a large imbalance between the conversion group and the non-conversion group, which
+    is common and is frequently observed among various marketing datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversion rates by job
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It might be true that certain job categories tend to convert more frequently
+    than others. Let''s take a look at the conversion rates across different job categories.
+    You can achieve this by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's take a deeper look at this code. We first group by the column, `job`,
+    which contains information about the job category that each customer belongs to.
+    Then, we sum over the `conversion` column for each job category, from which we
+    get the total number of conversions for each job category. Lastly, we divide these
+    conversion numbers by the total number of customers in each job category, in order
+    to get the conversion rates for each job category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e5a1ed43-084d-475a-b90a-3346bd87687a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from these results, the `student` group tends to convert much
+    more frequently than the others, and the `retired` group comes next. However,
+    it is a bit difficult to compare these from the raw output, and we could present
+    this data better by using a chart. We can build a horizontal bar chart by using
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you look at this code, we are using the `plot` function of the `pandas` DataFrame,
+    and we defined the type of this plot to be a horizontal bar chart by providing
+    `barh` as the input to the `kind` argument. You can simply adjust the color, size,
+    and title of the chart with the `color`, `figsize`, and `title` arguments, respectively.
+    You can also easily change the *x*-axis and *y*-axis labels, using the `set_xlabel`
+    and `set_ylabel` functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The resulting chart looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3b42d4b7-1d54-4889-977a-3a30c5dd02a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, it is much easier to spot the differences in the conversion
+    rates by each job category with a horizontal bar chart. We can easily see that
+    the `student` and `retired` groups are the two groups with the highest conversion
+    rates, whereas the `blue-collar` and `entrepreneur` groups are the two groups
+    with the lowest conversion rates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Default rates by conversions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Another attribute of a customer that would be interesting to see is the default
+    rate, and how it differs between those who subscribed to a term deposit and those
+    who did not. We are going to use the `pivot_table` function in the `pandas` library
+    to analyze the default rates by conversions. Let''s take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are pivoting the DataFrame, `df`, by the `y` and
+    `default` columns. By using `len` as the aggregation function, we can count how
+    many customers fall under each cell of the pivot table. The results look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8257487f-4abc-4403-b5d1-6cb79ec4fc94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It is a bit difficult to compare how the default rates differ between the conversion
+    and non-conversion groups by looking at these raw numbers. One way to visualize
+    this data is through a pie chart. You can use the following code to build a pie
+    chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are simply passing `''pie''` as input to
+    the `kind` argument of the `plot` function. The resulting pie chart appears as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/eba95421-1547-4767-aadd-5494b5440972.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see from these pie charts, it is much easier to compare the default
+    rates between the conversion and non-conversion groups. Although the overall percentage
+    of the previous default is low in both groups, the default rate in the non-conversion
+    group is about twice as high as the conversion group.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bank balances by conversions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Next, we will try to see if there are any differences in the distributions
+    of bank balances between the conversion and non-conversion groups. A box plot
+    is typically a good way to visualize the distribution of a variable. Let''s take
+    a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should be familiar with this code by now, as we have discussed how to build
+    box plots using the `pandas` package. Using the `boxplot` function, we can easily
+    build box plots such as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f7970841-e6de-49b0-a7b1-1f4c8084aa40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Because there are so many outliers, it is quite difficult to identify any differences
+    between the two distributions. Let''s build another box plot without outliers.
+    The only thing that you need to change from the previous code is the `showfliers=True`
+    argument in the `boxplot` function, as you can see in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using this code, you will see the following box plots for the distributions
+    of bank balances between the two groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5c8dbee9-2db5-4d9d-bb6a-c721e18d129b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From these box plots, we can see that the median of the bank balance is slightly
+    higher for the conversion group, as compared to the non-conversion group. Also,
+    the bank balances of converted customers seem to vary more than those of non-converted
+    customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversion rates by number of contacts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Lastly, we will look at how the conversion rates vary by the number of contacts.
+    Typically, in marketing, a higher number of marketing touches can result in marketing
+    fatigue, where the conversion rates drop as you reach out to your customers more
+    frequently. Let''s see whether there is any marketing fatigue in our data. Take
+    a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this code snippet, you can see that we are grouping by the `campaign` column
+    (which has information about the number of contacts performed during the marketing
+    campaign for this customer) and computing the conversion rates for each number
+    of contacts. The resulting data appears as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/db83f22a-027b-4c4c-aac7-b418f88aa2f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Like before, it would be easier to look at a chart, rather than raw numbers.
+    We can plot this data by using bar charts, with the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The plot looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6cbe0312-537f-4600-b2f6-e49f6a64e8ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There's some noise in a higher numbers of contacts, as the sample size is smaller
+    for them, but you can easily see the overall downward trend in this bar chart.
+    As the number of contacts increases, the conversion rates slowly decrease. This
+    suggests that the expected conversion rate decreases as you contact a client more
+    frequently for a given campaign.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encoding categorical variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are eight categorical variables in this dataset: `job`, `marital`, `education`,
+    `default`, `housing`, `loan`, `contact`, and `month`. Before we start to build
+    decision trees, we need to encode these categorical variables with numerical values.
+    We'll take a look at how we can encode some of these categorical variables in
+    this section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encoding months
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We all know that there can only be 12 unique values for the `month` variable.
+    Let''s take a quick look at what we have in our dataset. Take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `pandas` function, `unique`, helps you to quickly get the unique values
+    in the given column. When you run this code, you will get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/57913c36-6c06-41d1-bea1-943abd0d37bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As expected, we have 12 unique values for the `month` column, from January
+    to December. Since there is a natural ordering in the values of `month`, we can
+    encode each of the values with a corresponding number. One way to encode the string
+    values of `month` with numbers is shown as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using this code, the unique values for the column `month` look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3311d783-0ac2-4a7f-9157-7083a3a88926.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To see how many records we have for each month, we can use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/aae40fb2-16e3-4a60-ba13-4afb2472f525.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Encoding jobs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Next, let''s look at how we can encode the different categories of the `job` column.
+    We will first look at the unique values in this column, using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The unique values in the  `job` column look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b7e7b157-3f55-40e3-b11e-01ce1297c386.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see in this output, there is no natural ordering for this variable.
+    One `job` category does not precede the other, so we cannot encode this variable
+    like we did for `month`. We are going to create dummy variables for each of the `job`
+    categories. If you recall from the previous chapter, a **dummy variable** is a
+    variable that is encoded with `1` if a given record belongs to the category, and
+    `0` if not. We can do this easily by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code snippet, the `get_dummies` function in the `pandas`
+    package creates one dummy variable for each category in the `job` variable, and
+    encodes each record with `1` if the given record belongs to the corresponding
+    category, and `0` if not. Then, we rename the columns by prefixing each column
+    with `job_`. The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/aa02a263-7126-4b15-a075-8e0c219d860d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this screenshot, the first record (or customer) belongs
+    to the `management` job category, while the second record belongs to the `technician`
+    job category. Now that we have created dummy variables for each job category,
+    we need to append this data to the existing DataFrame. Take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the `concat` function in the `pandas` package, you can easily add the
+    newly created DataFrame with dummy variables, `jobs_encoded_df`, to the original
+    DataFrame, `df`. The `axis=1` argument tells the `concat` function to concatenate
+    the second DataFrame to the first DataFrame as columns, not as rows. The resulting
+    DataFrame looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0895e1e0-aa45-40b8-9e99-a680449c2c17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the newly created dummy variables are added to the original
+    DataFrame as new columns for each record.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encoding marital
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Similar to how we encoded the categorical variable, `job`, we are going to
+    create dummy variables for each category of the `marital` variable. Like before,
+    we are using the following code to encode the `marital` column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The encoding results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/56513a91-bce6-454c-939a-8a8c3b51cb84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see, three new variables are created for the original variable,
+    `marital`: `marital_divorced`, `marital_married`, and `marital_single`, representing
+    whether a given customer is divorced, married, or single, respectively. In order
+    to add these newly created dummy variables to the original DataFrame, we can use
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once you have come this far, your original DataFrame, `df`, should contain all
+    of the original columns, plus newly created dummy variables for the `job` and
+    `marital` columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encoding the housing and loan variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The last two categorical variables that we are going to encode in this section
+    are `housing` and `loan`. The `housing` variable has two unique values, `''yes''`
+    and `''no''`, and contains information on whether a customer has a housing loan.
+    The other variable, `loan`, also has two unique values, `''yes''` and `''no''`,
+    and tells us whether a customer has a personal loan. We can easily encode these
+    two variables by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we are using the `apply` function to encode `yes` as `1` and
+    `no` as `0` for both the housing and loan variables. For those categorical variables
+    that we have not discussed in this section, you can use the same techniques that
+    we have discussed to encode them if you wish to explore beyond this exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have encoded all of the categorical variables, we can finally start
+    to build decision tree models. We are going to use the following variables as
+    features in our decision tree models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/33e32db6-b239-4b18-b1f5-13d2e9086fac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In order to build and train a decision tree model with Python, we are going
+    to use the `tree` module in the `scikit-learn` (`sklearn`) package. You can import
+    the required module by using the following line of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Under the `tree` module in the `sklearn` package, there is a class named `DecisionTreeClassifier`,
+    which we can use to train a decision tree model. Take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are many arguments to the `DecisionTreeClassifier` class, aside from the
+    one that we are using here, `max_depth`. The`max_depth` argument controls how
+    much a tree can grow, and here, we limit it to `4`, meaning that the maximum length
+    from the root to a leaf can be `4`. You can also use the `criterion` argument
+    to choose between the Gini impurity and the entropy information gain measures
+    for the quality of a split. There are many other ways to tune your decision tree
+    model, and we recommend that, for more information, you take a closer look at
+    the documentation at [http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to train this decision tree model, you can use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, the `fit` function takes two arguments: the `predictor`
+    or `feature` variables and the `response` or `target` variables. In our case,
+    `response_var` is the `conversion` column of the DataFrame, `df`. Once you have
+    run this code, the decision tree model will learn how to make classifications.
+    In the following section, we will discuss how we can interpret the results of
+    this trained decision tree model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have trained a decision tree model, we need to extract the insights
+    from the model. In this section, we are going to use a package called `graphviz`.
+    You can install this package by using the following command in your Terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once you have installed this package correctly, you should be able to import
+    the package as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have set up our environment with the new package, `graphviz`, let''s
+    take a look at the following code to see how we can visualize the trained decision
+    tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, we first export the trained decision tree model, `dt_model`,
+    using the `export_graphviz` function in the `tree` module of the `sklearn` package.
+    We can define the feature variables that we used to train this model by using
+    the `feature_names` argument. Then, we can define the classes (conversion versus
+    non-conversion) that this model is trained to classify. The `export_graphviz` function
+    exports the trained decision tree model in a DOT format, which is a graphic description
+    language. You can then pass `dot_data` on to the `graphviz` `Source` class. The
+    `graph` variable now contains a renderable graph. The root node and its direct
+    children look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d20c75f2-fa12-4a5b-8ee3-bd4e5fc9d310.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The tree on the left half (or the children of the root node''s left child)
+    looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5e156f7d-b72b-4e9f-956c-d646b7f276cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The tree on the right half (or the children of the root node''s right child)
+    looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/852140bc-7f6a-4553-b94c-b0373d043921.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this diagram. Each node contains five lines that
+    describe the information that the given node has. The top line tells us the criteria
+    of the split. The root node, for example, is split into its child nodes based
+    on the value of the `previous` variable. If the value of this `previous` variable
+    is less than or equal to `0.5`, then it goes to the left child. On the other hand,
+    if the value of this `previous` variable is larger than `0.5`, then it goes to
+    the right child.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second line tells us the value of the quality measure for the split. Here,
+    we selected the `gini` impurity measure for the criteria, so we can see the changes
+    in the impurity measures in each node from the second line. The third line tells
+    us the total number of records that belong to the given node. For example, there
+    are `45,211` samples in the root node, and there are `8,257` samples in the right
+    child of the root node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fourth line in each node tells us the composition of the records in two
+    different classes. The first element stands for the number of records in the non-conversion
+    group, and the second element stands for the number of records in the conversion
+    group. For example, in the root node, there are `39,922` records in the non-conversion
+    group and `5,289` records in the conversion group. Lastly, the fifth line in each
+    node tells us what the prediction or classification will be for the given node.
+    For example, if a sample belongs to the leftmost leaf, the classification by this
+    decision tree model will be `0`, meaning non-conversion. On the other hand, if
+    a sample belongs to the eighth leaf from the left, the classification by this
+    decision tree model will be `1`, meaning conversion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we know what each of the lines in each nodes means, let's discuss how
+    we can draw insights from this tree graph. In order to understand the customers
+    that belong to each leaf node, we need to follow through the tree. For example,
+    those customers that belong to the eighth leaf node from the left are those with
+    a `0` value for the `previous` variable, `age` greater than `60.5`, a `marital_divorced`
+    variable with a value of `1`, and a `job_self-employed` variable with a value
+    of `1`. In other words, those who were not contacted before this campaign and
+    who are older than `60.5`, divorced, and self-employed belong to this node, and
+    have a high chance of converting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's take a look at another example. Those customers that belong to the second
+    leaf node from the right are those with a value of `1` for the `previous` variable,
+    a value of `1` for the `housing` variable, `age` greater than `60.5`, and `balance`
+    less than or equal to `4,660.5`. In other words, those customers that were contacted
+    before this campaign and that have a housing loan, are older than `60.5`, and
+    have a bank balance less than `4,660.5` belong to this node and `20` out of `29`
+    that belong to this node have converted and subscribed to a term deposit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you will have noticed from these two examples, you can draw useful insights about
+    who is more or less likely to convert from trained decision tree models, by visualizing
+    the trained tree. You simply need to follow through the nodes and understand what
+    kinds of attributes are highly correlated with your target class. For this exercise,
+    we restricted the tree to only growing up to a depth of `4`, but you can choose
+    to grow a tree larger or smaller than the one we used in this exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code for this chapter's Python exercise can be found in the repository
+    at [https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.4/python/From%20Engagement%20to%20Conversions.ipynb](https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.4/python/From%20Engagement%20to%20Conversions.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision trees and interpretations with R
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, you are going to learn how to use the `rpart` package in R
+    to build decision tree models and interpret the results via visualizations with
+    the R `rattle` package. For those readers that would like to use Python instead
+    of R for this exercise, you can work through the Python examples in the previous
+    section. We will start this section by analyzing the bank marketing dataset in
+    depth, using the `dplyr` and `ggplot2` libraries, and then we will discuss how
+    to build and interpret decision tree models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this exercise, we will be using one of the publicly available datasets from
+    the UCI Machine Learning Repository, which can be found at [https://archive.ics.uci.edu/ml/datasets/bank+marketing](https://archive.ics.uci.edu/ml/datasets/bank+marketing).
+    You can follow the link and download the data in ZIP format. We will use the `bank.zip` file
+    for this exercise. When you unzip this file, you will see two CSV files: `bank.csv` and `bank-full.csv`.
+    We are going to use the `bank-full.csv` file for this exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to load this data into your RStudio, you can run the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code snippet, we can easily read the data file by using the `read.csv` function
+    in R. One thing to note here is the `sep` argument in the `read.csv` function.
+    If you look at the data closely, you will notice that the fields in the `bank-full.csv` file
+    are separated by semicolons (`;`), not commas (`,`). In order to correctly load
+    the data into a DataFrame, we will need to tell the `read.csv` function to use
+    semicolons as the separators, instead of commas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have loaded this data, it should look like the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/de1dbdf1-84f4-4b82-ad07-743d1e2b754f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data analysis and visualizations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before we start to analyze the data, we will first encode the output variable, `y`,
+    which has information about whether a customer has converted or subscribed to
+    a term deposit, with numerical values. You can use the following code to encode
+    the output variable, `y`, with zeros and ones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code snippet, you can use the `as.integer` function
+    to encode the output variable. Since this function will encode `no` values in
+    the `y` variable  as `1` and `yes` values in the `y` variable as `2`, we subtract
+    the values by `1` to encode them as `0` and `1`, respectively. We stored these
+    encoded values into a new column, named `conversion`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversion rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first thing that we are going to take a look at is the aggregate conversion
+    rate. The conversion rate is simply the percentage of customers that subscribed
+    to a term deposit, or those encoded with `1` in the column `conversion`. Take
+    a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code snippet, we simply sum all of the values in the
+    `conversion` column and divide by the number of records or customers in the DataFrame,
+    `df`. Using the `sprintf` function, we format this conversion rate number with
+    two decimal point numbers. The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c21a0e9b-e719-424d-ba6c-f915041eecc7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see from this output, only about `11.7%` were converted or subscribed
+    to a term deposit. From these results, we can see that there is a large imbalance
+    between the conversion group and the non-conversion group, which is quite common
+    and is frequently observed among various marketing datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversion rates by job
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It might be true that certain job categories tend to convert more frequently
+    than others. Let''s take a look at the conversion rates across different job categories.
+    You can achieve this by running the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's take a more detailed look at this code. We first group by the column, `job`,
+    which contains information about the job category that each customer belongs to.
+    Then, we count the total number of customers in a given job category by using
+    the `n()` function, and sum over the `conversion` column for each job category
+    by using the `sum` function. Lastly, we divide the total number of conversions,
+    `NumConversion`, by the total number of customers in each job category, `Count`,
+    and multiply these numbers by `100.0` to get the conversion rates for each job
+    category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d05fb8b6-299f-466b-b73b-4fb7093fff02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from these results, the `student` group tends to convert much
+    more frequently than the others, and the `retired` group comes next. However,
+    it is a bit difficult to compare these with raw output, and we will be able to
+    better present this data by using a chart. We can build a horizontal bar chart
+    by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you look at this code, we are using the `ggplot` and `geom_bar` functions
+    to build a bar chart with the `conversionsByJob` data (which we built in the previous
+    code), and with the `Job` variable in the *x*-axis and the `ConversionRate` variable in
+    the *y*-axis. Then, we use the `coord_flip` function to flip the vertical bar
+    chart to a horizontal bar chart. You can use the `ggtitle`, `xlab`, and `ylab`
+    functions to change the title, *x*-axis label, and *y*-axis label as you wish.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The resulting chart looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/cbd51610-3022-4180-b258-0618f507ee19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, it is much easier to see the differences in the conversion rates
+    by each job category with a horizontal bar chart. We can easily see that the `student` and `retired` groups
+    are the two groups with the highest conversion rates, whereas, the `blue-collar` and `entrepreneur` groups
+    are the two groups with the lowest conversion rates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Default rates by conversions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Another attribute of a customer that would be interesting to see is the default
+    rate, and how it differs between those who subscribed to a term deposit and those
+    who did not. Let''s take a look at the following R code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are grouping the DataFrame, `df`, by the
+    two columns, `default` and `conversion`, using the `group_by` function. By using `n()` as
+    the aggregation function, we can count how many customers fall under each cell
+    of the four cases. Let''s look at the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/320df0e0-2b56-4fc7-8c26-e85a4ed037e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It is a bit difficult to compare how the default rates differ between the conversion
+    and non-conversion groups from looking at these raw numbers. One way to visualize
+    this data is through a pie chart. You can use the following code to build a pie
+    chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, we are utilizing three functions here: `ggplot`, `geom_bar`,
+    and `coord_polar("y")`. With the `coord_polar("y")` function, we can get the pie
+    chart from a bar chart. Then, we can use the `facet_wrap` function to split it
+    into two pie charts: one for the conversion group and another for the non-conversion
+    group.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Take a look at the following pie chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1fe05b29-dda3-45fa-bd31-a123981a2bc1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see from these pie charts, it is much easier to compare the default
+    rates between the conversion and non-conversion groups. Although the overall percentage
+    of previous default is low in both groups, the default rate in the non-conversion
+    group is about twice as high as the conversion group.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bank balance by conversions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Next, we will try to see whether there are any differences in the distributions
+    of the bank balances between the conversion and non-conversion groups. A box plot
+    is typically a good way to visualize the distribution of a variable. Let''s take
+    a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should be familiar with this code by now, as we discussed how to build
+    box plots in the previous chapter, using the `ggplot` and `geom_boxplot` functions.
+    When you run this code, you will see the following box plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f3aa26a3-e3d0-4b3d-b3b2-04c62b23b2ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Because there are so many outliers, it is quite difficult to identify any differences
+    between the two distributions. Let''s build another box plot without outliers.
+    The only thing that you need to change from the previous code is the `outlier.shape
+    = NA` argument in the `geom_boxplot` function, as you can see in the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using this code, you will see the following box plots for the distribution
+    of bank balances between the two groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/237999b5-a990-408b-8fd1-a96d7a52acbe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From these box plots, we can see that the median of the bank balance is slightly
+    higher for the conversion group, as compared to the non-conversion group. Also,
+    the bank balances of converted customers seem to vary more than those of non-converted
+    customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conversion rates by number of contacts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Lastly, we will look at how the conversion rates vary by the number of contacts.
+    Typically, in marketing, a higher number of marketing contacts can result in marketing
+    fatigue, wherein the conversion rates drop as you reach out to your customers
+    more frequently. Let''s see whether there is any marketing fatigue in our data.
+    Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'From this code snippet, you can see that we are grouping by the  `campaign` column (which
+    has information about the number of contacts performed during the marketing campaign
+    for this customer) and computing the conversion rate for each number of contacts.
+    The resulting data looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f126d9cd-bfdd-4aa3-a15e-92f5bf715f6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Like before, it would be easier to look at a chart rather than raw numbers.
+    We can plot this data with bar charts by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The plot looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/59b26b80-2ed8-46cf-88e9-c12a1b471cac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There is some noise in higher numbers of contacts, as the sample size is smaller
+    for them, but you can easily see the overall downward trend in this bar chart.
+    As the number of contacts increases, the conversion rates slowly decrease. This
+    suggests that the expected conversion rate decreases as you contact a client more
+    frequently for a given campaign.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encoding categorical variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are eight categorical variables in this dataset: `job`, `marital`, `education`, `default`, `housing`, `loan`, `contact`,
+    and `month`. Before we start to build decision trees, we need to encode some of
+    these categorical variables with numerical values. We'll take a look at how we
+    can encode some of these categorical variables in this section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encoding the month
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We all know that there can only be 12 unique values for the `month` variable.
+    Let''s take a quick look at what we have in our dataset. Take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `unique` function helps you to quickly get the unique values in the given
+    column. When you run this code, you will get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bea193fa-38af-45e1-a779-c06d0491a339.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As we expected, we have 12 unique values for the `month` column, from January
+    to December. Since there is a natural order in the values of `month`, we can encode
+    each of the values with the corresponding number. One way to encode the string
+    values of `month` with numbers is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s take a closer look at this code. `month.abb` is a built-in R constant
+    that contains the three-letter abbreviated names for the month names, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2f8db0b0-9ba1-4eea-8438-57e61afed48d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the first letters of each abbreviated `month` name are capitalized.
+    However, the month names in the `month` column of our data are all in lowercase.
+    That is why we use the `tolower` function to make all of the values in the `month.abb`
+    constant lowercase. Using the `lapply` function, we can apply this `tolower` function
+    across the `month.abb` list. Then, we use the `match` function, which returns
+    the position of the matching string in an array, to convert the string values
+    in the `month` column of the DataFrame to corresponding numerical values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using this code, the unique values for the `month` column look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/423f83ae-563e-48b4-8a30-3c8290e24a1b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To see how many records we have for each month, we can use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4271c54d-3965-4a56-a046-162327636d1b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Encoding the job, housing, and marital variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Next, we are going to encode the three variables: `job`, `housing`, and `marital`.
+    Since these variables do not have natural orders, we do not need to worry about
+    which category gets encoded with which value. The simplest way to encode categorical
+    variables with no orders in R is to use the `factor` function. Let''s take a look
+    at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code, we are simply applying the `factor` function
+    for these three variables, `job`, `housing`, and `marital`, and storing the encoded
+    values back to the DataFrame, `df`. For the categorical variables that we have
+    not discussed in this section, you can use the same techniques that we discussed
+    in this section to encode them if you wish to explore beyond this exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have encoded all of the categorical variables, we can finally start
+    to build decision tree models. We are going to use these variables as features
+    for our decision tree models: `age`, `balance`, `campaign`, `previous`, `housing`, `job`,
+    and `marital`. In order to build and train a decision tree model with R, we are
+    going to use the `rpart` package. You can import the required library by using
+    the following line of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you do not have the `rpart` package installed, you can install it by using
+    the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once you have imported the required library, you can use the following code
+    to build a decision tree model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, the first argument of the `rpart` model is `formula`, which
+    defines the features and the target variable. Here, we are using the aforementioned
+    variables as the features and `conversion` as the target variable. Then, we define
+    this decision tree model to be a classification model with the `method="class"`
+    input. Lastly, you can fine-tune the decision tree model with the `control` input.
+    There are many parameters that you can tune with the `control` input. In this
+    example, we are only restricting the maximum depth of the tree to be `4` with
+    the `maxdepth` argument, and setting the value for `cp`, which is the complexity
+    parameter, to be small enough for the tree to be able to be split. There are many
+    other ways to tune your decision tree model, and we recommend that you take a
+    closer look at the R documentation for more information, by running the `help(rpart)`
+    or `help(rpart.control)` commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting decision trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have trained a decision tree model, we need to extract the insights
+    from the model. In this section, we are going to use a library called `rattle`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can install this package by using the following command in your RStudio:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once you have installed this library correctly, you should be able to import
+    the library as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once you have set up your R environment with this new library, `rattle`, it
+    requires just one line of code to visualize the trained decision tree. Take a
+    look at the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, the `fancyRpartPlot` function takes in an `rpart` model object.
+    Here, the model object, `fit`, is the decision tree model that we built in the
+    previous step. Once you run this command, it will show the following diagram:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/7829b6ee-ce98-41ba-9a99-c0b02ba49e54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this tree diagram. Each node contains three lines
+    that describe the information that the given node has. The number on top of the
+    node is the label and the order of the node that was built. We will use this label
+    to refer to each of the nodes in this tree graph. Then, the top line in each node
+    tells us what the prediction or classification will be for the given node. For
+    example, if a sample belongs to the node that is labeled `4`, the classification
+    by this decision tree model will be zero, meaning non-conversion. On the other
+    hand, if a sample belongs to the node labeled `23`, the classification by this
+    decision tree model will be one, meaning conversion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second line in each node tells us the percentage of records in each class
+    for the given node. For example, `52%` of the records in node `22` are in the
+    class `0`, or the non-conversion group, and the remaining `48%` are in the class
+    `1`, or the conversion group. On the other hand, `39%` of the customers in node
+    `13` are in the class `0`, and the remaining `61%` of the customers in node `13`
+    are in the class `1`. Lastly, the bottom line in each node tells us the percentage
+    of the total number of records that belong to each node. For example, about `80%`
+    of the customers fall under the category of node `4`, while close to `0%` of the
+    customers fall under the category of node `13`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we know what each of the lines in each nodes means, let's discuss how
+    we can draw insights from this tree diagram. In order to understand the customers
+    that belong to each leaf node, we need to follow through the tree. For example,
+    those customers that belong to node `13` are those with values greater than `0.5`
+    for the `previous` variable, with a housing loan and `age` greater than or equal
+    to `61`. In other words, those who were contacted before this campaign and who
+    are older than `61`, with housing loans, belong to node `13` and have a high chance
+    of converting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's take a look at another example. In order to get to node `22` from the
+    root node, we need to have a `0` value for the `previous` variable, an `age` greater
+    than or equal to `61`, a `marital` status other than `married` or `single`, and
+    a `job` in one of these categories: `admin`, `blue-collar`, `entrepreneur`, `housemaid`,
+    `retired`, or `unknown`. In other words, those customers that have not been contacted
+    before this campaign and who are older than `61`, divorced, and have a job in
+    one of the previously mentioned categories, belong to the node `22` and have a
+    roughly `50%` chance of converting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you will have noticed from these two examples, you can draw useful insights
+    on who is more or less likely to convert from trained decision tree models, by
+    visualizing the trained tree. You simply need to follow through the nodes and
+    understand what kinds of attributes are highly correlated with your target class.
+    For this exercise, we restricted the tree to only growing up to a depth of `4`,
+    but you can choose to grow a tree larger or smaller than the one that we used
+    in this exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code for this chapter's R exercise can be found in the repository at [https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.4/R/FromEngagementToConversions.R](https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.4/R/FromEngagementToConversions.R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we introduced a new machine learning algorithm, decision trees,
+    which we can use for marketing analytics in order to better understand the data
+    and draw insights on customer behaviors. We discussed how decision tree models
+    are different from logistic regression models, which you learned about in the
+    previous chapter. You saw that decision tree models learn the data by partitioning
+    the data points based on certain criteria. We also discussed the two measures
+    that are frequently used when growing decision trees: the Gini impurity and entropy
+    information gain. Using either of these measures, decision trees can grow until
+    all of the nodes are pure, or until the stopping criteria are met.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: During our programming exercises in Python and R, we used the bank marketing
+    dataset from the UCI Machine Learning Repository. We started our programming exercised
+    by analyzing the data in depth, using the `pandas` and `matplotlib` packages in
+    Python and the `dplyr` and `ggplot2` libraries in R. Then, you learned how we
+    can train and grow decision trees, using the `sklearn` package in Python and the `rpart`
+    library in R. With these trained decision tree models, you also learned how to
+    visualize and interpret the results. For visualizations, we used the `graphviz`
+    package in Python and the `rattle` library in R. Moreover, you saw how we can
+    interpret the decision tree results and understand the customer groups that are
+    more likely to convert or subscribe to a term deposit by traversing through the
+    trained decision trees, which is useful when we want to conduct an explanatory
+    analysis of customer behaviors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following chapters, we are going to switch gears and focus on product
+    analytics. In the next chapter, we will discuss the kinds of exploratory analysis
+    that we can run to understand and identify patterns and trends in product data.
+    With the product analytics results from the next chapter, we will show how we
+    can build a product recommendation model.
+  prefs: []
+  type: TYPE_NORMAL

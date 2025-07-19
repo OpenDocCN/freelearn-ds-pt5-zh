@@ -1,0 +1,810 @@
+- en: Signal Processing and Time Series
+  prefs: []
+  type: TYPE_NORMAL
+- en: Signal processing is a subdomain of electrical engineering and applied mathematics.
+    It covers the analysis and processing of time-related variables or variables that
+    change over time, such as analog and digital signals. Analog signals are non-digitized
+    signals, such as radio or telephone signals. Digital signals are digitized, discrete,
+    time-sampled signals, such as computer and digital device signals. Time-series
+    analysis is the category of signal processing that deals with ordered or sequential
+    lists of observations. This data can be ordered hourly, daily, weekly, monthly,
+    or annually. The time component in the time series plays a very important role.
+    We need to extract all the relations in the data with respect to time. There are
+    lots of examples that are related to time-series analysis, such as the production
+    and sales of a product, predicting stock prices on an hourly or daily basis, economic
+    forecasts, and census analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, our main focus is on signal processing and time-series operations
+    using the NumPy, SciPy, `pandas`, and `statsmodels` libraries. This chapter will
+    be helpful for data analysts to understand trends and patterns and forecast sales,
+    stock prices, production, population, rainfall, and weather temperature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will cover the following topics in this chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `statsmodels` modules
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Moving averages
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Window functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Defining cointegration
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: STL decomposition
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Autocorrelation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Autoregressive models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ARMA models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Generating periodic signals
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fourier analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spectral analysis filtering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Technical requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter has the following technical requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find the code and the dataset at the following GitHub link: [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter08](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter08).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All the code blocks are in the `Ch8.ipynb` file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This chapter uses two CSV files (`beer_production.csv` and `sales.csv`) for
+    practice purposes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will use the `pandas` and Scikit-learn Python libraries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The statsmodels modules
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`statsmodels` is an open source Python module that offers functionality for
+    various statistical operations, such as central values (mean, mode, and median),
+    dispersion measures (standard deviation and variance), correlations, and hypothesis
+    tests.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s install `statsmodels` using `pip` and run the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`statsmodels` provides the `statsmodels.tsa` submodule for time-series operations.
+    `statsmodels.tsa` provides useful time-series methods and techniques, such as
+    autoregression, autocorrelation, partial autocorrelation, moving averages, SimpleExpSmoothing,
+    Holt''s linear, Holt-Winters, ARMA, ARIMA, **vector autoregressive** (**VAR**)
+    models, and lots of helper functions, which we will explore in the upcoming sections.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving averages
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Moving averages, or rolling means, are time-series filters that filter impulsive
+    responses by averaging the set or window of observations. It uses window size
+    concepts and finds the average of the continuous window slides for each period.
+    The simple moving average can be represented as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/348b3a98-fd85-4c49-99da-fba169304086.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'There are various types of moving averages available, such as centered, double,
+    and weighted moving averages. Let''s find the moving average using the `rolling()`
+    function, but before that, we''ll first load the data and visualize it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f27f7d5f-9df1-4603-a77b-ce85d0b519ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code, we have read the sales dataset of 36 months from January
+    2017 to December 2019 and plotted it using Matplotlib. Now, we will compute the
+    moving average using the rolling function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/aeeef19b-b968-4207-983b-0adb4b10e638.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we computed the 3 and 5 moving averages using the rolling
+    mean and displayed the line plot using Matplotlib. Now, let's see different types
+    of window functions for moving averages in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Window functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: NumPy offers several window options that can compute weights in a rolling window
+    as we did in the previous section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The window function uses an interval for spectral analysis and filter design
+    (for more background information, refer to [http://en.wikipedia.org/wiki/Window_function](http://en.wikipedia.org/wiki/Window_function)).
+    The boxcar window is a rectangular window with the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*w(n) = 1*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The triangular window is shaped like a triangle and has the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ec4ec393-f982-43b3-a864-1d7a1e8817a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *L* can be equal to *N*, *N*+1, or *N*–1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If the value of *L* is *N*–1, it is known as the Bartlett window and has the
+    following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/715dfe5d-e6dc-4d40-899a-ab61d45b9d98.png)![](img/aaf1be2b-80d5-491c-89aa-42eaf91bb297.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the `pandas` module, the `DataFrame.rolling()` function provides the same
+    functionality using the `win_type` parameter for different window functions. Another
+    parameter is the window for defining the size of the window, which is easy to
+    set as shown in the previous section. Let''s use the `win_type` parameter and
+    try different window functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/09dea12c-959b-4080-a1dc-3bc52f73ffe7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code block, we have plotted the rolling mean for different
+    window functions, such as boxcar, triangular, hamming, and Blackman window, using
+    the `win_type` parameter in the `rolling()` function. Now, let's learn how to
+    find a correlation between two time series using cointegration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining cointegration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Cointegration is just like a correlation that can be viewed as a superior metric
+    to define the relatedness of two time series. Cointegration is the stationary
+    behavior of the linear combination of two time series. In this way, the trend
+    of the following equation must be stationary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*y(t) - a x(t)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a drunk man and his dog out on a walk. Correlation tells us whether
+    they are going in the same direction. Cointegration tells us something about the
+    distance over time between the man and his dog. We will show cointegration using
+    randomly generated time-series and real data. The **Augmented Dickey-Fuller**
+    (**ADF**) test tests for a unit root in a time series and can be used to determine
+    the stationarity of time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's see an example to understand the cointegration of two time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can check out the full code for this example at the following GitHub link:
+    [](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter08/Ch8.ipynb)
+    [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter08/Ch8.ipynb](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter08/Ch8.ipynb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s get started with the cointegration demo:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the required libraries and define the following function to calculate
+    the ADF statistic:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Load the Sunspot data into a NumPy array:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Generate a sine wave and calculate the cointegration of the sine with itself:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The code should print the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the printed results, the first value represents the ADF metric and the second
+    value represents the p-value. As you can see, the p-value is very high. The following
+    values are the lag and sample size. The dictionary at the end gives the t-distribution
+    values for this exact sample size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, add noise to the sine to demonstrate how noise will influence the signal:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the noise, we get the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The p-value has gone down considerably. The ADF metric here, `-7.45`, is lower
+    than all the critical values in the dictionary. All these are strong arguments
+    to reject cointegration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s generate a cosine of a larger magnitude and offset. Again, let''s add
+    noise to it:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following values get printed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, we have strong arguments to reject cointegration. Checking for cointegration
+    between the sine and sunspots gives the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following values get printed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The confidence levels are roughly the same for the pairs used here because
+    they are dependent on the number of data points, which doesn''t vary much. The
+    outcome is summarized in the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Pair** | **Statistic** | **p-value** | **5%** | **1%** | **10%** | **Reject**
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Sine with self | -5.03E-16 | 0.95 | -2.87 | -3.45 | -2.57 | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Sine versus sine with noise | -7.45 | 5.58E-11 | -2.87 | -3.45 | -2.57 |
+    Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Sine versus cosine with noise | -17.92 | 2.89E-30 | -2.87 | -3.45 | -2.57
+    | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Sine versus sunspots | -6.72 | 3.42E-09 | -2.87 | -3.45 | -2.57 | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: In the preceding table, the results are summarized for all four sine waves and
+    their significance level with rejection/acceptance is discussed. Let's now move
+    on to another important topic of the chapter, which is STL decomposition of any
+    time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: STL decomposition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**STL** stands for **seasonal** **and trend decomposition** **using LOESS**.
+    STL is a time-series decomposition method that can decompose an observed signal
+    into a trend, seasonality, and residual. It can estimate non-linear relationships
+    and handle any type of seasonality. The `statsmodels.tsa.seasonal` subpackage
+    offers the `seasonal_decompose` method for splitting a given input signal into
+    trend, seasonality, and residual.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see the following example to understand STL decomposition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/046872eb-5130-47a0-ad50-32e5ff6ac47d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code block, the given time-series signal is decomposed into
+    trend, seasonal, and residual components using the `seasonal_decompose()` function
+    of the `statsmodels` module. Let's now jump to autocorrelation to understand the
+    relationship between a time series and its lagged series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autocorrelation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Autocorrelation, or lagged correlation, is the correlation between a time series
+    and its lagged series. It indicates the trend in the dataset. The autocorrelation
+    formula can be defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ec5f82f8-a046-410c-abbf-d0204caee611.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can calculate the autocorrelation using the NumPy `correlate()` function
+    to calculate the actual autocorrelation of sunspot cycles. We can also directly
+    visualize the autocorrelation plot using the `autocorrelation_plot()` function.
+    Let''s compute the autocorrelation and visualize it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d1632364-68b7-4dd0-96d3-2cb448ae27c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code block, we have seen an autocorrelation example using
+    the NumPy module. Let''s compute the autocorrelation plot produced by `pandas`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/022ddef4-7af7-4af0-84d0-38d6d7e85a29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code block, we have produced an autocorrelation plot using
+    the `autocorrelation_plot()` function of the `pandas` library. It is easier to
+    draw the autocorrelation plot using the `pandas` library compared to the NumPy
+    library. Let's now jump to autoregressive models for time-series prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autoregressive models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Autoregressive models are time-series models used to predict future incidents.
+    The following formula shows this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b8354b08-b851-4de9-bc55-6ed57d7a43ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding formula, *c* is a constant and the last term is a random component,
+    also known as white noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s build the autoregression model using the `statsmodels.tsa` subpackage:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the libraries and read the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Split the Sunspot data into train and test sets:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Train and fit the autoregressive model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we have read the Sunspot dataset and split it into two
+    parts: train and test sets. Then, we built the autoregressive model by creating
+    an instance and fitting a model. Let''s make predictions and assess the model''s
+    performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perform predictions and assess the model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code block, we have made the predictions on the test dataset
+    and assessed the model's performance using **Mean Absolute Error** (**MAE**),
+    **Mean Squared Error** (**MSE**), and **Root Mean Squared Error** (**RMSE**).
+    Let's plot the line plot for the original series and prediction series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s plot the predicted and original series to understand the forecasting
+    results in a better way:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7ee59e6a-6336-42ce-be84-475d25d70eb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding plot, we can see the original series and predicted series using
+    the autoregressive model. After generating the autoregressive model, we need to
+    jump to one more advanced approach for time-series prediction, which is **Autoregressive
+    Moving Average** (**ARMA**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ARMA models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The ARMA model blends autoregression and moving averages. The ARMA model is
+    commonly referred to as ARMA(*p*,*q*), where *p* is the order of the autoregressive
+    part, and *q* is the order of the moving average:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/46808db6-b1c1-4d1a-90fb-2818aad116fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding formula, just like in the autoregressive model formula, we
+    have a constant and a white noise component; however, we try to fit the lagged
+    noise components as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the libraries and read the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Split the Sunspot data into train and test sets:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Train and fit the autoregressive model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Perform predictions and assess the model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s plot the predicted and original series to understand the forecasting
+    results in a better way:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/cd0b9027-d622-4cff-920c-8a7a04fbfab1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code, we have read the Sunspot dataset and split it into two
+    parts: train and test sets. Then, we built the ARMA model by creating an instance
+    and fitting a model. We made the predictions on the test dataset and assessed
+    the model performance using MAE, MSE, and RMSE. Finally, we saw the line plot
+    for the original series and prediction series. Let''s jump to one more important
+    topic, which is generating periodic signals.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating periodic signals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Many natural phenomena are regular and trustworthy, such as an accurate clock.
+    Some phenomena exhibit patterns that seem regular. A group of scientists found
+    three cycles in the sunspot activity with the Hilbert-Huang transform (see [https://en.wikipedia.org/wiki/Hilbert%E2%80%93Huang_transform](https://en.wikipedia.org/wiki/Hilbert%E2%80%93Huang_transform)).
+    The cycles have a duration of 11, 22, and 100 years, approximately. Normally,
+    we would simulate a periodic signal using trigonometric functions such as a sine
+    function. You probably remember a bit of trigonometry from high school. That''s
+    all we need for this example. Since we have three cycles, it seems reasonable
+    to create a model that is a linear combination of three sine functions. This just
+    requires a tiny adjustment of the code for the autoregressive model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create model, error, and fit functions:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s load the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Apply and fit the model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Print the results:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first line displays the coefficients of the model we attempted. We have
+    an MAE of 44, which means that we are off by that amount in either direction on
+    average. We also want the coefficient of determination to be as close to 1 as
+    possible to have a good fit. Instead, we get a negative value, which is undesirable.
+    Let's create a graph to understand the results in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Plot the original and predicted series:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d5513638-c82d-4233-9cc0-6d3a00b744a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the preceding graph, we can conclude that the model is not able to capture
+    the actual pattern of the series. This is why we get a negative coefficient of
+    determination or R-squared. Now, we will look at another important technique for
+    time-series analysis, Fourier analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fourier analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Fourier analysis uses the Fourier series concept thought up by the mathematician
+    Joseph Fourier. The Fourier series is a mathematical method used to represent
+    functions as an infinite series of sine and cosine terms. The functions in question
+    can be real- or complex-valued:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/09cd1f56-052d-45c9-8953-8386f00c90fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For Fourier analysis, the most competent algorithm is **Fast** **Fourier Transform**
+    (**FFT**). FFT decomposes a signal into different frequency signals. This means
+    it produces a frequency spectrum of a given signal. The SciPy and NumPy libraries
+    provide functions for FFT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `rfft()` function performs FFT on real-valued data. We could also have used
+    the `fft()` function, but it gives a warning on this Sunspot dataset. The `fftshift()`
+    function moves the zero-frequency component to the middle of the spectrum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see the following example to understand FFT:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the libraries and read the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '2\. Compute the FFT for sine waves and sunspots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Create the subplots:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/94e62b77-09a9-4614-9f81-fe9a80b38752.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, first, we read the Sunspot dataset and created the sine
+    wave. After that, we computed the FFT for the sine wave and the `SUNACTIVITY`
+    column. Finally, we plotted the three graphs for the original series and sine
+    wave and transformed sunspots and sine wave.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spectral analysis filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous section, we discussed the amplitude spectrum of the dataset.
+    Now is the time to explore the power spectrum. The power spectrum of any physical
+    signal can display the energy distribution of the signal. We can easily change
+    the code and display the power spectrum by squaring the transformed signal using
+    the following syntax:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also plot the phase spectrum using the following Python syntax:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s see the complete code for the power and phase spectrum for the Sunspot
+    dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the libraries and read the dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Compute `FFT`, `Spectrum`, and `Phase`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Create the subplot:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/89e49697-731b-4b91-ad92-092f2664662f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, first, we read the Sunspot dataset and computed the FFT
+    for the `SUNACTIVITY` column. After this, we computed the power and phase spectrum
+    for the transformed FFT. Finally, we plotted the three graphs for the original
+    series and the power and phase spectrums using subplots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, the time-series examples we used were annual sunspot cycles
+    data, sales data, and beer production. We learned that it's common to try to derive
+    a relationship between a value and another data point or a combination of data
+    points with a fixed number of periods in the past in the same time series. We
+    learned how moving averages convert the random variation trend into a smooth trend
+    using a window size. We learned how the `DataFrame.rolling()` function provides
+    `win_type` string parameters for different window functions. Cointegration is
+    similar to correlation and is a metric to define the relatedness of two time series.
+    We also focused on STL decomposition, autocorrelation, autoregression, the ARMA
+    model, Fourier analysis, and spectral analysis filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next chapter, [Chapter 9](f3b0dd01-2d5b-41dc-9878-3b7f7eff5e66.xhtml), *Supervised
+    Learning – Regression Analysis*, will focus on the important topics of regression
+    analysis and logistic regression in Python. The chapter starts with multiple linear
+    regression, multicollinearity, dummy variables, and model evaluation measures.
+    In the later sections of the chapter, the focus will be on logistic regression.
+  prefs: []
+  type: TYPE_NORMAL

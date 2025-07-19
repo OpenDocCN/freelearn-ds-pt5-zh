@@ -1,0 +1,1902 @@
+- en: Chapter 5. Big Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"More is different."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Philip Warren Anderson* |'
+  prefs: []
+  type: TYPE_TB
+- en: In the previous chapters, we've used regression techniques to fit models to
+    the data. In [Chapter 3](ch03.xhtml "Chapter 3. Correlation"), *Correlation*,
+    for example, we built a linear model that used ordinary least squares and the
+    normal equation to fit a straight line through the athletes' heights and log weights.
+    In [Chapter 4](ch04.xhtml "Chapter 4. Classification"), *Classification*, we used
+    Incanter's optimize namespace to minimize the logistic cost function and build
+    a classifier of Titanic's passengers. In this chapter, we'll apply similar analysis
+    in a way that's suitable for much larger quantities of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll be working with a relatively modest dataset of only 100,000 records. This
+    isn't big data (at 100 MB, it will fit comfortably in the memory of one machine),
+    but it's large enough to demonstrate the common techniques of large-scale data
+    processing. Using Hadoop (the popular framework for distributed computation) as
+    its case study, this chapter will focus on how to scale algorithms to very large
+    volumes of data through parallelism. We'll cover two libraries that Clojure offers
+    to work with Hadoop—**Tesser** and **Parkour**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we get to Hadoop and distributed data processing though, we'll see how
+    some of the same principles that enable Hadoop to be effective at a very large
+    scale can also be applied to data processing on a single machine, by taking advantage
+    of the parallel capacity available in all modern computers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading the code and data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter makes use of data on individual income by the zip code provided
+    by the U.S. Internal Revenue Service (IRS). The data contains selected income
+    and tax items classified by state, zip code, and income classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's 100 MB in size and can be downloaded from [http://www.irs.gov/pub/irs-soi/12zpallagi.csv](http://www.irs.gov/pub/irs-soi/12zpallagi.csv)
+    to the example code's data directory. Since the file contains the IRS Statistics
+    of Income (SoI), we've renamed the file to `soi.csv` for the examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The example code for this chapter is available from the Packt Publishing's website
+    or [https://github.com/clojuredatascience/ch5-big-data](https://github.com/clojuredatascience/ch5-big-data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As usual, a script has been provided to download and rename the data for you.
+    It can be run on the command line from within the project directory with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you run this, the file will be downloaded and renamed automatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspecting the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once you''ve downloaded the data, take a look at the column headings in the
+    first line of the file. One way to access the first line of the file is to load
+    the file into memory, split on newline characters, and take the first result.
+    The Clojure core library''s function `slurp` will return the whole file as a string:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The file is around 100 MB in size on disk. When loaded into memory and converted
+    into object representations, the data will occupy more space in memory. This is
+    particularly wasteful when we're only interested in the first row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fortunately, we don''t have to load the whole file into memory if we take advantage
+    of Clojure''s lazy sequences. Instead of returning a string representation of
+    the contents of the whole file, we could return a reference to the file and then
+    step through it one line at a time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we're using `clojure.java.io/reader` to return a reference
+    to the file. Also, we're using the `clojure.core` function `line-seq` to return
+    a lazy sequence of lines from the file. In this way, we can read files even larger
+    than the available memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result of the previous function is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are 77 fields in the file, so we won''t identify them all. The first
+    four fields are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`STATEFIPS`: This is the Federal Information Processing System (FIPS) code.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`STATE`: This is the two-letter code for the State.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`zipcode`: This is the 5-digit zip code.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`AGI_STUB`: This is the side of the adjusted gross income, binned in the following
+    way:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: $1 under $25,000
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: $25,000 under $50,000
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: $50,000 under $75,000
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: $75,000 under $100,000
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: $100,000 under $200,000
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: $200,000 or more
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The other fields that we''re interested in are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`N1`: The number of returns submitted'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`MARS2`: The number of joint returns submitted'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`NUMDEP`: The number of dependents'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`N00200`: The number of returns with salaries and wages'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`N02300`: The number of returns with unemployment compensation'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you're curious, the full list of column definitions is available in the IRS
+    data definition document at [http://www.irs.gov/pub/irs-soi/12zpdoc.doc](http://www.irs.gov/pub/irs-soi/12zpdoc.doc).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Counting the records
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our file is certainly wide, but is it tall? We''d like to determine the total
+    number of rows in the file. Having created a lazy sequence, this is simply a matter
+    of counting the length of the sequence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding example returns 166,905, including the header row, so we know
+    there are actually 166,904 rows in the file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `count` function is the simplest way to count the number of elements in
+    a sequence. For vectors (and other types implementing the counted interface),
+    this is also the most efficient one, since the collection already knows how many
+    elements it contains and therefore it doesn't need to recalculate it. For a lazy
+    sequence however, the only way to determine how many elements are contained in
+    the sequence is to step through it from the beginning to the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clojure''s implementation of `count` is written in Java, but the Clojure equivalent
+    would be a reduce over the sequence like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding function we pass to `reduce` accepts a counter `i` and the next
+    element from the sequence `x`. For each `x`, we simply increment the counter `i`.
+    The reduce function accepts an initial value of zero, which represents the concept
+    of nothing. If there are no lines to reduce over, zero will be returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As of version 1.5, Clojure offers the reducers library ([http://clojure.org/reducers](http://clojure.org/reducers)),
+    which provides an alternative way to perform reductions that trades memory efficiency
+    for speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reducers library
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The `count` operation we implemented previously is a sequential algorithm. Each
+    line is processed one at a time until the sequence is exhausted. But there is
+    nothing about the operation that demands that it must be done in this way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could split the number of lines into two sequences (ideally of roughly equal
+    length) and reduce over each sequence independently. When we''re done, we would
+    just add together the total number of lines from each sequence to get the total
+    number of lines in the file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The reducers library](img/7180OS_05_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: If each **Reduce** ran on its own processing unit, then the two count operations
+    would run in parallel. All the other things being equal, the algorithm would run
+    twice as fast. This is one of the aims of the `clojure.core.reducers` library—to
+    bring the benefit of parallelism to algorithms implemented on a single machine
+    by taking advantage of multiple cores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallel folds with reducers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The parallel implementation of reduce implemented by the reducers library is
+    called **fold**. To make use of a fold, we have to supply a combiner function
+    that will take the results of our reduced sequences (the partial row counts) and
+    return the final result. Since our row counts are numbers, the combiner function
+    is simply `+`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Reducers are a part of Clojure's standard library, they do not need to be added
+    as an external dependency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The adjusted example, using `clojure.core.reducers` as `r`, looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The combiner function, `+`, has been included as the first argument to fold
+    and our unchanged reduce function is supplied as the second argument. We no longer
+    need to pass the initial value of zero—`fold` will get the initial value by calling
+    the combiner function with no arguments. Our preceding example works because `+`,
+    called with no arguments, already returns zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To participate in folding then, it''s important that the combiner function
+    have two implementations: one with zero arguments that returns the identity value
+    and another with two arguments that *combines* the arguments. Different folds
+    will, of course, require different combiner functions and identity values. For
+    example, the identity value for multiplication is `1`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can visualize the process of seeding the computation with an identity value,
+    iteratively reducing over the sequence of `xs` and combining the reductions into
+    an output value as a tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Parallel folds with reducers](img/7180OS_05_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: There may be more than two reductions to combine, of course. The default implementation
+    of `fold` will split the input collection into chunks of 512 elements. Our 166,000-element
+    sequence will therefore generate 325 reductions to be combined. We're going to
+    run out of page real estate quite quickly with a tree representation diagram,
+    so let's visualize the process more schematically instead—as a two-step reduce
+    and combine process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first step performs a parallel reduce across all the chunks in the collection.
+    The second step performs a serial reduce over the intermediate results to arrive
+    at the final result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Parallel folds with reducers](img/7180OS_05_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding representation shows reduce over several sequences of `xs`, represented
+    here as circles, into a series of outputs, represented here as squares. The squares
+    are combined serially to produce the final result, represented by a star.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading large files with iota
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Calling `fold` on a lazy sequence requires Clojure to realize the sequence into
+    memory and then chunk the sequence into groups for parallel execution. For situations
+    where the calculation performed on each row is small, the overhead involved in
+    coordination outweighs the benefit of parallelism. We can improve the situation
+    slightly by using a library called `iota` ([https://github.com/thebusby/iota](https://github.com/thebusby/iota)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The `iota` library loads files directly into the data structures suitable for
+    folding over with reducers that can handle files larger than available memory
+    by making use of memory-mapped files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With `iota` in the place of our `line-seq` function, our line count simply
+    becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: So far, we've just been working with the sequences of unformatted lines, but
+    if we're going to do anything more than counting the rows, we'll want to parse
+    them into a more useful data structure. This is another area in which Clojure's
+    reducers can help make our code more efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a reducers processing pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We already know that the file is comma-separated, so let''s first create a
+    function to turn each row into a vector of fields. All fields except the first
+    two contain numeric data, so let''s parse them into doubles while we''re at it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''re using the reducers version of `map` to apply our `parse-line` function
+    to each of the lines from the file in turn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The final `into` function call converts the reducers' internal representation
+    (a reducible collection) into a Clojure vector. The previous example should return
+    a sequence of 77 fields, representing the first row of the file after the header.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''re just dropping the column names at the moment, but it would be great
+    if we could make use of these to return a map representation of each record, associating
+    the column name with the field value. The keys of the map would be the column
+    headings and the values would be the parsed fields. The `clojure.core` function
+    `zipmap` will create a map out of two sequences—one for the keys and one for the
+    values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This function returns a map representation of each row, a much more user-friendly
+    data structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: A great thing about Clojure's reducers is that in the preceding computation,
+    calls to `r/map`, `r/drop` and `r/take` are composed into a reduction that will
+    be performed in a single pass over the data. This becomes particularly valuable
+    as the number of operations increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s assume that we''d like to filter out zero ZIP codes. We could extend
+    the reducers pipeline like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `r/remove` step is now also being run together with the `r/map`, `r/drop`
+    and `r/take` calls. As the size of the data increases, it becomes increasingly
+    important to avoid making multiple iterations over the data unnecessarily. Using
+    Clojure's reducers ensures that our calculations are compiled into a single pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Curried reductions with reducers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To make the process clearer, we can create a **curried** version of each of
+    our previous steps. To parse the lines, create a record from the fields and filter
+    zero ZIP codes. The curried version of the function is a reduction waiting for
+    a collection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In each case, we''re calling one of reducers'' functions, but without providing
+    a collection. The response is a curried version of the function that can be applied
+    to the collection at a later time. The curried functions can be composed together
+    into a single `parse-file` function using `comp`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: It's only when the `parse-file` function is called with a sequence that the
+    pipeline is actually executed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Statistical folds with reducers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With the data parsed, it''s time to perform some descriptive statistics. Let''s
+    assume that we''d like to know the mean *number of returns* (column `N1`) submitted
+    to the IRS by ZIP code. One way of doing this—the way we''ve done several times
+    throughout the book—is by adding up the values and dividing it by the count. Our
+    first attempt might look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: While this works, it's comparatively slow. We iterate over the data once to
+    create `xs`, a second time to calculate the sum, and a third time to calculate
+    the count. The bigger our dataset gets, the larger the time penalty we'll pay.
+    Ideally, we would be able to calculate the mean value in a single pass over the
+    data, just like our `parse-file` function previously. It would be even better
+    if we can perform it in parallel too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Associativity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we proceed, it''s useful to take a moment to reflect on why the following
+    code wouldn''t do what we want:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our `mean` function is a function of two arities. Without arguments, it returns
+    zero, the identity for the `mean` computation. With two arguments, it returns
+    their mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding example folds over the `N1` data with our `mean` function and
+    produces a different result from the one we obtained previously. If we could expand
+    out the computation for the first three `xs`, we might see something like the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is a bad idea, because the `mean` function is not associative. For an
+    associative function, the following holds true:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Associativity](img/7180OS_05_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Addition is associative, but multiplication and division are not. So the `mean`
+    function is not associative either. Contrast the `mean` function with the following
+    simple addition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This yields an identical result to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: It doesn't matter how the arguments to `+` are partitioned. Associativity is
+    an important property of functions used to reduce over a set of data because,
+    by definition, the results of a previous calculation are treated as inputs to
+    the next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The easiest way of converting the `mean` function into an associative function
+    is to calculate the sum and the count separately. Since the sum and the count
+    are associative, they can be calculated in parallel over the data. The `mean`
+    function can be calculated simply by dividing one by the other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the mean using fold
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We''ll create a fold using two custom functions, `mean-combiner` and `mean-reducer`.
+    This requires defining three entities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The identity value for the fold
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The reduce function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The combine function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We discovered the benefits of associativity in the previous section, and so
+    we''ll want to update our intermediate `mean` by using associative operations
+    only and calculating the sum and count separately. One way of representing the
+    two values is a map of two keys, `:count` and `:sum`. The value that represents
+    zero for our mean would be a sum of zero and a count of zero, or a map such as
+    the following: `{:count 0 :sum 0}`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The combine function, `mean-combiner`, provides the seed value when it''s called
+    without arguments. The two-argument combiner needs to add together the `:count`
+    and the `:sum` for each of the two arguments. We can achieve this by merging the
+    maps with `+`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `mean-reducer` function needs to accept an accumulated value (either an
+    identity value or the results of a previous reduction) and incorporate the new
+    `x`. We do this simply by incrementing the `:count` and adding `x` to the accumulated
+    `:sum`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding two functions are enough to completely specify our `mean` fold:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result gives us all we need to calculate the mean of `N1`, which is calculated
+    in only one pass over the data. The final step of the calculation can be performed
+    with the following `mean-post-combiner` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Happily, the values agree with the mean we calculated previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the variance using fold
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we''d like to calculate the variance of the `N1` values. Remember that
+    the variance is the mean squared difference from the mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the variance using fold](img/7180OS_05_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To implement this as a fold, we might write something as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, we calculate the `mean` value of the series using the fold we constructed
+    just now. Then, we define a function of `x` and `sq-diff`, which calculates the
+    squared difference of `x` from the `mean` value. We map it over the squared differences
+    and call our `mean` fold a second time to arrive at the final variance result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, we make two complete passes over the data, firstly to calculate the mean,
+    and secondly to calculate the difference of each `x` from the `mean` value. It
+    might seem that calculating the variance is necessarily a sequential algorithm:
+    it may not seem possible to reduce the number of steps further and calculate the
+    variance in only a single fold over the data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, it is possible to express the variance calculation as a single fold.
+    To do so, we need to keep track of three things: the count, the (current) mean,
+    and the sum of squared differences:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our combiner function is shown in the preceding code. The identity value is
+    a map with all three values set to zero. The zero-arity combiner returns this
+    value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The two-arity combiner needs to combine the counts, means, and sums-of-squares
+    for both of the supplied values. Combining the counts is easy—we simply add them
+    together. The means is only marginally trickier: we need to calculate the weighted
+    mean of the two means. If one mean is based on fewer records, then it should count
+    for less in the combined mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the variance using fold](img/7180OS_05_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Combining the sums of squares is the most complicated calculation. While adding
+    the sums of squares, we also need to add a factor to account for the fact that
+    the sum of squares from `a` and `b` were likely calculated from differing means:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: The reducer is much simpler and contains the explanation on how the variance
+    fold is able to calculate the variance in one pass over the data. For each new
+    record, the `:mean` value is recalculated from the previous `mean` and current
+    `count`. We then add to the sum of squares the product of the difference between
+    the means before and after taking account of this new record.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final result is a map containing the `count`, `mean` and total `sum-of-squares`.
+    Since the variance is just the `sum-of-squares` divided by the `count`, our `variance-post-combiner`
+    function is a relatively simple one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Putting the three functions together yields the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since the standard deviation is simply the square root of the variance, we only
+    need a slightly modified `variance-post-combiner` function to calculate it as
+    well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mathematical folds with Tesser
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We should now understand how to use folds to calculate parallel implementations
+    of simple algorithms. Hopefully, we should also have some appreciation for the
+    ingenuity required to find efficient solutions that will perform the minimum number
+    of iterations over the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fortunately, the Clojure library Tesser ([https://github.com/aphyr/tesser](https://github.com/aphyr/tesser))
+    includes implementations for common mathematical folds, including the mean, standard
+    deviation, and covariance. To see how to use Tesser, let''s consider the covariance
+    of two fields from the IRS dataset: the salaries and wages, `A00200`, the unemployment
+    compensation, `A02300`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating covariance with Tesser
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We encountered covariance in [Chapter 3](ch03.xhtml "Chapter 3. Correlation"),
+    *Correlation*, as a measure of how two sequences of data vary together. The formula
+    is reproduced as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating covariance with Tesser](img/7180OS_05_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A covariance fold is included in `tesser.math`. In the following code, we''ll
+    include `tesser.math` as `m` and `tesser.core` as `t`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `m/covariance` function expects to receive two arguments: a function to
+    return the `x` value and another to return the `y` value. Since keywords act as
+    functions to extract their corresponding values from a map, we simply pass the
+    keywords as arguments.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tesser works in a similar way to Clojure''s reducers, but with some minor differences.
+    Clojure''s `fold` takes care of splitting our data into subsequences for parallel
+    execution. With Tesser however, we must divide our data into chunks explicitly.
+    Since this is something we''re going to do repeatedly, let''s create a little
+    helper function called `chunks`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the most of the rest of this chapter, we'll be using the `chunks` function
+    to split our input data into groups of `1024` records.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Commutativity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another difference between Clojure''s reducers and Tesser''s folds is that
+    Tesser doesn''t guarantee that the input order will be preserved. Along with being
+    associative, as we discussed previously, Tesser''s functions must be commutative.
+    A commutative function is the one whose result is the same if its arguments are
+    provided in a different order:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Commutativity](img/7180OS_05_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Addition and multiplication are commutative, but subtraction and division are
+    not. Commutativity is a useful property of functions intended for distributed
+    data processing, because it lowers the amount of coordination required between
+    subtasks. When Tesser executes a combine function, it's free to do so on whichever
+    reducer functions return their values first. If the order doesn't matter, it doesn't
+    need to wait for the first to complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s rewrite our `load-data` function into a `prepare-data` function that
+    will return a commutative Tesser fold. It performs the same steps (parsing a line
+    of the text file, formatting the record as a map and removing zero ZIP codes)
+    that our previous reducers-based function did, but it no longer assumes that the
+    column headers will be the first row in the file—*first* is a concept that explicitly
+    requires ordered data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that all the preparation is being done in Tesser, we can pass the result
+    of `iota/seq` directly as input. This will be particularly useful when we come
+    to run our code distributed on Hadoop later in the chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In [Chapter 3](ch03.xhtml "Chapter 3. Correlation"), *Correlation*, we saw
+    how in the case of simple linear regression with one feature and one response
+    variable, the correlation coefficient is the covariance over the product of standard
+    deviations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Commutativity](img/7180OS_05_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Tesser includes functions to calculate the correlation of a pair of attributes
+    as a fold too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: There's a modest, positive correlation between these two variables. Let's build
+    a linear model that predicts the value of unemployment compensation, `A02300`,
+    using salaries and wages, `A00200`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simple linear regression with Tesser
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Tesser doesn''t currently provide a linear regression fold, but it does give
+    us the tools we need to implement one. We saw in [Chapter 3](ch03.xhtml "Chapter 3. Correlation"),
+    *Correlation*, how the coefficients for a simple linear regression model, the
+    slope and the intercept, can be calculated as a simple function of the variance,
+    covariance, and means of the two inputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Simple linear regression with Tesser](img/7180OS_05_07.jpg)![Simple linear
+    regression with Tesser](img/7180OS_05_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The slope *b* is the covariance divided by the variance in *X*. The intercept
+    is the value that ensures the regression line passes through the means of both
+    the series. Ideally, therefore, we'd be able to calculate each of these four variables
+    in a single fold over the data. Tesser provides two fold combinators, `t/fuse`
+    and `t/facet`, to build more sophisticated folds out of more basic folds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In cases where we have one input record and multiple calculations to be run
+    in parallel, we should use `t/fuse`. For example, in the following example, we''re
+    fusing the mean and the standard deviation folds into a single fold that will
+    calculate both values at once:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, we have the same calculation to run on all the fields in the map; therefore,
+    we should use `t/facet`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we selected only two values from the record (`A00200`
+    and `A02300`) and calculated the `mean` value for both of them simultaneously.
+    Returning to the challenge of performing simple linear regression—we have four
+    numbers to calculate, so let''s `fuse` them together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`fuse` very succinctly binds together the calculations we want to perform.
+    In addition, it allows us to specify a `post-combine` step to be included as part
+    of the fuse. Rather than handing the result off to another function to finalize
+    the output, we can specify it directly as an integral part of the fold. The `post-combine`
+    step receives the four results and calculates the slope and intercept from them,
+    returning the two coefficients as a vector.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating a correlation matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We''ve only compared two features to see how they are correlated, but Tesser
+    makes it very simple to look at the inter-correlation of a large number of target
+    features. We supply the target features as a map of the feature name to some function
+    of the input record that returns the desired feature. In [Chapter 3](ch03.xhtml
+    "Chapter 3. Correlation"), *Correlation*, for example, we would have taken the
+    logarithm of the height. Here, we will simply extract each of the features as
+    it is and provide human-readable names for each of them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tesser will calculate the correlation between each pair of features and return
+    the results in a map. The map is keyed by tuples (vectors of two elements) containing
+    the names of each pair of features, and the associated value is the correlation
+    between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you run the preceding example now, you'll find that there are a high correlations
+    between some of the variables. For example, the correlation between `:dependents`
+    and `:unemployment-compensation` is `0.821`. Let's build a linear regression model
+    that uses all of these variables as inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple regression with gradient descent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When we ran multiple linear regression in [Chapter 3](ch03.xhtml "Chapter 3. Correlation"),
+    *Correlation*, we used the normal equation and matrices to quickly arrive at the
+    coefficients for a multiple linear regression model. The normal equation is repeated
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Multiple regression with gradient descent](img/7180OS_05_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The normal equation uses matrix algebra to very quickly and efficiently arrive
+    at the least squares estimates. Where all data fits in memory, this is a very
+    convenient and concise equation. Where the data exceeds the memory available to
+    a single machine however, the calculation becomes unwieldy. The reason for this
+    is matrix inversion. The calculation of ![Multiple regression with gradient descent](img/7180OS_05_10.jpg)
+    is not something that can be accomplished on a fold over the data—each cell in
+    the output matrix depends on many others in the input matrix. These complex relationships
+    require that the matrix be processed in a nonsequential way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An alternative approach to solve linear regression problems, and many other
+    related machine learning problems, is a technique called **gradient descent**.
+    Gradient descent reframes the problem as the solution to an iterative algorithm—one
+    that does not calculate the answer in one very computationally intensive step,
+    but rather converges towards the correct answer over a series of much smaller
+    steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We encountered gradient descent in the previous chapter, when we used Incanter's
+    `minimize` function to calculate the parameters that produced the lowest cost
+    for our logistic regression classifier. As the volume of data increases, Incanter
+    no longer remains a viable solution to run gradient descent. In the next section,
+    we'll see how we can run gradient descent for ourselves using Tesser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gradient descent update rule
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gradient descent works by the iterative application of a function that moves
+    the parameters in the direction of their optimum values. To apply this function,
+    we need to know the gradient of the cost function with the current parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Calculating the formula for the gradient involves calculus that''s beyond the
+    scope of this book. Fortunately, the resulting formula isn''t terribly difficult
+    to interpret:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The gradient descent update rule](img/7180OS_05_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![The gradient descent update rule](img/7180OS_05_12.jpg) is the partial derivative,
+    or the gradient, of our cost function *J(β)* for the parameter at index *j*. Therefore,
+    we can see that the gradient of the cost function with respect to the parameter
+    at index *j* is equal to the difference between our prediction and the true value
+    of *y* multiplied by the value of *x* at index *j*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we''re seeking to descend the gradient, we want to subtract some proportion
+    of the gradient from the current parameter values. Thus, at each step of gradient
+    descent, we perform the following update:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The gradient descent update rule](img/7180OS_05_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, `:=` is the assigment operator and *α* is a factor called the **learning
+    rate**. The learning rate controls how large an adjustment we wish make to the
+    parameters at each iteration as a fraction of the gradient. If our prediction
+    *ŷ* nearly matches the actual value of *y*, then there would be little need to
+    change the parameters. In contrast, a larger error will result in a larger adjustment
+    to the parameters. This rule is called the **Widrow-Hoff learning rule** or the
+    **Delta rule**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gradient descent learning rate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we''ve seen, gradient descent is an iterative algorithm. The learning rate,
+    usually represented by *α*, dictates the speed at which the gradient descent converges
+    to the final answer. If the learning rate is too small, convergence will happen
+    very slowly. If it is too large, gradient descent will not find values close to
+    the optimum and may even diverge from the correct answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The gradient descent learning rate](img/7180OS_05_130.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding chart, a small learning rate leads to a show convergence over
+    many iterations of the algorithm. While the algorithm does reach the minimum,
+    it does so over many more steps than is ideal and, therefore, may take considerable
+    time. By contrast, in following diagram, we can see the effect of a learning rate
+    that is too large. The parameter estimates are changed so significantly between
+    iterations that they actually overshoot the optimum values and diverge from the
+    minimum value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The gradient descent learning rate](img/7180OS_05_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The gradient descent algorithm requires us to iterate repeatedly over our dataset.
+    With the correct version of alpha, each iteration should successively yield better
+    approximations of the ideal parameters. We can choose to terminate the algorithm
+    when either the change between iterations is very small or after a predetermined
+    number of iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature scaling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As more features are added to the linear model, it is important to scale features
+    appropriately. Gradient descent will not perform very well if the features have
+    radically different scales, since it won't be possible to pick a learning rate
+    to suit them all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A simple scaling we can perform is to subtract the mean value from each of
+    the values and divide it by the standard-deviation. This will tend to produce
+    values with zero mean that generally vary between `-3` and `3`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The feature-factors function in the preceding code uses `t/facet` to calculate
+    the `mean` value and standard deviation of all the input features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run the preceding example, you''ll see the different means and standard
+    deviations returned by the `feature-scales` function. Since our feature scales
+    and input records are represented as maps, we can perform the scale across all
+    the features at once using Clojure''s `merge-with` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Likewise, we can perform the all-important reversal with `unscale-features`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s scale our features and take a look at the very first feature. Tesser
+    won''t allow us to execute a fold without a reduce, so we''ll temporarily revert
+    to using Clojure''s reducers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: This simple step will help gradient descent perform optimally on our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature extraction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although we've used maps to represent our input data in this chapter, it's going
+    to be more convenient when running gradient descent to represent our features
+    as a matrix. Let's write a function to transform our input data into a map of
+    `xs` and `y`. The `y` axis will be a scalar response value and `xs` will be a
+    matrix of scaled feature values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As in the previous chapters, we''re adding a bias term to the returned matrix
+    of features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our `feature-matrix` function simply accepts an input of a record and the features
+    to convert into a matrix. We call this from within `extract-features`, which returns
+    a function that we can call on each input record:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding example shows the data converted into a format suitable to perform
+    gradient descent: a map containing the `y` response variable and a matrix of values,
+    including the bias term.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a custom Tesser fold
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Each iteration of gradient descent adjusts the coefficients by an amount determined
+    by the cost function. The cost function is calculated by summing over the errors
+    for each parameter in the dataset, so it will be useful to have a fold that sums
+    the values of the matrices element-wise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Whereas Clojure represents a fold with a reducer, a combiner, and an identity
+    value obtained from the combiner, Tesser folds are expressed as six collaborative
+    functions. The implementation of Tesser''s `m/mean` fold is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tesser chooses to represent the `reducer` identity separately from the `combiner`
+    function, and includes three other functions as well; the `combiner-identity`,
+    `post-reducer`, and `post-combiner` functions. Tesser's `mean` fold represents
+    the pair of numbers (the count and the accumulated sum) as a vector of two numbers
+    but, in other respects, it's similar to our own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating a custom Tesser fold](img/7180OS_05_150.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We've already seen how to make use of a `post-combiner` function with our `mean-post-combiner`
+    and `variance-post-combiner` functions earlier in the chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a matrix-sum fold
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: To create a custom `matrix-sum` fold, we'll need an identity value. We encountered
+    the identity matrix in [Chapter 3](ch03.xhtml "Chapter 3. Correlation"), *Correlation*,
+    but this is the identity for matrix multiplication not addition. If the identity
+    value for `+` is zero (because adding zero to a number doesn't change it), it
+    follows that the identity matrix for matrix addition is simply a matrix of zeros.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have to make sure that the matrix is the same size as the matrices we want
+    to add. So, let''s parameterize our `matrix-sum` fold with the number rows and
+    columns for the matrix. We can''t know in advance how large this needs to be,
+    because the identity function is called before anything else in the fold:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding example is the completed `matrix-sum` fold definition. We don''t
+    provide the `post-combiner` and `post-reducer` functions; since, if omitted, these
+    are assumed to be the identity function, which is what we want. We can use our
+    new fold to calculate a sum of all the features in our input like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Calculating the sum of a matrix gets us closer to being able to perform gradient
+    descent. Let's use our new fold to calculate the total model error, given some
+    initial coefficients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the total model error
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s take a look again at the delta rule for gradient descent:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the total model error](img/7180OS_05_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For each parameter *j*, we adjust the parameter by some proportion of the overall
+    prediction error, *ŷ - y*, multiplied by the feature. Larger features, therefore,
+    get a larger share of the cost than smaller features and are adjusted by a correspondingly
+    larger amount. To implement this in the code, we need to calculate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the total model error](img/7180OS_05_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is the sum of the prediction error multiplied by the feature across all
+    the input records. As we did earlier, our predicted value of *y* will be calculated
+    using the following formula for each input record *x*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the total model error](img/7180OS_05_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The coefficients *β* will be the same across all our input records, so let''s
+    create a `calculate-error` function. Given the transposed coefficients *β*^T,
+    we return a function that will calculate ![Calculating the total model error](img/7180OS_05_17.jpg).
+    Since *x* is a matrix and *ŷ - y* is a scalar, the result will be a matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To calculate the sum of the error for the entire dataset, we can simply chain
+    our previously defined `matrix-sum` function after the `calculate-error` step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice how the gradient is negative for all the features. This means that in
+    order to descend the gradient and produce better estimates of the model coefficients,
+    parameters must be increased.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a matrix-mean fold
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The update rule defined in the previous code actually calls for the mean of
+    the cost to be assigned to each of the features. This means that we need both
+    `sum` and `count` to be calculated. We don''t want to perform two separate passes
+    over the data. So, as we did previously, we `fuse` the two folds into one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `fuse` function will return a map of `:sum` and `:count`, so we'll call
+    `post-combine` on the result. The `post-combine` function specifies a function
+    to be run at the end of our fold which simply divides the sum by the count.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alternatively, we could create another custom fold to return the mean instead
+    of the sum of a sequence of matrices. It has a lot in common with the `matrix-sum`
+    fold defined previously but, like the `mean` fold we calculated earlier in the
+    chapter, we will also keep track of the count of records processed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: The reducer identity is a vector containing `[zeros-matrix 0]`. Each reduction
+    adds to the matrix total and increments the counter by one. Each combine step
+    sums the two matrices—and both the counts—to yield a total sum and count over
+    all the partitions. Finally, in the `post-combiner` step, the mean is calculated
+    as the ratio of `sum` and `count`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although the code for the custom fold is more lengthy than our fused `sum`
+    and `count` solution, we now have a general way of computing the means of matrices.
+    It leads to more concise and readable examples and we can use it in our error-calculating
+    code like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: The small extra effort of creating a custom fold has made the intention of the
+    calling code a little easier to follow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying a single step of gradient descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The objective of calculating the cost is to determine the amount by which to
+    adjust each of the coefficients. Once we''ve calculated the average cost, as we
+    did previously, we need to update the estimate of our coefficients *β*. Together,
+    these steps represent a single iteration of gradient descent:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Applying a single step of gradient descent](img/7180OS_05_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can return the updated coefficients in a `post-combiner` step that makes
+    use of the average cost, the value of alpha, and the previous coefficients. Let''s
+    create a utility function `update-coefficients`, which will receive the coefficients
+    and alpha and return a function that will calculate the new coefficients, given
+    a total model cost:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the preceding function in place, we have everything we need to package
+    up a batch gradient descent update rule:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: The resulting matrix represents the values of the coefficients after the first
+    iteration of gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running iterative gradient descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gradient descent is an iterative algorithm, and we will usually need to run
+    it many times to convergence. With a large dataset, this can be very time-consuming.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To save time, we''ve included a random sample of `soi.csv` in the data directory
+    called `soi-sample.csv`. The smaller size allows us to run iterative gradient
+    descent in a reasonable timescale. The following code runs gradient descent for
+    100 iterations, plotting the values of the parameters between each iteration on
+    an `xy-plot`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run the example, you should see a chart similar to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Running iterative gradient descent](img/7180OS_05_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding chart, you can see how the parameters converge to relatively
+    stable the values over the course of 100 iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaling gradient descent with Hadoop
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The length of time each iteration of batch gradient descent takes to run is
+    determined by the size of your data and by how many processors your computer has.
+    Although several chunks of data are processed in parallel, the dataset is large
+    and the processors are finite. We've achieved a speed gain by performing calculations
+    in parallel, but if we double the size of the dataset, the runtime will double
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hadoop is one of several systems that has emerged in the last decade which aims
+    to parallelize work that exceeds the capabilities of a single machine. Rather
+    than running code across multiple processors, Hadoop takes care of running a calculation
+    across many servers. In fact, Hadoop clusters can, and some do, consist of many
+    thousands of servers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hadoop consists of two primary subsystems— the **Hadoop Distributed File System**
+    (**HDFS**)—and the job processing system, **MapReduce**. HDFS stores files in
+    chunks. A given file may be composed of many chunks and chunks are often replicated
+    across many servers. In this way, Hadoop can store quantities of data much too
+    large for any single server and, through replication, ensure that the data is
+    stored reliably in the event of hardware failure too. As the name implies, the
+    MapReduce programming model is built around the concept of map and reduce steps.
+    Each job is composed of at least one map step and may optionally specify a reduce
+    step. An entire job may consist of several map and reduce steps chained together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Scaling gradient descent with Hadoop](img/7180OS_05_170.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the respect that reduce steps are optional, Hadoop has a slightly more flexible
+    approach to distributed calculation than Tesser. Later in this chapter and in
+    the future chapters, we'll explore more of the capabilities that Hadoop has to
+    offer. Tesser does enable us to convert our folds into Hadoop jobs, so let's do
+    this next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent on Hadoop with Tesser and Parkour
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Tesser's Hadoop capabilities are available in the `tesser.hadoop` namespace,
+    which we're including as `h`. The primary public API function in the Hadoop namespace
+    is `h/fold`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `fold` function expects to receive at least four arguments, representing
+    the configuration of the Hadoop job, the input file we want to process, a working
+    directory for Hadoop to store its intermediate files, and the fold we want to
+    run, referenced as a Clojure var. Any additional arguments supplied will be passed
+    as arguments to the fold when it is executed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason for using a var to represent our fold is that the function call initiating
+    the fold may happen on a completely different computer than the one that actually
+    executes it. In a distributed setting, the var and arguments must entirely specify
+    the behavior of the function. We can't, in general, rely on other mutable local
+    state (for example, the value of an atom, or the value of variables closing over
+    the function) to provide any additional context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parkour distributed sources and sinks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The data which we want our Hadoop job to process may exist on multiple machines
+    too, stored distributed in chunks on HDFS. Tesser makes use of a library called
+    **Parkour** ([https://github.com/damballa/parkour/](https://github.com/damballa/parkour/))
+    to handle accessing potentially distributed data sources. We'll study Parkour
+    in more detail later this and the next chapter but, for now, we'll just be using
+    the `parkour.io.text` namespace to reference input and output text files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although Hadoop is designed to be run and distributed across many servers,
+    it can also run in *local mode*. Local mode is suitable for testing and enables
+    us to interact with the local filesystem as if it were HDFS. Another namespace
+    we''ll be using from Parkour is the `parkour.conf` namespace. This will allow
+    us to create a default Hadoop configuration and operate it in local mode:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we use Parkour's `text/dseq` function to create a
+    representation of the IRS input data. The return value implements Clojure's reducers
+    protocol, so we can use `r/take` on the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running a feature scale fold with Hadoop
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Hadoop needs a location to write its temporary files while working on a task,
+    and will complain if we try to overwrite an existing directory. Since we'll be
+    executing several jobs over the course of the next few examples, let's create
+    a little utility function that returns a new file with a randomly-generated name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: Parkour provides a default Hadoop configuration object with the shorthand (`conf/ig`).
+    This will return an empty configuration. The default value is enough, we don't
+    need to supply any custom configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: All of our Hadoop jobs will write their temporary files to a random directory
+    inside the project's `tmp` directory. Remember to delete this folder later, if
+    you're concerned about preserving disk space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you run the preceding example now, you should get an output similar to the
+    following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: Although the return value is identical to the values we got previously, we're
+    now making use of Hadoop behind the scenes to process our data. In spite of this,
+    notice that Tesser will return the response from our fold as a single Clojure
+    data structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running gradient descent with Hadoop
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Since `tesser.hadoop` folds return Clojure data structures just like `tesser.core`
+    folds, defining a gradient descent function that makes use of our scaled features
+    is very simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code defines a `hadoop-gradient-descent` function that iterates
+    a `descend` function `5` times. Each iteration of descend calculates the improved
+    coefficients based on the `gradient-descent-fold` function. The final return value
+    is a vector of coefficients after `5` iterations of a gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We run the job on the full IRS data in the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After several iterations, you should see an output similar to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: We've seen how we're able to calculate gradient descent using distributed techniques
+    locally. Now, let's see how we can run this on a cluster of our own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing our code for a Hadoop cluster
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Hadoop's Java API defines `Tool` and the associated `ToolRunner` classes that
+    are intended to help execute jobs on a Hadoop cluster. A `Tool` class is Hadoop's
+    name for a generic command-line application that interacts with the Hadoop framework.
+    By creating our own tool, we create a command-line application that can be submitted
+    to a Hadoop cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since it''s a Java framework, Hadoop expects to interact with class representations
+    of our code. So, the namespace defining our tool needs to contain the `:gen-class`
+    declaration, which instructs the Clojure compiler to create a class from our namespace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By default, `:gen-class` will expect the namespace to define a main function
+    called `-main`. This will be the function that Hadoop will call with our arguments,
+    so we can simply delegate the call to a function that will actually execute our
+    job:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Parkour provides a Clojure interface to many of Hadoop''s classes. In this
+    case, `parkour.tool/run` contains all we need to run our distributed gradient
+    descent function on Hadoop. With the preceding example in place, we need to instruct
+    the Clojure compiler to ahead-of-time (AOT) compile our namespace and specify
+    the class we''d like our project''s main class to be. We can achieve it by adding
+    the `:aot` and `:main` declarations to the `project.clj` function like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the example code, we have specified these as a part of the `:uberjar` profile,
+    since our last step, before sending the job to the cluster, would be to package
+    it up as an uberjar file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building an uberjar
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'A JAR contains executable java code. An uberjar contains executable java code,
+    plus all the dependencies required to run it. An uberjar provides a convenient
+    way to package up code to be run in a distributed environment, because the job
+    can be sent from machine to machine while carrying its dependencies with it. Although
+    it makes for large job payloads, it avoids the need to ensure that job-specific
+    dependencies are preinstalled on all the machines in the cluster. To create an
+    uberjar file with **Leiningen**, execute the following command line within the
+    project directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once you do this, two files will be created in the target directory. One file,
+    `ch5-0.1.0.jar`, contains the project's compiled code. This is the same file as
+    the one that would be generated with `lein jar`. In addition, uberjar generates
+    the `ch5-0.1.0-standalone.jar` file. This contains the AOT-compiled project code
+    in addition to the project's dependencies. The resulting file is large, but it
+    contains everything the Hadoop job will need in order to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Submitting the uberjar to Hadoop
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Once we've created an uberjar file, we're ready to submit it to Hadoop. Having
+    a working local Hadoop installation is not a prerequisite to follow along with
+    the examples in this chapter, and we won't describe the steps required to install
+    it here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Links to Hadoop installation guides are provided on this book's wiki at [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, if you already have Hadoop installed and configured in local mode,
+    you can run the example job on the command line now. Since the tool specified
+    by the main class also accepts two arguments—the work directory and the input
+    file—these will need to be provided too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: If the command runs successfully, you may see logging messages as an output
+    by the Hadoop process. After some time, you should see the final coefficients
+    output by the job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although it takes more time to execute at the moment, our Hadoop job has the
+    advantage that it can be distributed on a cluster that can scale indefinitely
+    with the size of the data we have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic gradient descent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The method we've just seen of calculating gradient descent is often called **batch
+    gradient descent**, because each update to the coefficients happens inside an
+    iteration over all the data in a *single batch*. With very large amounts of data,
+    each iteration can be time-consuming and waiting for convergence could take a
+    very long time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An alternative method of gradient descent is called **stochastic gradient descent**
+    or **SGD**. In this method, the estimates of the coefficients are continually
+    updated as the input data is processed. The update method for stochastic gradient
+    descent looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Stochastic gradient descent](img/7180OS_05_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In fact, this is identical to batch gradient descent. The difference in application
+    is purely that expression ![Stochastic gradient descent](img/7180OS_05_17.jpg)
+    is calculated over a *mini-batch*—a random smaller subset of the overall data.
+    The mini-batch size should be large enough to represent a fair sample of the input
+    records—for our data, a reasonable mini-batch size might be about 250.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic gradient descent arrives at the best estimates by splitting the entire
+    dataset into mini-batches and processing each of them in turn. Since the output
+    of each mini-batch is the coefficient we would like to use for the next mini-batch
+    (in order to incrementally improve the estimates), the algorithm is inherently
+    sequential.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advantage stochastic gradient descent offers over batch gradient descent
+    is that it can arrive at good estimates in just one iteration over the dataset.
+    For very large datasets, it may not even be necessary to process all the mini-batches
+    before good convergence has been achieved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Stochastic gradient descent](img/7180OS_05_180.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could implement SGD with Tesser by taking advantage of the fact that the
+    combiner is applied serially, and treat each chunk as a mini-batch from which
+    the coefficients could be calculated. This would mean that our reduce step was
+    the identity function—we have no reduction to perform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead, let''s use this as an opportunity to learn more on how to construct
+    a Hadoop job in Parkour. Before delving more into Parkour, let''s see how stochastic
+    gradient descent could be implemented using what we already know:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code groups the input collection into smaller groups of 250 elements.
+    Gradient descent is run on each of these mini-batches and the coefficients are
+    updated. The next iteration of gradient descent will use the new coefficients
+    on the next batch and, for an appropriate value of alpha, produce improved recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code will chart the output over many hundreds of batches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: We're supplying a learning rate over 100 times smaller than the value for batch
+    gradient descent. This will help ensure that mini-batches containing outliers
+    don't pull the parameters too far away from their optimal values. Because of the
+    variance inherent in each of the mini-batches, the output of stochastic gradient
+    descent will not converge exactly to the most optimal parameters, but will instead
+    oscillate around the minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Stochastic gradient descent](img/7180OS_05_190.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding image shows the more random effect of stochastic gradient descent;
+    in particular, the effect of variance among the mini-batches on the parameter
+    estimates. In spite of the much lower learning rate, we can see spikes corresponding
+    to the batches with the data containing outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic gradient descent with Parkour
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the rest of this chapter, we're going to build a Hadoop job directly with
+    Parkour. Parkour exposes more of Hadoop's underlying capabilities than Tesser
+    does, and this is a mixed blessing. While Tesser makes it very easy to write folds
+    and apply them to large datasets in Hadoop, Parkour will require us to understand
+    more about Hadoop's computation model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although Hadoop''s approach to MapReduce embodies many of the principles we''ve
+    encountered so far this chapter, it differs from Tesser''s abstractions in several
+    critical ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hadoop assumes that the data to be processed are key/value pairs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hadoop does not require a reduce stage following a map
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tesser folds over the whole sequence of inputs, Hadoop reduces over groups
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hadoop's groups of values are defined by a partitioner
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tesser's combine phase happens *after* reduce, Hadoop's combine stage happens
+    *before* reduce
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The last of these is particularly unfortunate. The terminology we''ve learned
+    for Clojure reducers and Tesser is reversed for Hadoop: for Hadoop, the combiners
+    aggregate the output from the mappers before the data is sent to the reducers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see the broad flow represented in the following diagram with the output
+    of the mappers combined into intermediate representations and sorted before being
+    sent to the reducers. Each reducer reduces over a subset of the entire data. The
+    combine step is optional and, in fact, we won''t need one for our stochastic gradient
+    descent jobs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Stochastic gradient descent with Parkour](img/7180OS_05_200.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: With or without a combining step, the data is sorted into groups before being
+    sent to the reducers and the grouping strategy is defined by a partitioner. The
+    default partitioning scheme is to partition by the key of your key/value pair
+    (different keys are represented by different shades of gray in the preceding diagram).
+    In fact, any custom partitioning scheme can be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, Parkour and Hadoop do not assume that the output is a single
+    result. Since the groups that Hadoop reduces over are by default defined by the
+    grouping key, the result of a reduce can be a dataset of many records. In the
+    preceding diagram, we illustrated the case for three different results, one for
+    each of the keys in our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining a mapper
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The first component of the Hadoop job we'll define is the **mapper**. The mapper's
+    role is usually to take a chunk of input records and transform them in some way.
+    It's possible to specify a Hadoop job with no reducers; in this case, the output
+    of the mappers is also the output of the whole job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Parkour allows us to define the action of a mapper as a Clojure function. The
+    only requirement of the function is that it accepts the input data (either from
+    a source file or the output of a previous MapReduce step) as the final argument.
+    Additional arguments can be provided if necessary, so long as the input is the
+    final argument:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `map` function in the preceding example, `parse-m` (by convention, Parkour
+    mappers have the suffix `-m`), is responsible for taking a single line of the
+    input and converting it into a feature representation. We''re reusing many of
+    the functions we defined earlier in the chapter: `parse-line`, `format-record`,
+    `scale-features`, and `extract-features`. Parkour will provide input to the mapper
+    function as a reducible collection, so we will chain the functions together with
+    `r/map`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic gradient descent expects to process data in mini-batches, so our
+    mapper is responsible for partitioning the data into groups of 250 rows. We `shuffle`
+    before calling `partition` to ensure that the ordering of the data is random.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parkour shaping functions
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We're also supplying metadata to the `parse-m` function in the form of the `{::mr/source-as
+    :vals ::mr/sink-as :vals}` map. These are two namespaced keywords referencing
+    `parkour.mapreduce/source-as` and `parkour.mapreduce/sink-as`, and are instructions
+    to Parkour on how the data should be shaped before providing it to the function
+    and what shape of data it can expect in return.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Parkour shaping functions](img/7180OS_05_210.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Valid options for a Parkour mapper are `:keyvals`, `:keys`, and `:vals`. The
+    preceding diagram shows the effect for a short sequence of three key/value pairs.
+    By requesting to source our data as `:vals`, we get a sequence containing only
+    the value portion of the key/value pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining a reducer
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Defining a reducer in Parkour is the same as defining a mapper. Again, the
+    last argument must be the input (now, the input from a prior map step), but additional
+    arguments can be provided. Our Parkour reducer for stochastic gradient descent
+    looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our input is provided as a reducible collection like before, so we use the Clojure's
+    reducers library to iterate over it. We're using `r/reduce` rather than `r/fold`,
+    because we don't want to perform our reduction in parallel over the data. In fact,
+    the reason for using Hadoop is that we can control the parallelism of each of
+    the map and reduce phases independently. Now that we have our map and reduce steps
+    defined, we can combine them into a single job by using the functions in the `parkour.graph`
+    namespace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifying Hadoop jobs with Parkour graph
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The `graph` namespace is Parkour''s main API to define Hadoop jobs. Each job
+    must have at a minimum an input, a mapper, and an output, and we can chain these
+    specifications with Clojure''s `->` macro. Let''s first define a very simple job,
+    which takes the output from our mappers and writes them immediately to disk:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: The response from the preceding example should be a directory within the project's
+    `tmp` directory, where Hadoop will have written its files. If you navigate to
+    the directory, you should see several files. On my computer, I see four files—`_SUCCESS`,
+    `part-m-00000`, `part-m-00001`, and `part-m-00002`. The presence of the `_SUCCESS`
+    file indicates that our job is completed successfully. The `part-m-xxxxx` files
+    are chunks of our input file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fact that there are three files indicates that Hadoop created three mappers
+    to process our input data. If we were running in distributed mode, these could
+    have been created in parallel. If you open one of the files, you should see a
+    long sequence of `clojure.lang.LazySeq@657d118e`. Since we wrote to a text file,
+    it is a text representation of the output of our mapper data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Chaining mappers and reducers with Parkour graph
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: What we really want to do is to its chain our map and reduce steps to happen
+    one after the other. For this, we will have to insert an intermediate step, the
+    **partitioner**, and tell the partitioner how to serialize our `clojure.lang.LazySeqs`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The latter can be accomplished by borrowing from Tesser, which implements the
+    serialization and deserialization of arbitrary Clojure data structures using **Fressian**.
+    In the next chapter, we'll look closer, at the support Parkour provides to create
+    well-defined schemas for our partitioned data but, for now, it's simply enough
+    for the partitioner to pass the encoded data through.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Fressian is an extensible binary data format. You can learn more about it from
+    the documentation at [https://github.com/clojure/data.fressian](https://github.com/clojure/data.fressian).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our keys will be encoded as `FressianWritable`, while our keys are not specified
+    at all (we sink our map data just as `vals`). Hadoop''s representation of nil
+    is a `NullWritable` type. We import both in our namespace with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the import in place, we can specify our job in its entirety:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: We need to ensure that we have only one reducer processing our mini-batches
+    (although there are variations of SGD that would permit us to average the results
+    of several stochastic gradient descent runs, we want to arrive at a single set
+    of near-optimal coefficients). We will use Parkour's `conf` namespace to `assoc!
+    mapred.reduce.tasks` to `1`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Between the map and reduce steps, we specify the partitioner and pass the `kv-classes`
+    function defined at the top of the function. The final example simply runs this
+    job:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you navigate to the directory returned by the job, you should now see a directory
+    containing just two files—`_SUCCESS` and `part-r-00000`. One file is the output
+    per reducer, so with one reducer, we ended up with one `part-r-xxxxx` file. Inside
+    this file will be the coefficients of the linear model calculated with stochastic
+    gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned some of the fundamental techniques of distributed
+    data processing and saw how the functions used locally for data processing, map
+    and reduce, are powerful ways of processing even very large quantities of data.
+    We learned how Hadoop can scale unbounded by the capabilities of any single server
+    by running functions on smaller subsets of the data whose outputs are themselves
+    combined to finally produce a result. Once you understand the tradeoffs, this
+    "divide and conquer" approach toward processing data is a simple and very general
+    way of analyzing data on a large scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We saw both the power and limitations of simple folds to process data using
+    both Clojure's reducers and Tesser. We've also begun exploring how Parkour exposes
+    more of Hadoop's underlying capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we'll see how to use Hadoop and Parkour to address a particular
+    machine learning challenge—clustering a large volume of text documents.
+  prefs: []
+  type: TYPE_NORMAL

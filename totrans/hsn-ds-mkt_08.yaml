@@ -1,0 +1,1101 @@
+- en: Product Analytics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From this chapter on, we are going to switch gears from conducting analyses
+    on customer behaviors and start discussing how we can use data science for more
+    granular, product-level analytics. There has been increasing interest and demand
+    from various companies, especially among e-commerce businesses, for utilizing
+    data to understand how customers engage and interact with different products.
+    It has also been proven that rigorous product analytics can help businesses to
+    improve user engagements and conversions that ultimately leads to higher profits.
+    In this chapter, we are going to discuss what product analytics is and how it
+    can be employed for different use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once we familiarize ourselves with the concept of product analytics, we are
+    going to use the *Online Retail Data Set* from the UCI Machine Learning Repository for
+    our programming exercises. We are going to start by analyzing the overall time
+    series trends we can observe from the dataset. Then, we will look into how the
+    customer engagements and interactions with individual products change over time
+    with the goal of being able to build a simple product recommendation logic or
+    algorithm in the end. For Python exercises, we will mainly utilize the `pandas`
+    and `matplotlib` libraries for data analyses and visualizations. For R exercises,
+    we will mainly use the `dplyr` and `ggplot2` libraries and introduce two other
+    R libraries, `readxl` and `lubridate`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The importance of product analytics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Product analytics using Python
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Product analytics using R
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The importance of product analytics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Product analytics** is a way to draw insights from data on how customers
+    engage and interact with products offered, how different products perform, and
+    what some of the observable weaknesses and strengths in a business are. However,
+    product analytics does not just stop at analyzing the data. The ultimate goal
+    of product analytics is really to build actionable insights and reports that can
+    further help optimize and improve product performance and generate new marketing
+    or product ideas based on the findings of product analytics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Product analytics starts by tracking events. These events can be customer website
+    visits, page views, browser histories, purchases, or any other actions that customers
+    can take with the products that you offer. Then, you can start analyzing and visualizing
+    any observable patterns in these events with the goal of creating actionable insights
+    or reports. Some of the common goals with product analytics are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Improve customer and product retention**: By analyzing what customers viewed
+    and purchased, you can identify what items customers repeatedly purchase and who
+    those repeat customers are. On the other hand, you can also identify what items
+    customers do not buy and the customers who are at risk of churning. Analyzing
+    and understanding the common attributes of the repeatedly purchased items and
+    repeat customers can help you improve your retention strategy.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Identify popular and trending products**: As a marketer for retail businesses,
+    it is important to have a good understanding of popular and trending products.
+    These best-selling products are key revenue drivers for the business and provide
+    new selling opportunities, such as cross-sells or bundle sales. With product analytics,
+    you should be able to identify and track these popular and trending products easily and
+    generate new strategies to explore different opportunities using these best-selling
+    products.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Segment customers and products based on their key attributes**: With the
+    customer profile and product data, you can segment your customer base and products
+    based on their attributes using product analytics. Some of the ways to segment
+    your product data are based on their profitability, volumes of sales, volumes
+    of reorders, and numbers of refunds. With these segmentations, you can draw actionable
+    insights on which product or customer segments to target next.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Develop marketing strategies with higher ROI**: Product analytics can also
+    be used to analyze the **return on investment** (**ROI**) of your marketing strategies.
+    By analyzing the marketing dollars spent on promoting certain items and the revenue
+    generated from those products, you can understand what works and what does not.
+    Using product analytics for marketing ROI analyses can help you create more efficient
+    marketing strategies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With what we have discussed here about product analytics, we are going to discuss
+    how to achieve some of these product analytics goals using retail business data
+    in the following programming exercises. We are going to discuss how we can use
+    the data to analyze the patterns of repeat customers and their contributions to
+    overall revenue. Also, we will be covering how we can use product analytics to
+    analyze the behaviors of best-selling products. More specifically, we are going
+    to discuss how to track the trends of popular items over time and then briefly
+    discuss how we can utilize this trending item data for product recommendations
+    in your marketing strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Product analytics using Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we are going to discuss how to conduct product analytics using
+    the `pandas` and `matplotlib` packages in Python. For those readers who would
+    like to use R, instead of Python, for this exercise, you can skip to the next
+    section. We will start this section by analyzing the overall time series trends
+    in the revenue and numbers of purchases, and the purchase patterns of repeat purchase
+    customers, and then we will move on to analyze the trends in products being sold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this exercise, we will be using one of the publicly available datasets
+    from the UCI Machine Learning Repository, which can be found using this link: [http://archive.ics.uci.edu/ml/datasets/online+retail#](http://archive.ics.uci.edu/ml/datasets/online+retail#).
+    From this link, you can download the data in Microsoft Excel format, named `Online
+    Retail.xlsx`. Once you have downloaded this data, you can load it into your Jupyter
+    Notebook by running the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Similar to the other Python exercises in previous chapters, we use the `%matplotlib
+    inline` command to display plots on the Jupyter Notebook. Then, we can import
+    the `matplotlib` and `pandas` packages that we will be using for further product
+    analytics. One thing to note in this code snippet is the new function in the `pandas`
+    package that we are using here, `read_excel`. This function lets you load any
+    Excel file into your `pandas` `DataFrame`. As you can see from this code, we are
+    passing two arguments to the `read_excel` function—`io`, for the path to the data
+    file, and `sheet_name`, for the name of the Excel sheet that we want to load the
+    data from.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have loaded this data into a `pandas` `DataFrame`, it should look
+    as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/096f311a-dc65-4cc1-9982-e1b9e9611777.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Before we move on to the next step, there is one data-cleaning step we need
+    to take. Let''s look quickly at the distribution of the `Quantity` column. We
+    will visualize the distributions of `Quantity` by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are visualizing the distribution of the `Quantity` column,
+    in a box plot, by using `pandas` `DataFrame`''s `plot.box` function. The resulting
+    box plot looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/54de30b6-5883-437f-a6e5-bc5c570d2da6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this plot, some orders have negative quantities. This is
+    because the cancelled or refunded orders are recorded with negative values in
+    the `Quantity` column of our dataset. For illustration purposes in this exercise,
+    we are going to disregard the cancelled orders. We can filter out all the cancelled
+    orders in our `DataFrame` by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we are ready to conduct further analyses and dive into our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series trends
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we look at product-level data, as a marketer for an e-commerce business,
+    it will be beneficial to have a better understanding of the overall time series
+    trends in the revenue and the numbers of orders or purchases. This will help us
+    understand whether the business is growing or shrinking in terms of both the overall
+    revenue and the numbers of orders we receive over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we are going to look into the numbers of orders received over time.
+    Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `resample` and `nunique` functions
+    that we have not used in the previous chapters. The `resample` function resamples
+    and converts time series data into the frequency we desire. In our example, we
+    are resampling our time series data into monthly time series data, by using `''M''`
+    as our target frequency and counting the number of distinct or unique invoice
+    numbers. This way, we can get the number of unique purchases or orders month-on-month.
+    The resulting DataFrame looks like the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/48e37c4a-56ab-46ef-ba29-ebe5e0f740bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Often, time series data is better visualized using line charts. Let''s take
+    a look at the following code to see how we can visualize this monthly data in
+    a line chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `plot` function of a `pandas`
+    `DataFrame`. Using the `xticks` function of the `matplotlib` package, we can customize
+    the labels of the *x*-ticks. Let''s take a look at the following plot first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ad4f12ae-d753-49b2-ac9f-a60d18a5c2c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you may notice from this plot, the tick labels in the *x *axis are formatted
+    by month and year. If you look back at the previous code, we formatted them using `x.strftime('%m.%Y')`,
+    where `x` is the `Python` `date` object, `%m` is the placeholder for the month
+    value, and `%Y` is the placeholder for the year value. The `strftime` function
+    of the `Python` `date` object formats the date into the given format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One thing that is noticeable from this chart is that there is a sudden radical
+    drop in the number of orders in December 2011\. If you look closely at the data,
+    this is simply because we do not have the data for the full month of December
+    2011\. We can verify this by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this code, we get a series of all invoice dates from December 1, 2011\.
+    Then, we print out the minimum and maximum dates. When you run this code, you
+    will get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/01decec3-7868-42e0-9104-b2ef6c8cbd2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this output, we only have the data from December 1, to
+    December 9, 2011\. It would be a misrepresentation if we use this data for analyzing
+    December sales and revenue. For further analyses, we will disregard any data from December
+    1, 2011\. You can use the following code to remove those data points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have filtered out incomplete data for December 2011, we can redraw
+    the line chart using the previous codes. After removing those data points from
+    December 2011, the line chart looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c5682d30-7659-4fa2-8bcf-1f6078448ba5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this chart. The monthly number of orders seems to
+    float around 1,500 from December 2010 to August 2011, and then increases significantly
+    from September 2011, and almost doubles by November 2011\. One explanation for
+    this could be that the business is actually growing significantly from September
+    2011\. Another explanation could be seasonal effects. In e-commerce businesses,
+    it is not rare to see spikes in sales as it approaches the end of the year. Typically,
+    sales rise significantly from October to January for many e-commerce businesses,
+    and without the data from the previous year, it is difficult to conclude whether
+    this spike in sales is due to a growth in business or due to seasonal effects.
+    When you are analyzing your data, we advise you to compare the current year's
+    data against the previous year's data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take a quick look at the monthly revenue data by looking at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, the first thing we do here is to calculate the
+    aggregate sales amount from each order, which is simply the `UnitPrice` multiplied
+    by the `Quantity`. Once we have computed and created this `Sales` column, we can
+    use the `resample` function with an `''M''` flag to resample and convert our time
+    series data into monthly data. Then, using `sum` as the aggregate function, we
+    can get the monthly sales revenue data. The resulting data looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b829132b-f558-48b6-8f00-3c740fdbf9db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can visualize this data into a line plot, using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As previously discussed, we can use the `pandas` `DataFrame` plot function
+    to build a line chart and the `xticks` function of the `matplotlib` package to
+    rename the labels of the ticks on the *x *axis. The line plot looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/37e02fa6-0a42-46e8-8506-1809d6509d55.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see a similar pattern to the previous monthly Total Number of Orders Over
+    Time chart in this monthly revenue chart. The monthly revenue floats around 700,000
+    from December 2010 to August 2011 and then it increases significantly from September
+    2011\. As discussed before, to verify whether this significant increase in sales
+    and revenue is due to a growth in business or due to seasonal effects, we need
+    to look further back in the sales history and compare the current year's sales
+    against the previous year's sales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These types of general and broad time series analyses can help marketers gain
+    a better understanding of the overall performance of the business and identify
+    any potential problems that might be occurring within the business. It is generally
+    a good idea to start with broader analyses, and then drill down into more granular
+    and specific parts of the business for further product analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Repeat customers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another important factor of a successful business is how well it is retaining
+    customers and how many repeat purchases and customers it has. In this section,
+    we are going to analyze the number of monthly repeat purchases and how much of
+    the monthly revenue is attributable to these repeat purchases and customers. A
+    typical strong and stable business has a steady stream of sales from existing
+    customers. Let's see how much of the sales are from repeat and existing customers
+    of the online retail business that we are currently analyzing in this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are going to look at the number of monthly repeat purchases. This means
+    a customer placed more than one order within a given month. Let''s take a quick
+    look at the data we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c5276037-522c-44b8-a7ac-1da03529ebb4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you might have noticed from this snapshot of the data, there are multiple
+    records for one purchase order (`InvoiceNo`). However, what we need is the aggregate
+    data for each order, so that one record in the `DataFrame` represents one purchase
+    order. We can aggregate this raw data for each `InvoiceNo` by using the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are grouping the `DataFrame`, `df`, by `InvoiceNo`
+    and `InvoiceDate` and summing up all the `Sales`. This way, our new `DataFrame`,
+    `invoice_customer_df`, has one record for each purchase order. The resulting `DataFrame`
+    looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d1fa9422-1138-414c-979b-596795fa74d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see here, each record in the `DataFrame` now has all the information
+    we need for each order. Now, we need to aggregate this data per month and compute
+    the number of customers who made more than one purchase in a given month. Take
+    a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s take a closer look at the `groupby` function in this code. Here, we
+    group by two conditions—`pd.Grouper(freq=''M'')` and `CustomerID`. The first `groupby`
+    condition, `pd.Grouper(freq=''M'')`, groups the data by the index, `InvoiceDate`,
+    into each month. Then, we group this data by each `CustomerID`. Using the `filter`
+    function, we can subselect the data by a custom rule. Here, the filtering rule, `lambda
+    x: len(x) > 1`, means we want to retrieve those with more than one record in the
+    group. In other words, we want to retrieve only those customers with more than
+    one order in a given month. Lastly, we resample and aggregate by each month and
+    count the number of unique customers in each month by using `resample(''M'')`
+    and `nunique`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The resulting data looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f6eae90f-fb10-4aab-a8ed-29eec5ede24a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s now compare these numbers against the total number of monthly customers.
+    You can use the following code to compute the total number of monthly customers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the resulting data looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/cd010434-9dd1-41b3-8215-0e8369e318c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you compare these two sets of numbers, roughly about 20 to 30% of the customers
+    are repeat customers. You can use the following code to calculate the percentages
+    of repeat customers for each month:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s visualize all of this data in one chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this code, you will notice a new flag, `secondary_y=True`, to the `plot`
+    function. As the name suggests, if you set this `secondary_y` flag to `True`,
+    then it will create a new *y *axis on the right side of the chart. This is especially
+    useful when you want to visualize two sets of data with different scales. In our
+    case, the scale for one set of our data is the number of users, and the scale
+    for another set of our data is the percentage. Using this `secondary_y` flag,
+    we can easily visualize data with different scales in one plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you run this code, you will see the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1daa0094-575f-461e-996d-0e0d3589a170.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see from this chart, the numbers of both repeat and all customers
+    start to rise significantly from September 2011\. The percentage of Repeat Customers
+    seems to stay pretty consistent at about 20 to 30%. This online retail business
+    will benefit from this steady stream of Repeat Customers, as they will help the
+    business to generate a stable stream of sales. Let's now analyze how much of the
+    monthly revenue comes from these Repeat Customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code shows how to compute the monthly revenue from Repeat Customers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The only difference between this code and the previous code is the aggregate
+    function, `sum`, that follows `resample(''M'')`. In the previous case, when we
+    were computing the number of monthly repeat customers, we used the `nunique` function.
+    However, this time we are using the `sum` function to add all the sales from repeat
+    customers for a given month. For visualization, you can use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'One thing to note in this code is the line, `ax2 = ax.twinx()`. This essentially
+    does the same job as the `secondary_y` flag that we discussed previously. The
+    `twinx` function simply creates a twin *y *axis that shares the same *x *axis
+    and has the same effect as the `secondary_y` flag. The resulting graph looks like
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/26e29621-d7e2-4383-bb6e-0777fac54591.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see a similar pattern as before, where there is a significant increase in
+    the revenue from September 2011\. One interesting thing to notice here is the
+    percentage of the monthly revenue from repeat customers. We have seen that roughly
+    20-30% of the customers who made purchases are repeat customers. However, in this
+    graph, we can see that roughly 40-50% of the Total Revenue is from repeat customers.
+    In other words, roughly half of the revenue was driven by the 20-30% of the customer
+    base who are repeat customers. This shows how important it is to retain existing
+    customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trending items over time
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far, we have analyzed the overall time series patterns and how customers
+    engage with the overall business, but not how customers engage with individual
+    products. In this section, we are going to explore and analyze how customers interact
+    with individual products that are sold. More specifically, we will take a look
+    at the trends of the top five best-sellers over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For time series trending-item analysis, let''s count the number of items sold
+    for each product for each period. Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code snippet, we are grouping the DataFrame, `df`,
+    by month with `StockCode`, which is the unique code for each product, and then
+    summing up the quantities sold for each month and `StockCode`. The first nine
+    records of the result look like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/41652208-aee7-4f48-849e-ec662d3c34de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'With this data in `data_item_df`, let''s see what items were sold the most
+    on November 30, 2011\. Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we can use the `sort_values` function to sort
+    a `pandas` `DataFrame` by any column we want by providing the column name in the
+    input argument, `by`. Here, we are sorting the data by the column, `Quantity`,
+    in descending order, by setting the `ascending` flag to `False`. The result looks
+    like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/56cd63bf-2140-4d12-91cd-dca5bb456e73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see from this result, the products with the codes 23084, 84826, 22197,
+    22086, and 85099B were the top five best-sellers in the month of November 2011.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we know what the top five best-sellers were in November 2011, let''s
+    aggregate the monthly sales data for these five products again. Take a look at
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are still grouping the data by each month
+    and `StockCode`, and summing up the quantities sold. However, one thing to note
+    here is the `isin` operator. The `isin` operator within the `loc` operator checks
+    whether each record matches with one of the elements in the array. In our case,
+    we are checking if the `StockCode` of each record matches with the top five best-sellers''
+    item codes. Using this code, we can aggregate the data by month and product just
+    for the top five best-sellers in November 2011\. The first few records of the
+    result look like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b714e195-cc81-4279-a650-21e4021dd6ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now that we have this monthly sales data for the top five products, we need
+    to transform this data into a tabular format, where the columns are the individual
+    item codes, the row indexes are the invoice dates, and the values are the number
+    of items sold, so that we can visualize this data as a time series chart. The
+    following code shows you how you can transform this data into a tabular format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see in this code, we are using the `pivot` function to `pivot` this
+    `DataFrame`, where the index is the `InvoiceDate` and the columns are individual
+    codes in the `StockCode` column. The result looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/aad00b6d-60e1-45c8-b128-16da0503822a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'With this time series data, we can now visualize the trends over time. You
+    can use the following code to build a time series plot for trending items:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When you run this code, you should see the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/844eee16-fbd5-4e66-b64c-a2cc6599bf4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this time series plot. The sales of these five products
+    spiked in November 2011, especially, the sales of the product with the stock code,
+    85099B, which were close to 0 from February 2011 to October 2011\. Then, it suddenly
+    spiked in November 2011\. It might be worth taking a closer look into what might
+    have driven this spike. It could be an item that is highly sensitive to seasonality,
+    such that this item becomes very popular during November, or it could also be
+    due to a genuine change in trends that led this item to become suddenly more popular
+    than before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The popularity of the rest of the top five products, 22086, 22197, 23084, and
+    84826, seem to have built up in the few months prior to November 2011\. As a marketer,
+    it would be worthwhile taking a closer look at the potential drivers behind this
+    buildup of rising popularity for these items. You could look at whether these
+    items are typically more popular in colder seasons or whether there is a rising
+    trend for these specific items in the market.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analyzing the trends and changes in the popularity of products not only helps
+    you understand what your customers like and purchase the most, but also helps
+    you tailor your marketing messages. For example, you can recommend these items
+    with rising popularity in your marketing emails, calls, or advertisements to improve
+    customer engagement. As it has been shown that your customers are more interested
+    and more likely to purchase these items, you might get higher marketing engagement
+    from your customers when you market these items more and you might eventually
+    get higher conversion rates when you target your customers with these trending
+    items. Using these popular and trending items is one way to build a product recommendation
+    engine, which we are going to expand on and experiment with thoroughly in the
+    next chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full code for Python exercises in this section can be found at: [https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.5/python/Product%20Analytics.ipynb](https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.5/python/Product%20Analytics.ipynb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Product analytics using R
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we are going to discuss how to conduct product analytics using
+    the `dplyr` and `ggplot2` libraries in R. For those readers who would like to
+    use Python, instead of R, you can ignore this section and move to the following
+    section. We will start this section by analyzing the overall time series trends
+    in the revenue, numbers of purchases, and purchasing patterns of repeat purchase
+    customers, and then we will move on to analyzing the trends in products being
+    sold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this exercise, we will be using one of the publicly available datasets
+    from the UCI Machine Learning Repository, which can be found at: [http://archive.ics.uci.edu/ml/datasets/online+retail#](http://archive.ics.uci.edu/ml/datasets/online+retail#).
+    You can follow this link and download the data in Microsoft Excel format, named `Online
+    Retail.xlsx`. Once you have downloaded this data, you can load it by running the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you may notice from this code, one thing we are doing differently here from
+    previous chapters is using the `readxl` library and the `read_excel` function.
+    Since our data is in Excel format, we cannot use the `read.csv` function that
+    we have been using so far. In order to load a dataset in Excel format, we need
+    to use the `readxl` library that you can install using the `install.packages("readxl")`
+    command in your RStudio. In the `readxl` library, there is a function named `read_excel`,
+    which helps you load an Excel file easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have loaded this data into a `DataFrame`, it should look like the
+    following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/759e7e8c-3724-4802-92e6-3c2abf2cafbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Before we move on to the next step, there is one data-cleaning step we need
+    to take. Let''s look quickly at the distribution of the `Quantity` column. We
+    will visualize the distributions of `Quantity` by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code, we are visualizing the distribution of the `Quantity` column,
+    in a box plot, using `geom_boxplot`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The resulting box plot looks like the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6fcd6fd9-4bd1-4cf8-a8d8-d243b895a16b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this plot, some orders have negative quantities. This is
+    because the cancelled or refunded orders are recorded with negative values in
+    the `Quantity` column of our dataset. For illustration purposes in this exercise,
+    we are going to disregard the cancelled orders. We can filter out all the cancelled
+    orders in our `DataFrame` by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we are ready to conduct further analyses and dive into our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series trends
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we look at product-level data, as a marketer for an e-commerce business,
+    it will be beneficial to have a better understanding of the overall time series
+    trends in the revenue and the numbers of orders or purchases. This will help us
+    understand whether the business is growing or shrinking in terms of both its overall
+    revenue and the numbers of orders it receives over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we are going to look into the number of orders over time. Take a look
+    at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this code, we are using the `group_by` function first to group the data
+    by each month. In order to group by each month, we are using the `floor_date`
+    function in the `lubridate` library. If you do not have this library installed
+    already, you can install it using the `install.packages("lubridate")` command.
+    The `floor_date` function simply takes the date and rounds it down by the provided
+    unit. In our case, we are rounding down the `InvoiceDate` column to the first
+    day of the month. Then, for each month, we are counting the number of unique purchase
+    orders by using the `n_distinct` function on the `InvoiceNo` column. The resulting `DataFrame` looks
+    like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/466de2a6-6a41-4d1f-8e65-953dd19b0a2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Often, time series data is better visualized using line charts. Let''s take
+    a look at the following code to see how we can visualize this monthly data as
+    a line chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `ggplot` function in the `ggplot2`
+    library with the `geom_line` function to display the data using a line plot. Let''s
+    take a look at the following plot first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3f00ecf3-7fdf-4548-95d6-d32d0e75e68e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'One thing that is noticeable from this chart is that there is a sudden, radical
+    drop in the number of orders in December 2011\. If you look closely at the data,
+    this is simply because we do not have the data for the full month of December
+    2011\. We can verify this by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this code, we get a summary of all invoice dates from December 1, 2011 that
+    looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/445b9553-e46b-4fdf-b0dc-3178b24e0695.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this output, we only have the data from December 1, to December
+    9, 2011\. It would be a misrepresentation if we used this data for analyzing December
+    sales and revenue, as we cannot get the full picture of this month from the dataset
+    we have. For further analyses, we will disregard any data from December 1, 2011\.
+    You can use the following code to remove those data points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have filtered out incomplete data for December 2011, we can redraw
+    the line chart using the previous codes. After removing those data points in December
+    2011, the line chart looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f2deaff8-b0ae-4547-be91-bd45f2a96dd3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this chart. The monthly number of orders seems to
+    float around 1,500 from December 2010 to August 2011, then increases significantly
+    from September 2011, and almost doubles by November 2011\. One explanation for
+    this could be that the business is actually growing significantly from September
+    2011\. Another explanation could be seasonal effects. In e-commerce businesses,
+    it is not rare to see spikes in sales as it approaches the end of the year. Typically,
+    sales rise significantly from October to January for many e-commerce businesses
+    and, without the data from the previous year, it is difficult to conclude whether
+    this spike in sales is due to a growth in business or due to seasonal effects.
+    When you are analyzing your data, we advise you to compare the current year's
+    data against the previous year's data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similar to the monthly number of orders, let''s take a quick look at the monthly
+    revenue data. Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, the first thing we do here is calculate the
+    aggregate sales amount from each order, which is simply the `UnitPrice` multiplied
+    by the `Quantity`. Once we have computed and created this `Sales` column, we can
+    use the `group_by` function with the `floor_date` function to group our data into
+    monthly sales data. Using `sum` as the aggregate function in the `summarise` function,
+    we can get the monthly sales revenue data. The resulting data looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d788593f-0669-48c2-9956-1b99694f979b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can visualize this data as a line plot, using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As we have seen in previous chapters, we can use the `geom_line` function to
+    build a line chart. The line plot for the monthly revenue data looks like the
+    following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/cbc487fe-11c3-4f57-8724-57ce72ef34fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see a similar pattern to the previous monthly Number of Orders over Time
+    chart in this monthly Revenue over Time chart. The monthly revenue floats around
+    700,000 from December 2010 to August 2011 and then it increases significantly
+    from September 2011\. As discussed before, to verify whether this significant
+    increase in sales and revenue is due to a growth in business or due to seasonal
+    effects, we need to look further back in the sales history and compare the current
+    year's sales against the previous year's sales.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These types of general and broad time series analyses can help marketers have
+    a better understanding of the overall performance of the business and identify
+    any potential problems that might be occurring within the business. It is generally
+    a good idea to start with broader analyses and then drill down into more granular
+    and specific parts of the business for further product analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Repeat customers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another important factor of a successful business is how well it is retaining
+    customers and how many repeat purchases and customers it has. In this section,
+    we are going to analyze the number of monthly repeat purchases and how much of
+    the monthly revenue is attributable to these repeat purchases and customers. A
+    typical strong and stable business has a steady stream of sales from existing
+    customers. Let's see how many of the sales are from repeat and existing customers
+    for the online retail business that we are currently analyzing in this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are going to look at the number of monthly repeat purchases. This means
+    a customer has placed more than one order within a given month. Let''s take a
+    quick look at the data we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e40dda22-7885-4f36-be9f-2a2d26ce3030.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As is noticeable from this snapshot of the data, there are multiple records
+    for one purchase order (`InvoiceNo`). However, what we need is the aggregate data
+    for each order, so that one record in the `DataFrame` represents one purchase
+    order. We can aggregate this raw data for each `InvoiceNo` by using the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are grouping the `DataFrame`, `df`, by `InvoiceNo` and `InvoiceDate` and
+    summing up all the `Sales`, while taking one value for `CustomerID`. This way,
+    the new `DataFrame`, `invoiceCustomerDf`, has one record for each purchase order.
+    The resulting `DataFrame` looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a7d7cdf1-4af7-45c3-bf69-835ba2d1596b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see here, each record in the `DataFrame` represents all the information
+    we need for each order. Now, we need to aggregate this data for each month and
+    compute the number of customers who made more than one purchase in a given month.
+    Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly to the previous section, we are using the `group_by` and `floor_date`
+    functions to aggregate the data into each month. We are also grouping by `CustomerID`,
+    so that we can count how many orders and how many sales each customer has brought
+    in for each month. This data now looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/9c3b3484-606e-4214-98f8-e722a9ca9d86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now, in order to get the number of repeat customers, all we need to do is filter
+    out customers who only have 1 in the Count column in this data. The code to perform
+    this operation looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The newly created `DataFrame`, `reapeatCustomers`, now contains all the customers
+    who have made more than one purchase in each month. In order to get the aggregate
+    monthly repeat customer counts, we are going to run the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are simply grouping by `InvoiceDate`, which
+    is a date that is rounded down to the first day of each month, and then we are
+    counting the number of unique or distinct customers and summing up the total sales.
+    The result looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/70e4dda2-93ee-41fb-8765-d0782633bb98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s now compare these repeat customer numbers against the total number of
+    monthly customers. You can use the following code to compute the total number
+    of monthly customers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5f505e4a-9681-4d6f-9b79-ed91705df7dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Lastly, we are going to analyze the percentage of monthly revenue that can
+    be attributed to the repeat customers. Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code, we are simply dividing the `Sales` column in
+    the `timeSeriesRepeatCustomers` `DataFrame` by the `Sales` column in the `timeSeriesRevenue`
+    `DataFrame` that we created in the previous section. Then, we are appending the
+    number of monthly unique customers to the new column, `Total`, of the `timeSeriesRepeatCustomers`
+    `DataFrame`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s visualize all of this data in one chart, using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are creating two line plots and one bar plot
+    by using the `geom_line` and `geom_bar` functions in the `ggplot2` library. The
+    first line plot represents the total number of monthly customers, `Total`, and
+    will be drawn with a `navy` color. The second line plot is the number of monthly
+    repeat customers, `Count`, which will be drawn with an `orange` color. Lastly,
+    we are drawing a bar plot with a `gray` color for the percentage of revenue from
+    repeat customers, `Perc`. One thing to note here is the scaling factor, `20`,
+    for the secondary *y *axis. The `sec_axis` function defines the formula for the
+    scale of the secondary *y *axis. Here, we are using `~./20`, which means the secondary
+    *y *axis ranges from 0 to 1/20th of the maximum value of the first axis. Since
+    we are scaling down the secondary *y *axis by a factor of `20`, we are multiplying
+    this number to `Perc` in the `geom_bar` function to match the scale of our data
+    to the range of the secondary *y *axis. The result looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/59b61f5e-851b-4449-8427-9e81ff8c9cda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As discussed from the code, we see three plots in this chart: a line of a navy
+    color that represents the total number of monthly customers, a line of an orange
+    color that represents the number of monthly repeat customers, and bars of a gray
+    color that represent the percentage of revenue from the repeat customers. As you
+    can see from this chart, the secondary *y *axis, labeled as Percentage (%), ranges
+    from 0 to 1/20th of the maximum of the primary *y *axis, labeled as Total, which
+    matches with our scaling factor of `20`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's now take a closer look at the chart. There seems to be an upward trend
+    in both the number of monthly customers and the number of repeat customers from
+    September 2011, and repeat customers are roughly 20-30% of the total monthly customers.
+    However, if you look at the percentage of revenue from these repeat customers,
+    you can see that roughly 40-50% of the total revenue comes from repeat customers.
+    In other words, roughly half of the revenue is driven by the 20-30% of the customer
+    base who are repeat customers. As this online retail business has a large portion
+    of revenue from repeat customers, this business will benefit from this steady
+    stream of revenue from repeat customers. This shows how important it is to retain
+    existing customers. As a marketer, it will be important to keep in mind how to
+    retain existing customers and build up your repeat customer base.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trending items over time
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far, we have analyzed the overall time series patterns and how customers
+    engage with the overall business, but not how customers engage with individual
+    products. In this section, we are going to explore and analyze how customers interact
+    with individual products that are sold. More specifically, we will take a look
+    at the trends of the top five best-sellers over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first task for analyzing the time series trending items is to count the
+    number of items sold for each product for each period. Take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can notice from this code, we are grouping the data by the month and
+    the `StockCode`, which is the unique code for each product. Then, we are adding
+    up all the quantities, `Quantity`, sold for the given month and product, by using
+    the `sum` function in the `summarise` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we are only interested in the top five best-sellers, we will need to
+    subselect those top five products from this `DataFrame`, `popularItems`. Take
+    a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we first sort the items in descending order by the number of items sold,
+    `Quantity`, in November 2011\. Using the `which` function, we can subselect the
+    data from `popularItems` for November 2011 and then with the `arrange` function,
+    we can sort the data by the column we want, `Quantity`. By having `desc` in the
+    `arrange` function, we can sort the data in descending order. Lastly, we are taking
+    the top five items by using the `head` function. The newly created variable, `top5Items`,
+    now has the top five best-sellers in November 2011\. The last thing we need to
+    do is retrieve the time series data for these five items. By using the `which`
+    function and the `%in%` operator, we can subselect the data for those items with
+    `StockCode` in `top5Items`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To visualize the time series trends of these five products, we can use the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The chart looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a6bbc0a6-89c8-411d-a4e4-3ec349679e21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this time series plot. The sales of these five products
+    spiked in November 2011, especially the sales of the product with stock code, 85099B,
+    which were close to 0 from February 2011 to October 2011\. Then, it suddenly spiked
+    in November 2011\. It might be worth taking a closer look into what might have
+    driven this spike. It could be an item that is highly sensitive to seasonality,
+    becoming very popular during November, or it could also be that there was a genuine
+    change in trends, which led to this item becoming more popular than before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The popularity of the other top five products, 22086, 22197, 23084, and 84826,
+    seems to have built up in the few months prior to November 2011\. As a marketer,
+    it would also be worthwhile taking a closer look at the potential drivers behind
+    this buildup and the rising popularity of these items. You could look at whether
+    these items are typically more popular in colder seasons, or whether there is
+    a growing trend for these specific items in the market.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analyzing the trends and changes in the popularity of products not only helps
+    you understand what your customers like and purchase the most, but it also helps
+    you tailor your marketing messages. For example, you can recommend these items
+    with rising popularity in your marketing emails, calls, or advertisements to improve
+    customer engagement. As your customers are more interested and more likely to
+    purchase these items, you might get higher marketing engagement from your customers
+    when you market these items more, and you might eventually get higher conversion
+    rates when you target your customers with these trending items. Using these popular
+    and trending items is one way to build a product recommendation engine, which
+    we are going to expand on and experiment with thoroughly in the next chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code for the R exercise in this section can be found at: [https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.5/R/ProductAnalytics.R](https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.5/R/ProductAnalytics.R).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we discussed the concepts and importance of product analytics.
+    We briefly discussed how product analytics starts from tracking events and customer
+    actions, such as website or app visits, page views, and purchases. Then, we discussed
+    some of the common goals of product analytics and how it should be used to generate
+    actionable insights and reports. With these discussions on product analytics,
+    we explored how we can utilize product analytics for customer and product retention
+    in our programming exercises, using e-commerce business data. First, we analyzed
+    the time series trends in the revenue and the numbers of purchase orders. Then,
+    we drilled down to identify the patterns of monthly repeat customers. We have
+    seen from the data that even though monthly repeat customers represent a relatively
+    small portion of the overall customer base, they drive roughly half of the total
+    monthly revenue. This shows the importance of retaining customers and how developing
+    a retention strategy should be taken seriously. Lastly, we discussed how to analyze
+    popular and trending items over time. In this section, we have discussed the potential
+    effects of seasonality and how the analysis of trending items can be used in marketing
+    strategies and in product recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we are going to expand and apply our knowledge gained from
+    this chapter to build product recommendation engines. We will learn about the
+    collaborative filtering algorithm and how it can be used for product recommendations.
+  prefs: []
+  type: TYPE_NORMAL

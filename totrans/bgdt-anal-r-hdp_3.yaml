@@ -1,0 +1,1203 @@
+- en: Chapter 3. Integrating R and Hadoop
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From the first two chapters we got basic information on how to install the R
+    and Hadoop tools. Also, we learned what the key features of Hadoop are and why
+    they are integrated with R for Big Data solutions to business data problems. So
+    with the integration of R and Hadoop we can forward data analytics to Big Data
+    analytics. Both of these middleware are still getting improved for being used
+    along with each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [Chapter 2](ch02.html "Chapter 2. Writing Hadoop MapReduce Programs"), *Writing
+    Hadoop MapReduce Programs*, we learned how to write a MapReduce program in Hadoop.
+    In this chapter, we will learn to develop the MapReduce programs in R that run
+    over the Hadoop cluster. This chapter will provide development tutorials on R
+    and Hadoop with RHIPE and RHadoop. After installing R and Hadoop, we will see
+    how R and Hadoop can be integrated using easy steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we start moving on to the installation, let's see what are the advantages
+    of R and Hadoop integration within an organization. Since statisticians and data
+    analysts frequently use the R tool for data exploration as well as data analytics,
+    Hadoop integration is a big boon for processing large-size data. Similarly, data
+    engineers who use Hadoop tools, such as system, to organize the data warehouse
+    can perform such logical analytical operations to get informative insights that
+    are actionable by integrating with R tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, the integration of such data-driven tools and technologies can build
+    a powerful scalable system that has features of both of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Integrating R and Hadoop](img/3282OS_03_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Three ways to link R and Hadoop are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RHIPE
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: RHadoop
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hadoop streaming
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will be learning integration and analytics with RHIPE and
+    RHadoop. Hadoop streaming will be covered in [Chapter 4](ch04.html "Chapter 4. Using
+    Hadoop Streaming with R"), *Using Hadoop Streaming with R*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing RHIPE
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**RHIPE** stands for **R and Hadoop Integrated Programming Environment**. As
+    mentioned on [http://www.datadr.org/](http://www.datadr.org/), it means "in a
+    moment" in Greek and is a merger of R and Hadoop. It was first developed by *Saptarshi
+    Guha* for his PhD thesis in the Department of Statistics at Purdue University
+    in 2012\. Currently this is carried out by the Department of Statistics team at
+    Purdue University and other active Google discussion groups.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The RHIPE package uses the **Divide and Recombine** technique to perform data
+    analytics over Big Data. In this technique, data is divided into subsets, computation
+    is performed over those subsets by specific R analytics operations, and the output
+    is combined. RHIPE has mainly been designed to accomplish two goals that are as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Allowing you to perform in-depth analysis of large as well as small data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Allowing users to perform the analytics operations within R using a lower-level
+    language. RHIPE is designed with several functions that help perform **Hadoop
+    Distribute File System** (**HDFS**) as well as MapReduce operations using a simple
+    R console.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: RHIPE is a lower-level interface as compared to HDFS and MapReduce operation.
+    Use the latest supported version of RHIPE which is 0.73.1 as `Rhipe_0.73.1-2.tar.gz`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing RHIPE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As RHIPE is a connector of R and Hadoop, we need Hadoop and R installed on
+    our machine or in our clusters in the following sequence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing Hadoop.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Installing R.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Installing protocol buffers.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Setting up environment variables.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Installing rJava.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Installing RHIPE.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let us begin with the installation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing Hadoop
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: As we are here to integrate R and Hadoop with the RHIPE package library, we
+    need to install Hadoop on our machine. It will be arbitrary that it either be
+    a single node or multinode installation depending on the size of the data to be
+    analyzed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we have already learned how to install Hadoop in Ubuntu, we are not going
+    to repeat the process here. If you haven't installed it yet, please refer to [Chapter
+    1](ch01.html "Chapter 1. Getting Ready to Use R and Hadoop"), *Getting Ready to
+    Use R and Hadoop*, for guidance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing R
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If we use a multinode Hadoop architecture, there are a number of TaskTracker
+    nodes for executing the MapReduce job. So, we need to install R over all of these
+    TaskTracker nodes. These TaskTracker nodes will start process over the data subsets
+    with developed map and reduce logic with the consideration of key values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing protocol buffers
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Protocol buffers just serialize the data to make it platform independent, neutral,
+    and robust (primarily used for structured data). Google uses the same protocol
+    for data interchange. RHIPE depends on protocol buffers 2.4.1 for data serialization
+    over the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This can be installed using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Environment variables
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In order for RHIPE to compile and work correctly, it is better to ensure that
+    the following environment variables are set appropriately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For configuring the Hadoop libraries, we need to set two variables, `PKG_CONFIG_PATH`
+    and `LD_LIBRARY_PATH`, to the `~./bashrc` file of `hduser` (Hadoop user) so that
+    it can automatically be set when the user logs in to the system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, `PKG_CONFIG_PATH` is an environment variable that holds the path of the
+    `pkg-config` script for retrieving information about installed libraries in the
+    system, and `LD_LIBRARY_PATH` is an environment variable that holds the path of
+    native shared libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can also set all these variables from your R console, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Where `HADOOP_HOME` is used for specifying the location of the Hadoop directory,
+    `HADOOP_BIN` is used for specifying the location of binary files of Hadoop, and
+    `HADOOP_CONF_DIR` is used for specifying the configuration files of Hadoop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting the variables is temporary and valid up to a particular R session. If
+    we want to make this variable permanent, as initialized automatically when the
+    R session initializes, we need to set these variables to the `/etc/R/Renviron`
+    file as we set the environment variable in `.bashrc` of a specific user profile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rJava package installation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Since RHIPE is a Java package, it acts like a Java bridge between R and Hadoop.
+    RHIPE serializes the input data to a Java type, which has to be serialized over
+    the cluster. It needs a low-level interface to Java, which is provided by rJava.
+    So, we will install rJava to enable the functioning of RHIPE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Installing RHIPE
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now, it's time to install the RHIPE package from its repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we are ready with a RHIPE system for performing data analytics with R and
+    Hadoop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the architecture of RHIPE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's understand the working of the RHIPE library package developed to integrate
+    R and Hadoop for effective Big Data analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding the architecture of RHIPE](img/3282OS_03_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Components of RHIPE
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of Hadoop components that will be used for data analytics
+    operations with R and Hadoop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The components of RHIPE are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RClient**: RClient is an R application that calls the **JobTracker** to execute
+    the job with an indication of several MapReduce job resources such as Mapper,
+    Reducer, input format, output format, input file, output file, and other several
+    parameters that can handle the MapReduce jobs with RClient.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**JobTracker**: A JobTracker is the master node of the Hadoop MapReduce operations
+    for initializing and monitoring the MapReduce jobs over the Hadoop cluster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**TaskTracker**: TaskTracker is a slave node in the Hadoop cluster. It executes
+    the MapReduce jobs as per the orders given by JobTracker, retrieve the input data
+    chunks, and run R-specific `Mapper` and `Reducer` over it. Finally, the output
+    will be written on the HDFS directory.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**HDFS**: HDFS is a filesystem distributed over Hadoop clusters with several
+    data nodes. It provides data services for various data operations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding RHIPE samples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, we will create two RHIPE MapReduce examples. These two examples
+    are defined with the basic utility of the Hadoop MapReduce job from a RHIPE package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RHIPE sample program (Map only)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'MapReduce problem definition: The goal of this MapReduce sample program is
+    to test the RHIPE installation by using the `min` and `max` functions over numeric
+    data with the Hadoop environment. Since this is a sample program, we have included
+    only the Map phase, which will store its output in the HDFS directory.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To start the development with RHIPE, we need to initialize the RHIPE subsystem
+    by loading the library and calling the `rhinit()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Input: We insert a numerical value rather than using a file as an input.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Map phase: The Map phase of this MapReduce program will call 10 different iterations
+    and in all of those iterations, random numbers from 1 to 10 will be generated
+    as per their iteration number. After that, the max and min values for that generated
+    numbers will be calculated.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output: Finally the output of the Map phase will be considered here as an output
+    of this MapReduce job and it will be stored to HDFS at `/app/hadoop/RHIPE/`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Defining the MapReduce job by the `rhwatch()` method of the RHIPE package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Reading the MapReduce output from HDFS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For displaying the result in a more readable form in the table format, use
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![RHIPE sample program (Map only)](img/3282OS_03_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Word count
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'MapReduce problem definition: This RHIPE MapReduce program is defined for identifying
+    the frequency of all of the words that are present in the provided input text
+    files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also note that this is the same MapReduce problem as we saw in [Chapter 2](ch02.html
+    "Chapter 2. Writing Hadoop MapReduce Programs"), *Writing Hadoop MapReduce Programs*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Input: We will use the `CHANGES.txt` file, which comes with Hadoop distribution,
+    and use it with this MapReduce algorithm. By using the following command, we will
+    copy it to HDFS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Map phase: The Map phase contains the code for reading all the words from a
+    file and assigning all of them to value `1`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Reduce phase: With this reducer task, we can calculate the total frequency
+    of the words in the input text files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Defining the MapReduce job object: After defining the word count mapper and
+    reducer, we need to design the `driver` method that can execute this MapReduce
+    job by calling `Mapper` and `Reducer` sequentially.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Reading the MapReduce output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of MapReduce job will be stored to `output_data`, we will convert
+    this output into R supported dataframe format. The dataframe output will be stored
+    to the `results` variable. For displaying the MapReduce output in the data frame
+    the format will be as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Output for `head (results)`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Word count](img/3282OS_03_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Output for `tail (results)`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Word count](img/3282OS_03_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Understanding the RHIPE function reference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: RHIPE is specially designed for providing a lower-level interface over Hadoop.
+    So R users with a RHIPE package can easily fire the Hadoop data operations over
+    large datasets that are stored on HDFS, just like the `print()` function called
+    in R.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we will see all the possible functional uses of all methods that are available
+    in RHIPE library. All these methods are with three categories: Initialization,
+    HDFS, and MapReduce operations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialization
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We use the following command for initialization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`rhinit`: This is used to initialize the Rhipe subsystem.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhinit(TRUE,TRUE)`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: HDFS
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We use the following command for HDFS operations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`rhls`: This is used to retrieve all directories from HDFS.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Its syntax is `rhls(path)`
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`rhls("/")`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Output:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![HDFS](img/3282OS_03_06.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: '`hdfs.getwd`: This is used for acquiring the current working HDFS directory.
+    Its syntax is `hdfs.getwd()`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hdfs.setwd`: This is used for setting up the current working HDFS directory.
+    Its syntax is `hdfs.setwd("/RHIPE")`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhput`: This is used to copy a file from a local directory to HDFS. Its syntax
+    is `rhput(src,dest)` and `rhput("/usr/local/hadoop/NOTICE.txt","/RHIPE/")`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhcp`: This is used to copy a file from one HDFS location to another HDFS
+    location. Its syntax is `rhcp(''/RHIPE/1/change.txt'',''/RHIPE/2/change.txt'')`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhdel`: This is used to delete a directory/file from HDFS. Its syntax is `rhdel("/RHIPE/1")`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhget`: This is used to copy the HDFS file to a local directory. Its syntax
+    is `rhget("/RHIPE/1/part-r-00000", "/usr/local/")`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rwrite`: This is used to write the R data to HDFS. its syntax is `rhwrite(list(1,2,3),"/tmp/x")`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MapReduce
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We use the following commands for MapReduce operations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`rhwatch`: This is used to prepare, submit, and monitor MapReduce jobs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`rhex`: This is used to execute the MapReduce job from over Hadoop cluster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`rhjoin`: This is used to check whether the MapReduce job is completed or not.
+    Its syntax is `rhjoin(job)`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhkill`: This is used to kill the running MapReduce job. Its syntax is `rhkill(job)`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhoptions`: This is used for getting or setting the RHIPE configuration options.
+    Its syntax is `rhoptions()`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhstatus`: This is used to get the status of the RHIPE MapReduce job. Its
+    syntax is `rhstatus(job)`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Introducing RHadoop
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'RHadoop is a collection of three R packages for providing large data operations
+    with an R environment. It was developed by Revolution Analytics, which is the
+    leading commercial provider of software based on R. RHadoop is available with
+    three main R packages: `rhdfs`, `rmr`, and `rhbase`. Each of them offers different
+    Hadoop features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`rhdfs` is an R interface for providing the HDFS usability from the R console.
+    As Hadoop MapReduce programs write their output on HDFS, it is very easy to access
+    them by calling the `rhdfs` methods. The R programmer can easily perform read
+    and write operations on distributed data files. Basically, `rhdfs` package calls
+    the HDFS API in backend to operate data sources stored on HDFS.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rmr` is an R interface for providing Hadoop MapReduce facility inside the
+    R environment. So, the R programmer needs to just divide their application logic
+    into the map and reduce phases and submit it with the `rmr` methods. After that,
+    `rmr` calls the Hadoop streaming MapReduce API with several job parameters as
+    input directory, output directory, mapper, reducer, and so on, to perform the
+    R MapReduce job over Hadoop cluster.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhbase` is an R interface for operating the Hadoop HBase data source stored
+    at the distributed network via a Thrift server. The `rhbase` package is designed
+    with several methods for initialization and read/write and table manipulation
+    operations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here it's not necessary to install all of the three RHadoop packages to run
+    the Hadoop MapReduce operations with R and Hadoop. If we have stored our input
+    data source at the HBase data source, we need to install `rhbase`; else we require
+    `rhdfs` and `rmr` packages. As Hadoop is most popular for its two main features,
+    Hadoop MapReduce and HDFS, both of these features will be used within the R console
+    with the help of RHadoop `rhdfs` and `rmr` packages. These packages are enough
+    to run Hadoop MapReduce from R. Basically, `rhdfs` provides HDFS data operations
+    while `rmr` provides MapReduce execution operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RHadoop also includes another package called `quick check`, which is designed
+    for debugging the developed MapReduce job defined by the `rmr` package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we will see their architectural relationships as well as
+    their installation steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the architecture of RHadoop
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Since Hadoop is highly popular because of HDFS and MapReduce, Revolution Analytics
+    has developed separate R packages, namely, `rhdfs`, `rmr`, and `rhbase`. The architecture
+    of RHadoop is shown in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding the architecture of RHadoop](img/3282OS_03_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: RHadoop Ecosystem
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing RHadoop
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, we will learn some installation tricks for the three RHadoop
+    packages including their prerequisites.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**R and Hadoop installation**: As we are going to use an R and Hadoop integrated
+    environment, we need Hadoop as well as R installed on our machine. If you haven''t
+    installed yet, see [Chapter 1](ch01.html "Chapter 1. Getting Ready to Use R and
+    Hadoop"), *Getting Ready to Use R and Hadoop*. As we know, if we have too much
+    data, we need to scale our cluster by increasing the number of nodes. Based on
+    this, to get RHadoop installed on our system we need Hadoop with either a single
+    node or multimode installation as per the size of our data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: RHadoop is already tested with several Hadoop distributions provided by Cloudera,
+    Hortonworks, and MapR.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Installing the R packages**: We need several R packages to be installed that
+    help it to connect R with Hadoop. The list of the packages is as follows:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: rJava
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: RJSONIO
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: itertools
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: digest
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rcpp
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: httr
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: functional
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: devtools
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: plyr
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reshape2
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can install them by calling the execution of the following R command in
+    the R console:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '**Setting environment variables**: We can set this via the R console using
+    the following code:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'or, we can also set the R console via the command line as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Installing RHadoop [`rhdfs`, `rmr`, `rhbase`]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Download RHadoop packages from GitHub repository of Revolution Analytics: [https://github.com/RevolutionAnalytics/RHadoop](https://github.com/RevolutionAnalytics/RHadoop).'
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`rmr`: [`rmr-2.2.2.tar.gz`]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhdfs`: [`rhdfs-1.6.0.tar.gz`]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhbase`: [`rhbase-1.2.0.tar.gz`]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Installing packages.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'For rmr we use:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'For `rhdfs` we use:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'For `rhbase` we use:'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: Tip
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: To install rhbase, we need to have HBase and Zookeeper installed on our Hadoop
+    cluster.
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Understanding RHadoop examples
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Once we complete the installation of RHadoop, we can test the setup by running
+    the MapReduce job with the `rmr2` and `rhdfs` libraries in the RHadoop sample
+    program as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After running these lines, simply pressing *Ctrl* + *Enter* will execute this
+    MapReduce program. If it succeeds, the last line will appear as shown in the following
+    screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding RHadoop examples](img/3282OS_03_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where characters of that last line indicate the output location of the MapReduce
+    job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To read the result of the executed MapReduce job, copy the output location,
+    as provided in the last line, and pass it to the `from.dfs()` function of `rhdfs`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding RHadoop examples](img/3282OS_03_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where the first column of the previous output indicates the max value, and the
+    second one the min value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Word count
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'MapReduce problem definition: This RHadoop MapReduce program is defined for
+    identifying the frequency of all the words that are present in the provided input
+    text files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, note that this is the same MapReduce problem as we learned in the previous
+    section about RHIPE in [Chapter 2](ch02.html "Chapter 2. Writing Hadoop MapReduce
+    Programs"), *Writing Hadoop MapReduce Programs*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Map phase: This `map` function will read the text file line by line and split
+    them by spaces. This map phase will assign `1` as a value to all the words that
+    are caught by the mapper.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Reduce phase: Reduce phase will calculate the total frequency of all the words
+    by performing sum operations over words with the same keys.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Defining the MapReduce job: After defining the word count mapper and reducer,
+    we need to create the `driver` method that starts the execution of MapReduce.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Executing the MapReduce job: We will execute the RHadoop MapReduce job by passing
+    the input data location as a parameter for the `wordcount` function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Exploring the `wordcount` output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Understanding the RHadoop function reference
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: RHadoop has three different packages, which are in terms of HDFS, MapReduce,
+    and HBase operations, to perform operations over the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we will see how to use the `rmr` and `rhdfs` package functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hdfs package
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'The categorized functions are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hdfs.init`: This is used to initialize the `rhdfs` package. Its syntax is
+    `hdfs.init()`.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hdfs.defaults`: This is used to retrieve and set the `rhdfs` defaults. Its
+    syntax is `hdfs.defaults()`.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To retrieve the `hdfs` configuration defaults, refer to the following screenshot:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![The hdfs package](img/3282OS_03_10.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: File manipulation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hdfs.put`: This is used to copy files from the local filesystem to the HDFS
+    filesystem.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.copy`: This is used to copy files from the HDFS directory to the local
+    filesystem.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.move`: This is used to move a file from one HDFS directory to another
+    HDFS directory.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.rename`: This is used to rename the file stored at HDFS from R.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.delete`: This is used to delete the HDFS file or directory from R.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.rm`: This is used to delete the HDFS file or directory from R.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.chmod`: This is used to change permissions of some files.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'File read/write:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hdfs.file`: This is used to initialize the file to be used for read/write
+    operation.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.write`: This is used to write in to the file stored at HDFS via streaming.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.close`: This is used to close the stream when a file operation is complete.
+    It will close the stream and will not allow further file operations.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.read`: This is used to read from binary files on the HDFS directory.
+    This will use the stream for the deserialization of the data.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: f = hdfs.file("/RHadoop/2/README.txt","r",buffersize=104857600)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: m = hdfs.read(f)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: c = rawToChar(m)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: print(c)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Directory operation:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hdfs.dircreate` or `hdfs.mkdir`: Both these functions will be used for creating
+    a directory over the HDFS filesystem.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`hdfs.rm` or `hdfs.rmr` or `hdfs.delete` - to delete the directory or file
+    from HDFS.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Utility:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hdfs.ls`: This is used to list the directory from HDFS.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![The hdfs package](img/3282OS_03_11.jpg)'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_IMG
+- en: '`hdfs.file.info`: This is used to get meta information about the file stored
+    at HDFS.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![The hdfs package](img/3282OS_03_12.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: The rmr package
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'The categories of the functions are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For storing and retrieving data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`to.dfs`: This is used to write R objects from or to the filesystem.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: small.ints = to.dfs(1:10)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`from.dfs`: This is used to read the R objects from the HDFS filesystem that
+    are in the binary encrypted format.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: from.dfs('/tmp/RtmpRMIXzb/file2bda3fa07850')
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'For MapReduce:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`mapreduce`: This is used for defining and executing the MapReduce job.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: mapreduce(input, output, map, reduce, combine, input.fromat, output.format,
+    verbose)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`keyval`: This is used to create and extract key-value pairs.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: keyval(key, val)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since RHadoop is considered as matured, we will consider it while performing
+    data analytics in further chapters. In [Chapter 5](ch05.html "Chapter 5. Learning
+    Data Analytics with R and Hadoop"), *Learning Data Analytics with R and Hadoop*
+    and [Chapter 6](ch06.html "Chapter 6. Understanding Big Data Analysis with Machine
+    Learning"), *Understanding Big Data Analysis with Machine Learning*, we will dive
+    into some Big Data analytics techniques as well as see how real world problems
+    can be solved with RHadoop. So far we have learned how to write the MapReduce
+    program with R and Hadoop using RHIPE and RHadoop. In the next chapter, we will
+    see how to write the Hadoop MapReduce program with Hadoop streaming utility and
+    also with Hadoop streaming R packages.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1073 @@
+- en: '*Chapter 8*'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Tips and Tricks of the Trade
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Learning Objectives
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'By the end of this chapter, you will be able to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create better deep learning models faster with the help of transfer learning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Utilize and work with better models through the help of separate train, development
+    and test datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Work with real life datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Make use of AutoML to find the most optimal network with little to no work
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize neural network models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use training logs better
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This final chapter shall describe concepts of transfer learning and show you
+    how to use training logs effectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have covered almost every topic that you need to be able to kick-start
+    your data science journey, we will introduce you to some tools and tricks that
+    data scientists use to become more efficient and create better machine learning
+    systems. You will first learn about transfer learning, which helps you train models
+    even when there is a lack of data. Then, we will move on to important tools and
+    tricks that you can make use of to become a better data scientist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transfer Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Training a complex neural network is hard and time-consuming due to the amount
+    of data required for training. Transfer learning helps data scientists transfer
+    part of the knowledge gained by one network to another. This is similar to how
+    humans transfer knowledge from one person to another so that everyone does not
+    have to start learning every new thing from scratch. Transfer learning helps data
+    scientists train neural networks faster and with fewer data points. There are
+    two ways to perform transfer learning depending on the situation. They are as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use a pre-trained model**: In this approach, we use a pre-trained neural
+    network model and use it to solve the problem at hand. A pre-trained model is
+    a neural network that has been created for a different purpose to the one at hand,
+    has been trained on some other dataset, and has been saved for future reuse. The
+    pre-trained model must be trained on a similar or same dataset to get reasonable
+    accuracy.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Create a model**: In this approach, we train the neural network model on
+    a dataset that is like the problem at hand. We then use this model to perform
+    the same steps as those for the pre-trained model approach. This is helpful when
+    the actual dataset is small and we are unable to create an acceptable model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As discussed in *Chapter 6*, *Decoding Images*, different layers of a neural
+    network learn different features of an image. For example, the first layer might
+    learn to recognize horizontal lines, and a few layers later, the network might
+    learn to recognize eyes. This is the reason why transfer learning works for images;
+    the feature extractor that we get can be used to extract information from new
+    images of the same distribution. Now, you must be wondering why we don't use transfer
+    learning for every problem we have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s try to understand this with the following diagram. Here, original dataset
+    refers to the dataset used to train the network we will transfer knowledge from:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.1: Steps to take for transfer learning in different conditions'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_01.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.1: Steps to take for transfer learning in different conditions'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'In the diagram, there are four regions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Small dataset** (similar the original dataset): This is the most common case
+    and the case where transfer learning helps the most. Due to the similarity of
+    the current dataset and the dataset that was used to train the pre-trained model,
+    we can use the layers from the pre-trained model and just change the final dense
+    layer part depending on the kind of problem.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Large dataset** (similar to the original dataset): This is the most optimal
+    situation. Due to the availability of data, it is suggested that you train the
+    model from scratch, and to speed up the learning, we can use the weights from
+    the pre-trained model to act as a starting point.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Small dataset** (different from original dataset): This is the worst situation
+    in terms of transfer learning as well as deep learning. The only solution in this
+    situation is to find a dataset like the current dataset and train a model on it,
+    and then use transfer learning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Large dataset** (different from original dataset): Due to the large size
+    of the dataset, we can train the model from scratch. To make the training faster,
+    the weights from a pre-trained model can be taken as the starting point, but this
+    is not recommended.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Transfer learning has been successful for only two types of datasets—image and
+    natural language (textual data) datasets. Word embedding, which we covered in
+    *Chapter 7*, is an example of transfer learning. We will now see how to make use
+    of transfer learning for image data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transfer Learning for Image Data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this section, we will load a pre-trained model using Keras and perform transfer
+    learning. You will learn how to handle the two cases where the dataset is like
+    the pre-trained model''s dataset. To start transfer learning, we first must load
+    a pre-trained model. We will load the Inception model using Keras:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`include_top=False` removes the first fully connected layer of the network,
+    allowing us to input images of any size that we want instead of relying on the
+    image size of the original dataset. `weights=''imagenet''` assures that the pre-trained
+    weights are loaded. If none is passed to `weights`, then the initialization of
+    the weights will be random. The Inception model was a huge improvement over existing
+    **convolutional neural network** (**CNN**) classifiers. Prior to Inception, the
+    best models just stacked multiple convolution layers, hoping to get better performance.
+    Inception, on the other hand, was complex as it used a lot of tricks to push performance
+    both in terms of the accuracy and the time taken to predict.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.2: Single cell of the Inception network'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_02.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.2: Single cell of the Inception network'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'The first case we will look at is a small dataset that is similar to the original
+    dataset. In this case, we need to first freeze the layers of the pre-trained model.
+    To do this, we simply make all the layers of this base model untrainable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The next case is a large dataset that is similar to the original dataset. In
+    this case, we need to train the model by taking the pre-trained weights to be
+    the starting point. In this case, we do not make any modifications and simply
+    train the whole model, which is a combination of `base_model` along with some
+    additional dense layers depending on our problem. For example, if the problem
+    is a two class classification problem we need to have the last dense layer to
+    have 2 outputs. Another thing that we can do in this case is freeze the weights
+    of the first few layers so that the training happens faster. Freezing the first
+    few layers is helpful as these layers learn simple shapes, which can be applicable
+    in any kind of problem. To freeze the first five layers in Keras, use the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Exercise 58: Using InceptionV3 to Compare and Classify Images'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will make use of the InceptionV3 model provided by Keras
+    to perform classification between cats and dogs. We will use the same dataset
+    (https://github.com/TrainingByPackt/Data-Science-with-Python/tree/master/Chapter08)
+    we used in *Chapter 6*, *Decoding Images* and compare our results. We will freeze
+    the Inception convolutional layers so that we do not have to retrain them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, create functions to read the image and its label from the filename.
+    Here, the `PATH` variable contains the path to the training dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Set the size and channel of the images:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Then, create a function to preprocess the images:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now create a generator function that reads the images and labels and processes
+    the images:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Next, we will read the validation data. Create a function to read the images
+    and their labels:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Read the validation files:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Plot a few images from the dataset to see whether you loaded the files correctly:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The sample images are as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![](img/C13322_08_03.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 8.3: Sample images from the loaded dataset'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Load the Inception model and pass the shape of the input images:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Freeze the Inception model layers so that training is not performed on them:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now add the output dense layer according to our problem. Here `keep_prob` is
+    the ratio of nodes to be kept while training. So, the dropout rate will be `1
+    – keep_prob`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Next, compile the model to make it ready for training:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'And then perform training of the model:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Evaluate the model and get the accuracy:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The accuracy is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 8.4: The accuracy of the model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_04.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.4: The accuracy of the model'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: As you can see earlier, the model gets an accuracy of 97.8%, which is much higher
+    than the 73% accuracy we achieved in *Chapter 6*, *Decoding Images*. You can play
+    around with the model we appended to the Inception model to see whether you can
+    improve the accuracy. You can plot the incorrectly predicted images to get a sense
+    of how well the model performs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The incorrectly predicted image is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.5: The incorrectly predicted sample'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_05.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.5: The incorrectly predicted sample'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Activity 21: Classifying Images using InceptionV3'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this activity, we will make use of the InceptionV3 model provided by Keras
+    to perform classification between cats and dogs. We will use the same dataset
+    we used in *Chapter 6*, *Decoding Images* and compare our results. Here we will
+    train the whole model, but we will make use of the weights that are present in
+    the Inception pre-trained model as a starting point. This is similar to the exercise
+    we just covered, but without freezing layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a generator to get the images and labels.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a function to get the labels and images. Then, create a function to preprocess
+    the image and augment it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load the validation dataset, which will not be augmented.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load the Inception model and add the final dense layers to it. Train the entire
+    network.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You should see that this model gets us an accuracy of 95.4%, which is much higher
+    than the 73% accuracy we achieved in *Chapter 6*, *Decoding Images*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You must have noticed the preceding code was similar to *Exercise 58*, but
+    here we did not freeze the layers. The model definitely benefited from taking
+    the weights from the Inception model as the starting point. You can plot the incorrectly
+    predicted images to get a sense of how well the model performs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The solution for this activity can be found on page 387.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The incorrectly predicted image is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.6: The incorrectly predicted sample from the dataset'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_06.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.6: The incorrectly predicted sample from the dataset'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Useful Tools and Tips
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, you will first learn the importance of different splits of
+    the dataset. After that, you learn some tips that will come handy when you start
+    working on datasets that haven't been processed before. Then come tools such as
+    pandas profiling and TensorBoard, which will make your life easier by providing
+    easy access to information. We will take a look at AutoML and how it can be used
+    to get high-performance models without much manual effort. Finally, we will visualize
+    our Keras model and export the model diagram to a file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train, Development, and Test Datasets
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We briefly talked about train, development, and test datasets in the previous
+    chapters. Here, we will delve deeper into the topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The training, or train set is a sample from the dataset, and we use this to
+    create our machine learning models. The development, or dev set (also known as
+    validation set), is a sample that helps us tune the hyperparameters of the created
+    model. The testing or test set is the sample that we use to finally evaluate the
+    model. Having all three sets is important for model development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distribution of the sets**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The development and testing sets should be from the same distribution and should
+    represent the data that you expect your model to get in the future. If the distribution
+    is different, the model will be tuned to a distribution that will not be seen
+    by the model in the future, impacting the deployed model's performance. Your model
+    could perform poorly due to the difference in distribution between the training
+    and testing/dev sets. To rectify this, you can take some data points from test/dev
+    set and introduce them into the training set. Make sure that the original images
+    dominate their respective sets to prevent incorrect results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the distribution of the training and development sets are different, we cannot
+    identify whether the model is overfitting; in this case, a new train-dev set should
+    be introduced to check for overfitting of the model. The training and train-dev
+    set must have the same distribution. If there is a huge difference in the errors
+    of the dev and train-dev sets, then there is a data mismatch problem. To rectify
+    this, you will have to carry out manual error analysis, and in most cases, collect
+    more data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The dev set is the same as the validation set we have been using all this time,
+    we sometimes referred to it as the test set but that was only to get you started.
+    It should also be noted that we train our model only on the training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Size of the sets**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The size of the dev and test sets should be determined based on the overall
+    size of the dataset. If the size was 10,000 data points, then a 60%/20%/20% split
+    would work well as the test and dev sets would have enough data points to accurately
+    measure the performance of the model. On the other hand, if the dataset had 1,000,000
+    data points, then a split of 98%/1%/1% would suffice as 10,000 is more than enough
+    data points to gauge the performance of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The sample of the data of the three sets should remain the same, so that we
+    evaluate all the models in the same environment. To do this, you can set a "seed"
+    when creating random samples. Setting the random number seed helps us get the
+    same random split of the data every time we run the experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Working with Unprocessed Datasets
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'When you start working on more complex and less processed datasets, you will
+    realize that most of the time you won''t have all the data that you need to create
+    a satisfactory model. To tackle this, you need to identify external datasets that
+    can help you in creating a competent model. The additional data that you use can
+    be of the following two types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More data points for the same data**: This is helpful when the model is overfitting
+    due to the small size of the dataset. If it is impossible to get more data points,
+    you can use a simpler model—either a neural network with fewer layers or a linear
+    model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Additional data from different sources**: Sometimes there is some data missing
+    from the dataset; for example, the state or country of the cities listed in the
+    dataset, or the macroeconomic factors of the countries listed in the dataset,
+    such as GDP and per-capita income. This data can be easily found on the internet
+    and can be used to improve the model that you create.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A best practice is to always start with **exploratory data analysis** (**EDA**).
+    EDA helps us become intimately familiar with the dataset. It helps identify the
+    best model as well as the variables that can be used for machine learning. Another
+    important aspect of EDA is to check the data for anomalies. This helps us to ensure
+    that the data reached us without any errors. The results of EDA can be shared
+    with the stakeholders to confirm the validity of the data. Data scientists might
+    need to revisit the EDA step multiple times while working on a project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another thing to keep in mind is the application of your model. It is important
+    to know whether your model will perform real-time processing or batch processing.
+    This will help you choose your tools and models accordingly. For example, if real-time
+    processing is a priority, then you would probably use a model that will produce
+    results in less than a second, whereas if the application requires batch processing,
+    then you can use complex neural network models that take more than a couple seconds
+    to produce the predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we will look into some best practices for handling training and performing
+    hyperparameter tuning. Always shuffle your data before splitting it into training
+    and testing sets. Another thing that can help converge faster is shuffling the
+    training data during training. The `fit` function of Keras has a handy parameter
+    called `True` to shuffle the training data before every epoch. An important parameter
+    to keep in mind is the random number seed; This helps data scientists create reproducible
+    results even with the random shuffles and splits. To set the seed for Keras, use
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first two lines set the random seed for NumPy, and the next two lines set
+    the seed for TensorFlow, which is the backend Keras uses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are working with a large dataset, start with a subset of data and create
+    the model. Try to overfit this model by making the network deeper or more complex.
+    You can use regularization to limit the model from overfitting the data. When
+    you are confident with the model, use the complete training data and tweak the
+    created model to improve the performance of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dropout is a very powerful regularizer; you should experiment with different
+    dropout rates as the optimal dropout rate varies from dataset to dataset. If the
+    dropout probability is too low, there will be no effect. On the other hand, if
+    it is too high, the model will start to underfit. Dropout rates between 20% and
+    50% usually perform the best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The learning rate is an important hyperparameter. Having a high learning rate
+    will lead to the model overshooting the optimal solution, while having a low learning
+    rate will cause the model to learn very slowly. As mentioned in *Chapter 5*, *Mastering
+    Structured Data*, we can start with a high learning rate and reduce the learning
+    rate after a few steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This helps us reach the optimal point faster and due to the reduction in step
+    size preventing the model from overshooting the solution. To perform this reduction
+    in the learning rate, we can use the `ReduceLROnPlateau` callback from Keras.
+    The callback reduces the learning rate by a predefined factor if the selected
+    metric stops improving.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: To learn further on the dataset, refer to the documentation at https://keras.io/callbacks/#reducelronplateau.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: We pass the quantity to be monitored into the `monitor` parameter. The `factor`
+    refers to the factor by which the learning rate must be reduced; the new learning
+    rate will be equal to the learning rate multiplied by the factor. `patience` is
+    the number of epochs the callback will wait before changing the learning rate.
+    `min_delta` refers to the threshold for measuring the improvement of the model
+    on the monitored metric. `min_lr` refers to the lower bound on the learning rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: pandas Profiling
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In the initial chapters, you learned different ways to explore structured datasets.
+    EDA plays an important role when it comes to creating models for structured data.
+    The steps used to perform EDA, such as null value identification, correlation,
+    and counting unique values, rarely change, so it is better to create a function
+    that will do all this for us without writing a lot of code. The pandas profiling
+    library does just that: it takes a dataframe and performs analysis on the data
+    and presents the results in an interactive output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output contains the following information for the relevant columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Essentials**: This contains information on the type of the variable, the
+    unique values, and the missing values.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Quantile statistics**: This contains information on the minimum value, Q1,
+    the median, Q3, the maximum, the range, and the interquartile range.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Descriptive statistics**: This contains information on the mean, the mode,
+    the standard deviation, the sum, the median absolute deviation, and the coefficient
+    of variation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Most frequent values**: This contains information on the most common value
+    count along with the frequency in percentage.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Histogram:** This contains information on a plot of the frequency of values
+    of different features of the dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Correlations**: These highlight highly correlated variables and suggests
+    removal.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To use pandas profiling, simply pass a data frame to the `pandas_profiling`
+    object. Use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: The following screenshot displays a part of the pandas profiling output for
+    the telecom churn dataset we worked on in *Chapter 5*, *Mastering Structured Data*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.7: A screenshot of the pandas profiling output'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_07.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.7: A screenshot of the pandas profiling output'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: You can use this to explore datasets we worked on in the previous chapters.
+    pandas profiling offers interactive output, so you are encouraged to go ahead
+    and play around with the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TensorBoard
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**TensorBoard** is a web app that can be used to view training logs and visualize
+    your model''s accuracy and loss metrics. It was originally created to work with
+    TensorFlow, but we can make use of TensorBoard using the **TensorBoard callback**
+    in Keras. To start visualizing, create the Keras callback. Use the following code
+    to do so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Keep a note of the log directory that you specify here; you will need this
+    later. You can pass ''`batch`'', ''`epoch`'', or an integer in `update_freq`;
+    this refers to how often the logs should be written. The next step is to start
+    TensorBoard; to do that, open a terminal and run the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now start training. Do not forget to pass the callback to the `fit` function.
+    The first tab of TensorBoard shows the training logs of the model. You can create
+    multiple folders inside the log folder to get the logs of different models on
+    the same graph for comparison:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.8: A screenshot showing the TensorBoard dashboard'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_08.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.8: A screenshot showing the TensorBoard dashboard'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'In the second tab, you can visualize the model that you have created. The following
+    figure shows the model that we created in the first activity of the previous chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.9: The model as interpreted by Keras'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_09.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.9: The model as interpreted by Keras'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Another way to visualize training logs in Jupyter Notebook is to plot them
+    using Matplotlib:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following figure shows the model accuracy plot for the train and test set
+    for our cats versus dogs model from *Activity 1*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.10: The accuracy log of the model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_10.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.10: The accuracy log of the model'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: The accuracy log given above shows how the training and development set accuracy
+    increased over different epochs. As you can see, the development set accuracy
+    is more volatile than the training set accuracy. This is because the model hasn't
+    seen these examples, towards the initial epochs this volatility will be high but
+    as we create a robust model after having trained it for a larger number of epochs,
+    the accuracy will become less volatile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following figure shows the model loss plot for the train and test set for
+    our cats-versus-dogs model from *Activity 21*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.11: Loss log of the model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_11.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.11: Loss log of the model'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Similar to the accuracy log, the loss log given above shows how the training
+    and development set loss decreased over different epochs. The spike near epoch
+    19 suggests that a really bad model which was overfit to the training set was
+    created but, eventually the model started stabilizing and gave better results
+    on the development set as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are only concerned with the model logs, then you can use the code given
+    earlier to plot the model logs after the training is over. If, however, you are
+    training a model that takes a long time to train, it would be wise to use TensorBoard,
+    as it provides a real-time plot of the training loss and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AutoML
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that you have created multiple neural network models, you understand that
+    there are two main components that go into creating well-performing networks.
+    They are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The architecture of the neural network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The hyperparameters of the neural network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Depending on the problem, it could take tens of iterations to get to the best
+    possible network. So far, we have been creating architectures and tuning the hyperparameters
+    manually. AutoML can help us perform these tasks. It searches for the most optimal
+    network and parameters for the dataset at hand. Auto-Keras is an open source library
+    that helps us implement AutoML on Keras. Let's learn about how to use Auto-Keras
+    with the help of an exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 59: Get a Well-Performing Network Using Auto-Keras'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this exercise, we will make use of the Auto-Keras library to find the most
+    optimal network and parameters for the cats-vs-dogs dataset (https://github.com/TrainingByPackt/Data-Science-with-Python/tree/master/Chapter08).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, create a function to load the image labels:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Set `SIZE` which is the dimension of the square image input.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Then create a function that reads images and their labels. Here `PATH` variable
+    contains the path to the training dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Load the data and divide it into train and test sets:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Now, let's start with AutoML
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'First, create an array with the training time for autokeras. It will terminate
+    the process of finding the best possible model once this time is elapsed:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: We will give autokeras an hour to find the best possible method.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Create an image classifier model using autokeras and perform training for the
+    time specified in the previous step:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: The output will be as follows:![](img/C13322_08_12.jpg)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Figure 8.12: Image classifier model'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Next, we save our model so that we can use it again:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Load the trained model and perform predictions using it:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Evaluate the accuracy of the model created by autokeras:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The accuracy of the model is as follows:![Figure 8.13: Model final accuracy'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_13.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Figure 8.13: Model final accuracy'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: We successfully made use of autokeras to create an image classifier that detects
+    if the provided image is of a cat or a dog. The accuracy that we get with this
+    model is 72% after an hour of running it which is pretty good considering that
+    we got a 73% accuracy for the model that we created in *Chapter 6*, *Decoding
+    Images*, *Activity 22*. This shows the power of autoML but, sometimes we do not
+    get good enough results in an acceptable time frame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Model Visualization Using Keras
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'So far, we have created a bunch of neural network models but haven''t visualized
+    any of them. Keras has a very handy utility function that plots any model. To
+    create a plot first define the model, we will take the model created in *Chapter
+    6*, *Decoding images*, as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: And then save the model as an image using `plot_model`, as shown in the following
+    code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `show_shapes` argument gives the visualization the input and output shapes
+    of the layers. The saved image is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.14: Model visualization created by Keras'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_14.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.14: Model visualization created by Keras'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Activity 22: Using Transfer Learning to Predict Images'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We will create a project where you perform transfer learning to predict whether
+    a given picture is of a dog or a cat. The model that you will be using as a baseline
+    will be InceptionV3\. We will fine-tune this model to our dataset and thus modify
+    the model to distinguish between cats and dogs. We will use TensorBoard to monitor
+    the training metrics in real time and use the best practices discussed in this
+    chapter. Make sure that the results are reproducible:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Repeat everything you did in *Step 1* from the previous activity.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load the development and test datasets, which will not be augmented.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load the Inception model and add the final dense layers to it. Train the entire
+    network.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make use of all useful callbacks.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Visualize the training using TensorBoard.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The solution for this activity can be found on page 391.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'You can plot the incorrectly predicted images to get a sense of how well the
+    model performs using the following snippet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The incorrectly predicted image is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 8.15: The incorrectly predicted sample'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '](img/C13322_08_15.jpg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 8.15: The incorrectly predicted sample'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this chapter, we covered transfer learning and leveraged it to create deep
+    learning models faster. We then moved on to learn the importance of separate training,
+    development, and test datasets, followed by a section on dealing with real-life,
+    unprocessed datasets. After that, we talk about what AutoML is and how we can
+    find the most optimal network with little to no work. We learned how to visualize
+    neural network models and training logs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that you have completed this chapter, you are now capable of handling any
+    kind of data to create machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, having completed this book, you should now have a strong understanding
+    of the concepts of data science, and should be able to use the Python language
+    to work with different datasets to solve business-case problems. The different
+    concepts that you have learned, including those of preprocessing, data visualization,
+    image augmentation, and human language processing, should have helped in providing
+    you with an overall grasp of how to work with data.
+  prefs: []
+  type: TYPE_NORMAL

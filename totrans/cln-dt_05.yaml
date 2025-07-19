@@ -1,0 +1,997 @@
+- en: Chapter 5. Collecting and Cleaning Data from the Web
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of the most common and useful kitchen tools is a strainer, also called a
+    sieve, a colander, or chinois, the purpose of which is to separate solids from
+    liquids during cooking. In this chapter, we will be building strainers for the
+    data we find on the Web. We will learn how to create several types of programs
+    that can help us find and keep the data we want, while discarding the parts we
+    do not want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understand two options to envision the structure of an HTML page, either (a)
+    as a collection of lines that we can look for patterns in, or (b) as a tree structure
+    containing nodes for which we can identify and collect values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Try out three methods to parse web pages, one that uses the line-by-line approach
+    (regular expressions-based HTML parsing), and two that use the tree structure
+    approach (Python's BeautifulSoup library and the Chrome browser tool called Scraper).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implement all three of these techniques on some real-world data; we will practice
+    scraping out the date and time from messages posted to a web forum.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding the HTML page structure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A web page is just a text file that contains some special markup **elements**
+    (sometimes called HTML **tags**) intended to indicate to a web browser how the
+    page should look when displayed to the user, for example, if we want a particular
+    word to be displayed in a way that indicates emphasis, we can surround it with
+    `<em>` tags like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is `<em>very important</em>` that you follow these instructions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All web pages have these same features; they are made up of text and the text
+    may include tags. There are two main mental models we can employ to extract data
+    from web pages. Both models have their useful aspects. In this section, we will
+    describe the two structural models, and then in the next section, we will use
+    three different tools for extracting data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The line-by-line delimiter model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the simplest way of thinking about web pages, we concentrate on the fact
+    that there are many dozens of HTML elements/tags that are used to organize and
+    display pages on the Web. If we want to extract interesting data from web pages
+    in this simple model, we can use the page text and the embedded HTML elements
+    themselves as **delimiters**. For instance, in case of the preceding example,
+    we may decide we want to collect everything inside the `<em>` tags, or maybe we
+    want to collect everything before an `<em>` tag or after an `</em>` tag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this model, we conceive the web page as a collection of largely unstructured
+    text, and the HTML tags (or other features of the text, such as recurring words)
+    help to provide structure which we can use to delimit the parts that we want.
+    Once we have delimiters, we have the ability to strain out the interesting data
+    from the junk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, here is an excerpt from a real-world HTML page, a chat log from
+    the Django IRC channel. Let''s consider how we can use its HTML elements as delimiters
+    to extract the interesting data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Given this example text, we could use the `<h2></h2>` tags as delimiters to
+    extract the date of this particular chat log. We could use the `<li></li>` tags
+    as delimiters for a line of text, and within that line, we can see that `rel=""`
+    can be used to extract the username of the chatter. Finally, it appears that all
+    the text extending from the end of `</span>` to the beginning of `</li>` is the
+    actual line message sent to the chat channel by the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: These chat logs are all available online at the Django IRC log website, [http://django-irc-logs.com](http://django-irc-logs.com).
+    This website also provides a keyword search interface to the logs. The ellipses
+    (`…`) in the preceding code represent text that has been removed for brevity in
+    this example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this messy text, we are able to use the delimiter concept to extract three
+    clean pieces of data (the date of log, user, and line message).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tree structure model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another way to imagine the textual web page is as a tree structure made up
+    of HTML elements/tags, each of which is related to the other tags on the page.
+    Each tag is shown as a **node**, and a tree is made up of all the different nodes
+    in a particular page. A tag that shows up within another tag in the HTML is considered
+    a **child**, and the enclosing tag is the **parent**. In the previous example
+    of IRC chat, the HTML excerpt can be shown in a tree diagram that looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The tree structure model](img/image00273.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If we are able to envision our HTML text as a tree structure, we can use a
+    programming language to build a tree for us. This allows us to pull out our desired
+    text values based on their element name or position in the element list. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We may want the value of a tag by name (give me the text from the `<h2>` node)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We may want all the nodes of a particular type (give me all the `<li>` nodes
+    which are inside `<ul>` which are inside `<div>`)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We may want all the attributes of a given element (give me a list of `rel` attributes
+    from the `<li>` elements)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the rest of the chapter, we will put both of these mental models—the line-by-line
+    and the tree structure—into practice with some examples. We will walk through
+    three different methods to extract and clean the data out of HTML pages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Method one – Python and regular expressions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will use a simple method to extract the data we want from
+    an HTML page. This method is based on the concept of identifying delimiters in
+    the page and using pattern matching via regular expressions to pull out the data
+    we want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may remember that we experimented a little bit with regular expressions
+    (regex) in [Chapter 3](part0024.xhtml#aid-MSDG2 "Chapter 3. Workhorses of Clean
+    Data – Spreadsheets and Text Editors"), *Workhorses of Clean Data – Spreadsheets
+    and Text Editors*, when we were learning about text editors. In this chapter,
+    some of the concepts will be similar, except we will write a Python program to
+    find matching text and extract it instead of using a text editor for replacements
+    like we did in that chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One final note before we start the example, although this regex method is fairly
+    easy to understand, it does have some limitations which could be significant,
+    depending on your particular project. We will describe the limitations of this
+    method in detail at the end of the section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – find and save a Web file for experimenting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this example, we are going to grab one of the IRC chat logs previously mentioned,
+    from the Django project. These are publicly available files with a fairly regular
+    structure, so they make a nice target for this project. Go to the Django IRC log
+    archive at [http://django-irc-logs.com/](http://django-irc-logs.com/) and find
+    a date that looks appealing to you. Navigate to the target page for one of the
+    dates and save it to your working directory. You should have a single `.html`
+    file when you are done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – look into the file and decide what is worth extracting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we learned in [Chapter 2](part0020.xhtml#aid-J2B82 "Chapter 2. Fundamentals
+    – Formats, Types, and Encodings"), *Fundamentals – Formats, Types, and Encodings*,
+    that `.html` files are just text, and [Chapter 3](part0024.xhtml#aid-MSDG2 "Chapter 3. Workhorses
+    of Clean Data – Spreadsheets and Text Editors"), *Workhorses of Clean Data – Spreadsheets
+    and Text Editors*, made us very comfortable with viewing text files in a text
+    editor, this step should be easy. Just open the HTML file in a text editor and
+    look at it. What looks ripe for extracting?
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I look in my file, I see several things I want to extract. Right away I
+    see that for each chat comment, there is a line number, a username, and the comment
+    itself. Let's plan on extracting these three things from each chat line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following figure shows the HTML file open in my text editor. I have turned
+    on soft wrapping since some of the lines are quite long (in TextWrangler this
+    option is located in the menu under **View** | **Text Display** | **Soft Wrap
+    Text**). Around line **29** we see the beginning of a list of chat lines, each
+    of which has the three items we are interested in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step two – look into the file and decide what is worth extracting](img/image00274.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our job is therefore to find the features of each line that look the same so
+    we can predictably pull out the same three items from each chat line. Looking
+    at the text, here are some possible rules we can follow to extract each data item
+    accurately and with minimal tweaking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It appears that all three items we want are found within the `<li>` tags, which
+    are themselves found inside the `<ul id="ll">` tag. Each `<li>` represents one
+    chat message.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Within that message, the line number is located in two places: it follows the
+    string `<a href="#` and it is found within the quotation marks following the `name`
+    attribute. In the example text shown, the first line number is `1574618`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `username` attribute is found in three places, the first of which is as
+    the value of the `rel` attribute of the `li class="le"`. Within the `span` tag,
+    the `username` attribute is found again as the value of the `rel` attribute, and
+    it is also found between the `&lt`; and `&gt`; symbols. In the example text, the
+    first `username` is `petisnnake`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The line message is found following the `</span>` tag and before the `</li>`
+    tag. In the example shown, the first line message is `i didnt know that`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now that we have the rules about where to find the data items, we can write
+    our program.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step three – write a Python program to pull out the interesting pieces and save
+    them to a CSV file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here is a short bit of code to open a given IRC log file in the format shown
+    previously, parse out the three pieces we are interested in, and print them to
+    a new CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The trickiest bit of this code is the `pattern` line. This line builds the pattern
+    match against which each line of the file will be compared.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Be vigilant. Any time the website developers change the HTML in the page, we
+    run the risk that our carefully constructed regular expression pattern will no
+    longer work. In fact, in the months spent writing this book, the HTML for this
+    page changed at least once!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each matching target group looks like this:`.+?`. There are five of them. Three
+    of these are the items we are interested in (`username`, `linenum`, and `message`),
+    while the other two groups are just junk that we can discard. We will also discard
+    the rest of the web page contents, since that did not match our pattern at all.
+    Our program is like a sieve with exactly three functional holes in it. The good
+    stuff will flow through the holes, leaving the junk behind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step four – view the file and make sure it is clean
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When we open the new CSV file in a text editor, we can see that the first few
+    lines now look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: That looks like a solid result. One thing you may notice is that there is no
+    encapsulation character surrounding the text in the third column. This could prove
+    to be a problem since we have used commas as a delimiter. What if we have commas
+    in our third column? If this worries you, you can either add quotation marks around
+    the third column, or you can use tabs to delimit the columns. To do this, change
+    the first `outfile.write()` line to have `\t` (tab) as the join character instead
+    of comma. You can also add some whitespace trimming to the message via `ltrim()`
+    to remove any stray characters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The limitations of parsing HTML using regular expressions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This regular expressions method seems pretty straightforward at first, but it
+    has some limitations. First, for new data cleaners, regular expressions can be
+    kind of a pain in the neck to design and perfect. You should definitely plan on
+    spending a lot of time debugging and writing yourself copious documentation. To
+    assist in the generation of regular expressions, I would definitely recommend
+    using a regular expression tester, such as [http://Pythex.org](http://Pythex.org),
+    or just use your favorite search engine to find one. Make sure you specify that
+    you want a Python regex tester if that is the language you are using.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, you should know in advance that regular expressions are completely dependent
+    on the structure of the web page staying the same in the future. So, if you plan
+    to collect data from a website on a schedule, the regular expressions you write
+    today may not work tomorrow. They will only work if the layout of the page does
+    not change. A single space added between two tags will cause the entire regex
+    to fail and will be extremely difficult to troubleshoot. Keep in mind too that
+    most of the time you have little or no control over website changes, since it
+    is usually not your own website that you are collecting data from!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, there are many, many cases where it is next-to-impossible to accurately
+    write a regular expression to match a given HTML construct. Regex is powerful
+    but not perfect or infallible. For an amusing take on this issue, I refer you
+    to the famous Stack Overflow answer that has been upvoted over 4000 times: [http://stackoverflow.com/questions/1732348/](http://stackoverflow.com/questions/1732348/).
+    In this answer, the author humorously expresses the frustration of so many programmers
+    who try over and over to explain why regex is not a perfect solution to parsing
+    irregular and ever-changing HTML found in web pages.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Method two – Python and BeautifulSoup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since regular expressions have some limitations, we will definitely need more
+    tools in our data cleaning toolkit. Here, we describe how to extract data from
+    HTML pages using a parse tree-based Python library called **BeautifulSoup**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – find and save a file for experimenting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For this step, we will use the same file as we did for Method 1: the file from
+    the Django IRC channel. We will search for the same three items. Doing this will
+    make it easy to compare the two methods to each other.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – install BeautifulSoup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: BeautifulSoup is currently in version 4\. This version will work for both Python
+    2.7 and Python 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If you are using the Enthought Canopy Python environment, simply run `pip install
+    beautifulsoup4` in the Canopy Terminal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step three – write a Python program to extract the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The three items we are interested in are found within the set of `li` tags,
+    specifically those with `class="le"`. There are not any other `li` tags in this
+    particular file, but let''s be specific just in case. Here are the items we want
+    and where to find them in the parse tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can extract the username from the `li` tag underneath the `rel` attribute.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can get the `linenum` value from the `name` attribute in the `a` tag. The
+    `a` tag is also the first item in the contents of the `li` tag.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Remember that arrays are zero-based so we need to ask for item 0.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: In BeautifulSoup, the **contents** of a tag are the items underneath that tag
+    in the parse tree. Some other packages will call them **child** items.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: We can extract the message as the fourth content item in the `li` tag (referenced
+    as array item [3]). We also notice that there is a leading space at the front
+    of every message, so we want to strip that off before saving the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is the Python code that corresponds to the outline of what we want from
+    the parse tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Step four – view the file and make sure it is clean
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When we open the new CSV file in a text editor, we can see that the first few
+    lines now look identical to the ones from Method 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Just like with the regular expressions method, if you are worried about commas
+    embedded within the last column, you can encapsulate the column text in quotes
+    or just use tabs to delimit the columns instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Method three – Chrome Scraper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you really do not want to write a program to parse out data, there are several
+    browser-based tools that use a tree structure to allow you to identify and extract
+    the data you are interested in. I think the easiest to use with minimum work is
+    a Chrome extension called **Scraper**, created by a developer called **mnmldave**
+    (real name: **Dave Heaton**).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – install the Scraper Chrome extension
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Download the Chrome browser if you do not already have that running. Make sure
+    that you get the correct Scraper extension; there are several extensions that
+    have very similar names. I recommend using the developer's own GitHub site for
+    this product, available at [http://mnmldave.github.io/scraper/](http://mnmldave.github.io/scraper/).
+    This way you will be able to have the correct scraper tool, rather than trying
+    to search using the Chrome store. From the [http://mmldave.github.io/scraper](http://mmldave.github.io/scraper)
+    site, click the link to install the extension from the Google Store, and restart
+    your browser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – collect data from the website
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Point your browser to the same web URL we have been using to get the data for
+    the other two web data extraction experiments, one of the Django IRC logs. I have
+    been using the September 13, 2014 log for the examples and screenshots here, so
+    I will go to [http://django-irc-logs.com/2014/sep/13/](http://django-irc-logs.com/2014/sep/13/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my browser, at the time of writing, this page looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step two – collect data from the website](img/image00275.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have three items from this IRC log that we are interested in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The line number (we know from our previous two experiments that this is part
+    of the link underneath the **#** sign)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The username (located between the **<** and **>** symbols)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The actual line message
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Scraper allows us to highlight each of these three items in turn and export
+    the values to a Google Spreadsheet, where we can then reassemble them into a single
+    sheet and export as CSV (or do whatever else we want with them). Here is how to
+    do it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use your mouse to highlight the item you want to scrape.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Right-click and choose **Scrape similar…** from the menu. In the following example,
+    I have selected the username **petisnnake** as the one that I want Scraper to
+    use:![Step two – collect data from the website](img/image00276.jpeg)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After selecting **Scrape similar**, the tool will show you a new window with
+    a collection of all the similar items from the page. The following screenshot
+    shows the entire list of usernames that Scraper found:![Step two – collect data
+    from the website](img/image00277.jpeg)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Scraper finds all the similar items based on one sample username.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: At the bottom of the window, there is a button labeled **Export to Google Docs…**.
+    Note that depending on your settings, you may have to click to agree to allow
+    access to Google Docs from within Scraper.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Step three – final cleaning on the data columns
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once we have all the data elements extracted from the page and housed in separate
+    Google Docs, we will need to combine them into one file and do some final cleaning.
+    Here is an example of what the line numbers look like once they have been extracted,
+    but before we have cleaned them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step three – final cleaning on the data columns](img/image00278.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We are not interested in column **A** at all, nor are we interested in the leading
+    **#** symbol. The username and line message data is similar—we want most of it,
+    but we would like to remove some symbols and combine everything into a single
+    Google Spreadsheet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using our find-and-replace techniques from [Chapter 3](part0024.xhtml#aid-MSDG2
+    "Chapter 3. Workhorses of Clean Data – Spreadsheets and Text Editors"), *Workhorses
+    of Clean Data – Spreadsheets and Text Editors* (namely removing the **#**, **<**,
+    and **>** symbols and pasting the rows into a single sheet), we end up with a
+    single clean dataset that looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step three – final cleaning on the data columns](img/image00279.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scraper is a nice tool for extracting small amounts of data from web pages.
+    It has a handy Google Spreadsheets interface, and can be a quick solution if you
+    do not feel like writing a program to do this work. In the next section, we will
+    tackle a larger project. It may be complicated enough that we will have to implement
+    a few of the concepts from this chapter into a single solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example project – Extracting data from e-mail and web forums
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The Django IRC logs project was pretty simple. It was designed to show you
+    the differences between three solid techniques that are commonly used to extract
+    clean data from within HTML pages. The data we extracted included the line number,
+    the username, and the IRC chat message, all of which were easy to find and required
+    almost no additional cleaning. In this new example project, we will consider a
+    case that is conceptually similar, but that will require us to extend the idea
+    of data extraction beyond HTML to two other types of semi-structured text found
+    on the Web: e-mail messages hosted on the Web and web-based discussion forums.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The background of the project
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I was recently working on a research study about how social media can be used
+    to provide software technical support. Specifically, I was trying to discover
+    whether certain types of software development organizations that make APIs and
+    frameworks should move their technical support for developers to Stack Overflow
+    or whether they should continue to use older media, such as e-mail and web forums.
+    To complete this study, I compared (among other things) how long it took developers
+    to get an answer to their API question via Stack Overflow versus how long it took
+    on older social media such as web forums and e-mail groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this project, we will work on a small piece of this question. We will download
+    two types of raw data representing the older social media: HTML files from a web
+    forum and e-mail messages from Google Groups. We will write Python code to extract
+    the dates and time of the messages sent to these two support forums. We will then
+    figure out which messages were sent in reply to the others and calculate some
+    basic summary statistics about how long it took each message to get a reply.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If you are wondering why we aren't extracting data for the Stack Overflow portion
+    of the question in this example project, just wait until [Chapter 9](part0059.xhtml#aid-1O8H61
+    "Chapter 9. Stack Overflow Project"), *Stack Overflow Project*. That entire chapter
+    is devoted to creating and cleaning a Stack Overflow database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This project will be divided into two parts. In Part one, we will extract data
+    from the e-mail archive from a project hosted on Google Groups, and in Part two,
+    we will extract our data from the HTML files of a different project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part one – cleaning data from Google Groups e-mail
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Many software companies have traditionally used e-mail mailing lists or hybrid
+    e-mail-web forums to provide technical support for their products. Google Groups
+    is a popular choice for this service. Users can either send e-mails to the group,
+    or they can read and search the messages in a web browser. However, some companies
+    have moved away from providing technical support to developers via Google Groups
+    (including Google products themselves), and are instead using Stack Overflow.
+    The database product Google BigQuery is one such group that now uses Stack Overflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – collect the Google Groups messages
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'To study the response times for questions on the BigQuery Google Group, I first
+    created a list of the URLs for all the postings in that group. You can find my
+    complete list of URLs on my GitHub site: [https://github.com/megansquire/stackpaper2015/blob/master/BigQueryGGurls.txt](https://github.com/megansquire/stackpaper2015/blob/master/BigQueryGGurls.txt).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we have a list of target URLs, we can write a Python program to download
+    all the e-mails residing in those URLs, and save them to disk. In the following
+    program, my list of URLs has been saved as the file called `GGurls.txt`. The `time`
+    library is included, so we can take a short `sleep()` method in between requests
+    to the Google Groups server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This program results in 667 files being written to disk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – extract data from the Google Groups messages
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We now have 667 e-mail messages in separate files. Our task is to write a program
+    to read these in one at a time and use one of the techniques from this chapter
+    to extract the pieces of information we need. If we peek inside one of the e-mail
+    messages, we see lots of **headers**, which store information about the e-mail,
+    or its **metadata**. We can quickly see the three headers that identify the metadata
+    elements that we need:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: All messages have `Message-ID` and `Date`, but the `In-Reply-To` header will
+    only appear in a message that is a reply to another message. An `In-Reply-To`
+    value must be the `Message-ID` value of another message.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code shows a regular expression-based solution to extract the
+    `Date`, `Message-ID`, and `In-Reply-To` (if available) values and to create some
+    lists of original and reply messages. Then, the code attempts to calculate the
+    time differences between a message and its replies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this code, the initial `for` loop zips through each message and extracts
+    the three pieces of data we are interested in. (This program does not store these
+    to a separate file or to disk, but you could add this functionality if you wish
+    to.) This portion of the code also creates two important lists:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`originals[]` is a list of original messages. We make the assumption that these
+    are primarily questions being asked of the list members.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`replies[]` is a list of reply messages. We assume that these are primarily
+    answers to questions asked in another message.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The second `for` loop processes each message in the list of original messages,
+    doing the following, if there is a reply to the original message, try to figure
+    out how long that reply took to be sent. We then keep a list of reply times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extraction code
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'For this chapter, we are mostly interested in the cleaning and extraction portion
+    of the code, so let''s look closely at those lines. Here, we process each line
+    of the e-mail file looking for three e-mail headers: `In-Reply-To`, `Message-ID`,
+    and `Date`. We use regex searching and grouping, just like we did in Method 1
+    earlier in this chapter, to delimit the headers and easily extract the values
+    that follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Why did we decide to use regex here instead of a tree-based parser? There are
+    two main reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because the e-mails we downloaded are not HTML, they cannot easily be described
+    as a tree of nodes with parents and children. Therefore, a parse tree-based solution
+    such as BeautifulSoup is not the best choice.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Because e-mail headers are structured and very predictable (especially the three
+    headers we are looking for here), a regex solution is acceptable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Program output
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'The output of this program is to print three numbers that estimate the mean,
+    standard deviation, and median time in hours for replies to messages on this Google
+    Group. When I run this code, my results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This means that the median response time to a message posted to the BigQuery
+    Google Group was about 18 hours. Now let''s consider how to extract similar data
+    from a different source: web forums. Do you think responses to questions in a
+    web forum will be faster, slower, or about the same as a Google Group?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part two – cleaning data from web forums
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The web forums we will study for this project are from a company called **DocuSign**.
+    They also moved their developer support to Stack Overflow, but they have an archive
+    of their older web-based developer forum still online. I poked around on their
+    website until I found out how to download some of the messages from those old
+    forums. The process shown here is more involved than the Google Groups example,
+    but you will learn a lot about how to collect data automatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – collect some RSS that points us to HTML files
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The DocuSign developer forum has thousands of messages on it. We would like
+    to have a list of the URLs for all those messages or discussion threads so that
+    we can write some code to download them all automatically, and extract the reply
+    times efficiently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do this, first we will need a list of all the URLs for the discussions. I
+    found that the archive of DocuSign's old Dev-Zone developer site is located at
+    [https://community.docusign.com/t5/DevZone-Archives-Read-Only/ct-p/dev_zone](https://community.docusign.com/t5/DevZone-Archives-Read-Only/ct-p/dev_zone).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The site looks like this in the browser:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step one – collect some RSS that points us to HTML files](img/image00280.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We definitely do not want to click through each one of those forums and then
+    click into each message and save it manually. That would take forever, and it
+    would be extremely boring. Is there a better way?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The DocuSign website''s **Help** pages indicate that it is possible to download
+    a **Really Simple Syndication** (**RSS**) file showing the newest threads and
+    messages in each forum. We can use the RSS files to automatically collect the
+    URLs for many of the discussions on the site. The RSS files we are interested
+    in are the ones relating to the developer support forums only ( not the announcements
+    or sales forums). These RSS files are available from the following URLs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://community.docusign.com/docusign/rss/board?board.id=upcoming_releases](https://community.docusign.com/docusign/rss/board?board.id=upcoming_releases)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://community.docusign.com/docusign/rss/board?board.id=DocuSign_Developer_Connection](https://community.docusign.com/docusign/rss/board?board.id=DocuSign_Developer_Connection)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://community.docusign.com/docusign/rss/board?board.id=Electronic_Signature_API](https://community.docusign.com/docusign/rss/board?board.id=Electronic_Signature_API)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://community.docusign.com/docusign/rss/board?board.id=Java](https://community.docusign.com/docusign/rss/board?board.id=Java)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://community.docusign.com/docusign/rss/board?board.id=php_api](https://community.docusign.com/docusign/rss/board?board.id=php_api)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://community.docusign.com/docusign/rss/board?board.id=dev_other](https://community.docusign.com/docusign/rss/board?board.id=dev_other)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://community.docusign.com/docusign/rss/board?board.id=Ask_A_Development_Question_Board](https://community.docusign.com/docusign/rss/board?board.id=Ask_A_Development_Question_Board)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visit each URL in that list in your web browser (or just one, if you are pressed
+    for time). The file is RSS, which will look like semi-structured text with tags,
+    similar to HTML. Save the RSS as a file on your local system and give each one
+    a `.rss` file extension. At the end of this process, you should have at most seven
+    RSS files, one for each preceding URL shown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside each of these RSS files is metadata describing all the discussion threads
+    on the forum, including the one piece of data that we really want at this stage:
+    the URL for each particular discussion thread. Open one of the RSS files in a
+    text editor and you will be able to spot an example of a URL we are interested
+    in. It looks like this, and inside the file, you will see that there is one of
+    these for each discussion thread:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can write a program to loop through each RSS file, look for these URLs,
+    visit them, and then extract the reply times we are interested in. The next section
+    breaks this down into a series of smaller steps, and then shows a program that
+    does the entire job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – Extract URLs from RSS; collect and parse HTML
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this step, we will write a program that will do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open each RSS file that we saved in Step 1.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Every time we see a `<guid>` and `</guid>` tag pair, extract the URL inside
+    and add it to a list.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each URL in the list, download whatever HTML file is at that location.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Read that HTML file and extract the original post time and the reply time from
+    each message.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate how long it took to send a reply with mean, median, and standard deviation,
+    like we did in Part 1.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Here is some Python code to handle all these steps. We will go over the extraction
+    parts in detail at the end of the code listing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Program status
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'As the program works, it prints out status messages so we know what it is working
+    on. The status messages look like this, and there is one of these for each URL
+    that is found in the RSS feed(s):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this display, 74 represents the rounded number of hours between the posted
+    time of the first message in the thread and the first reply in the thread (about
+    three days, plus two hours).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Program output
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'At its conclusion, this program prints out the mean, standard deviation, and
+    median reply times in hours, just like the Part 1 program did for Google Groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: It looks like reply time in the DocuSign forum is a tiny bit slower than Google
+    Groups. It is reporting 20 hours compared to Google Groups, which took 18 hours,
+    but at least both numbers are in the same approximate range. Your results might
+    change, since new messages are getting added all the time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extraction code
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'Since we are mostly interested in data extraction, let''s look closely at the
+    part of the code where that happens. Here is the most relevant line of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Just like with some of our previous examples, this code also relies on regular
+    expressions to do its work. However, this regex is pretty messy. Maybe we should
+    have written this with BeautifulSoup? Let''s take a look at the original HTML
+    that we are trying to match so that we can understand more about what this code
+    is trying to do and whether we should have done this a different way. What follows
+    is a screenshot of how the page looks in the browser. The times we are interested
+    in have been annotated on the screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Extraction code](img/image00281.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What does the underlying HTML look like though? That is the part that our program
+    will need to be able to parse. It turns out that the date of the original message
+    is printed in several places on the HTML page, but the date and time combination
+    is only printed once for the original and once for the reply. Here is the HTML
+    showing how these look (the HTML has been condensed and newlines removed for easier
+    viewing):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This turns out to be a pretty straightforward problem for regex to solve, since
+    we can write a single regular expression and find all the instances of it for
+    both types of messages. In the code, we state that the first instance we find
+    becomes the original message, and the next one becomes the reply, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We could have used a parse tree-based solution such as BeautifulSoup, but we
+    would have to contend with the fact that the `span` class values are identical
+    for both sets of dates, and even the parent element (the `<p>` tag) turns out
+    to have the same class. So, this parse tree is substantially more complex than
+    the one shown in Method 2 earlier in the chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you really wanted to try to use BeautifulSoup for this extraction, my recommendation
+    would be first to look at the structure of the page using your browser's Developer
+    Tools, for example, in the Chrome browser, you can select the element you are
+    interested in—the date and time in this case—and right-click it, and then choose
+    **Inspect Element**. This will open a Developer Tools panel showing where this
+    piece of data is found in the overall document tree. Little arrows to the left
+    of each HTML element indicate if there are child nodes. You can then decide how
+    to proceed through locating your target element in the parse tree programmatically,
+    and you could make a plan to differentiate it from the other nodes. Since this
+    task is well beyond the scope of this introductory book, I will leave that as
+    an exercise for the reader.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we discovered a few tried-and-true techniques for separating
+    interesting data from unwanted data. When we make broth in our chef's kitchen,
+    we use a strainer to catch the bones and vegetable husks that we do not want,
+    while allowing the delicious liquid that we *do* want to flow through the holes
+    in the sieve into our container. The same idea applies when we are extracting
+    data from web pages in our data science kitchen. We want to devise a cleaning
+    plan that allows us to extract what we want, while leaving the rest of the HTML
+    behind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Along the way, we reviewed the two main mental models used in extracting data
+    from HTML, namely a line-by-line delimiter approach and the parse tree/nodes model.
+    We then looked into three solid, proven methods to parse HTML pages to extract
+    the data we want: regular expressions, BeautifulSoup, and a Chrome-based point-and-click
+    Scraper tool. Finally, we put together a project that collected and extracted
+    useful data from real-world e-mail and HTML pages.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Text data such as e-mail and HTML turned out to not be very difficult to clean,
+    but what about binary files? In the next chapter, we will explore how to extract
+    clean data from a much more difficult target: PDF files.'
+  prefs: []
+  type: TYPE_NORMAL

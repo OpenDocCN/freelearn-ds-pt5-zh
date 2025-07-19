@@ -1,0 +1,1089 @@
+- en: Recommending the Right Products
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we are going to dive deeper into building product recommendation
+    systems with which we can target customers better, using product recommendations
+    that are custom-tailored toward individual customers. Studies have shown that
+    personalized product recommendations improve conversion rates and customer retention
+    rates. As we have more data available for utilizing data science and machine learning
+    for target marketing, the importance and effectiveness of customized product recommendations
+    in marketing messages have grown significantly. In this chapter, we are going
+    to discuss the commonly-used machine learning algorithms for developing recommendation
+    systems, collaborative filtering, and the two approaches to implementing collaborative
+    filtering algorithms for product recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collaborative filtering and product recommendation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building a product recommendation algorithm with Python
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building a product recommendation algorithm with R
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Collaborative filtering and product recommendation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: According to a study conducted by Salesforce, those customers who are prompted
+    with personalized product recommendations drive 24% of the orders and 26% of the
+    revenue. This signifies how much impact product recommendation has on order volume
+    and the overall sales revenue. In the report that Salesforce published, they have
+    also found that product recommendations lead to repeat visits, purchases with
+    recommendations yield higher average-order value, and customers do buy recommended
+    items. You can view this report at: [https://www.salesforce.com/blog/2017/11/personalized-product-recommendations-drive-just-7-visits-26-revenue](https://www.salesforce.com/blog/2017/11/personalized-product-recommendations-drive-just-7-visits-26-revenue).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Product recommender system
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A **product recommender system** is a system with the goal of predicting and
+    compiling a list of items that a customer is likely to purchase. Recommender systems
+    have gained lots of popularity in recent years and have been developed and implemented
+    for various business use cases. For example, the music streaming service, Pandora,
+    utilizes recommender systems for music recommendations for their listeners. The
+    e-commerce company, Amazon, utilizes recommendater systems to predict and show
+    a list of products that a customer is likely to purchase. The media service provider,
+    Netflix, uses recommender systems to recommend movies or TV shows for individual
+    users that they are likely to watch. The usage of a recommender system does not
+    stop here. It can also be used to recommend related articles, news, or books to
+    users. With the potential of being used in a variety of areas, recommender systems
+    play a critical role in many businesses, especially in e-commerce and media businesses,
+    as they directly impact the sales revenue and user engagements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are typically two ways to produce a list of recommendations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collaborative filtering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Content-based filtering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **collaborative filtering** method is based on previous user behaviors,
+    such as pages that they viewed, products that they purchased, or ratings that
+    they have given to different items. The collaborative filtering approach then
+    uses this data to find similarities between users or items, and recommends the
+    most similar items or contents to the users. The basic assumption behind the collaborative
+    filtering method is that those who have viewed or purchased similar contents or
+    products in the past are likely to view or purchase similar kinds of contents
+    or products in the future. Thus, based on this assumption, if one person purchased
+    items A, B, and C and another person purchased items A, B, and D in the past,
+    then the first person is likely to purchase item D and the other person is likely
+    to purchase the item C, as they share lots of similarities between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Content-based filtering**, on the other hand, produces a list of recommendations
+    based on the characteristics of an item or a user. It typically looks at the keywords
+    that describe the characteristics of an item. The basic assumption behind the
+    content-based filtering method is that the users are likely to view or purchase
+    items that are similar to those items that they have bought or viewed in the past.
+    For example, if a user has listened to some songs in the past, then the content-based
+    filtering method will recommend similar kinds of songs that share similar characteristics
+    to those songs that the user has already listened to.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we are going to use a collaborative filtering algorithm to
+    build a product recommendation system. Let's take a closer look at how a collaborative
+    filtering algorithm is built in the following section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collaborative filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As discussed in the previous section, a collaborative filtering algorithm is
+    used to recommend products based on the history of user behaviors and the similarities
+    between users. The first step to implementing a collaborative filtering algorithm
+    for a product recommendation system is building a **user-to-item matrix**. A user-to-item
+    matrix comprises individual users in the rows and individual items in the columns.
+    It will be easier to explain with an example. Take a look at the following matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/eb6b5e42-258a-4e01-b5ef-788d8648559f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The rows in this matrix represent each user and the columns represent each item.
+    The values in each cell represent whether the given user bought the given item
+    or not. For example, user **1** has purchased items **B** and **D** and user **2**
+    has purchased items **A**, **B**, **C**, and **E**. In order to build a collaborative
+    filtering-based product recommendation system, we need to first build this type
+    of user-to-item matrix. We will discuss how to build such a matrix programmatically
+    in more detail with an example in the programming exercises in the following section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this user-to-item matrix, the next step to building a collaborative filtering-based
+    product recommender system is to compute similarities between users. To measure
+    the similarities, **cosine similarity** is frequently used. The equation for computing
+    the cosine similarity between two users looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/22ae66e5-e7e8-4b16-ab16-1bf069d35465.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this equation, *U[1]* and *U[2]* represent user **1** and user **2**. *P[1i]*
+    and *P[2i]* represent each product, *i*, that user **1** and user **2** have bought.
+    If you use this equation, you will get `0.353553` as the cosine similarity between
+    users **1** and **2** in the previous example and `0.866025` as the cosine similarity
+    between users **2** and **4**. As you can imagine, the larger the cosine similarity
+    is, the more similar the two users are. So, in our example, users **2** and **4**
+    are more similar to each other than users **1** and **2**. We will discuss how
+    we can compute cosine similarities between users using Python and R in the following
+    programming exercise section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, when using a collaborative filtering algorithm for product recommendations,
+    there are two approaches that you can take—a user-based approach and an item-based
+    approach. As the names suggest, the user-based approach to collaborative filtering
+    uses the similarities between users. On the other hand, the item-based approach
+    collaborative filtering uses the similarities between items. This means that when
+    we are calculating similarities between the two users in user-based approach collaborative
+    filtering, we need to build and use a user-to-item matrix, as we have discussed
+    previously. However, for the item-based approach, we need to calculate similarities
+    between the two items, and this means that we need to build and use an item-to-user
+    matrix, which we can get by simply transposing the user-to-item matrix. In the
+    following programming exercise section, we are going to discuss in more detail
+    the differences between these two approaches and how to build recommendation systems
+    based on these two approaches using Python and R.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a product recommendation algorithm with Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we are going to discuss how to build a product recommendation
+    system using Python. More specifically, we will be learning how to implement a
+    collaborative filtering algorithm in Python using a machine learning library,
+    `scikit-learn`. For those readers who would like to use R instead of Python for
+    this exercise, you can skip to the next section. We will start this section by
+    analyzing some e-commerce business data and then discuss the two approaches to
+    building a product recommendation system with collaborative filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this exercise, we will be using one of the publicly available datasets
+    from the UCI Machine Learning Repository, which can be found at this link: [http://archive.ics.uci.edu/ml/datasets/online+retail#](http://archive.ics.uci.edu/ml/datasets/online+retail#).
+    You can follow this link and download the data in Microsoft Excel format, in a
+    file named `Online Retail.xlsx`. Once you have downloaded this data, you can load
+    it into your Jupyter Notebook by running the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Similar to [Chapter 5](73a716c6-6a84-4785-b04e-87651d0a29d1.xhtml), *Product
+    Analytics*, we are using the `read_excel` function in the `pandas` package to
+    load the data in Excel format. We provide the path to the data to the argument,
+    `io=`, and the name of the Excel spreadsheet to the argument, `sheet_name`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have loaded this data into a `pandas` `DataFrame`, it should look
+    as in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e124c242-0c1d-4f1a-bb53-77c13b96399a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you recall from the previous chapter, there are records with negative values
+    in the `Quantity` column, which represent canceled orders. We are going to disregard
+    and remove these records. We can filter out all these records in our `DataFrame` with
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data preparation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before we dive into building a product recommender engine using a collaborative
+    filtering algorithm, we need to do the following couple of things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Handle `NaN` values in the dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build a customer-to-item matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: First, we need to handle `NaN` values in our dataset, especially those `NaNs`
+    in the `CustomerID` field. Without correct values in the `CustomerID` field, we
+    cannot build a proper recommendation system, since the collaborative filtering
+    algorithm depends on the historical item purchase data for individual customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, we need to build customer-to-item matrix before we move onto implementing
+    the collaborative filtering algorithm for product recommendation. The customer-item
+    matrix is simply tabular data, where each column represents each product or item,
+    each row represents a customer, and the value in each cell represents whether
+    the given customer purchased the given product or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Handling NaNs in the CustomerID field
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you look closely at the data, you will notice that there are some records
+    with no `CustomerID`. As we need to build a customer-item matrix where each row
+    is specific to each customer, we cannot include those records with no `CustomerID`
+    in our data. Let's first take a look at how many records do not have `CustomerID`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `isna` function that we are using here detects missing values and returns `True`
+    for each missing value. By summing over these values, we can count the number
+    of records with no `CustomerID`. The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b7555d17-37a0-4481-b667-141dce72b1eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this output, there are `133,361` records with no `CustomerID`.
+    And some of the data with missing `CustomerID` looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4abdcb7c-5ee9-44bb-b3fa-6f48acb5eeb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now that we know there are records with missing `CustomerID` entries, we need
+    to exclude them from further analysis. One way to drop them from our `DataFrame`
+    is by using the `dropna` function, as in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `dropna` function in the `pandas` package removes records with missing
+    values from a given DataFrame. As you can see from this code snippet, using the `subset`
+    parameter, we can drop missing values based on specific columns. Here, we are
+    dropping records for those without `CustomerID`. Once you run this code, all the
+    records in the DataFrame, `df`, will now have `CustomerID` values. The dimensions
+    of the DataFrame, `df`, before and after dropping the missing values should look
+    as in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/92800353-212d-4136-99a3-69124fc51139.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see from this output, the `133,361` records with no `CustomerID` values
+    were dropped from the original `DataFrame`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a customer-item matrix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data we have now represents individual items purchased by customers. However,
+    in order to build a product recommendation system with a collaborative filtering
+    algorithm, we need to have data where each record contains information on which
+    item each customer has bought. In this section, we are going to transform the
+    data into a customer-item matrix, where each row represents a customer and the
+    columns correspond to different products.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code snippet, we are using the `pivot_table` function
+    to transform our data into a customer-item matrix. Here, we define the `index` as `CustomerID`,
+    and use `columns` to represent each `StockCode`. By using `sum` as the `aggfunc`
+    and the `Quantity` field for `values`, we can sum all the quantities bought for
+    each item. A snapshot of the resulting `customer_item_matrix` looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bb68edb5-32e0-4647-9d18-17fbac432bac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this data. The customer with `CustomerID` `12481`
+    has bought `36` of the item with `StockCode` `15036`. Similarly, the customer
+    with `CustomerID` `12484` has bought `16` of the item with `StockCode` `11001`,
+    and the customer with `CustomerID` `12488` has bought `10` of the item with `StockCode`
+    `10135`. As you can see from this, we now have a matrix where each row represents
+    the total quantities bought for each product for each customer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let''s `0`-`1` encode this data, so that the value of `1` means that the
+    given product was purchased by the given customer, and the value of `0` means
+    that the given product was never purchased by the given customer. Take a look
+    at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `applymap` function, which
+    applies a given function to each element of a DataFrame. The Lambda function that
+    we are using in this code simply encodes all the elements whose values are greater
+    than `0` with `1`, and the rest with `0`. A snapshot of this transformed DataFrame
+    looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c9a22faa-0a07-46fa-b046-869a3bb2d82f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We now have a customer-item matrix that we can use for the collaborative filtering
+    algorithm. Let's now move on to building product recommender engines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collaborative filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we are going to explore two approaches to building a product
+    recommender engine—user-based versus item-based. In the user-based approach, we
+    compute similarities between users based on their item purchase history. In the
+    item-based approach, on the other hand, we compute similarities between items
+    based on which items are often bought together with which other items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To measure the similarity between users or between items, we are going to use
+    the `cosine_similarity` method in the `scikit-learn` package. You can import this
+    function using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This `cosine_similarity` function in the `sklearn` package computes the pair-wise
+    cosine similarities in the given data. Let's dive in now!
+  prefs: []
+  type: TYPE_NORMAL
+- en: User-based collaborative filtering and recommendations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In order to build a user-based collaborative filtering algorithm, we need to
+    compute cosine similarities between users. Let''s take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As is noticeable from this code, we are using the `cosine_similarity` function
+    from the `sklearn` package''s `metrics.pairwise` module. This function computes
+    pairwise cosine similarities between the samples and outputs the results as an
+    `array` type. Then, we create a `pandas` `DataFrame` with this output array and
+    store it into a variable named `user_user_sim_matrix`, which stands for *user-to-user
+    similarity matrix*. The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6c9a348a-5b29-48c1-ae38-3c39e6d09f9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this snapshot of the user-to-user similarity matrix, the
+    index and column names are not easy to understand. Since each column and each
+    row index stand for individual customers, we are going to rename the index and
+    columns using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now the result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e4036bf2-6b6b-4551-a321-3dd1e022a9bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this user-to-user similarity matrix. As you can
+    imagine, the cosine similarity between a customer to themselves is `1`, and this
+    is what we can observe from this similarity matrix. The diagonal elements in this
+    user-to-user similarity matrix have values of `1`. The rest represents the pairwise
+    cosine similarity between two customers. For example, the cosine similarity measure
+    between customers `12347` and `12348` is `0.063022`. On the other hand, the cosine
+    similarity between customers `12347` and `12349` is `0.046130`. This suggests
+    that customer `12348` is more similar to customer `12347` than customer `12349` is
+    to the customer `12347`, based on the products that they purchased. This way,
+    we can easily tell which customers are similar to others, and which customers
+    have bought similar items to others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These pairwise cosine similarity measures are what we are going to use for
+    product recommendations. Let''s work by picking one customer as an example. We
+    will first rank the most similar customers to the customer with ID `12350`, using
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When you run this code, you will get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/fcd4bc3d-404a-4c70-a389-635a34c46af7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: These are the top 10 customers that are the most similar to customer `12350`.
+    Let's pick customer `17935` and discuss how we can recommend products using these
+    results. The strategy is as follows. First, we need to identify the items that
+    the customers `12350` and `17935` have already bought. Then, we are going to find
+    the products that the target customer `17935` has not purchased, but customer `12350` has.
+    Since these two customers have bought similar items in the past, we are going
+    to assume that the target customer `17935` has a high chance of purchasing the
+    items that he or she has not bought, but customer `12350` has bought. Lastly,
+    we are going to use this list of items and recommend them to the target customer `17935`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s first take a look at how we can retrieve the items that the customer `12350` has
+    purchased in the past. The code looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `nonzero` function in the `pandas`
+    package. This function returns the integer indexes of the elements that are non-zero.
+    Using this function on the `customer_item_matrix` for the given customer `12350`,
+    we can get the list of items that the customer `12350` has purchased. We can apply
+    the same code for the target customer `17935`, as in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we have two sets of items that customers `12350` and `17935` have purchased.
+    Using a simple set operation, we can find the items that customer `12350` has
+    bought, but customer `17935` has not. The code looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now the items in the `items_to_recommend_to_B` variable are the items that
+    customer `12350` purchased, but customer `17935` did not purchase (yet). Based
+    on our assumption, these are the items that customer `17935` is likely to purchase.
+    The list of items to recommend to customer `17935` looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/74829a3a-5fb5-4666-aa32-a37294db4f54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In order to get the descriptions of these items, you can use the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can notice from this code, we are using the `isin` operator to get the
+    records that match with the items in the `items_to_recommend_to_B` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you run this code, you will get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c8514630-b2d5-4fb6-931c-4f7c78775442.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using user-based collaborative filtering, we have discussed how we can do targeted
+    product recommendations for individual customers. You can custom-tailor and include these
+    products that each target customer is likely to purchase in your marketing messages,
+    which can potentially drive more conversions from your customers. As discussed
+    so far, using a user-based collaborative filtering algorithm, you can easily do
+    product recommendations for target customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there is one main disadvantage of using user-based collaborative filtering.
+    As we have seen in this exercise, recommendations are based on the individual
+    customer's purchase history. For new customers, we are not going to have enough
+    data to compare these new customers against the others. In order to handle this
+    problem, we can use item-based collaborative filtering, which we are going to
+    discuss in the following section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Item-based collaborative filtering and recommendations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Item-based collaborative filtering is similar to the user-based approach, except
+    that it uses the similarity measures between items, instead of between users or
+    customers. We had to compute cosine similarities between users before, but now,
+    we are going to compute cosine similarities between items. Take a look at the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you compare this code to the previous code, where we computed a user-to-user
+    similarity matrix, the only difference is the fact that we are transposing the
+    `customer_item_matrix` here, so that the row indexes represent individual items
+    and the columns represent the customers. We are still using the `cosine_similarity`
+    function of the `sklearn` package''s `metrics.pairwise` module. In order to correctly
+    name the indexes and columns with product codes, you can use the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now the result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/39a947de-cb00-483e-a8b2-9a3fb7fee36d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As before, the diagonal elements have values of `1`. This is because the similarity
+    between an item and itself is `1`, meaning the two are identical. The rest of
+    the elements contain the similarity measure values between items based on the
+    cosine similarity calculation. For example, looking at the preceding item-to-item
+    similarity matrix, the cosine similarity between the item with `StockCode` `10002` and
+    the item with `StockCode` `10120` is `0.094868`. On the other hand, the cosine
+    similarity between the item `10002` and the item `10125` is `0.090351`. This suggests
+    that the item with `StockCode` `10120` is more similar to that with `StockCode` `10002`, than
+    the item with `StockCode` `10125` is to that with `StockCode` `10002`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The strategy for doing product recommendation using this item-to-item similarity
+    matrix is similar to what we did using the user-based approach in the previous
+    section. First, for the given product that the target customer bought, we are
+    going to find the most similar items from the item-to-item similarity matrix that
+    we have just built. Then, we are going to recommend these similar items to the
+    customer, since those similar items were bought by other customers who have bought
+    the product that the target customer initially bought. Let's work with an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assume a new customer just bought a product with `StockCode` `23166`, and we
+    want to include some products that this customer is the most likely to purchase
+    in our marketing emails. The first thing we need to do is find the most similar
+    items to the one with `StockCode` `23166`. You can use the following code to get
+    the top 10 most similar items to the item with `StockCode` `23166`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c34a8b86-441b-451f-9c98-103ddfa7dd7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can get the descriptions of these similar items using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `isin` operator to filter for
+    the items that match the list of similar items in the `top_10_similar_items` variable.
+    Once you run this code, you will see the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b101fa25-8e6b-414d-a86f-235f73e507d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first item here is the item that the target customer just bought and the
+    other nine items are the items that are frequently bought by others who have bought
+    the first item. As you can see, those who have bought ceramic top storage jars
+    often buy jelly moulds, spice tins, and cake tins. With this data, you can include
+    these items in your marketing messages for this target customer as further product
+    recommendations. Personalizing the marketing messages with targeted product recommendations
+    typically yields higher conversion rates from customers. Using an item-based collaborative
+    filtering algorithm, you can now easily do product recommendations for both new
+    and existing customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full details for this Python exercise can be found at: [https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.6/python/ProductRecommendation.ipynb](https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.6/python/ProductRecommendation.ipynb)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a product recommendation algorithm with R
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we are going to discuss how to build a product recommendation
+    system using R. More specifically, we will be learning how to implement a collaborative
+    filtering algorithm in R using the `dplyr`, `reshape2`, and `coop` packages. For
+    those readers who would like to use Python instead of R for this exercise, you
+    can go to the previous section. We will start this section by analyzing some e-commerce
+    business data and then discuss the two approaches to building a product recommendation
+    system with collaborative filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this exercise, we will be using one of the publicly available datasets
+    from the UCI Machine Learning Repository, which can be found at: [http://archive.ics.uci.edu/ml/datasets/online+retail#](http://archive.ics.uci.edu/ml/datasets/online+retail#).
+    You can go to this link and download the data, available in Microsoft Excel format,
+    named `Online Retail.xlsx`. Once you have downloaded this data, you can load it
+    into your RStudio by running the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Similar to the previous chapter, we are using the `read_excel` function in the `readxl` package
+    to load the data in Excel format. We provide the path to the data to the argument `path`,
+    and the name of the Excel spreadsheet to the argument `sheet`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have loaded this data into a `DataFrame`, it should look like the
+    following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/afb2a4f5-fc1c-42ea-a115-8d69a1eda07f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you recall from the previous chapter, there are records with negative values
+    in the `Quantity` column, which represent canceled orders. We are going to disregard
+    and remove those records. We can filter out all these records in our `DataFrame` with
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data preparation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we dive into building a product recommender engine using a collaborative
+    filtering algorithm, there are a couple of things we need to do. First, we need
+    to handle `NaN` values in our dataset, especially those records with `NA` values in
+    the `CustomerID` field. Without correct values in the `CustomerID` field, we cannot
+    build a proper recommendation system, since the collaborative filtering algorithm
+    depends on the historical item purchase data for individual customers. Second,
+    we need to build customer-to-item matrix before we move onto implementing a collaborative
+    filtering algorithm for product recommendation. The customer-item matrix is simply
+    tabular data where each column represents each product or item, each row represents
+    a customer, and the value in each cell represents whether the given customer purchased
+    the given product or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Handling NA values in the CustomerID field
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you look closely at the data, you will notice that there are some records
+    with no `CustomerID`. Since we need to build a customer-item matrix, where each
+    row is specific to each customer, we cannot include those records with no `CustomerID` in
+    our data. Let's first take a look at how many records do not have a `CustomerID`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `is.na` function that we are using here detects missing values and returns `TRUE` for
+    each of the missing values. By summing over these values using the `sum` function,
+    we can count the number of records with no `CustomerID`. The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0a9abc50-60e2-4f84-b386-b8bf5d454b98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As you can see from this output, there are `133,361` records with no `CustomerID`.
+    In order to look at those records with no `CustomerID`, you can use the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the output looks like the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/dfb92dd0-c302-4e72-9447-cb7c444cd882.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now that we know there are records with missing `CustomerID` values, we need
+    to exclude them from further analysis. One way to drop them from our `DataFrame` is
+    by using the `na.omit` function, as in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `na.omit` function in R removes records with missing values (`NA`) from
+    a DataFrame. Once you run this code, all the records in the DataFrame `df` will
+    now have `CustomerID` values. The dimensions of the DataFrame `df` before and
+    after dropping the missing values should look as in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8bcd2960-7950-4f04-a09c-71af11a813ee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see from the outputs of the `dim(df)` commands, the `133,361` records
+    with no `CustomerID` values were dropped from the original `DataFrame`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a customer-item matrix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data we have now represents individual items purchased by customers. However,
+    in order to build a product recommendation system with a collaborative filtering
+    algorithm, we need to have data where each record contains information on which
+    item each customer has bought. In this section, we are going to transform the
+    data into a customer-item matrix, where each row represents a customer and the
+    columns correspond to different products.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to transform our data into a customer-item matrix, we are going to
+    use the `dcast` function in the `reshape2` package. If you do not already have
+    this package installed in your R environment, you can run the following commands
+    to install and include this package in your R environment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `dcast` function of the `reshape2` package uses a formula to reshape a
+    `DataFrame` into another form of `DataFrame`. In our case, we want our data to
+    be reshaped so that the rows represent individual customers and the columns represent
+    the different products. By defining the formula as `CustomerID ~ StockCode`, the
+    `dcast` function is going to reshape the data, so that the individual codes of
+    the `StockCode` map to columns and each row represents an individual customer.
+    The `value.var` argument defines which value to take. Here, we are telling the
+    `dcast` function to take the values of the `Quantity` field as the values of the
+    elements in the reshaped `DataFrame`. The result looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/36ec0e90-40ad-47c3-ac31-73c93b473055.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this data. The customer with `CustomerID` `12731` has
+    bought `3` of the item with `StockCode` `10002`. Similarly, the customer with `CustomerID` `12748` has
+    bought `2` of the item with `StockCode` `10080`, and the customer with `CustomerID` `12735` has
+    bought `1` of the item with `StockCode` `10125`. As you can see from this, we
+    now have a matrix where each row represents the total quantities bought for each
+    product for each customer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let''s `0`-`1` encode this data, so that the value of `1` means that the
+    given product was purchased by the given customer, and a value of `0` means that
+    the given product was never purchased by the given customer. Take a look at the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we first define the encoding function, `encode_fn`.
+    This function simply encodes each value as `1` if it is greater than `0`, and
+    as `0` if it is not. Then we are using the `muate_at` function of the `dplyr`
+    package, which applies the `encode_fn` encoding function to each element of the
+    matrix, except the `CustomerID` column. The result should look as in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2f4237b9-9ed7-4709-8ccc-e61ca747c888.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We now have a customer-item matrix that we can use for a collaborative filtering
+    algorithm. Let's now move on to building product recommender engines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collaborative filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section, we are going to explore two approaches to building a product
+    recommender engine—user-based versus item-based. In the user-based approach, we
+    compute similarities between users based on their item purchase history. In the
+    item-based approach, on the other hand, we compute similarities between items
+    based on which items are often bought together with other items. To measure the
+    similarity between users or between items, we are going to use the `cosine` function
+    in the `coop` library, which is a library for fast implementation of cosine similarity
+    computation in R. You can install and this R library using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `cosine` function in the `coop` library computes the cosine similarity matrix
+    efficiently in R. Let's dive in now!
+  prefs: []
+  type: TYPE_NORMAL
+- en: User-based collaborative filtering and recommendations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In order to build a user-based collaborative filtering algorithm, we need to
+    compute cosine similarities between users. Let''s take a look at the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: As is noticeable from this code, using the `cosine` function from the `coop` library,
+    you can compute and build a cosine similarity matrix. One thing to note in this
+    code is the fact that we transpose the `customerItemMatrix` before computing cosine
+    similarities. This is to compute user-to-user similarities. Without the transposition,
+    the `cosine` function will be computing item-to-item similarities. Lastly, we
+    are renaming the columns with customer IDs in the last line of this code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8fcc0c2f-cdaa-44da-a400-1c746ff39ee1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's take a closer look at this user-to-user similarity matrix. As you can
+    imagine, the cosine similarity between a customer to himself or herself is `1`
+    and this is what we can observe from this similarity matrix. The diagonal elements
+    in this user-to-user similarity matrix have values of `1`. The rest represents
+    the pairwise cosine similarity between two customers. For example, the cosine
+    similarity measure between customers `12347` and `12348` is `0.06302187`. On the
+    other hand, the cosine similarity between customers `12347` and `12349` is `0.04612963`.
+    This suggests that customer `12348` is more similar to customer `12347` than customer `12349` to
+    customer `12347`, based on the products that they purchased previously. This way
+    we can easily tell which customers are similar to which others and which customers
+    have bought similar items to which others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These pairwise cosine similarity measures are what we are going to use for
+    product recommendations. Let''s work by picking one customer as an example. We
+    will first rank the most similar customers to customer with ID `12350` using the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see from this code, we are using the order function to sort the values
+    in the column `12350` of `userToUserSimMatrix`. With the `decreasing = TRUE` flag,
+    we can sort the values in descending order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you run this code, you will get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5cce0e7b-48bd-4460-b4d1-059e3878d548.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: These are the top 10 customers that are the most similar to customer `12350`.
+    Let's pick customer `17935` and discuss how we can recommend products using these
+    results. The strategy is as follows. First we need to identify the items that
+    customers `12350` and `17935` have already bought. Then, we are going to find
+    the products that the target customer `17935` has not purchased, but customer `12350` has.
+    Since these two customers have bought similar items in the past, we are going
+    to assume that the target customer `17935` has high chance of purchasing these
+    items that he or she has not bought, but that customer `12350` has bought. Lastly,
+    we are going to use this list of items and recommend them to the target customer `17935`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s first take a look at how we can retrieve the items that customer `12350` has
+    purchased in the past. The code looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `which` operator to find the
+    column indexes of the elements that are non-zero. The result of this code looks
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5b53e815-97c5-46a5-a767-c9263c581da4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using the following code, we can get the list of items that the customer `17935` has
+    purchased:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The items that customer `17935` has bought are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2fdc0326-a8a6-47a8-990f-8c7a44647e15.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now we have two sets of items that customers `12350` and `17935` have purchased.
+    Using the simple set operation, we can find the items that customer `12350` has
+    bought, but customer `17935` has not. The code looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now the items in the, `itemsToRecommendToB` variable, are the items that customer `12350` purchased,
+    but customer `17935` did not purchase yet. Based on our assumption, these are
+    the items that customer `17935` is likely to purchase. The list of items to recommend
+    to customer `17935` looks as in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f7f47bec-3222-449f-b197-5903b3a72ab7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In order to get the descriptions of these items, you can use the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can notice from this code, we are using the `%in%` operator to get the
+    records that match with the items in the `itemsToRecommendToB` variable. Once
+    you run this code, you will get the following output that has descriptions of
+    the recommended items:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3401d7e1-77f1-4850-aef5-4dd15d258c58.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using user-based collaborative filtering, we have discussed how we can do targeted
+    product recommendations for individual customers. You can custom-tailor and include these
+    products that each target customer is likely to purchase in your marketing messages,
+    which can potentially drive more conversions from your customers. As discussed
+    so far, using a user-based collaborative filtering algorithm, you can easily create
+    product recommendations for target customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there is one main disadvantage of using user-based collaborative filtering.
+    As we have seen in this exercise, recommendations are based on the individual
+    customer's purchase history. For new customers, we are not going to have enough
+    data to compare them with the others. In order to handle this problem, we can
+    use item-based collaborative filtering that we will be discussing in the following
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Item-based collaborative filtering and recommendations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Item-based collaborative filtering is similar to the user-based approach, except
+    that it is using the similarity measures between items, instead of between users
+    or customers. We had to compute cosine similarities between users before, but
+    now we are going to compute cosine similarities between items. Take a look at
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you compare this code to the previous code, where we computed user-to-user
+    similarity matrix, the only difference is the fact that we are not transposing
+    the `customerItemMatrix` this time. We are still using the `cosine` function of
+    the `coop` library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b2de1e8a-a7af-4973-aaf5-e3371da48859.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As before, the diagonal elements have values of `1`. This is because the similarity
+    between an item and itself is `1`, meaning the two are identical. The other elements
+    contain the similarity measure values between items based on the cosine similarity
+    calculation. For example, looking at the preceding item-to-item similarity matrix,
+    the cosine similarity between the item with `StockCode` `10002` and the item with `StockCode` `10120` is `0.09486833`.
+    On the other hand, the cosine similarity between item `10002` and item `10125` is `0.09035079`.
+    This suggests that the item with `StockCode` `10120` is more similar to that with `StockCode` `10002` than
+    the item with `StockCode` `10125` is to that with `StockCode` `10002`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The strategy to do product recommendation using this item-to-item similarity
+    matrix is similar to what we did using the user-based approach in the previous
+    section. First, for the given product that the target customer bought, we are
+    going to find the most similar items from the item-to-item similarity matrix that
+    we have just built. Then, we are going to recommend these similar items to the
+    customer, since those similar items were bought by other customers who have bought
+    the product that the target customer initially bought. Let's work with an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assume a new customer just bought a product with `StockCode` `23166`, and we
+    want to include some products that this customer is most likely to purchase in
+    our marketing emails. The first thing we need to do is find the most similar items
+    to the one with `StockCode` `23166`. You can use the following code to get the
+    top 10 most similar items to the item with `StockCode` `23166`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the `order` function with the `decreasing = TRUE` flag, we can sort the
+    similar items in descending order. Then, with this reverse sorted list of indexes,
+    we can get the top 10 similar items to the item with `StockCode` `23166`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result looks as in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3b7dc18a-ad78-4097-98a9-fcd94ca86a74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can get the descriptions of these similar items using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see from this code, we are using the `%in%` operator to filter for
+    the items that match the list of similar items in the variable `top10SimilarItemsTo23166`.
+    Once you run this code, you will see the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7d4e688b-27eb-40a9-a42b-a0cb136342c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first item here is the item that the target customer just bought, and the
+    remaining 10 items are the items that are frequently bought by others who have
+    bought the first item. As you can see, those who have bought ceramic-top storage
+    jars often buy jelly moulds, spice tins, and cake tins. With this data, you can
+    include these items in your marketing messages for this target customer as further
+    product recommendations. Personalizing the marketing messages with targeted product
+    recommendations typically yields higher conversion rates from customers. Using
+    an item-based collaborative filtering algorithm, you can now easily do product
+    recommendations for both new and existing customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code for this R exercise can be found in this link: [https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.6/R/ProductRecommendation.R](https://github.com/yoonhwang/hands-on-data-science-for-marketing/blob/master/ch.6/R/ProductRecommendation.R)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have discussed product recommender systems. We have learned
+    how personalized product recommendations improve conversion and customer retention
+    rates, according to a study conducted by Salesforce. We have discussed the two
+    approaches, collaborative filtering and content-based filtering, to building product
+    recommendation systems; how they differ from one another; and what their assumptions
+    are. Then, we dove deeper into how we can build collaborative filtering-based
+    recommender systems. As you might recall, the first step to building a collaborative
+    filtering-based recommender system is to build a user-to-item matrix, and then
+    the next step is to use cosine similarity to compute the similarities between
+    the users. We have also discussed the two different approaches to utilizing a
+    collaborative filtering algorithm for product recommendations—a user-based approach
+    and an item-based approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the next chapter, we are going to switch gears and focus on utilizing customer
+    behavior data to our advantage to improve our marketing strategies. In the next
+    chapter, we are going to discuss the benefits and importance of conducting customer
+    analytics.
+  prefs: []
+  type: TYPE_NORMAL

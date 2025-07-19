@@ -1,0 +1,1388 @@
+- en: Chapter 2. Integrity and Inspection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter will cover the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trimming excess whitespace
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ignoring punctuation and specific characters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Coping with unexpected or missing input
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Validating records by matching regular expressions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lexing and parsing an e-mail address
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deduplication of nonconflicting data items
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deduplication of conflicting data items
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementing a frequency table using Data.List
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementing a frequency table using Data.MultiSet
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Computing the Manhattan distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Computing the Euclidean distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comparing scaled data using the Pearson correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comparing sparse data using cosine similarity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![Introduction](img/ch02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The conclusions drawn from data analysis are only as robust as the quality of
+    the data itself. After obtaining raw text, the next natural step is to validate
+    and clean it carefully. Even the slightest bias may risk the integrity of the
+    results. Therefore, we must take great precautionary measures, which involve thorough
+    inspection, to ensure sanity checks are performed on our data before we begin
+    to understand it. This section should be the starting point for cleaning data
+    in Haskell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Real-world data often has an impurity that needs to be addressed before it can
+    be processed. For example, extraneous whitespaces or punctuation could clutter
+    data, making it difficult to parse. Duplication and data conflicts are another
+    area of unintended consequences of reading real-world data. Sometimes it's just
+    reassuring to know that data makes sense by conducting sanity checks. Some examples
+    of sanity checks include matching regular expressions as well as detecting outliers
+    by establishing a measure of distance. In this chapter, we will cover each of
+    these topics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trimming excess whitespace
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The text obtained from sources may unintentionally include beginning or trailing
+    whitespace characters. When parsing such an input, it is often wise to trim the
+    text. For example, when Haskell source code contains trailing whitespace, the
+    **GHC** compiler ignores it through a process called **lexing**. The lexer produces
+    a sequence of tokens, effectively ignoring meaningless characters such as excess
+    whitespace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will use built-in libraries to make our own `trim` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the `isSpace :: Char -> Bool` function from the built-in `Data.Char`
+    package:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Write a trim function that removes the beginning and trailing whitespace:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Test it out within `main`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Running the code will result in the following trimmed string:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our `trim` function lazily strips the whitespace from the beginning and ending
+    parts of the string. It starts by dropping whitespace letters from the beginning.
+    Then, it reverses the string to apply the same function again. Finally, it reverses
+    the string one last time to bring it back to the original form. Fortunately, the
+    `isSpace` function from `Data.Char` handles any **Unicode** space character as
+    well as the control characters `\t`, `\n`, `\r`, `\f`, and `\v`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ready-made parser combinator libraries such as `parsec` or `uu-parsinglib` could
+    be used to do this instead, rather than reinventing the wheel. By introducing
+    a `Token` type and parsing to this type, we can elegantly ignore the whitespace.
+    Alternatively, we can use the alex lexing library (package name, `alex`) for this
+    task. These libraries are overkill for this simple task, but they allow us to
+    perform a more generalized tokenizing of text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ignoring punctuation and specific characters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Usually in natural language processing, some uninformative words or characters,
+    called **stop words**, can be filtered out for easier handling. When computing
+    word frequencies or extracting sentiment data from a corpus, punctuation or special
+    characters might need to be ignored. This recipe demonstrates how to remove these
+    specific characters from the body of a text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are no imports necessary. Create a new file, which we will call `Main.hs`,
+    and perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implement `main` and define a string called `quote`. The back slashes (`\`)
+    represent multiline strings:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Replace all punctuation marks with an empty string, and replace all special
+    symbols with a space:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'By running the code, we will find that all special characters and punctuation
+    are appropriately removed to facilitate dealing with the text''s corpus:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: There's more...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For more powerful control, we can install `MissingH`, which is a very helpful
+    utility we can use to deal with strings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It provides a `replace` function that takes three arguments and produces a
+    result as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It replaces all occurrences of the first string with the second string in the
+    third argument. We can also compose multiple `replace` functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By folding the composition `(.)` function over a list of these `replace` functions,
+    we can generalize the `replace` function to an arbitrary list of tokens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The list of punctuation marks can now be arbitrarily long. We can modify our
+    recipe to use our new and more generalized functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Coping with unexpected or missing input
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data sources often contain incomplete and unexpected data. One common approach
+    to parsing such data in Haskell is using the `Maybe` data type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine designing a function to find the nth element in a list of characters.
+    A naïve implementation may have the type `Int -> [Char] -> Char`. However, if
+    the function is trying to access an index out of bounds, we should try to indicate
+    that an error has occurred.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A common way to deal with these errors is by encapsulating the output `Char`
+    into a `Maybe` context. Having the type `Int -> [Char] -> Maybe Char` allows for
+    some better error handling. The constructors for `Maybe` are `Just a` or `Nothing`,
+    which will become apparent by running GHCi and testing out the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will set each field as a `Maybe` data type so that whenever a field cannot
+    be parsed, it will simply be represented as `Nothing`. This recipe will demonstrate
+    how to read the CSV data with faulty and missing info.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We create an input set of CSV files to read in. The first column will be for
+    laptop brands, the next column will be for their models, and the third column
+    will be for the base cost. We should leave some fields blank to simulate an incomplete
+    input. We name the file `input.csv`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_02_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Also, we must install the csv library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the CSV library:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a data type corresponding to the CSV fields:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define and implement `main` to read the CSV input and parse relevant info:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'From a list of records, create a list of laptop data types:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Parse each field, producing `Nothing` if there is an unexpected or missing
+    item:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The `Maybe` monad allows you to have two states: `Just` something or `Nothing`.
+    It provides a useful abstraction to produce an error state. Each field in these
+    data types exists in a `Maybe` context. If a field doesn''t exist, then we simply
+    regard it as `Nothing` and move on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If a more descriptive error state is desired, the `Either` monad may be more
+    useful. It also has two states, but they are more descriptive: `Left` something,
+    or `Right` something. The `Left` state is often used to describe the error type,
+    whereas the `Right` state holds the desired result. We can use the `Left` state
+    to describe different types of errors instead of just one behemoth `Nothing`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To review CSV data input, see the *Keeping and representing data from a CSV
+    file* recipe in [Chapter 1](ch01.html "Chapter 1. The Hunt for Data"), *The Hunt
+    for Data*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validating records by matching regular expressions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A regular expression is a language for matching patterns in a string. Our Haskell
+    code can process a regular expression to examine a text and tell us whether or
+    not it matches the rules described by the expression. Regular expression matching
+    can be used to validate or identify a pattern in the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will read a corpus of English text to find possible candidates
+    of full names in a sea of words. Full names usually consist of two words that
+    start with a capital letter. We use this heuristic to extract all the names from
+    an article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Create an `input.txt` file with some text. In this example, we use a snippet
+    from a New York Times article on dinosaurs ([http://www.nytimes.com/2013/12/17/science/earth/outsider-challenges-papers-on-growth-of-dinosaurs.html](http://www.nytimes.com/2013/12/17/science/earth/outsider-challenges-papers-on-growth-of-dinosaurs.html))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Other co-authors of Dr. Erickson''s include Mark Norell, chairman of paleontology
+    at the American Museum of Natural History; Philip Currie, a professor of dinosaur
+    paleobiology at the University of Alberta; and Peter Makovicky, associate curator
+    of paleontology at the Field Museum in Chicago.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the regular expression library:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Match a string against a regular expression to detect words that look like
+    names:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create functions that remove unnecessary punctuation and special symbols. We
+    will use the same functions defined in the previous recipe entitled *Ignoring
+    punctuation and specific characters*:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Pair adjacent words together and form a list of possible full names:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Retrieve the input and find possible names from a corpus of text:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The resulting output after running the code is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `=~` function takes in a string and a regular expression and returns a target
+    that we parse as `Bool`. In this recipe, the `^[A-Z][a-z]{1,30}$` regular expression
+    matches the words that start with a capital letter and are between 2 and 31 letters
+    long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to determine the usefulness of the algorithm presented in this recipe,
+    we will introduce two metrics of relevance: **precision** and **recall**. Precision
+    is the percent of retrieved data that is relevant. Recall is the percent of relevant
+    data that is retrieved.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Out of a total of 45 words in the `input.txt` file, four correct names are produced
+    and a total eight candidates are retrieved. It has a precision of 50 percent and
+    a recall of 100 percent. This is not bad at all for a simple regular expression
+    trick.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Instead of running regular expressions on a string, we can pass them through
+    a lexical analyzer. The next recipe entitled *Lexing and parsing an e-mail address*
+    will cover this in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lexing and parsing an e-mail address
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An elegant way to clean data is by defining a lexer to split up a string into
+    tokens. In this recipe, we will parse an e-mail address using the `attoparsec`
+    library. This will naturally allow us to ignore the surrounding whitespace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Import the `attoparsec` parser combinator library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use the GHC `OverloadedStrings` language extension to more legibly use the
+    `Text` data type throughout the code. Also, import the other relevant libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Declare a data type for an e-mail address:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define how to parse an e-mail address. This function can be as simple or as
+    complicated as required:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Parse an e-mail address to test the code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code to print out the parsed e-mail address:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We create an e-mail parser by matching the string against multiple tests. An
+    e-mail address must contain some alphanumerical username, followed by the 'at'
+    sign (`@`), then an alphanumerical hostname, a period, and lastly the top-level
+    domain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The various functions used from the `attoparsec` library can be found in the
+    `Data.Attoparsec.Text` documentation, which is available at [https://hackage.haskell.org/package/attoparsec/docs/Data-Attoparsec-Text.html](https://hackage.haskell.org/package/attoparsec/docs/Data-Attoparsec-Text.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deduplication of nonconflicting data items
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Duplication is a common problem when collecting large amounts of data. In this
+    recipe, we will combine similar records in a way that ensures no information is
+    lost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create an `input.csv` file with repeated data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_02_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will be using the `CSV`, `Map`, and `Maybe` packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the `Item` data type corresponding to the CSV input:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Get each record from CSV and put them in a map by calling our `doWork` function:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'If we''re unable to parse CSV, print an error message; otherwise, define the
+    `doWork` function that creates a map from an association list with a collision
+    strategy defined by `combine`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use the `<|>` function from `Control.Applicative` to merge the nonconflicting
+    fields:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the helper functions to create an association list from a CSV record:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Executing the code shows a map filled with combined results:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The `Map` data type offers a convenient function `fromListWith :: Ord k =>
+    (a -> a -> a) -> [(k, a)] -> Map k a` to easily combine data in the map. We use
+    it to find out whether a key already exists. If so, we combine the fields in the
+    old and new items and store them under the key.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The true hero in this recipe is the `<|>` function form `Control.Applicative`.
+    The `<|>` function takes its arguments and returns the first one that is not *empty*.
+    Since both `String` and `Maybe` implement `Applicative typeclass`, we can reuse
+    the `<|>` function for a more manageable code. Here are a couple of examples of
+    it in use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: There's more...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you're dealing with larger numbers, it may be wise to use `Data.Hashmap.Map`
+    instead because the running time for *n* items is *O(min(n, W))*, where *W* is
+    the number of bits in an integer (32 or 64).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For even better performance, `Data.Hashtable.Hashtable` provides *O(1)* performance
+    for lookups but adds complexity by being in an I/O monad.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the corpus contains inconsistent information about duplicated data, see the
+    next recipe on *Deduplication of conflicting data items*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deduplication of conflicting data items
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Unfortunately, information about an item may be inconsistent throughout the
+    corpus. Collision strategies are often domain-dependent, but one common way to
+    manage this conflict is by simply storing all variations of the data. In this
+    recipe, we will read a CSV file that contains information about musical artists
+    and store all of the information about their songs and genres in a set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Create a CSV input file with the following musical artists. The first column
+    is for the name of the artist or band. The second column is the song name, and
+    the third is the genre. Notice how some musicians have multiple songs or genres.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_02_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will be using the `CSV`, `Map`, and `Set` packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the `Artist` data type corresponding to the CSV input. For fields that
+    may contain conflicting data, store the value in its corresponding list. In this
+    case, song- and genre-related data are stored in a set of strings:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Extract data from CSV and insert it in a map:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out any error that might occur:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'If no error occurs, then combine the data from the CSV and print it out:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a map from an association list with a collision strategy defined by
+    `combine`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Make the helper functions create an association list from the CSV records:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output of the program will be a map with the following information that
+    will be collected:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The `Map` data type offers a convenient function `fromListWith :: Ord k =>
+    (a -> a -> a) -> [(k, a)] -> Map k a` to easily combine data in `Map`. We use
+    it to find out whether a key already exists. If so, we combine the fields in the
+    old and new items and store them under the key.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use a set to efficiently combine these data fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If dealing with larger numbers, it may be wise to use `Data.Hashmap.Map` instead
+    because the running time for *n* items is *O(min(n, W))*, where *W* is the number
+    of bits in an integer (32 or 64).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For even better performance, `Data.Hashtable.Hashtable` provides *O(1)* performance
+    for lookups but adds complexity by being in an I/O monad.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the corpus contains nonconflicting information about duplicated data, see
+    the previous section on *Deduplication of nonconflicting data items*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing a frequency table using Data.List
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A frequency map of values is often useful to detect outliers. We can use it
+    to identify frequencies that seem out of the ordinary. In this recipe, we will
+    be counting the number of different colors in a list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use the `group` and `sort` functions from `Data.List`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a simple data type for colors:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a list of these colors:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Implement the frequency map and print it out:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Grouping identical items after sorting the list is the central idea.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'See the following step-by-step evaluation in ghci:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: As we may expect, sorting the list is the most expensive step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A cleaner version of the code is possible by using `Data.MultiSet` described
+    in the next recipe, *Implementing a frequency table using Data.MultiSet*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing a frequency table using Data.MultiSet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A frequency map of values is often useful to detect outliers. We will use an
+    existing library that does much of the work for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will be using the `multiset` package from Hackage:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use the `fromList` and `toOccurList` functions from `Data.MultiSet`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a simple data type for colors:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a list of these colors:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Implement the frequency map and print it out:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the code to display the frequency list:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The `toOccurList :: MultiSet a -> [(a, Int)]` function creates a frequency
+    map from a list. We construct `MuliSet` using the provided `fromList` function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If importing a new library is not desired, see the previous recipe on *Implementing
+    a frequency map using Data.List*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computing the Manhattan distance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Defining a distance between two items allows us to easily interpret clusters
+    and patterns. The Manhattan distance is one of the easiest to implement and is
+    used primarily due to its simplicity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Computing the Manhattan distance](img/6331OS_02_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Manhattan distance (or Taxicab distance) between two items is the sum of
+    the absolute differences of their coordinates. So if we are given two points (1,
+    1) and (5, 4), then the Manhattan distance will be *|1-5| + |1-4| = 4 + 3 = 7*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use this distance metric to detect whether an item is unusually *far
+    away* from everything else. In this recipe, we will detect outliers using the
+    Manhattan distance. The calculations merely involve addition and subtraction,
+    and therefore, it performs exceptionally well for a very large amount of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a list of comma-separated points. We will compute the smallest distance
+    between these points and a test point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the CSV and List packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Read in the following points:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Represent the data as a list of floating point numbers:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a couple of points to test the function:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the Manhattan distance on each of the points and find the smallest
+    result:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function to convert a list of strings to a list of floating
+    point numbers:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the Manhattan distance between two points:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Filter out records that are of incorrect size:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output will be the shortest distance between the test points and the list
+    of points:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the distance matches more closely to the traditional geometric space, then
+    read the next recipe on *Computing the Euclidean distance*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computing the Euclidean distance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Defining a distance between two items allows us to easily interpret clusters
+    and patterns. The Euclidean distance is one of the most geometrically natural
+    forms of distance to implement. It uses the Pythagorean formula to compute how
+    far away two items are, which is similar to measuring the distance with a physical
+    ruler.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Computing the Euclidean distance](img/6331OS_02_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can use this distance metric to detect whether an item is unusually *far
+    away* from everything else. In this recipe, we will detect outliers using the
+    Euclidean distance. It is slightly more computationally expensive than measuring
+    the Manhattan distance since it involves multiplication and square roots; however,
+    depending on the dataset, it may provide more accurate results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Create a list of comma-separated points. We will compute the smallest distance
+    between these points and a test point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the CSV and List packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Read in the following points:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Represent the data as a list of floating point numbers:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define a couple of points to test out the function:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the Euclidean distance on each of the points and find the smallest
+    result:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a helper function to convert a list of strings to a list of floating
+    point numbers:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the Euclidean distance between two points:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Filter out records that are of incorrect size:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output will be the shortest distance between the test points and the list
+    of points:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If a more computationally efficient distance calculation is required, then take
+    a look at the previous recipe, *Computing the Manhattan distance*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing scaled data using the Pearson correlation coefficient
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another way to measure how closely two items relate to each other is by examining
+    their individual trends. For example, two items that both show an upward trend
+    are more closely related. Likewise, two items that both show a downward trend
+    are also closely related. To simplify the algorithm, we will only consider linear
+    trends. This calculation of correlation is called the Pearson correlation coefficient.
+    The closer the coefficient is to zero, the less correlated the two data sets will
+    be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Pearson correlation coefficient for a sample is calculated using the following
+    formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Comparing scaled data using the Pearson correlation coefficient](img/6331OS_02_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implement `main` to compute the correlation coefficient between two lists of
+    numbers:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Define the function to compute the Pearson coefficient:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Run the code to print the coefficient.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Pearson correlation coefficient measures the degree of linear relationship
+    between two variables. The magnitude of this coefficient describes how strongly
+    the variables are related. If positive, the two variables change together. If
+    negative, as one variable increases, the other decreases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing sparse data using cosine similarity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When a data set has multiple empty fields, comparing the distance using the
+    Manhattan or Euclidean metrics might result in skewed results. Cosine similarity
+    measures how closely two vectors are oriented with each other. For example, the
+    vectors (82, 86) and (86, 82) essentially point in the same direction. In fact,
+    their cosine similarity is equivalent to the cosine similarity between (41, 43)
+    and (43, 41). A cosine similarity of 1 corresponds to vectors that point in the
+    exact same direction, and 0 corresponds to vectors that are completely orthogonal
+    to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Comparing sparse data using cosine similarity](img/6331OS_02_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As long as the angles between the two vectors are equal, their cosine similarity
+    is equivalent. Applying a distance metric such as the Manhattan distance or Euclidean
+    distance in this case produces a significant difference between the two sets of
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cosine similarity between the two vectors is the dot product of the two
+    vectors divided by the product of their magnitudes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Comparing sparse data using cosine similarity](img/6331OS_02_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will call `Main.hs`, and perform the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement `main` to compute the cosine similarity between two lists of numbers.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE81]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Compute the cosine similarity.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Define the dot product and Euclidean length helper functions.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Run the code to print the cosine similarity.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE84]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the data set is not sparse, consider using the Manhattan or Euclidean distance
+    metrics instead, as detailed in the recipes *Computing the Manhattan distance*
+    and *Computing the Euclidean distance*.
+  prefs: []
+  type: TYPE_NORMAL

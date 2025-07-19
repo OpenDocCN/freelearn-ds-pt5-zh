@@ -1,0 +1,1284 @@
+- en: Chapter 9. Growing Trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going from trees to forest – Random Forest
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Growing extremely randomized Trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Growing a rotation forest
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we will see some more Bagging methods based on tree-based algorithms.
+    Due to their robustness against noise and universal applicability to a variety
+    of problems, they are very popular among the data science community.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The claim to fame for most of these methods is that they can obtain very good
+    results with zero data preparation compared to other methods, and they can be
+    provided as black box tools in the hands of software engineers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other than the tall claims made in the previous paragraphs, there are some other
+    advantages as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By design, bagging lends itself nicely to parallelization. Hence, these methods
+    can be easily applied on a very large dataset in a cluster environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision Tree algorithms split the input data into various regions at each level
+    of the tree. Thus, they perform implicit feature selection. Feature selection
+    is one of the most important tasks in building a good model. By providing implicit
+    feature selection, Decision Trees are in an advantageous position compared to
+    other techniques. Hence, Bagging with Decision Trees comes with this advantage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Almost no data preparation is needed for decision trees. For example, consider
+    scaling of attributes. The attribute scale has no impact on the structure of the
+    decision trees. Moreover, missing values do not affect decision trees. The effect
+    of outliers too is very minimal on a Decision Tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some of our earlier recipes, we had used Polynomial features retaining only
+    the interaction components. With an ensemble of trees, these interactions are
+    taken care of. We don't have to make explicit feature transformations to accommodate
+    feature interactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear Regression-based models fail in the case of the existence of a non-linear
+    relationship in the input data. We saw this effect when we explained the Kernel
+    PCA recipes. Tree-based algorithms are not affected by a non-linear relationship
+    in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the major complaints against the Tree-based method is the difficulty
+    with pruning of trees to avoid overfitting. Big trees tend to fit the noise present
+    in the underlying data as well, and hence, lead to a low bias and high variance.
+    However, when we grow a lot of trees, and the final prediction is an average of
+    the output of all the trees in the ensemble, we avoid the problem of variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we will see three tree-based ensemble methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our first recipe is about implementing Random Forests for a classification problem.
+    Leo Breiman is the inventor of this algorithm. The Random Forest is an ensemble
+    technique which leverages a lot of trees internally to produce a model for solving
+    any regression or classification problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our second recipe is about Extremely Randomized trees, an algorithm which varies
+    in a very small way from Random Forests. By introducing more randomization in
+    its procedure as compared to a Random Forest, it claims to address the variance
+    problem more effectively. Moreover, it has a slightly reduced computational complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our final recipe is about Rotation Forests. The first two recipes require a
+    large number of trees to be a part of their ensemble for achieving good performance.
+    Rotation forest claim that they can achieve similar or better performance with
+    a fewer number of trees. Furthermore, the authors of this algorithm claim that
+    the underlying estimator can be anything other than a tree. In this way, it is
+    projected as a new framework for building an ensemble similar to Gradient Boosting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going from trees to Forest – Random Forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Random forest method builds a lot of trees (forest) which are uncorrelated
+    to each other. Given a classification or a regression problem, the method proceeds
+    to build a lot of trees, and the final prediction is either the average of predictions
+    from the entire forest for regression or a majority vote classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This should remind you of Bagging. Random Forests is yet another Bagging methodology.
+    The fundamental idea behind bagging is to use a lot of noisy estimators, handling
+    the noise by averaging, and hence reducing the variance in the final output. Trees
+    are highly affected by even a very small noise in the training dataset. Hence,
+    being a noisy estimator, they are an ideal candidate for Bagging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us write down the steps involved in building a Random Forest. The number
+    of trees required in the forest is a parameter specified by the user. Let T be
+    the number of trees required to be built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start with iterating from 1 through T, that is, we build T trees:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each tree, draw a bootstrap sample of size D from our input dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We proceed to fit a tree t to the input data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Randomly select m attributes.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pick the best attribute to use as a splitting variable using a predefined criterion.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Split the data set into two. Remember, trees are binary in nature. At each level
+    of the tree, the input dataset is split into two.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We proceed to do the preceding three steps recursively on the dataset that we
+    split.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, we return T trees.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To make a prediction on a new instance, we take a majority vote amongst all
+    the trees in T for a classification; for regression, we take the average value
+    returned by each tree t in T.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We said earlier that a Random Forest builds non-correlated trees. Let's see
+    how the various trees in the ensemble are not correlated to each other. By taking
+    a bootstrap sample from the dataset for each tree, we ensure that different parts
+    of the data are presented to different trees. This way, each tree tries to model
+    different characteristics of the dataset. Hence, we stick to the ensemble rule
+    of introducing variation in the underlying estimators. But this does not guarantee
+    complete non correlation between the underlying trees. When we do the node splitting,
+    we don't select all attributes; rather, we randomly select a subset of attributes.
+    In this manner, we try to ensure that our trees are not correlated to each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compared to Boosting, where our ensemble of estimators were weak classifiers,
+    in a Random Forest, we build trees with maximum depth so that they fit the bootstrapped
+    sample perfectly leading to a low bias. The consequence is the introduction of
+    high variance. However, by building a large number of trees and using the averaging
+    principle for the final prediction, we hope to tackle this variance problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us proceed to jump into our recipe for a Random Forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are going to generate some classification datasets to demonstrate a Random
+    Forest Algorithm. We will leverage scikit-learn's implementation of a Random Forest
+    from the ensemble module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will start with loading all the necessary libraries. Let us leverage the
+    `make_classification` method from the `sklearn.dataset` module for generating
+    the training data to demonstrate a Random Forest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will now write the function `build_forest` to build fully grown trees and
+    proceed to evaluate the forest''s performance. Then we will write the methods
+    which can be used to search the optimal parameters for our forest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we write a main function for invoking the functions that we have defined
+    previously:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us start with our main function. We invoke get_data to get our predictor
+    attributes `x` and the response attributes `y`. Inside `get_data`, we leverage
+    the `make_classification` dataset to generate our training data for Random Forest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us look at the parameters passed to the `make_classification` method. The
+    first parameter is the number of instances required; in this case, we say we need
+    500 instances. The second parameter is about the number of attributes required
+    per instance. We say that we need 30\. The third parameter, `flip_y`, randomly
+    interchanges 3 percent of the instances. This is done to introduce some noise
+    in to our data. The next parameter specifies the number of features out of those
+    30 features, which should be informative enough to be used in our classification.
+    We have specified that 60 percent of our features, that is, 18 out of 30 should
+    be informative. The next parameter is about the redundant features. These are
+    generated as a linear combination of the informative features in order to introduce
+    a correlation among the features. Finally, repeated features are the duplicate
+    features, which are drawn randomly from both informative features and redundant
+    features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us split the data into the training and testing set using `train_test_split`.
+    We reserve 30 percent of our data for testing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once again, we leverage `train_test_split` to split our test data into dev
+    and test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the data divided for building, evaluating, and testing the model, we proceed
+    to build our models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We invoke the `build_forest` function with our training and dev data to build
+    the random forest model. Let us look inside that function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We need 100 trees in our ensemble, so we use the variable `no_trees` to define
+    the number of trees. We leverage the `RandomForestClassifier` class from scikit-learn
+    check and apply throughout. As you can see, we pass the number of trees required
+    as a parameter. We then proceed to fit our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let us find the model accuracy score for our train and dev data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_09_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Not bad! We have achieved 83 percent accuracy on our dev set. Let us see if
+    we can improve our scores. There are other parameters to the forest which can
+    be tuned to get a better model. For the list of parameters which can be tuned,
+    refer to the following link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We invoke the function `search_parameters` with the training and dev data to
+    tune the various parameters for our Random Forest model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In some of the previous recipes, we used GridSearchCV to search through the
+    parameter space for finding the best parameter combination. GridSearchCV performs
+    a very exhaustive search. However, in this recipe we are going to use RandomizedSearchCV.
+    We provide a distribution of parameter values for each parameter, and specify
+    the number of iterations needed. For each iteration, RandomizedSearchCV will pick
+    a sample value from the parameter distribution and fit the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We provide a dictionary of parameters as we did in GridSearchCV. In our case,
+    we want to experiment with three parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first one is the number of trees in the model, represented by the `n_estimators`
+    parameter. By invoking the randint function, we get a list of integers between
+    75 and 200\. The size of the trees is defined by `no_iterations` parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is the parameter we will pass to RandomizedSearchCV for the number of iterations
+    we want to perform. From this array of `20` elements, RandomizedSearchCV will
+    sample a single value for each iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our next parameter is the criterion, we pick randomly between gini and entropy,
+    and use that as a criterion for splitting the nodes during each iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most important parameter, `max_features`, defines the number of features
+    that the algorithm should pick during the splitting of each node. In our pseudocode
+    for describing the Random Forest, we have specified that we need to pick m attributes
+    randomly during each split of the node. The parameter `max_features` defines that
+    m. Here we give a list of four values. The variable `sqr_no_features` is the square
+    root of the number of attributes available in the input dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Other values in that list are some variations of the square root.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us instantiate RandomizedSearchCV with this parameter distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first parameter is the underlying estimator whose parameters we are trying
+    to optimize. It''s our `RandomForestClassifier`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The second parameter, `param_distributions` is the distribution defined by the
+    dictionary parameters. We define the number of iterations, that is, the number
+    of times we want to run the RandomForestClassifier using the parameter `n_iter`.
+    With the `cv` parameter, we specify the number of cross validations required `5`
+    cross validations in our case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us proceed to fit the model, and see how well the model has turned out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_09_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, we have five folds, that is, we want to do a five-fold cross
+    validation on each of our iterations. We have a total of `20` iterations, and
+    hence, we will be building 100 models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us look inside the function `print_model_worth`. We pass our grid object
+    and dev dataset to this function. The grid object stores the evaluation metric
+    for each of the models it builds inside an attribute called the `grid_scores_
+    of type` list. Let us sort this list in the descending order to build the best
+    model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We select the top five models as you can see from the indexing. We proceed
+    to print the details of those models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We first print the evaluation score and follow it with the parameters of the
+    model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_09_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have ranked the modes by their scores in the descending order thus showing
+    the best model parameters in the beginning. We will choose these parameters as
+    our model parameters. The attribute `best_estimator_ will` return the model with
+    these parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us use these parameters and test our dev data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The predict function will use `best_estimtor` internally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_09_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Great! We have a perfect model with a classification accuracy of 100 percent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Internally, the `RandomForestClassifier` uses the `DecisionTreeClassifier`.
+    Refer to the following link for all the parameters that are passed for building
+    a decision tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One parameter that is of some interest to us is splitter. The default value
+    of splitter is set to best. Based on the `max_features` attribute, the implementation
+    will choose the splitting mechanism internally. The available splitting mechanisms
+    include the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'best: Chooses the best possible split from the given set of attributes defined
+    by the `max_features` parameter'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'random: Randomly chooses a splitting attribute'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You would have noticed that this parameter is not available while instantiating
+    a `RandomForestClassifier`. The only way to control is to give a value to the
+    `max_features` parameter which is less than the number of attributes available
+    in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the industry, Random Forests are extensively used for variable selection.
+    In Scikit learn, variable importance is calculated using gini impurity. Both the
+    gini and entropy criteria used for node splitting identify the best attribute
+    for splitting the node by its ability to split the dataset into subsets with high
+    impurity so that subsequent splitting leads to good classification. The importance
+    of a variable is decided by the amount of impurity it can induce into the split
+    dataset. Refer to the following book for more details:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Breiman, Friedman, "Classification and regression trees", 1984.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We can write a small function to print the important features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A Random Forest object has a variable called `feature_importances_`. We use
+    this variable and create a list of tuples with the feature number and importance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We proceed to sort it in descending order of importance, and select only the
+    top 10 features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We then print the top 10 features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_09_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Another interesting aspect of Random Forests is the `Out-of-Bag estimation
+    (OOB)`. Remember that we bootstrap from the dataset initially for every tree grown
+    in the forest. Because of bootstrapping, some records will not be used in some
+    trees. Let us say record 1 is used in 100 trees and not used in 150 trees in our
+    forest. We can then use those 150 trees to predict the class label for that record
+    to figure out the classification error for that record. Out-of-bag estimation
+    can be used to effectively assess the quality of our forest. The following URL
+    gives an example of how the OOB can be used effectively:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/dev/auto_examples/ensemble/plot_ensemble_oob.html](http://scikit-learn.org/dev/auto_examples/ensemble/plot_ensemble_oob.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The RandomForestClassifier class in Scikit learn is derived from `ForestClassifier`.The
+    source code for the same can be found at the following link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/scikit-learn/scikit-learn/blob/a95203b/sklearn/ensemble/forest.py#L318](https://github.com/scikit-learn/scikit-learn/blob/a95203b/sklearn/ensemble/forest.py#L318)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we call the predict method in RandomForestClassifier, it internally calls
+    the `predict_proba` method defined in ForestClassifier. Here, the final prediction
+    is done not on the basis of voting but by averaging the probabilities for each
+    of the classes from different trees inside the forest and deciding the final class
+    based on the highest probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The original paper by Leo Breiman on Random Forests is available for download
+    at the following link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://link.springer.com/article/10.1023%2FA%3A1010933404324](http://link.springer.com/article/10.1023%2FA%3A1010933404324)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can also refer to the website maintained by Leo Breiman and Adele Cutler:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm](https://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Building Decision Trees to solve Multi Class Problems* recipe in [Chapter
+    6](ch06.xhtml "Chapter 6. Machine Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Understanding Ensemble, Gradient Boosting* recipe in [Chapter 8](ch08.xhtml
+    "Chapter 8. Ensemble Methods"), *Model Selection and Evaluation*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Understanding Ensemble, Bagging Method* recipe in [Chapter 8](ch08.xhtml "Chapter 8. Ensemble
+    Methods"), *Model Selection and Evaluation*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Growing Extremely Randomized Trees
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Extremely Randomized Trees, also known as the Extra trees algorithm differs
+    from the Random Forest described in the previous recipe in two ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It does not use bootstrapping to select instances for every tree in the ensemble;
+    instead, it uses the complete training dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Given K as the number of attributes to be randomly selected at a given node,
+    it selects a random cut-point without considering the target variable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As you saw in the previous recipe, Random Forests used randomization in two
+    places. First, in selecting the instances to be used for the training trees in
+    the forest; bootstrap was used to select the training instances. Secondly, at
+    every node a random set of attributes were selected. One attribute among them
+    was selected based on either the gini impurity or entropy criterion. Extremely
+    randomized trees go one step further and select the splitting attribute randomly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Extremely Randomized Trees were proposed in the following paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*P. Geurts, D. Ernst., and L. Wehenkel, "Extremely randomized trees", Machine
+    Learning, 63(1), 3-42, 2006*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'According to this paper, there are two aspects, other than the technical aspects
+    listed earlier, which make an Extremely Randomized Tree more suitable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rationale behind the Extra-Trees method is that the explicit randomization
+    of the cut-point and attribute combined with ensemble averaging should be able
+    to reduce variance more strongly than the weaker randomization schemes used by
+    other methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compared to a Random Forest, randomization of the cut-point ( the attribute
+    selected to split the dataset at each node) combined with the randomization of
+    cut-point, that is, ignoring any criteria, and finally, averaging the results
+    from each of the tree, will result in a much superior performance on an unknown
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second advantage is regarding the compute complexity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the computational point of view, the complexity of the tree growing procedure
+    is, assuming balanced trees, on the order of N log N with respect to learning
+    the sample size, like most other tree growing procedures. However, given the simplicity
+    of the node splitting procedure we expect the constant factor to be much smaller
+    than in other ensemble based methods which locally optimize cut-points
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since no computation time is spent in identifying the best attribute to split,
+    this method is more computationally efficient than Random Forests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us write down the steps involved in building Extremely Random trees. The
+    number of trees required in the forest is typically specified by the user. Let
+    T be the number of trees required to be built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start with iterating from 1 through T, that is, we build T trees:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each tree, we select the complete input dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We then proceed to fit a tree t to the input data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select m attributes randomly.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pick an attribute randomly as the splitting variable.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Split the data set into two. Remember that trees are binary in nature. At each
+    level of the tree, the input dataset is split into two.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Perform the preceding three steps recursively on the dataset that we split.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, we return T trees.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let us take a look at the recipe for Extremely Randomized Trees.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Getting ready…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are going to generate some classification datasets to demonstrate Extremely
+    Randomized Trees. For that, we will leverage Scikit Learn's implementation of
+    the Extremely Randomized Trees ensemble module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We start by loading all the necessary libraries. Let us leverage the `make_classification`
+    method from the `sklearn.dataset` module to generate the training data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We write the function `build_forest`, where we will build fully grown trees,
+    and proceed to evaluate the forest''s performance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we write a main function for invoking the functions that we have defined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us start with our main function. We invoke `get_data` to get our predictor
+    attributes in the response attributes. Inside `get_data`, we leverage the make_classification
+    dataset to generate the training data for our recipe as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us look at the parameters that are passed to the `make_classification` method.
+    The first parameter is the number of instances required; in this case, we say
+    we need 500 instances. The second parameter is about the number of attributes
+    required per instance. We say that we need 30\. The third parameter, `flip_y`,
+    randomly interchanges 3 percent of the instances. This is done to introduce some
+    noise in our data. The next parameter specifies the number of features out of
+    those 30 features should be informative enough to be used in our classification.
+    We have specified that 60 percent of our features, that is, 18 out of 30 should
+    be informative. The next parameter is about redundant features. These are generated
+    as a linear combination of the informative features in order to introduce a correlation
+    among the features. Finally, repeated features are the duplicate features, which
+    are drawn randomly from both informative features and redundant features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us split the data into the training and testing set using `train_test_split`.
+    We reserve 30 percent of our data for testing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once again, we leverage train_test_split to split our test data into dev and
+    test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the data divided for building, evaluating, and testing the model, we proceed
+    to build our models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We invoke the `build_forest` function with our training and dev data to build
+    our Extremely Randomized trees model. Let us look inside that function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We need 100 trees in our ensemble, so we use the variable no_trees to define
+    the number of trees. We leverage the `ExtraTreesClassifier` class from Scikit
+    learn. As you can see, we pass the number of trees required as a parameter. A
+    point to note here is the parameter bootstrap. Refer to the following URL for
+    the parameters for the ExtraTreesClassifier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The parameter bootstrap is set to `False` by default. Compare it with the `RandomForestClassifier`
+    bootstrap parameter given at the following URL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As explained earlier, every tree in the forest is trained with all the records.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We proceed to fit our model as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We then proceed to find the model accuracy score for our train and dev data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us print the scores for the training and dev dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_09_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let us now do a five-fold cross validation to look at the model predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_09_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Pretty good results. We almost have a 90 percent accuracy rate for one of the
+    folds. We can do a randomized search across the parameter space as we did for
+    Random Forest. Let us invoke the function `search_parameters` with our train and
+    test dataset. Refer to the previous recipe for an explanation of RandomizedSearchCV.
+    We will then print the output of the `search_parameters` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_09_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As in the previous recipe, we have ranked the models by their scores in descending
+    order, thus showing the best model parameters in the beginning. We will choose
+    these parameters as our model parameters. The attribute `best_estimator_ will`
+    return the model with these parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What you see next is the classification report generated for the best estimator.
+    The predict function will use `best_estimator_ internally`. The report was generated
+    by the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Great! We have a perfect model with a classification accuracy of 100 percent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Extremely Randomized Trees are very popular with the time series classification
+    problems. Refer to the following paper for more information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Geurts, P., Blanco Cuesta A., and Wehenkel, L. (2005a). Segment and combine
+    approach for biological sequence classification. In: Proceedings of IEEE Symposium
+    on Computational Intelligence in Bioinformatics and Computational Biology, 194–201.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Building Decision Trees to solve Multi Class Problems* recipe in [Chapter
+    6](ch06.xhtml "Chapter 6. Machine Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Understanding Ensemble, Bagging Method* recipe in [Chapter 8](ch08.xhtml "Chapter 8. Ensemble
+    Methods"), *Model Selection and Evaluation*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Growing from trees to Forest, Random Forest* recipe in [Chapter 9](ch09.xhtml
+    "Chapter 9. Growing Trees"), *Machine Learning III*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Growing Rotational Forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Random forests and Bagging give impressive results with very large ensembles;
+    having a large number of estimators results in an improvement in the accuracy
+    of these methods. On the contrary, a Rotational forest is designed to work with
+    a smaller number of ensembles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us write down the steps involved in building a Rotational Forest. The number
+    of trees required in the forest is typically specified by the user. Let T be the
+    number of trees required to be built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start with iterating from 1 through T, that is, we build T trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For each tree t, perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split the attributes in the training set into K non-overlapping subsets of equal
+    size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We have K datasets, each with K attributes. For each of the K datasets, we
+    proceed to do the following: Bootstrap 75 percent of the data from each K dataset,
+    and use the bootstrapped sample for further steps:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Run a Principal Component analysis on the ith subset in K. Retain all the principal
+    components. For every feature j in the Kth subset, we have a principal component
+    a. Let us denote it as aij, which is the principal component for the jth attribute
+    in the ith subset.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Store the principal components for the subset.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create a rotation matrix of size n X n, where n is the total number of attributes.
+    Arrange the principal components in the matrix such that the components match
+    the position of the features in the original training dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Project the training dataset on the Rotation matrix using matrix multiplication.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build a decision tree with the projected dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Store the tree and the rotational matrix.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With this knowledge, let us jump to our recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are going to generate some classification datasets to demonstrate a Rotational
+    Forest. To our knowledge, there is no Python implementation available for Rotational
+    forests. Hence, we will write our own code. We will leverage Scikit Learn's implementation
+    of a Decision Tree Classifier and use the `train_test_split` method for bootstrapping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will start with loading all the necessary libraries. Let us leverage the
+    `make_classification` method from the `sklearn.dataset` module to generate the
+    training data. We follow it with a method to select a random subset of attributes
+    called `gen_random_subset`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We now write a function `build_rotationtree_model`, where we will build fully
+    grown trees, and proceed to evaluate the forest''s performance using the function
+    `model_worth`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we write a main function for invoking the functions that we have defined
+    earlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us start with our main function. We invoke `get_data` to get our predictor
+    attributes in the response attributes. Inside get_data, we leverage the make_classification
+    dataset to generate the training data for our recipe as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us look at the parameters passed to the make_classification method. The
+    first parameter is the number of instances required; in this case we say we need
+    500 instances. The second parameter is about the number of attributes required
+    per instance. We say that we need 30\. The third parameter, `flip_y`, randomly
+    interchanges 3 percent of the instances. This is done to introduce some noise
+    in our data. The next parameter is about the number of features out of those 30
+    features, which should be informative enough to be used in our classification.
+    We have specified that 60 percent of our features, that is, 18 out of 30 should
+    be informative. The next parameter is about redundant features. These are generated
+    as a linear combination of the informative features in order to introduce a correlation
+    among the features. Finally, repeated features are the duplicate features which
+    are drawn randomly from both informative features and redundant features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us split the data into the training and testing set using train_test_split.
+    We reserve 30 percent of our data for testing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once again, we leverage train_test_split to split our test data into dev and
+    test as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the data divided for building, evaluating, and testing the model, we proceed
+    to build our models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: We invoke the `build_rotationtree_model` function to build our Rotational forest.
+    We pass our training data, predictors `x_train` and response variable `y_train`,
+    the total number of trees to be built (`25` in this case), and finally, the subset
+    of features to be used (`5` in this case).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us jump to that function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: We begin with declaring three lists to store each of the decision tree, the
+    rotation matrix for that tree, and finally, the subset of features used in that
+    iteration. We proceed to build each tree in our ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a first order of business, we bootstrap to retain only 75 percent of the
+    data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We leverage the `train_test_split` function from Scikit learn for bootstrapping.
+    We then decide the feature subsets as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function `get_random_subset` takes the feature index and the number of subsets
+    that require k as parameter, and returns K subsets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside that function, we shuffle the feature index. The feature index is an
+    array of numbers that starts from 0 and ends with the number of features in our
+    training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us say we have 10 features and our k value is 5 indicating that we need
+    subsets with 5 non-overlapping feature indices; we need to then do two iterations.
+    We store the number of iterations needed in the limit variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If our required subset is less than the total number of attributes, then we
+    can proceed to use the first k entries in our iterable. Since we have shuffled
+    our iterables, we will be returning different volumes at different times:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On selecting a subset, we remove it from the iterable as we need non-overlapping
+    sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With all the subsets ready, we declare our rotation matrix as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, our rotational matrix is of size n x n, where n is the number
+    of attributes in our dataset. You can see that we have used the shape attribute
+    to declare this matrix filled with zeros:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: For each of the K subsets of data having only K features, we proceed to perform
+    the principal component analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We fill our rotational matrix with the component values as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For example, let us say that we have three attributes in our subset, in a total
+    of six attributes. For illustration, let us say our subsets are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our rotational matrix R is of size 6 x 6\. Assume that we want to fill the rotation
+    matrix for the first subset of features. We will have three principal components,
+    one each for 2, 4, and 6 of size 1 x 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output of the PCA from Scikit learn is a matrix of the size component''s
+    X features. We go through each component value in the for loop. At the first run,
+    our feature of interest is 2, and the cell (`0`,`0`) in the component matrix output
+    from PCA gives the value of the contribution of feature 2 to component 1\. We
+    have to find the right place in the rotational matrix for this value. We use the
+    index from the component matrix ii and jj with the subset list to get the right
+    place in the rotation matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`each_subset[0]` and `each_subset[0]` will put us in cell (2,2) in the rotation
+    matrix. As we go through the loop, the next component value in cell (0,1) in the
+    component matrix will be placed in cell (2,4) of the rotational matrix, and the
+    last one in cell (2,6) of the rotational matrix. This is done for all the attributes
+    in the first subset. Let us go to the second subset; here the first attribute
+    is 1\. Cell (0,0) of the component matrix corresponds to cell (1,1) in the rotation
+    matrix.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Proceeding this way, you will notice that the attribute component values are
+    arranged in the same order as the attributes themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With our rotation matrix ready, let us project our input onto the rotation
+    matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It''s time now to fit our decision tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we store our models and the corresponding rotation matrices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With our model built, let us proceed to see how good our model is with both
+    the train and the dev data, using the `model_worth` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let us take a look at our model_worth function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Inside the function with perform prediction using each of the tree we have
+    built. However, before the prediction, we project our input using the rotation
+    matrix. We store all our prediction output in a list called `predicted_ys`. Let
+    us say we have 100 instances to predict, and we have 10 models in our tree. For
+    each instance, we have 10 predictions. We store those as a matrix for convenience:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we proceed to give a final classification for each of our input records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will store our final prediction in a list called `final_prediction`. We go
+    through each of the predictions for our instance. Say we are in the first instance
+    (i=0 in our for loop); `pred_from_all_models` stores the output from all the trees
+    in our model. It's an array of 0s and 1s indicating the class which has the model
+    classified at that instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We make another array out of it `non_zero_pred` which has only those entries
+    from the parent arrays which are non-zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, if the length of this non-zero array is greater than half the number
+    of models that we have, we say our final prediction is 1 for the instance of interest.
+    What we have accomplished here is the classic voting scheme.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us look at how good our models are now by calling `classification_report`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is the performance of our model on the training set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_09_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let us look at our model''s performance on the dev dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_09_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'More information about Rotational forests can be gathered from the following
+    paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Rotation Forest: A New Classifier Ensemble Method, Juan J. Rodriguez, Member,
+    IEEE Computer Society, Ludmila I. Kuncheva, Member, IEEE, and Carlos J. Alonso*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*The paper also claims that when Extremely Randomized Trees was compared to
+    Bagging, AdBoost, and Random Forest on 33 datasets, Extremely Randomized Trees
+    outperformed all the other three algorithms.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Similar to Gradient Boosting, the authors of the paper claim that the Extremely
+    Randomized method is an overall framework, and the underlying ensemble does not
+    necessarily have to be a Decision Tree. Work is in progress on testing other algorithms
+    like Naïve Bayes, Neural Networks, and others.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Extracting Principal Components* recipe in [Chapter 4](ch04.xhtml "Chapter 4. Data
+    Analysis – Deep Dive"), *Analyzing Data - Deep Dive*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Reducing data dimension by Random Projection* recipe in [Chapter 4](ch04.xhtml
+    "Chapter 4. Data Analysis – Deep Dive"), *Analyzing Data - Deep Dive*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Building Decision Trees to solve Multi Class Problems* recipe in [Chapter
+    6](ch06.xhtml "Chapter 6. Machine Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Understanding Ensemble, Gradient Boosting* recipe in [Chapter 8](ch08.xhtml
+    "Chapter 8. Ensemble Methods"), *Model Selection and Evaluation*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Growing from trees to Forest, Random Forest* recipe in [Chapter 9](ch09.xhtml
+    "Chapter 9. Growing Trees"), *Machine Learning III*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Growing Extremely Randomized Trees* recipe in [Chapter 9](ch09.xhtml "Chapter 9. Growing
+    Trees"), *Machine Learning III*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

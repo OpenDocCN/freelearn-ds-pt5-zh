@@ -1,0 +1,653 @@
+- en: Sharing and Converting Jupyter Notebooks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once you have developed your Notebook, you will want to share it with others.
+    There is a typical mechanism available for sharing that we will cover in this
+    chapter—placing your Notebook on an accessible server on the internet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you provide a Notebook to another person, they may need the Notebook in
+    a different format, given their system requirements. We will also cover some mechanisms
+    available for providing your Notebook to others in a different format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing Notebooks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Converting Notebooks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sharing Notebooks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The typical mechanism for sharing Notebooks is to provide your Notebook on a
+    website. A website is running on a server or allocated machine space. The server
+    takes care of all the book-keeping involved in running a website, such as keeping
+    track of multiple users and logging people on and off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order for the Notebook to be of use though, the website must have Notebook
+    logic installed. A typical website knows how to deliver content as HTML given
+    some source files. The most basic form is pure HTML, where every page you access
+    on the website corresponds exactly to one HTML file on the web server. Other languages
+    could be used to develop the website (such as Java or PHP), so then the server
+    needs to know how to access the HTML it needs from those source files. In our
+    context, the server needs to know how to access your Notebook in order to deliver
+    HTML to users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even when Notebooks are just running on your local machine, they are running
+    in a browser that is accessing your local machine (server) instead of the internet—so
+    the web, HTML, and internet access have already been provided.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a Notebook is on a genuine website, it is available to everyone who can access
+    that website—irrespective of whether the server is running on your machine in
+    an office environment accessible over the local area network, or it is available
+    to all users over the internet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can always add security around the website so that the only people who can
+    use your Notebook are those given access by you. Security mechanisms depend on
+    the type of web server software involved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing Notebooks on a Notebook server
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Built into the Jupyter process is the ability to expose a Notebook as its own
+    web server. Assuming the server is a machine accessible by other users, you can
+    configure Jupyter to run on that server. You must provide the configuration information
+    to Jupyter so that it knows how to proceed. The command to generate a configuration
+    file for your Jupyter installation is shown in the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that, as we are running in Anaconda, I am running the command from that
+    directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The default `config` is written to: `C:\Users\Dan\.jupyter\jupyter_notebook_config.py`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This command will generate a `jupyter_notebook_config.py` file in your `~./jupyter`
+    directory. For Microsoft users, that directory is a subdirectory of your home
+    user directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The configuration file contains the settings that you can use to expose your
+    Notebook as a server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The settings in the file are explained in the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Setting** | **Description** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `c.NotebookApp.certfile` | This is the path to the location of the certificate
+    for your site.If you have an SSL certificate, you would need to change the setting
+    to the location of the file. It may not be a `.PEM` extension file. There are
+    several SSL certificate formats. |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `c.NotebookApp.keyfile` | This is the path to the location of the key to
+    access the certificate for your site.Rather than specify the key to your certificate,
+    you would have stored the key in a file. So, if you want to apply an SSL certificate
+    to your Notebook, you would specify the file location.The key is normally a very
+    large hexadecimal number. Hence, it is stored in its own file. Also, storing it
+    in a file offers additional protection, since the directory where keys are stored
+    on a machine usually has limited access. |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `c.NotebookApp.ip` | IP address of the machine. Use the wildcard `*` to open
+    it to everyone.Here, we are specifying the IP address of the machine where the
+    Notebook website is accessed. |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `c.NotebookApp.password` | Hashed password—the password will have to be provided
+    by users accessing your Notebook in response to a standard login challenge. |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `c.NotebookApp.open_browser` | `True`/`False`—does starting the Notebook
+    server open a browser window? |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `c.NotebookApp.port` | Port to access your server; it should be open to the
+    machine. |'
+  prefs: []
+  type: TYPE_TB
+- en: Every website is addressed at the lower levels by an IP address. An IP address
+    is a four-part number that identifies the locale of the server involved. An IP
+    address might look like `172.32.88.7`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Web browsers, in concert with internet software, know how to use the IP address
+    to locate the server of interest. The set of software also knows how to translate
+    the URL you mentioned in your browser, such as [http://www.microsoft.com](http://www.microsoft.com),
+    into an IP address.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once you have changed the settings appropriately, you should be able to point
+    a browser at the URL configured and access your Notebook. The URL would be the
+    concatenation of either HTTP or HTTPS (depending on whether you applied an SSL
+    certificate), the IP address, and the port, for example, `HTTPS://123.45.56.9:8888`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing encrypted Notebooks on a Notebook server
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Two of the settings shown earlier can be used if you have an SSL certificate
+    to apply. Without the SSL certificate, the password (seen previously) and all
+    other interactions will be transmitted from the user's browser to the server in
+    clear text. If you are dealing with sensitive information in your Notebook, you
+    should obtain an SSL certificate and make the appropriate setting changes for
+    your server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you need more security regarding access to your Notebook, the next step would
+    be to provide an SSL certificate (placed on your machine, with the path provided
+    in the configuration file). There are a number of companies that provide SSL certificates.
+    The cheapest, at the time of writing, is *Let's encrypt*, which will provide a
+    low-level SSL certificate for free. (There are gradations of SSL certificates
+    that are not free.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, once you have set the preceding settings with regard to your certificate,
+    you should be able to access your Notebook server using the `HTTPS://` prefix,
+    knowing that all the transmissions between the user's browser and the Notebook
+    server are encrypted and therefore secure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing Notebooks on a web server
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In order to add your Notebook to an existing web server, you need to take the
+    preceding steps and add a little more information to the Notebook configuration
+    file, as in the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, you replace `yourwebsite.com` with the URL of your website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once complete, you can access the Notebook through your website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing Notebooks through Docker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Docker is an open, lightweight container for distributing software. A typical
+    Docker instance has an entire web server and a specific web application running
+    on a port in a machine. The specifics about the software running in a Docker instance
+    are governed by the Dockerfile. This file provides commands to the Docker environment
+    as to which components to use to configure this instance. A sample Dockerfile
+    for a Jupyter implementation would look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is a discussion of each of the Dockerfile commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `ENV` command tells Docker to use a specialized operating system. This is
+    necessary to overcome a deficiency in Jupyter that keeps obtaining and releasing
+    resources from your machine.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `ADD` command tells Docker where the `tini` code is located.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `RUN` command changes access rights to the `tini` directory.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `ENTRYPOINT` command tells Docker what to use as the operating system of
+    the Docker instance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `EXPOSE` command tells Docker what port to expose your Notebook on.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `CMD` command tells Docker what commands to run (once the environment is
+    set up). The `CMD` arguments are telling as you see the familiar `jupyter Notebook` command
+    that you use to start Jupyter on your machine.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once the Docker instance is deployed to your Docker machine, you can access
+    the Docker instance on the machine at the port specified (`8888`), such as, `http://machinename.com:8888`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing Notebooks on a public server
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Currently, there is one hosting company that allows you to host your Notebooks
+    for free: GitHub. GitHub is the standard web provider of source control (Git source
+    control) systems. Source control is used to maintain historical versions of your
+    files to allow you to retrace your steps.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitHub's implementation includes all of the tools that you need to use in your
+    Notebook already installed on the server. For example, in previous chapters, to
+    use R programming in your Notebook, you would have had to install the R toolset
+    on your machine. GitHub has already done all of these steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go to the [https://github.com/](https://github.com/) website and sign up for
+    a free website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once logged in, you are provided with a website that can be added to. If you
+    have development tools to use (`git` push commands are programmer commands to
+    store files on a Git server), you can do that or simply drag and drop you Notebook
+    (`ipynb`) file onto your GitHub website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I created an account there, with a `notebooks` directory, and placed one of
+    the `notebooks` on that site. My GitHub site looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ef9b07a2-e9a0-4d7b-bdee-500abbcfb36a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see the `Python Data Access.ipynb` file near the top of the screen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you click on that `notebooks` file, you see the expected Notebook up and
+    running in your browser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: There is currently a problem running `notebooks` on GitHub. It was working.
+    I expect something will get fixed to re-enable Jupyter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you look back at the previous chapter, you can see the same display (minus
+    the GitHub adornments).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This Notebook is directly accessible by others using this URL: [https://github.com/danieltoomey/notebooks/blob/master/Python%20Data%20Access.ipynb](https://github.com/danieltoomey/notebooks/blob/master/Python%20Data%20Access.ipynb).
+    So, you can provide your Notebook on GitHub to other users and just hand them
+    the URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you are logged in to GitHub, the display will look slightly different as
+    you will have more control over the GitHub content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting Notebooks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The standard tool for converting Notebooks to other formats is the use of the
+    `nbconvert` utility. It is built into your Jupyter installation. You can access
+    the tool directly in the user interface for your Notebook. If you open a Notebook
+    and select the Jupyter File menu item, you will see several options for Download
+    as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/209fd13c-19b1-4171-91a9-ccdaacba3827.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The choices are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Format type** | **File extension** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Notebook | `.ipynb` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Scala211 | `.scala` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| HTML | `.html` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Markdown | `.md` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| reST | `.rst` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LaTeX | `.tex` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| PDF via LaTeX | `.pdf` |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Note: Since we are working with a Scala Notebook, that is the language choice
+    provided on the second choice. If we had a Notebook in another language, that
+    other language would be the choice.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For these examples, if we take a Notebook from a previous chapter, the Jupyter
+    Notebook looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/91263d60-310d-4f94-ac37-ab03d9f9b2e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notebook format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Notebook format (`.ipynb`) is the native format for your Notebook. We have
+    looked in this file in earlier chapters to see what Jupyter is storing in your
+    Notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You would use the Notebook format if you wanted to give another user complete
+    access to your Notebook, since they would run your Notebook from their system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may also want to do this to save your Notebook in another medium.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scala format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Scala format (`.scala`) corresponds to the Scala implementation of your
+    Notebook. If you use JavaScript as the language for your Notebook, this is a direct
+    export of the Notebook page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you used another language for the script of the Notebook, Python, for example,
+    then the Download as option would change appropriately, for example, Download
+    as | Python (`.py`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using our example, as expected the Scala format is equivalent to the Jupyter
+    display:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the Scala format, you can run the script directly using the Scala interpreter.
+    Under macOS, there is the `scala` command. Similar tools exist for Windows machines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, for other scripting languages, you should be able to run the script in
+    the appropriate interpreter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we run this Scala file from a command-line window, we see the expected results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bee1ef47-ba74-4434-97c9-f484180c4d2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: HTML format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: HTML (`.html`) format corresponds to the HTML needed to display the page in
+    a web browser as it appears in your Notebook. The generated HTML does not have
+    any coding logic; it only has the HTML necessary to display a similar page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The HTML format would be useful to convey to another user the results of your
+    Notebook. You may want to do this if you wanted to email your Notebook to another
+    user (where the raw HTML would be transported and viewable in an email client
+    application).
+  prefs: []
+  type: TYPE_NORMAL
+- en: HTML is also useful if you have a web service available where you can insert
+    new pages. If the web server does not have support for Jupyter files (refer to
+    the first section of this chapter), HTML may be your only choice. Similarly, you
+    may not want to hand over your source Jupyter Notebook (`.ipynb`) file, even if
+    the web server does support Jupyter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The exported HTML format looks like this in a browser:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7484685e-0e6e-4691-b9fe-ec0c6e47d6a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that none of the Jupyter heading information is displayed or available.
+    Otherwise, it looks the same as the Jupyter display.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Markdown format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The markdown (`.md`) format is a looser version of **Hyptertext Markdown Language**
+    (**HTML**). `.md` files can be used by some tools. It is normally used as the
+    format of README files for software distributions (where the client's display
+    capabilities may be very limited).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, the markdown format of the same Notebook is shown as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]scala211'
+  prefs: []
+  type: TYPE_NORMAL
+- en: import scala.io.Source;
+  prefs: []
+  type: TYPE_NORMAL
+- en: //copied file locally https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
+  prefs: []
+  type: TYPE_NORMAL
+- en: val filename = "iris.data"
+  prefs: []
+  type: TYPE_NORMAL
+- en: //println("SepalLength, SepalWidth, PetalLength, PetalWidth, Class");
+  prefs: []
+  type: TYPE_NORMAL
+- en: //load iris data into an array
+  prefs: []
+  type: TYPE_NORMAL
+- en: val array = scala.collection.mutable.ArrayBuffer.empty[Float]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for (line <- Source.fromFile(filename).getLines) {
+  prefs: []
+  type: TYPE_NORMAL
+- en: var cols = line.split(",").map(_.trim);
+  prefs: []
+  type: TYPE_NORMAL
+- en: //println(s"${cols(0)}|${cols(1)}|${cols(2)}|${cols(3)} |${cols(4)}");
+  prefs: []
+  type: TYPE_NORMAL
+- en: val i = cols(0).toFloat
+  prefs: []
+  type: TYPE_NORMAL
+- en: array += i;
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: //get some minimal statistics
+  prefs: []
+  type: TYPE_NORMAL
+- en: val count = array.length;
+  prefs: []
+  type: TYPE_NORMAL
+- en: var min:Double = 9999.0;
+  prefs: []
+  type: TYPE_NORMAL
+- en: var max:Double = 0.0;
+  prefs: []
+  type: TYPE_NORMAL
+- en: var total:Double = 0.0;
+  prefs: []
+  type: TYPE_NORMAL
+- en: for ( x <- array ) {
+  prefs: []
+  type: TYPE_NORMAL
+- en: if (x < min) { min = x; }
+  prefs: []
+  type: TYPE_NORMAL
+- en: if (x > max) { max = x; }
+  prefs: []
+  type: TYPE_NORMAL
+- en: total += x;
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: val mean:Double = total / count;
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Obviously, the Markdown format is a very low-level display. There are only
+    minor text markings that help the reader determine the different formatting in
+    use. I used the Atom editor to see what this looks like when interpreted:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1d4ddc12-e8bd-4e8f-9ffc-43c8fad783e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, a very clean display, still resembling the Jupyter Notebook display,
+    with some odd coding at the bottom of the file and lots of escape characters.
+    Not sure why.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Restructured text format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The restructured text format (`.rst`) is a simple, plain text markup language
+    that is sometimes used for programming documentation. It looks very similar to
+    the `.md` format discussed earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, the RST format for the example page looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, it is similar to the markdown in the previous example; the code
+    is roughly broken up into chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using Atom to display the `.rst` file results in this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e0e29c69-f258-4670-976f-cfda9c20bbd4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The `.rst` display is not as nice as some of the others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LaTeX format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: LaTeX is a typesetting format from the late 1970s. It is still used on many
+    Unix-dervied systems for producing manuals and the like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Jupyter uses the LaTeX package to export the image of the Notebook to a PDF
+    file. You would have to install this package on your machine in order for this
+    to work. On macOS, this involves the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install LaTeX – there are separate installations for Windows and macOS.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: On macOS, I tried using MacTeX. You must use Safari to download the package.
+    It complained about bad formats and I had to retry several times.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: On Windows, I tried using TeXLive. It attempts to download hundreds of fonts.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The following (macOS) commands are used for fonts:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`sudo tlmgr install adjustbox`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`sudo tlmgr install collection-fontsrecommended`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Be aware that this install was pretty cumbersome. I had already installed the
+    full LaTeX, then another note said to install a mini version of LaTeX, and then
+    it was tricky to install the fonts. I have very little confidence that these steps
+    will work correctly on a Windows machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you do not have the full set of packages needed, when you try to download
+    the PDF file, a new screen will open in your Notebook and a long error message
+    will be displayed showing what piece is missing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can download a text file reader for the particular operating system you
+    are using to work with. I downloaded MacTeX for my macOS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: you will need a Tex interpreter in order to perform the next type of
+    download as a PDF, since it uses Tex as the basis for developing the PDF file.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PDF format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The PDF (`.pdf`) format is a well-known display format used for many purposes.
+    PDF is a good format for conveying unmodifiable content to other users. The other
+    users will not be able to modify the results in any way, but they will be able
+    to see and understand your logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PDF generation is dependent upon LaTeX being installed correctly. I was not
+    able to get this running this time. I have successfully installed it on Windows
+    and Mac in prior versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we shared Notebooks on a Notebook server. We added a Notebook
+    to our web server, and we distributed a Notebook using GitHub. We also looked
+    into converting our Notebooks into different formats, such as HTML and PDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will look into allowing multiple users to interact with
+    a Notebook simultaneously.
+  prefs: []
+  type: TYPE_NORMAL

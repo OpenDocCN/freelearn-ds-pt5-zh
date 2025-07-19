@@ -1,0 +1,1399 @@
+- en: Chapter 6. Machine Learning 1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing data for model building
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finding the nearest neighbors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Classifying documents using Naïve Bayes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building decision trees to solve multiclass problems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we will look at supervised learning techniques. In the previous
+    chapter, we saw unsupervised techniques including clustering and learning vector
+    quantization. We will start with a classification problem and then proceed to
+    regression. The input for a classification problem is a set of records or instances
+    in the next chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each record or instance can be written as a set (X,y), where X is a set of attributes
+    and y is a corresponding class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning a target function, F, that maps each record's attribute set to one
+    of the predefined class label, y, is the job of a classification algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The general steps for a classification algorithm are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find an appropriate algorithm
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Learn a model using a training set, and validate the model using a test set
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply the model to predict any unseen instance or record
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The first step is to identify the right classification algorithm. There is
+    no prescribed way of choosing the right algorithm, it comes from repeated trial
+    and error. After choosing the algorithm, a training and a test set is created,
+    which is provided to the algorithm to learn a model, that is, a target function
+    F, as defined previously. After creating the model using a training set, a test
+    set is used to validate the model. Usually, we use a confusion matrix to validate
+    the model. We will discuss more about confusion matrices in our recipe: Finding
+    the nearest neighbors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will begin with a recipe that will show us how to divide our input dataset
+    into training and test sets. We will follow this with a lazy learner algorithm
+    for classification, called K-Nearest Neighbor. We will then look at Naïve Bayes
+    classifiers. We will venture into a recipe that deals with multiclass problems
+    using decision trees. Our choice of algorithms in this chapter is not random.
+    All the three algorithms that we will cover in this chapter are capable of handling
+    multiclass problems, in addition to binary problems. In multiclass problems, we
+    have more than two class labels to which the instances can belong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing data for model building
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this recipe, we will look at how to create a train and a test dataset from
+    the given dataset for the classification problem. A test dataset is never shown
+    to the model. In real-world scenarios, we typically build another dataset called
+    dev. Dev stands for development dataset: a dataset that we can use to continuously
+    tune our model during successive runs. The model is trained using the train set,
+    and model performance metrics such as accuracy are measured in dev. Based on this
+    result, the model is further tuned in case improvements are required. In later
+    chapters, we will cover recipes that can do more sophisticated data splitting
+    than just a simple train test split.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will use the Iris dataset for this recipe. It's easy to demonstrate the concept
+    with this dataset as we are familiar with it because we have used it for many
+    of our previous recipes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This was pretty simple. Let''s see if the class labels are proportionately
+    distributed between the training and the test sets. This is a typical class imbalance
+    problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'def get_class_distribution(y):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s see how we distribute the class labels uniformly between the train and
+    the test sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After we import the necessary library modules, we must write a convenient function,
+    `get_iris_data()`, which will return the Iris dataset. We then column concatenate
+    the `x` and `y` arrays into a single array called `input_dataset`. We then shuffle
+    the dataset so that the records can be distributed randomly to the test and the
+    train datasets. The function returns a single array of both the instances and
+    the class labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want to include 80 percent of the record in our training dataset, and use
+    the remaining as our test dataset. The `train_size` and `test_size` variables
+    hold a percentage of the values, which should be in the training and testing dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We must call the `get_iris_data()` function in order to get the input data.
+    We then leverage the `train_test_split` function from scikit-learn's `cross_validation`
+    model to split the input dataset into two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we can print the size of the original dataset, followed by the test
+    and the train datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our original dataset has 150 rows and five columns. Remember that there are
+    only four attributes; the fifth column is the class label. We had column concatenated
+    x and y.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, 80 percent of the 150 rows, that is, 120 records, have been
+    assigned to our training set. We have shown how we can easily split our input
+    data into the train and the test sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember this is a classification problem. The algorithm should be trained to
+    predict the correct class label for a given unknown instance or record. For this,
+    we need to provide the algorithm and an equal distribution of all the classes
+    during training. The Iris dataset is a three-class problem. We should have equal
+    representation from all the three classes. Let's see if our method has taken care
+    of this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We must define a function called `get_class_distribution`, which takes a single
+    `y` parameter's array of class labels. This function returns a dictionary, where
+    the key is the class label and the value is a percentage of the number of records
+    for this distribution. Thus, this dictionary gives us the distribution of the
+    class labels. We must call this function in the following function to get to know
+    what our class distribution is in the train and the test datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `print_class_label_split` function is self-explanatory. We must pass the
+    train and the test datasets as the argument. As we have concatenated our `x` and
+    `y`, the last column is our class label. We then extract the train and test class
+    labels in `y_train` and `y_test`. We pass them to `get_class_distribution` to
+    get a dictionary of the class labels and their distribution, and finally, we print
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can then finally invoke `print_class_label_split`, and our output should
+    look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's now examine the output. As you can see, our training set has a different
+    distribution of the class labels compared with the test set. Exactly 40 percent
+    of the instances in the test set belong to `class label 1`. This is not the right
+    way to do the split. We should have an equal distribution in both the training
+    and the test datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the final piece of code, we leverage `StratifiedShuffleSplit` from scikit-learn
+    in order to achieve equal class distribution in the training and the test sets.
+    Let''s examine the parameters of `StratifiedShuffleSplit`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first parameter is the input dataset. We pass all the rows and the last
+    column. Our test size is defined by the `test_size` variable, which we had initially
+    declared. We can assume that we need only one split using the `n_iter` variable.
+    We then proceed to invoke `print_class_label_split` to print the class label distribution.
+    Let''s examine the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, we have the class labels distributed uniformly between the test and train
+    sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We need to prepare the data carefully before its use in a machine learning algorithm.
+    Providing a uniform class distribution to both the train and the test sets is
+    key to building a successful classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practical machine learning scenarios, we create another dataset called as
+    dev set in addition to the train and test sets. We may not get our model right
+    in the first iteration. We don't want to show our test dataset to our model as
+    this may bias our next iteration of model building. Hence, we create this dev
+    set, which we can use as we iterate through our model building exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 80/20 rule of thumb that we specified in this recipe is an ideal scenario.
+    However, in many practical applications, we may not have enough data to leave
+    out that many instances for a test set. There are a few practical techniques,
+    such as cross-validation, which come into play in such scenarios. In our next
+    chapter, we will look at the various cross-validation techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the nearest neighbors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we jump into our recipe, let's spend some time understanding how to check
+    if our classification model is performing to our satisfaction. In the introduction
+    section, we introduced a term called confusion matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A confusion matrix is a matrix arrangement of the actual versus the predicted
+    class labels. Let''s say we have a two-class problem, that is, our `y` can take
+    either value, `T` or `F`. Let''s say we trained a classifier to predict our `y`.
+    In our test data, we know the actual value of `y`. We have the predicted value
+    of our `y` from our model. w0 values we can fill our confusion matrix, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Finding the nearest neighbors](img/B04041_06_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here is a table where we conveniently list our results from the test set. Remember
+    that we know the class labels in our test set; hence, we can compare our classification
+    model output with the actual class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under `TP`, which is an abbreviation for True Positive, we have a count of all
+    those records in the test set whose label is `T`, and where the model also predicted
+    `T`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Under `FN`, which is an abbreviation for False Negative, we have a count of
+    all the records whose actual label is `T`, but the algorithm predicted N
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`FP` stands for False Positive, where the actual label is `F`, but the algorithm
+    predicted it as `T`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`TN` stands for True Negative, where the algorithm predicted both the label
+    and the actual class label as `F`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With the knowledge of this confusion matrix, we can now derive performance metrics
+    with which we can measure the quality of our classification model. In future chapters,
+    we will explore more metrics, but for now, we will introduce the accuracy and
+    error rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Accuracy is defined as the ratio of a correct prediction to the total number
+    of predictions. From the confusion matrix, we know that the sum of TP and TN is
+    the total number of correct predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Finding the nearest neighbors](img/B04041_06_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Accuracy from the training set is always very optimistic. One should look at
+    the test set's accuracy value to determine the true performance of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Armed with this knowledge, let''s jump into our recipe. The first classification
+    algorithm that we will look at is K-Nearest Neighbor, in short, KNN. Before going
+    into the details of KNN, let''s look at a very simple classification algorithm,
+    called the rote classifier algorithm. The rote classifier memorizes the entire
+    training data, that is, it loads all the data in the memory. We need to perform
+    classification on an unseen new training instance: it will try to match the new
+    training instance with any of the training instances in the memory. It matches
+    every attribute of the test instance with every attribute in the training instance.
+    If it finds a match, it predicts the class label of the test instance as the class
+    label of the matched training instance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should know by now that this classifier will fail if the test instance is
+    not similar to any of the training instances loaded into the memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KNN is similar to rote classifier, except that instead of looking for an exact
+    match, it uses a similarity measure. Similar to rote classifier, KNN loads all
+    the training sets into the memory. When it needs to classify a test instance,
+    it measures the distance between the test instance and all the training instances.
+    Using this distance, it chooses K closest instances in the training set. Now,
+    the prediction for the test set is based on the majority classes of the K nearest
+    neighbors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if we have a two-class classification problem and we choose our
+    K value as three, and if the given test record's three nearest neighbors have
+    classes, 1, 1, and 0, it will classify the test instance as 1, which is the majority.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KNN belongs to a family of algorithms called instance-based learning. Additionally,
+    as the decision to classify a test instance is taken last, it's also called a
+    lazy learner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For this recipe, we will generate some data using scikit''s make_classification
+    method. We will generate a matrix of four columns / attributes / features and
+    100 instances:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `get_data` function internally calls `make_classification` to generate test
+    data for any classification task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It''s always good practice to visualize the data before starting to feed it
+    into any algorithm. Our `plot_data` function produces a scatter plot between all
+    the variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have plotted all the variable combinations. The top two charts there in show
+    combinations between the 0th and 1st column, followed by 0th and 2nd. The points
+    are also colored by their class labels. This gives an idea of how much information
+    is these variable combination to do a classification task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will separate our dataset preparation and model training into two different
+    methods: `get_train_test` to get the train and test data, and `build_model` to
+    build our model. Finally, we will use `test_model` to validate the usefulness
+    of our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's try to follow the code from our main method. We must start by calling
+    `get_data` and plotting it using `plot_data`, as described in the previous section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned previously, we need to separate a part of the training data for
+    the testing that is required to evaluate our model. We then invoke the `get_train_test`
+    method to do the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In `get_train_test`, we decide our train test split size, which is the standard
+    80/20\. We then use 80 percent of our data to train our model. Now, we combine
+    both x and y to a single matrix before the split using NumPy's `column_stack`
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then leverage `StratifiedShuffleSplit` discussed in the previous recipe in
+    order to get a uniform class label distribution between our training and test
+    sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Armed with our train and test sets, we are now ready to build our classifier.
+    We must invoke the build model with our training set, attributes `x`, and class
+    labels `y`. This function also takes `K`, the number of neighbors, as a parameter,
+    with a default value of two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use scikit-learn's KNN implementation, `KNeighborsClassifier`. We then create
+    an object of the classifier and call the `fit` method to build our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are ready to test how good the model is using our training data. We can pass
+    our training data (x and y) and our model to the `test_model` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We know our actual class labels (y). We then invoke the predict function with
+    our x to get the predicted labels. We then print some of the model evaluation
+    metrics. We can start with printing the accuracy of the model, follow it up with
+    a confusion matrix, and then finally show the output of a function called `classification_report`.
+    scikit-learn's metrics module provides a function called `classification_report`,
+    which can print several model evaluation metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at our model metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, our accuracy score is 91.25 percent. We will not repeat the
+    definition of accuracy; you can refer to the introduction section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's now look at our confusion matrix. The top left cell is the true positive
+    cell. We can see that we have no false negatives but we have seven false positives
+    (the first cell in the 2nd row).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we have precision, recall, an F1 score, and support in our classification
+    report. Let''s look at their definitions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Precision` is the ratio of the true positive and the sum of the true positive
+    and false positive'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Accuracy` is the ratio of the true positive and the sum of the true positive
+    and false negative'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An F1 score is the harmonic mean of precision and sensitivity
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will see more about this metric in a separate recipe in a future chapter.
+    For now, let's say we shall have high precision and recall values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is good to know that we have around 91 percent accuracy for our model, but
+    the real test will be when it is run on the test data. Let''s see the metrics
+    for our test data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is good to know that our model has 95 percent accuracy for the test data,
+    which is an indication of a good job in fitting the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s look a little bit deeper into the model that we have built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_06_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We invoked a function called `get_params`. This function returns all the parameters
+    that are passed to the model. Let's examine each of the parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first parameter refers to the underlying data structure used by the KNN
+    implementation. As every record in the training set has to be compared against
+    every other record, brute force implementation may be compute-resource heavy.
+    Hence, we can choose either `kd_tree` or `ball_tree` as the data structure. A
+    brute will use the brute force method of looping through all the records for every
+    record.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leaf size is the parameter that is passed to the `kd_tree` or `ball_tree` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metric is the distance measure used to find the neighbors. The p-value of two
+    reduces Minkowski to Euclidean distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we have the weights parameter. KNN decides the class label of the test
+    instance based on the class label of its K nearest neighbors. A majority vote
+    decides the class label for the test instance. However, if we set the weights
+    to distance, then each neighbor is given a weight that is inversely proportional
+    to its distance. Hence, in order to decide the class label of a test set, weighted
+    voting is performed, rather than simple voting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Preparing data for model building* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Working with distance measures* recipe in [Chapter 5](ch05.xhtml "Chapter 5. Data
+    Mining – Needle in a Haystack"), *Data Mining - Finding a needle in a haystack*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Classifying documents using Naïve Bayes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We will look at a document classification problem in this recipe. The algorithm
+    that we will use is the Naïve Bayes classifier. The Bayes'' rule is the engine
+    powering the Naïve Bayes algorithm, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It shows how likely it is for the event X to happen, given that we know event
+    Y has already happened. Now, in our recipe, we will categorize or classify the
+    text. Ours is a binary classification problem: given a movie review, we want to
+    classify if the review is positive or negative.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Bayesian terminology, we need to find the conditional probability: the probability
+    that the review is positive given the review, and the probability that the review
+    is negative given the review. Let''s write it as an equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: For any review, if we have the preceding two probability values, we can classify
+    the review as positive or negative by comparing these values. If the conditional
+    probability for negative is greater than the conditional probability for positive,
+    we classify the review as negative, and vice versa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s now discuss these probabilities using Bayes'' rule:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we are going to compare these two equations to finalize our prediction, we
+    can ignore the denominator, which is a simple scaling factor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The LHS (left-hand side) of the preceding equation is called the posterior probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at the numerator of the RHS (right-hand side):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`P(positive)` is the probability of a positive class called the prior. It''s
+    our belief about the positive class label distribution based on our training set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will estimate it from our training test. It''s calculated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'P(review|positive) is the likelihood. It answers the question: what is the
+    likelihood of getting the review, given that the class is positive. Again, we
+    will estimate it from our training set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we expand on the likelihood equation further, let's introduce the concept
+    of independence assumption. The algorithm is prefixed as naïve because of this
+    assumption. Contrary to the reality, we assume that the words appear in a document
+    independent of each other. We will use this assumption to calculate the likelihood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A review is a list of words. Let''s put it in mathematical notation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: With the independence assumption, we can say that the probability of each of
+    these words occurring together in a review is the product of all the individual
+    probabilities of the constituent words in the review.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can write the likelihood equation as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, given a new review, we can use these two equations, the prior and likelihood,
+    to calculate whether the review is positive or negative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hopefully, you have followed till now. There is still a one last piece to the
+    puzzle: how do we calculate the probability for the individual words?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Classifying documents using Naïve Bayes](img/B04041_06_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This step refers to training the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From our training set, we will take each review. We also know its label. For
+    each word in this review, we will calculate the conditional probability and store
+    it in a table. We can thus use these values to predict any future test instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enough theory! Let's dive into our recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For this recipe, we will use the NLTK library for both the data and the algorithm.
+    During the installation of NLTK, we can also download the datasets. One such dataset
+    is the movie review dataset. The movie review data is segregated into two categories,
+    positive and negative. For each category, we have a list of words; the reviews
+    are preseparated into words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: As shown here, we will include the datasets by importing the corpus module from
+    NLTK.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will leverage the `NaiveBayesClassifier` class, defined in NLTK, to build
+    the model. We will pass our training data to a function called `train()` to build
+    our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s start with importing the necessary function. We will follow it up with
+    two utility functions. The first one retrieves the movie review data and the second
+    one helps us split our data for the model into training and testing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will now introduce three functions, which are primarily feature-generating
+    functions. We need to provide features or attributes to our classifier. These
+    functions, given a review, generate a set of features from the review:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s now write a function to build our model and later probe our model to
+    find the usefulness of our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is very hard to get the model right at the first pass. We need to play around
+    with different features, and parameter tuning. This is mostly a trial and error
+    process. In the next section of code, we will show our different passes by improving
+    our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write a code with which we can invoke all our functions that
+    were defined previously:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s try to follow this recipe from the main function. We started with invoking
+    the `get_data` function. As explained before, the movie review data is stored
+    as two categories, positive and negative. Our first loop goes through these categories.
+    With these categories, we retrieved the file IDs for these categories in the second
+    loop. Using these file IDs, we retrieve the words, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will append these words to a list called `dataset`. The class label is appended
+    to another list called `y_labels`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we return the words and corresponding class labels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Equipped with the dataset, we need to divide this dataset into the test and
+    the train datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We invoked the `get_train_test` function with an input dataset and the class
+    labels. This function provides us with a stratified sample. We are using 70 percent
+    of our data for the training set and the rest for the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once again, we invoke `get_train_test` with the test dataset returned from
+    the previous step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We created a separate dataset and called it the dev dataset. We need this dataset
+    to tune our model. We want our test set to really behave as a test set. We don't
+    want to expose our test set during the different passes of our model building
+    exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s print the size of our train, dev, and test datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, 70 percent of the original data is assigned to our training
+    set. We have again split the rest 30 percent into a 70/30 percent split for `Dev`
+    and `Testing`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s start our model building activity. We will call `build_model_cycle_1`
+    with our training and dev datasets. In this function, we will first create our
+    features by calling `build_word_feature` using a map on all the instances in our
+    dataset. The `build_word_feature` is a simple feature-generating function. Every
+    word is a feature. The output of this function is a dictionary of features, where
+    the key is the word itself and the value is one. These types of features are typically
+    called Bag of Words (BOW). The `build_word_features` is invoked using both the
+    training and the dev data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will now proceed to train our model with the generated feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: We need to test how good our model is. We use the `probe_model` function to
+    do this. `Probe_model` takes three parameters. The first parameter is the model
+    of interest, the second parameter is the feature against which we want to see
+    how good our model is, and the last parameter is a string used for display purposes.
+    The `probe_model` function calculates the accuracy metric using the accuracy function
+    in the `nltk.classify` module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We invoke `probe_model` twice: once with the training data to see how good
+    the model is on our training dataset, and then once with our dev dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s now look at the accuracy figures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our model is behaving very well using the training data. This is not surprising
+    as the model has already seen it during the training phase. It''s doing a good
+    job at classifying the training record correctly. However, our dev accuracy is
+    very poor. Our model is able to classify only 60 percent of the dev instances
+    correctly. Surely our features are not informative enough to help our model classify
+    the unseen instances with a good accuracy. It will be good to see which features
+    are contributing more towards discriminating a review into positive and negative:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will invoke the `show_features` function to look at the features'' contribution
+    towards the model. The `Show_features` function utilizes the `show_most_informative_feature`
+    function from the NLTK classifier object. The most important features in our first
+    model are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The way to read it is: the feature `stupidity = 1` is 15 times more effective
+    for classifying a review as negative.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's now do a second round of building this model using a new set of features.
+    We will do this by invoking `build_model_cycle_2`. `build_model_cycle_2` is very
+    similar to `build_model_cycle_1` except for the feature generation function called
+    inside map function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The feature generation function is called `build_negate_features`. Typically,
+    words such as not and no are called negation words. Let''s assume that our reviewer
+    says that the movie is not good. If we use our previous feature generator, the
+    word good would be treated equally in both the positive and negative reviews.
+    We know that the word good should be used to discriminate the positive reviews.
+    To avoid this problem, we will look for the negation words no and not in our word
+    list. We want to modify our example sentence as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: This way, `no_good` can be used as a good feature to discriminate the negative
+    reviews from the positive reviews. The `build_negate_features` function does this
+    job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s now look at our probing output for the model built with this negation
+    feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We improved our model accuracy on our dev data by almost 2 percent. Let''s
+    now look at the most informative features for this model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_23.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Look at the last feature. Adding negation to funny, the '`Not_funny`' feature
+    is 11.7 times more informative for discriminating a review as negative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can we do better on our model accuracy ? Currently, we are at 70 percent. Let's
+    do a third run with a new set of features. We will do this by invoking `build_model_cycle_3`.
+    `build_model_cycle_3` is very similar to `build_model_cycle_2` except for the
+    feature generation function called inside map function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `build_keyphrase_features` function is used as a feature generator. Let''s
+    look at the function in detail. Instead of using the words as features, we will
+    generate key phrases from the review and use them as features. Key phrases are
+    phrases that we consider important using some metric. Key phrases can be made
+    of either two, three, or n words. In our case, we will use two words (bigrams)
+    to build our key phrase. The metric that we will use is the raw frequency count
+    of these phrases. We will choose the phrases whose frequency count is higher.
+    We will do some simple preprocessing before generating our key phrases. We will
+    remove all the stopwords and punctuation from our word list. The `remove_stop_words`
+    function is invoked to remove the stopwords and punctuation. NLTK''s corpus module
+    has a list of English stopwords. We can retrieve it as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, the string module in Python maintains a list of punctuation. We
+    will remove the stopwords and punctuation as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'However, we will not remove not and `no`. We will create a new set of stopwords
+    by not, including the negation words in the previous step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will leverage the `BigramCollocationFinder` class from NLTK to generate
+    our key phrases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our metric is the frequency count. You can see that we specified it as `raw_freq`
+    in the last line. We will ask the collocation finder to return us a maximum of
+    400 phrases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Loaded with our new feature, we will proceed to build our model and test the
+    correctness of our model. Let''s look at the output of our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Yes! We have achieved a great deal of improvement on our dev set. From 68 percent
+    accuracy in our first pass with word features, we have moved from 12 percent up
+    to 80 percent with our key phrase features. Let''s now expose our test set to
+    this model and check the accuracy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_06_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our test set''s accuracy is greater than our dev set''s accuracy. We did a
+    good job in training a good model that works well on an unseen dataset. Before
+    we end this recipe, let''s look at the key phrases that are the most informative:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The key phrase, Oscar nomination, is 10 times more helpful in discriminating
+    a review as positive. You can't deny this. We can see that our key phrases are
+    very informative, and hence, our model performed better than the previous two
+    runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How did we know that 400 key phrases and the metric frequency count is the best
+    parameter for bigram generation? Trial and error. Though we didn't list our trial
+    and error process, we pretty much ran it with various combinations such as 200
+    phrases with pointwise mutual information, and similar other methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is what needs to be done in the real world. However, instead of a blind
+    search through the parameter space every time, we looked at the most informative
+    features. This gave us a clue on the discriminating power of the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Preparing data for model building* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building decision trees to solve multiclass problems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this recipe, we will look at building decision trees to solve multiclass
+    classification problems. Intuitively, a decision tree can be defined as a process
+    of arriving at an answer by asking a series of questions: a series of if-then
+    statements arranged hierarchically forms a decision tree. Due to this nature,
+    they are easy to understand and interpret.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Refer to the following link for a detailed introduction to decision trees:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Decision_tree](https://en.wikipedia.org/wiki/Decision_tree)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Theoretically, many decision trees can be built for a given dataset. Some of
+    the trees are more accurate than others. There are efficient algorithms for developing
+    a reasonably accurate tree in a limited time. One such algorithm is Hunt''s algorithm.
+    Algorithms such as ID3, C4.5, and CART (Classification and Regression Trees) are
+    based on Hunt''s algorithm. Hunt''s algorithm can be outlined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given a dataset, D, of n records and with each record having m attributes /
+    features / columns and each record labeled either y1, y2, or y3, the algorithm
+    proceeds as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If all the records in D belong to the same class label, say y1, then y1 is the
+    leaf node of the tree and is labeled y1.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If D has records that belong to more than one class label, a feature test condition
+    is employed to divide the records into smaller subsets. Let's say in the initial
+    run, we run a feature test condition on all the attributes and find a single attribute
+    that is able to split the datasets into three smaller subsets. This attribute
+    becomes the root node. We apply the test condition on all the three subsets to
+    figure out the next level of nodes. This process is performed iteratively.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Notice that when we defined our classification, we defined three class labels,
+    y1, y2, and y3\. This is different from the problems that we solved in the previous
+    two recipes, where we had only two labels. This is a multiclass problem. Our Iris
+    dataset that we used in most of our recipes is a three-class problem. We had our
+    records distributed across three class labels. We can generalize it to an n-class
+    problem. Digit recognition is another example by which we need to classify a given
+    image in one of the digits between zero and nine. Many real-word problems are
+    inherently multiclass. Some algorithms are also inherently capable of handling
+    multiclass problems. No change is required for these algorithms. The algorithms
+    that we will discuss in the chapters are all capable of handling multiclass problems.
+    Decision trees, Naïve Bayes, and KNN algorithms are good at handling multiclass
+    problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's see how we can leverage decision trees to handle multiclass problems in
+    this recipe. It also helps to have a good understanding of decision trees. Random
+    forest, which we will venture into in the next chapter, is a more sophisticated
+    method used widely in the industry and is based on decision trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's now dive into our decision tree recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will use the Iris dataset to demonstrate how to build decision trees. Decision
+    trees are a non-parametric supervised learning method that can be used to solve
+    both classification and regression problems. As explained previously, the advantages
+    of using decision trees are manifold, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: They are easily interpretable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'They require very little data preparation and data-to-feature conversion: remember
+    our feature generation methods in the previous recipe'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: They naturally support multiclass problems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Decision trees are not without problems. Some of the problems that they pose
+    are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'They can easily overfit: a high accuracy in a training set and very poor performance
+    with a test data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There can be millions of trees that can be fit to a given dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The class imbalance problem may affect decision trees heavily. The class imbalance
+    problem arises when our training set does not consist of an equal number of instances
+    for both the class labels in a binary classification problem. This applies to
+    multiclass problems as well.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An important part of decision trees is the feature test condition. Let's spend
+    some time understanding the feature test condition. Typically, each attribute
+    in our instance can be either understood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Binary attribute**: This is where an attribute can take two possible values,
+    for example, true or false. The feature test condition should return two values
+    in this case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nominal attribute**: This is where an attribute can take more than two values,
+    for example, n values. The feature test condition should either output n output
+    or group them into binary splits.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ordinal attribute**: This is where an implicit order in their values exists.
+    For example, let''s take an imaginary attribute called size, which can take on
+    the values small, medium, or large. There are three values that the attribute
+    can take and there is an order for them: small, medium, large. They are handled
+    by the feature attribute test condition that is similar to the nominal attribute.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Continuous attributes**: These are attributes that can take continuous values.
+    They are discretized into ordinal attributes and then handled.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A feature test condition is a way to split the input records into subsets based
+    on a criteria or metric called impurity. This impurity is calculated with respect
+    to the class label for each attribute in the instance. The attribute contributing
+    to the highest impurity is chosen as the data splitting attribute, or in other
+    words, the node for that level in the tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's see an example to explain it. We will use a measure called entropy to
+    calculate the impurity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Entropy is defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_28.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s consider an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now calculate the entropy for this set, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The entropy for this set is 0\. An entropy of 0 indicates homogeneity. It is
+    very easy to code entropy in Python. Look at the following code list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the purpose of finding the best splitting variable, we will leverage the
+    entropy. First, we will calculate the entropy based on the class labels, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_30.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's define another term called information gain. Information gain is a measure
+    to find which attribute in the given instance is most useful for discrimination
+    between the class labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Information gain is the difference between an entropy of the parent and an
+    average entropy of the child nodes. At each level in the tree, we will use information
+    gain to build the tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Information_gain_in_decision_trees](https://en.wikipedia.org/wiki/Information_gain_in_decision_trees)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will start with all the attributes in a training set and calculate the overall
+    entropy. Let''s look at the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_34.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The preceding dataset is imaginary data collected for a user to figure out
+    what kind of movies he is interested in. There are four attributes: the first
+    one is about whether the user watches a movie based on the lead actor, the second
+    attribute is about if the user makes his decision to watch the movie based on
+    whether or not it won an Oscar, and the third one is about if the user decides
+    to watch a movies based on whether or not it is a box office success.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to build a decision tree for the preceding example, we will start
+    with the entropy calculation of the whole dataset. This is a two-class problem,
+    hence c = 2\. Additionally, there are a total of four records, hence, the entropy
+    of the whole dataset is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_36.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The overall entropy of the dataset is 0.811.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let''s look at the first attribute, the lead attribute. For a lead actor,
+    Y, there is one instance class label that says Y and another one that says N.
+    For a lead actor, N, both the instance class labels are N. We will calculate the
+    average entropy as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_06_35.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: It's an average entropy. There are two records with a lead actor as Y and two
+    records with lead actors as N; hence, we have `2/4.0` multiplied to the entropy
+    value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the entropy is calculated for this subset of data, we can see that out of
+    the two records, one of them has a class label of Y and another one has a class
+    label of N for the lead actor Y. Similarly, for the lead actor N, both the records
+    have a class label of N. Thus, we get the average entropy for this attribute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The average entropy value for the lead actor attribute is 0.5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The information gain is now 0.811 – 0.5 = 0.311.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, we will find the information gain for all the attributes. The attribute
+    with the highest information gain wins and becomes the root node of the decision
+    tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The same process is repeated in order to find the second level of the nodes,
+    and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s load the required libraries. We will follow it with two functions, one
+    to load the data and the second one to split the data into a training set and
+    a test it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s write the functions to help us build and test the decision tree model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, the main function to invoke all the other functions that we defined
+    is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s start with the main function. We invoke `get_data` in the `x`, `y`,
+    and `label_names` variables in order to retrieve the Iris dataset. We took the
+    label names so that when we see our model accuracy, we can measure it by individual
+    labels. As said previously, the Iris data poses a three-class problem. We will
+    need to build a classifier that can classify any new instances in one of the tree
+    types: setosa, versicolor, or virginica.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, as in the previous recipes, `get_train_test` returns stratified
+    train and test datasets. We then leverage `StratifiedShuffleSplit` from scikit-learn
+    to get the training and test datasets with an equal class label distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We must invoke the `build_model` method to induce a decision tree on our training
+    set. The `DecisionTreeClassifier` class in the model tree of scikit-learn implements
+    a decision tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we specified that our feature test condition is an entropy using
+    the `criterion` variable. We then build the model by calling the `fit` function
+    and return the model to the calling program.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let's proceed to evaluate our model by using the `test_model` function.
+    The model takes instances `x` , class labels `y`, decision tree model `model`,
+    and the name of the class labels `label_names`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The module metric in scikit-learn provides three evaluation criteria:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: We defined accuracy in the previous recipe and the introduction section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A confusion matrix prints the confusion matrix defined in the introduction section.
+    A confusion matrix is a good way of evaluating the model performance. We are interested
+    in the cell values having true positive and false positive values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we also have `classification_report` to print the precision, recall,
+    and F1 score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We must evaluate the model on the training data first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have done a great job with the training dataset. We have 100 percent accuracy.
+    The true test is with the test dataset where the rubber meets the road.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at the model evaluation using the test dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_06_32.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our classifier has performed extremely well with the test set as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's probe the model to see how the various features contributed towards discriminating
+    the classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: The tree classifier object provides an attribute called `feature_importances_`,
+    which can be called to retrieve the importance of the various features towards
+    building our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We wrote a simple function, `get_feature_names`, in order to retrieve the names
+    of our attributes. However, this can be added as a part of `get_data`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at the print statement output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_06_33.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks as if the petal width and petal length are contributing more towards
+    our classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Interestingly, we can also export the tree built by the classifier as a dot
+    file and it can be visualized using the GraphViz package. In the last line, we
+    export our model as a dot file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can download and install the Graphviz package to visualize this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://www.graphviz.org/](http://www.graphviz.org/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Preparing data for model building* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Finding nearest neighbors* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Classifying documents using Naive Bayes* recipe in [Chapter 6](ch06.xhtml
+    "Chapter 6. Machine Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

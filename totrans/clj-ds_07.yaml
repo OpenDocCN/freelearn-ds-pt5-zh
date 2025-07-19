@@ -1,0 +1,2273 @@
+- en: Chapter 7. Recommender Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"People who like this sort of thing will find this the sort of thing
+    they like."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*attributed to Abraham Lincoln* |'
+  prefs: []
+  type: TYPE_TB
+- en: In the previous chapter, we performed clustering on text documents using the
+    k-means algorithm. This required us to have a measure of similarity between the
+    text documents to be clustered. In this chapter, we'll be investigating recommender
+    systems and we'll use this notion of similarity to suggest items that we think
+    users might like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also saw the challenge presented by high-dimensional data—the so-called **curse
+    of dimensionality**. Although it's not a problem specific to recommender systems,
+    this chapter will show a variety of techniques that tackle its effects. In particular,
+    we'll look at the means of establishing the most important dimensions with principle
+    component analysis and singular value decomposition, and probabilistic ways of
+    compressing very high dimensional sets with Bloom filters and MinHash. In addition—because
+    determining the similarity of items with each other involves making many pairwise
+    comparisons—we'll learn how to efficiently precompute groups with the most probable
+    similarity using locality-sensitive hashing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we'll introduce Spark, a distributed computation framework, and an
+    associated Clojure library called Sparkling. We'll show how Sparkling can be used
+    with Spark's machine learning library MLlib to build a distributed recommender
+    system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first, we'll begin this chapter with a discussion on the basic types of
+    recommender systems and implement one of the simplest in Clojure. Then, we'll
+    demonstrate how Mahout, introduced in the previous chapter, can be used to create
+    a variety of different types of recommender.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the code and data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we'll make use of data on film recommendations from the website
+    [https://movielens.org/](https://movielens.org/). The site is run by GroupLens,
+    a research lab in the Department of Computer Science and Engineering at the University
+    of Minnesota, Twin Cities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Datasets have been made available in several different sizes at [https://grouplens.org/datasets/movielens/](https://grouplens.org/datasets/movielens/).
+    In this chapter, we''ll be making use of "MovieLens 100k"—a collection of 100,000
+    ratings from 1,000 users on 1,700 movies. As the data was released in 1998, it''s
+    beginning to show its age, but it provides a modest dataset on which we can demonstrate
+    the principles of recommender systems. This chapter will give you the tools you
+    need to process the more recently released "MovieLens 20M" data: 20 million ratings
+    by 138,000 users on 27,000 movies.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The code for this chapter is available from the Packt Publishing's website or
+    from [https://github.com/clojuredatascience/ch7-recommender-systems](https://github.com/clojuredatascience/ch7-recommender-systems).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As usual, a shell script has been provided that will download and decompress
+    the data to this chapter''s `data` directory. You can run it from within the same
+    code directory with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once you've run the script, or downloaded an unpacked data manually, you should
+    see a variety of files beginning with the letter "u". The ratings data we'll be
+    mostly using in this chapter is in the `ua.base` file. The `ua.base`, `ua.test`,
+    `ub.base`, and `ub.test` files contain subsets of the data to perform cross-validation.
+    We'll also be using the `u.item` file, which contains information on the movies
+    themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspect the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The ratings files are tab-separated, containing the field''s user ID, item
+    ID, rating, and timestamp. The user ID links to a row in the `u.user` file, which
+    provides basic demographic information such as age, sex, and occupation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The string shows a single line from the file—a tab-separated line containing
+    the user ID, item ID, rating (1-5), and timestamp showing when the rating was
+    made. The rating is an integer from 1 to 5 and the timestamp is given as the number
+    of seconds since January 1, 1970\. The item ID links to a row in the `u.item`
+    file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ll also want to load the `u.item` file, so we can determine the names of
+    the items being rated (and the items being predicted in return). The following
+    example shows how data is stored in the `u.item` file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first two fields are the item ID and name, respectively. Subsequent fields,
+    not used in this chapter, are the release date, the URL of the movie on IMDB,
+    and a series of flags indicating the genre of the movie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parse the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Since the data will all fit in the main memory for convenience, we''ll define
+    several functions that will load the ratings into Clojure data structures. The
+    `line->rating` function takes a line, splits it into fields where a tab character
+    is found, converts each field to a `long` datatype, then uses `zipmap` to convert
+    the sequence into a map with the supplied keys:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s write a function to parse the `u.items` file as well, so that we know
+    what the movie names are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `load-items` function returns a map of an item ID to a movie name, so that
+    we can look up the names of movies by their ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: With these simple functions in place, it's time to learn about the different
+    types of recommender systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Types of recommender systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are typically two approaches taken to the problem of recommendation. Both
+    make use of the notion of similarity between things, as we encountered it in the
+    previous chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One approach is to start with an item we know the user likes and recommend the
+    other items that have similar attributes. For example, if a user is interested
+    in action adventure movies, we might present to them a list of all the action
+    adventure movies that we can offer. Or, if we have more data available than simply
+    the genre—perhaps a list of tags—then we could recommend movies that have the
+    most tags in common. This approach is called **content-based** filtering, because
+    we're using the attributes of the items themselves to generate recommendations
+    for similar items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another approach to recommendation is to take as input some measure of the user's
+    preferences. This may be in the form of numeric ratings for movies, or of movies
+    bought or previously viewed. Once we have this data, we can identify the movies
+    that other users with similar ratings (or purchase history, viewing habits, and
+    so on) have a preference for that the user in question has not already stated
+    a preference for. This approach takes into account the behavior of other users,
+    so it's commonly called **collaborative filtering**. Collaborative filtering is
+    a powerful means of recommendation, because it harnesses the so-called "wisdom
+    of the crowd".
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we'll primarily study collaborative filtering approaches. However,
+    by harnessing notions of similarity, we'll provide you with the concepts you'll
+    need to implement content-based recommendation as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collaborative filtering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By taking account only of the users' relationship to items, these techniques
+    require no knowledge of the properties of the items themselves. This makes collaborative
+    filtering a very general technique—the items in question can be anything that
+    can be rated. We can picture collaborative filtering as the act of trying to fill
+    a sparse matrix containing known ratings for users. We'd like to be able to replace
+    the unknowns with predicted ratings and then recommend the predictions with the
+    highest score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Collaborative filtering](img/7180OS_07_090.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that each question mark sits at the intersection of a row and a column.
+    The rows contain a particular user's preference for all the movies they've rated.
+    The columns contain the ratings for a particular movie from all the users who
+    have rated it. To substitute the question marks in this matrix using only the
+    other numbers in this matrix is the core challenge of collaborative filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Item-based and user-based recommenders
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Within the field of collaborative filtering, we can usefully make the distinction
+    between two types of filtering—item-based and user-based recommenders. With item-based
+    recommenders, we take a set of items that a user has already rated highly and
+    look for other items that are similar. The process is visualized in the next diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Item-based and user-based recommenders](img/7180OS_07_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: A recommender might recommend item **B**, based on the information presented
+    in the diagram, since it's similar to two items that are already highly rated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can contrast this approach to the process of a user-based recommendation
+    shown in the following diagram. A user-based recommendation aims to identify users
+    with similar tastes to the user in question to recommend items that they have
+    rated highly, but which the user has not already rated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Item-based and user-based recommenders](img/7180OS_07_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The user-based recommender is likely to recommend item **B**, because it has
+    been rated highly by two other users with similar taste. We'll be implementing
+    both kinds of recommenders in this chapter. Let's start with one of the simplest
+    approaches—**Slope One** predictors for item-based recommendation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Slope One recommenders
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Slope One recommenders are a part of a family of algorithms introduced in a
+    2005 paper by Daniel Lemire and Anna Maclachlan. In this chapter, we'll introduce
+    the weighted Slope One recommender.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: You can read the paper introducing the Slope One recommender at [http://lemire.me/fr/abstracts/SDM2005.html](http://lemire.me/fr/abstracts/SDM2005.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To illustrate how weighted Slope One recommendation works, let''s consider
+    the simple example of four users, labeled **W**, **X**, **Y**, and **Z**, who
+    have rated three movies—Amadeus, Braveheart, and Casablanca. The ratings each
+    user has provided are illustrated in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Slope One recommenders](img/7180OS_07_112.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As with any recommendation problem, we''re looking to replace the question
+    marks with some estimate on how the user would rate the movie: the highest predicted
+    ratings can be used to recommend new movies to users.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Weighted Slope One is an algorithm in two steps. Firstly, we must calculate
+    the difference between the ratings for every pair of items. Secondly, we'll use
+    this set of differences to make predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the item differences
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first step of the Slope One algorithm is to calculate the average difference
+    between each pair of items. The following equation may look intimidating but,
+    in fact, it''s simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the item differences](img/7180OS_07_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The formula calculates ![Calculating the item differences](img/7180OS_07_02.jpg),
+    which is the average difference between the ratings for items *i* and *j*. It
+    does so by summing over all the *u* taken from *S*[i],[j]*(R)*, which is the set
+    of all the users who have rated both the items. The quantity that is summed is
+    *u*[i] *- u*[j], the difference between the user's rating for items *i* and *j*
+    divided by ![Calculating the item differences](img/7180OS_07_05.jpg), the cardinality
+    of set *S*[i],[j]*(R)*, or the number of people who have rated both the items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's make this more concrete by applying the algorithm to the ratings in the
+    previous diagram. Let's calculate the difference between the ratings for "Amadeus"
+    and "Braveheart".
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are two users who have rated both the movies, so ![Calculating the item
+    differences](img/7180OS_07_05.jpg) is two. For each of these users, we take the
+    difference between their ratings for each of the two movies and add them together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the item differences](img/7180OS_07_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The result is *2*, meaning on average, users voted Amadeus two ratings higher
+    than Braveheart. As you might expect, if we calculate the difference in the other
+    direction, between Braveheart and Amadeus, we get *-2*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the item differences](img/7180OS_07_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can think of the result as the average difference in the rating between
+    the two movies, as judged by all the people who have rated both the movies. If
+    we perform the calculation several more times, we could end up with the matrix
+    in the following diagram, which shows the average pairwise difference in the rating
+    for each of the three movies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the item differences](img/7180OS_07_114.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'By definition, the values on the main diagonal are zero. Rather than continuing
+    our calculations manually, we can express the computation in the following Clojure
+    code, which will build up a sequence of differences between the pairs of items
+    that every user has rated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following example loads the `ua.base` file into a sequence of ratings using
+    the functions we defined at the beginning of the chapter. The `collect-item-differences`
+    function takes each user''s list of ratings and, for each pair of rated items,
+    calculates the difference between the ratings. The `item-differences` function
+    reduces over all the users to build up a sequence of pairwise differences between
+    the items for all the users who have rated both the items:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''re storing the lists in both directions as values contained within the
+    nested maps, so we can retrieve the differences between any two items using `get-in`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To use these differences for prediction, we''ll need to summarize them into
+    a mean and keep track of the count of ratings on which the mean was based:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: One of the practical benefits of this method is that we have to perform the
+    earlier step only once. From this point onwards, we can incorporate future user
+    ratings by adjusting the mean difference and count only for the items that the
+    user has already rated. For example, if a user has already rated 10 items, which
+    have been incorporated into the earlier data structure, the eleventh rating only
+    requires that we recalculate the differences for the eleven items. It is not necessary
+    to perform the computationally expensive differencing process from scratch to
+    incorporate new information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making recommendations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have calculated the average differences for each pair of items,
+    we have all we need to recommend new items to users. To see how, let's return
+    to one of our earlier examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: User **X** has already provided ratings for **Amadeus** and **Braveheart**.
+    We'd like to infer how they would rate the movie **Casablanca** so that we can
+    decide whether or not to recommend it to them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Making recommendations](img/7180OS_07_116.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In order to make predictions for a user, we need two things—the matrix of differences
+    we calculated just now and the users'' own previous ratings. Given these two things,
+    we can calculate a predicted rating ![Making recommendations](img/7180OS_07_08.jpg)
+    for item *j*, given user *u*, using the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Making recommendations](img/7180OS_07_09.jpg)![Making recommendations](img/7180OS_07_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As before, this equation looks more complicated than it is, so let's step through
+    it, starting with the numerator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ![Making recommendations](img/7180OS_07_11.jpg) expression means that we're
+    summing over all the *i* items that user *u* has rated (which clearly does not
+    include *j*, the item for which we're trying to predict a rating). The sum we
+    calculate is over the difference between the users' rating for *i* and *j*, plus
+    u's rating for *i*. We multiply that quantity by *C*[j],[i]—the number of users
+    that rated both.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ![Making recommendations](img/7180OS_07_13.jpg) denominator is simply the
+    sum of all the users who have rated *j* and any of the movies that user *u* has
+    rated. It's a constant factor to adjust the size of the numerator downwards to
+    ensure that the output can be interpreted as a rating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s illustrate the previous formula by calculating the predicted rating
+    of user X for "Casablanca" using the table of differences and the ratings provided
+    earlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Making recommendations](img/7180OS_07_14.jpg)![Making recommendations](img/7180OS_07_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, given the previous ratings, we would predict that user X would rate Casablanca
+    **3.375**. By performing the same process for all the items also rated by the
+    people who rated any of the other items rated by user X, we can arrive at a set
+    of recommendations for user X.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Clojure code calculates the weighted rating for all such candidates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we calculate a weighted rating, which is the weighted average rating
+    for each candidate. The weighted average ensures that the differences generated
+    by large numbers of users count for more than those generated by only a small
+    number of users:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we remove from the candidate pool any items we have already rated
+    and order the remainder by rating descending: we can take just the highest rated
+    results and present these as our top recommendations. The following example calculates
+    the top ratings for user ID 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The earlier example will take a while to build the Slope One recommender and
+    output the differences. It will take a couple of minutes, but when it''s finished,
+    you should see something like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Try running `slope-one-recommender` in the REPL and predicting recommendations
+    for multiple users. You'll find that once the differences have been built, making
+    recommendations is very fast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Practical considerations for user and item recommenders
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we've seen in the previous section, compiling pairwise differences for all
+    items is a time-consuming job. One of the advantages of item-based recommenders
+    is that pairwise differences between items are likely to remain relatively stable
+    over time. The differences matrix need only be calculated periodically. As we've
+    seen, it's possible to incrementally update very easily too; for a user who has
+    already rated 10 items, if they rate an additional item, we only need to adjust
+    the difference for the 11 items they have now rated. We don't need to calculate
+    the differences from scratch whenever we want to update the matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The runtime of item-based recommenders scales with the number of items they
+    store though. In situations where the number of users is small compared to the
+    number of items, it may be more efficient to implement a user-based recommender.
+    For example content aggregation sites, where items could outnumber users by orders
+    of magnitude, are good candidates for user-based recommendation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `Mahout` library, which we encountered in the previous chapter, contains
+    the tools to create a variety of recommenders, including user-based recommenders.
+    Let's look at these next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a user-based recommender with Mahout
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Mahout library comes with a lot of built-in classes, which are designed
+    to work together to assist in building custom recommendation engines. Mahout's
+    functionality to construct recommenders is in the `org.apache.mahout.cf.taste`
+    namespace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Mahout's recommendation engine capabilities come from the Taste open source
+    project with which it merged in 2008.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous chapter, we discovered how to make use of Mahout to cluster
+    with Clojure's Java interop capabilities. In this chapter, we'll make use of Mahout's
+    recommenders with `GenericUserBasedRecommender` available in the `org.apache.mahout.cf.taste.impl.recommender`
+    package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As with many user-based recommenders, we also need to define a similarity metric
+    to quantify how alike two users are. We'll also define a user neighborhood as
+    each user's set of 10 most similar users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we must load the data. Mahout includes a utility class, `FileDataModel`,
+    to load the MovieLens data in the `org.apache.mahout.cf.taste.impl.model.file`
+    package, which we use next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Having loaded the data, we can produce recommendations with the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The distance metric that we used in the previous example was the Euclidean distance.
+    This places each user in a high-dimensional space defined by the ratings for the
+    movies they have rated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Building a user-based recommender with Mahout](img/7180OS_07_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The earlier chart places three users **X**, **Y**, and **Z** on a two-dimensional
+    chart according to their ratings for movies **A** and **B**. We can see that users
+    **Y** and **Z** are more similar to each other, based on these two movies, than
+    they are to user **X**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we were trying to produce recommendations for user **Y**, we might reason
+    that other items rated highly by user **X** would be good candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-nearest neighbors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our Mahout user-based recommender is making recommendations by looking at the
+    neighborhood of the most similar users. This is commonly called ***k*-nearest
+    neighbors** or ***k*-NN**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It might appear that a user neighborhood is a lot like the *k*-means clusters
+    we encountered in the previous chapter, but this is not quite the case. This is
+    because each user sits at the center of their own neighborhood. With clustering,
+    we aim to establish a smaller number of groupings, but with *k*-NN, there are
+    as many neighborhoods as there are users; each user is their own neighborhood
+    centroid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Mahout also defines `ThresholdUserNeighbourhood` that we could use to construct
+    a neighborhood containing only the users that fall within a certain similarity
+    from each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *k*-NN algorithm means that we only generate recommendations based on the
+    taste of the *k* most similar users. This makes intuitive sense; the users with
+    taste most similar to your own are most likely to offer meaningful recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two questions naturally arise—what's the best neighborhood size? Which similarity
+    measure should we use? To answer these questions, we can turn to Mahout's recommender
+    evaluation capabilities and see how our recommender behaves against our data for
+    a variety of different configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommender evaluation with Mahout
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Mahout provides a set of classes to help with the task of evaluating our recommender.
+    Like the cross-validation we performed with the `clj-ml` library in [Chapter 4](ch04.xhtml
+    "Chapter 4. Classification"), *Classification*, Mahout''s evaluation proceeds
+    by splitting the our ratings into two sets: a test set and a training set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By training our recommender on the training set and then evaluating its performance
+    on the test set, we can gain an understanding of how well, or poorly, our algorithm
+    is performing against real data. To handle the task of training a model on the
+    training data provided by Mahout''s evaluator, we must supply an object conforming
+    to the `RecommenderBuilder` interface. The interface defines just one method:
+    `buildRecommender`. We can create an anonymous `RecommenderBuilder` type using
+    reify:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Mahout provides a variety of evaluators in the `org.apache.mahout.cf.taste.impl.eval`
+    namespace. In the following code, we construct a root-mean-square error evaluator
+    using the `RMSRecommenderEvaluator` class by passing in a recommender builder
+    and the data model that we''ve loaded:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `nil` value we pass to evaluate in the preceding code indicates that we
+    aren't supplying a custom model builder, which means the `evaluate` function will
+    use the default model builder based on the model we supply. The numbers `0.7`
+    and `1.0` are the proportion of data used for training, and the proportion of
+    the test data to evaluate on. In the earlier code, we're using 70 percent of the
+    data for training and evaluate the model on 100 percent of what's left. The **root
+    mean square error** (**RMSE**) evaluator will calculate the square root of the
+    mean squared error between the predicted rating and the actual rating for each
+    of the test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use both of the previous functions to evaluate the performance of the
+    user-based recommender using a Euclidean distance and a neighborhood of 10 like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Your result may differ of course, since the evaluation is performed on random
+    subsets of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We defined the Euclidean distance *d* in the previous chapter to be a positive
+    value where zero represents perfect similarity. This could be converted into a
+    similarity measure *s* in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Recommender evaluation with Mahout](img/7180OS_07_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Unfortunately, the previous measure would bias against users with more rated
+    items in common, since each dimension would provide an opportunity to be further
+    apart. To correct this, Mahout computes the Euclidean similarity as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Recommender evaluation with Mahout](img/7180OS_07_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *n* is the number of dimensions. As this formula might result in a similarity
+    which exceeds 1, Mahout clips similarities at 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating distance measures
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We encountered a variety of other distance and similarity measures in the previous
+    chapter; in particular, we made use of the Jaccard, Euclidean, and cosine distances.
+    Mahout includes implementations of these as similarity measures in the `org.apache.mahout.cf.taste.impl.similarity`
+    package as `TanimotoCoefficientSimilarity`, `EuclideanDistanceSimilarity`, and
+    `UncenteredCosineSimilarity` respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We've just evaluated the performance of the Euclidean similarity on our ratings
+    data, so let's see how well the others perform. While we're at it, let's try two
+    other similarity measures that Mahout makes available—`PearsonCorrelationSimilarity`
+    and `SpearmanCorrelationSimilarity`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pearson correlation similarity
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The Pearson correlation similarity is a similarity measure based on the correlation
+    between users' tastes. The following diagram shows the ratings of two users for
+    three movies **A**, **B**, and **C**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The Pearson correlation similarity](img/7180OS_07_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'One of the potential drawbacks of the Euclidean distance is that it fails to
+    account for the cases where one user agrees with another precisely in their relative
+    ratings for movies, but tends to be more generous with their rating. Consider
+    the two users in the earlier example. There is perfect correlation between their
+    ratings for movies **A**, **B**, and **C**, but user **Y** rates the movies more
+    highly than user **X**. The Euclidean distance between these two users could be
+    calculated with the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The Pearson correlation similarity](img/7180OS_07_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Yet, in a sense, they are in complete agreement. Back in [Chapter 3](ch03.xhtml
+    "Chapter 3. Correlation"), *Correlation* we calculated the Pearson correlation
+    between two series as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The Pearson correlation similarity](img/7180OS_07_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, ![The Pearson correlation similarity](img/7180OS_07_20.jpg) and ![The
+    Pearson correlation similarity](img/7180OS_07_21.jpg). The example given earlier
+    yields a Pearson correlation of 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s try making predictions with the Pearson correlation similarity. Mahout
+    implements the Pearson correlation with the `PearsonCorrelationSimilarity` class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: In fact, the RMSE has increased for the movies data using the Pearson correlation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pearson correlation similarity is mathematically equivalent to the cosine
+    similarity for data which have been centered (data for which the mean is zero).
+    In the example of our two users *X* and *Y* illustrated earlier, the means are
+    not identical, so the cosine similarity measure would give a different result
+    to the Pearson correlation similarity. Mahout implements the cosine similarity
+    as `UncenteredCosineSimilarity`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the Pearson method makes intuitive sense, it has some drawbacks in
+    the context of recommendation engines. It doesn't take into account the number
+    of rated items that two users have in common. If they only share one item, then
+    no similarity can be computed. Also, if one user always gives items the same rating,
+    then no correlation can be computed between the user and any other user, even
+    another user who does the same. Perhaps there's simply not enough variety of ratings
+    in the data for the Pearson correlation similarity to work well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spearman's rank similarity
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Another way in which users may be similar is that the rankings are not particularly
+    closely correlated, but the ordering of the ranks are preserved between users.
+    Consider the following diagram showing the ratings of two users for five different
+    movies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Spearman''s rank similarity](img/7180OS_07_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that the linear correlation between users' ratings is not perfect,
+    since their ratings aren't plotted on a straight line. This would result in a
+    moderate Pearson correlation similarity and an even lower cosine similarity. Yet,
+    the ordering between their preferences is identical. If we were to compare a ranked
+    list of users' preferences, they would be exactly the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Spearman''s rank correlation coefficient uses this measure to calculate
+    the difference between users. It is defined as the Pearson correlation coefficient
+    between the ranked items:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Spearman''s rank similarity](img/7180OS_07_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *n* is the number of ratings and ![Spearman''s rank similarity](img/7180OS_07_23.jpg)
+    is the difference between the ranks for item *i*. Mahout implements the Spearman''s
+    rank correlation similarity with the `SpearmanCorrelationSimilarity` class which
+    we use in the next code. The algorithm has much more work to do, so we evaluate
+    on a much smaller subset, just 10 percent of the test data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: The RMSE evaluation score is even higher than it is for the Pearson correlation
+    similarity. It appears that the best similarity measure so far for the MovieLens
+    data is the Euclidean similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining optimum neighborhood size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One aspect we haven''t altered in the earlier comparisons is the size of the
+    user neighborhood on which the recommendations are based. Let''s see how the RMSE
+    is affected by the neighborhood size:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: The previous code creates a scatterplot of the RMSE for the Euclidean similarity
+    as the neighborhood increases from 1 to 10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining optimum neighborhood size](img/7180OS_07_165.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Perhaps surprisingly, as the size of the neighborhood grows, the RMSE of the
+    predicted rating rises. The most accurate predicted ratings are based on a neighborhood
+    of just two people. But, perhaps this should not surprise us: for the Euclidean
+    similarity, the most similar other users are defined as being the users who most
+    closely agree with a user''s ratings. The larger the neighborhood, the more diverse
+    a range of ratings we''ll observe for the same item.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The earlier RMSE ranges between **0.25** and **0.38**. On this basis alone,
+    it's hard to know if the recommender is performing well or not. Does getting the
+    rating wrong by **0.38** matter much in practice? For example, if we always guess
+    a rating that's exactly **0.38** too high (or too low), we'll be making recommendations
+    of a relative value that precisely agrees with the users' own. Fortunately, Mahout
+    supplies an alternative evaluator that returns a variety of statistics from the
+    field of information retrieval. We'll look at these next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Information retrieval statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One way for us to get a better handle on how to improve our recommendations
+    is to use an evaluator that provides more detail on how well the evaluator is
+    performing in a number of different aspects. The `GenericRecommenderIRStatsEvaluator`
+    function includes several information retrieval statistics that provide this detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In many cases, it's not necessary to guess the exact rating that a user would
+    have assigned a movie; presenting an ordered list from best to worst is enough.
+    In fact, even the exact order may not be particularly important either.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Information retrieval systems are those which return results in response to
+    user queries. Recommender systems can be considered a subset of information retrieval
+    systems where the query is the set of prior ratings associated with the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Information Retrieval statistics** (**IR stats**) evaluator treats recommendation
+    evaluation a bit like search engine evaluation. A search engine should strive
+    to return as many of the results that the user is looking for without also returning
+    a lot of unwanted information. These proportions are quantified by the statistics
+    precision and recall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Precision
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The precision of an information retrieval system is the percentage of items
+    it returns that are relevant. If the correct recommendations are the **true positives**
+    and the incorrect recommendations are the **false positives**, then the precision
+    can be measured as the total number of **true positives** returned:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Precision](img/7180OS_07_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since we return a defined number of recommendations, for example, the top 10,
+    we would talk about the precision at 10\. For example, if the model returns 10
+    recommendations, eight of which were a part of the users' true top 10, the model's
+    precision is 80 percent at 10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Recall complements precision and the two measures are often quoted together.
+    Recall measures the fraction of relevant recommendations that are returned:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Recall](img/7180OS_07_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could think of this as being the proportion of possible good recommendations
+    the recommender actually made. For example, if the system only recommended five
+    of the user's top 10 movies, then we could say the recall was 50 percent at 10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mahout's information retrieval evaluator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The statistics of information retrieval can reframe the recommendation problem
+    as a search problem on a user-by-user basis. Rather than divide the data into
+    test and training sets randomly, `GenericRecommenderIRStatsEvaluator` evaluates
+    the performance of the recommender for each user. It does this by removing some
+    quantity of the users' top-rated items (say, the top five). The evaluator will
+    then see how many of the users' true top-five rated items were actually recommended
+    by the system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We implement this as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The "at" value in the preceding code is `5`, which we pass immediately before
+    the `GenericRecommenderIRStatsEvaluator/CHOOSE_THRESHOLD` that causes Mahout to
+    compute a sensible relevance threshold. The previous code returns the following
+    output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: The evaluator returns an instance of `org.apache.mahout.cf.taste.eval.IRStatistics`,
+    which we can convert into a map with Clojure's `bean` function. The map contains
+    all the information retrieval statistics calculated by the evaluator. Their meaning
+    is explained in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: F-measure and the harmonic mean
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Also called the **F1 measure** or the **balanced F-score**, the F-measure is
+    the weighted harmonic mean of precision and recall:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![F-measure and the harmonic mean](img/7180OS_07_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The harmonic mean is related to the more common arithmetic mean and, in fact,
+    is one of the three Pythagorean means. It's defined as the reciprocal of the arithmetic
+    mean of the reciprocals and it's particularly useful in situations involving rates
+    and ratios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, consider a vehicle traveling a distance *d* at a certain speed
+    *x*, then travelling distance *d* again at speed *y*. Speed is measured as a ratio
+    of distance traveled over time taken and therefore the average speed is the harmonic
+    mean of *x* and *y*. If *x* is 60 mph and *y* is 40 mph, then the average speed
+    is 48 mph, which we can calculate like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![F-measure and the harmonic mean](img/7180OS_07_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that this is lower than the arithmetic mean, which would be 50 mph. If
+    instead *d* represented a certain amount of time rather than distance, so the
+    vehicle traveled for a certain amount of time at speed *x* and then the same amount
+    of time at speed *y*, then its average speed would be the arithmetic mean of *x*
+    and *y*, or 50 mph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The F-Measure can be generalized to the *F*[β]-measure that allows the weight
+    associated with either precision or recall to be adjusted independently:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![F-measure and the harmonic mean](img/7180OS_07_28.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Common measures are *F*[2], which weights recall twice as much as precision,
+    and *F*[0.5], which weights precision twice as much as recall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fall-out
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Also called the **false positive** rate, the proportion of nonrelevant recommendations
+    that are retrieved out of all the nonrelevant recommendations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Fall-out](img/7180OS_07_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unlike the other IR statistics we've seen so far, the lower the fall-out, the
+    better our recommender is doing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Normalized discounted cumulative gain
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The **Discounted** **Cumulative Gain** (**DCG**) is a measure of the performance
+    of a recommendation system based on the graded relevance of the recommended entities.
+    It varies between zero and one, with one representing perfect ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The premise of discounted cumulative gain is that highly relevant results appearing
+    lower in a search result list should be penalized as a function of both their
+    relevance and how far down the result list they appear. It can be calculated with
+    the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Normalized discounted cumulative gain](img/7180OS_07_30.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *rel*[i] is the relevance of the result at position *i* and *p* is the
+    position in the rank. The version presented earlier is a popular formulation that
+    places strong emphasis on retrieving relevant results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the search result lists vary in length depending on the query, we can't
+    consistently compare results using the DCG alone. Instead, we can sort the result
+    by their relevance and calculate the DCG again. Since this will give the best
+    possible cumulative discounted gain for the results (as we sorted them in the
+    order of relevance), the result is called the **Ideal Discounted Cumulative Gain**
+    (**IDCG**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Taking the ratio of the DCG and the IDCG gives the normalized discounted cumulative
+    gain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Normalized discounted cumulative gain](img/7180OS_07_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In a perfect ranking algorithm, the *DCG* will equal the *IDCG* resulting in
+    an *nDCG* of 1.0\. Since the *nDCG* provides a result in the range of zero to
+    one, it provides a means to compare the relative performance of different query
+    engines, where each returns different numbers of results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting the information retrieval results
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We can plot the results of the information retrieval evaluation with the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Plotting the information retrieval results](img/7180OS_07_168.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the previous chart, we can see that the highest precision corresponds to
+    a neighborhood size of two; consulting the most similar user generates the fewest
+    false positives. You may have noticed, though that the values reported for precision
+    and recall are quite low. As the neighborhood grows larger, the recommender will
+    have more candidate recommendations to make. Remember, however, that the information
+    retrieval statistics are calculated at 5, meaning that only the top five recommendations
+    will be counted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's a subtle problem concerning these measures in the context of recommenders—the
+    precision is based entirely on *how well we can predict the other items the user
+    has rated*. The recommender will be penalized for making recommendations for rare
+    items that the user has not rated, even if they are brilliant recommendations
+    for items the user would love.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommendation with Boolean preferences
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There's been an assumption throughout this chapter that the rating a user gives
+    to an item is an important fact. The distance measures we've been looking at so
+    far attempt in different ways to predict the numeric value of a user's future
+    rating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An alternative distance measure takes the view that the rating a user assigns
+    to an item is much less important than the fact that they rated it at all. In
+    other words, all ratings, even poor ones, could be treated the same. Consider
+    that, for every movie a user rates poorly, there are many more that the user will
+    not even bother to watch—let alone rate. There are many other situations where
+    Boolean preferences are the primary basis on which a recommendation is made; user's
+    likes or favorites on social media, for example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To use a Boolean similarity measure, we first have to convert our model into
+    a Boolean preferences model, which we can do with the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Treating a user's ratings as Boolean values can reduce the user's list of movie
+    ratings to a set representation and, as we saw in the previous chapter, the Jaccard
+    index can be used to determine set similarity. Mahout implements a similarity
+    measure that's closely related to the Jaccard index called the **Tanimoto coefficient**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The Tanimoto coefficient applies to vectors where each index represents a feature
+    that can be zero or one, whereas the Jaccard index applies to sets which may contain,
+    or not contain, an element. Which measure to use depends only on your data representation—the
+    two measures are equivalent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s plot the IR statistics for several different neighborhood sizes using
+    Mahout''s IR statistics evaluator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The previous code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Recommendation with Boolean preferences](img/7180OS_07_169.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: For a Boolean recommender, a larger neighborhood improves the precision score.
+    This is an intriguing result, given what we observed for the Euclidean similarity.
+    Bear in mind though that with Boolean preferences, there is no notion of relative
+    item preference, they are either rated or not rated. The most similar users, and
+    therefore the group forming a neighborhood, will be the ones who have simply rated
+    the same items. The larger this group is, the more chance we will have of predicting
+    the items a user rated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, because there's no relative score for Boolean preferences, the normalized
+    discounted cumulative gain is missing from the earlier chart. The lack of order
+    might make Boolean preferences seem less desirable than the other data, but they
+    can be very useful, as we'll see next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implicit versus explicit feedback
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In fact, rather than trying to elicit explicit ratings from users on what they
+    like and dislike, a common technique is to simply observe user activity. For example,
+    on an E-commerce site, the set of items viewed could provide an indicator of the
+    sort of products a user is interested in. In the same way, the list of pages a
+    user browses on a website is a strong indicator of the sort of content they're
+    interested in reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using implicit sources such as clicks and page views can vastly increase the
+    amount of information on which to base predictions. It also avoids the so-called
+    "cold start" problem, where a user must provide explicit ratings before you can
+    offer any recommendations at all; the user will begin generating data as soon
+    as they arrive on your site.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In these cases, each page view could be treated as an element in a large set
+    of pages representing the users' preferences, and a Boolean similarity measure
+    could be used to recommend related content. For a popular site, such sets will
+    clearly grow very large very quickly. Unfortunately, Mahout 0.9's recommendation
+    engines are designed to run on a single server in memory. So, they impose a limit
+    on the quantity of data we can process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we look at an alternative recommender that's designed to run on a cluster
+    of machines and scale with the volume of data you have, let's take a detour to
+    look at the ways of performing dimensionality reduction. We'll begin with the
+    ways of probabilistically reducing the size of very large sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Probabilistic methods for large sets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Large sets appear in many contexts in data science. We're likely to encounter
+    them while dealing with users' implicit feedback as previously mentioned, but
+    the approaches described next can be applied to any data that can be represented
+    as a set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing set membership with Bloom filters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bloom filters are data structures that provide a means to compress the size
+    of a set while preserving our ability to tell whether a given item is a member
+    of the set or not. The price of this compression is some uncertainty. A Bloom
+    filter tells us when an item may be in a set, although it will tell us for certain
+    if it isn't. In situations where disk space saving is worth the small sacrifice
+    in certainty, they are a very popular choice for set compression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The base data structure of a Bloom filter is a bit vector—a sequence of cells
+    that may contain 1 or 0 (or true or false). The level of compression (and the
+    corresponding increase in uncertainty) is configurable with two parameters—**k
+    hash functions** and **m bits**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Testing set membership with Bloom filters](img/7180OS_07_190.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The previous diagram illustrates the process of taking an input item (the top
+    square) and hashing it multiple times. Each hash function outputs an integer,
+    which is used as an index into the bit vector. The elements matching the hash
+    indices are set to 1\. The following illustration shows a different element being
+    hashed into a different bit vector, generating a different set of indices that
+    will be assigned the value 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Testing set membership with Bloom filters](img/7180OS_07_200.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can implement Bloom filters using the following Clojure. We''re using Google''s
+    implementation of MurmurHash with different seeds to provide *k* different hash
+    functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The earlier code defines a Bloom filter as a map containing a `:filter` (the
+    bit vector) and an `:indices` function. The `indices` function handles the task
+    of applying the *k* hash functions to generate *k* indices. We''re representing
+    the 0s as `false` and the 1s as `true`, but the effect is the same. We use the
+    code to create a Bloom filter of length `8` with `5` hash functions in the following
+    example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The response is a map of two keys—the filter itself (a vector of Boolean values,
+    all false), and an indices function, which has been generated from five hash functions.
+    We can bring the earlier code together with a simple `Bloom-assoc` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Given a Bloom filter, we simply call the `indices-fn` function to get the indices
+    we need to set in the Bloom filter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To determine whether the Bloom filter contains an item, we simply need to query
+    whether all of the indices that should be true are actually true. If they are,
+    we reason that the item has been added to the filter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We add `"Indiana Jones"` to the Bloom filter and find that it contains `"Indiana
+    Jones"`. Let''s instead search for another of Harrison Ford''s movies `"The Fugitive"`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So far, so good. But we have traded some accuracy for this huge compression.
+    Let''s search for a movie that shouldn''t be in the Bloom filter. Perhaps, the
+    1996 movie `Bogus`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is not what we want. The filter claims to contain `"Bogus (1996)"`, even
+    though we haven't associated it into the filter yet. This is the tradeoff that
+    Bloom filters make; although a filter will never claim that an item hasn't been
+    added when it has, it may incorrectly claim that an item has been added when it
+    hasn't.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the information retrieval terminology we encountered earlier in the chapter,
+    Bloom filters have 100 percent recall, but their precision is less than 100 percent.
+    How much less is configurable through the values we choose for *m* and *k*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In all, there are 56 movie titles out of the 1,682 titles in the MovieLens
+    dataset that the Bloom filter incorrectly reports on after adding "Indiana Jones"—a
+    3.3 percent false positive rate. Given that we are only using five hash functions
+    and an eight element filter, you may have expected it to be much higher. Of course,
+    our Bloom filter only contains one element and, as we add more, the probability
+    of obtaining a collision will rise sharply. In fact, the probability of a false
+    positive is approximately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Testing set membership with Bloom filters](img/7180OS_07_32.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *k* and *m* are the number of hash functions and the length of the filter
+    as it was before, and *n* is the number of items added to the set. For our earlier
+    singular Bloom, this gives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Testing set membership with Bloom filters](img/7180OS_07_33.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, in fact, the theoretical false positive rate is even lower than what we've
+    observed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bloom filters are a very general algorithm, and are very useful when we want
+    to test set membership and don't have the resources to store all the items in
+    the set explicitly. The fact that the precision is configurable through the choice
+    of values for *m* and *k* means that it's possible to select the false positive
+    rate you're willing to tolerate. As a result, they're used in a large variety
+    of data-intensive systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A drawback of Bloom filters is that it's impossible to retrieve the values you've
+    added to the filter; although we can use the filter to test for set membership,
+    we aren't able to say what that set contains without exhaustive checks. For recommendation
+    systems (and indeed for others too, such as clustering), we're primarily interested
+    in the similarity between two sets rather than their precise contents. But here,
+    the Bloom lets us down; we can't reliably use the compressed filter as a measure
+    of the similarity between two sets of items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we'll introduce an algorithm that will preserve set similarity as measured
+    by the Jaccard similarity. It does so while also preserving the configurable compression
+    provided by the Bloom filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jaccard similarity for large sets with MinHash
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Bloom filter is a probabilistic data structure to determine whether an item
+    is a member of a set. While comparing user or item similarities, what we are usually
+    interested in is the intersection between sets, as opposed to their precise contents.
+    MinHash is a technique that enables a large set to be compressed in such a way
+    that we can still perform the Jaccard similarity on the compressed representations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how it works with a reference to two of the most prolific raters
+    in the MovieLens dataset. Users 405 and 655 have rated 727 and 675 movies respectively.
+    In the following code, we extract their ratings and convert them into sets before
+    passing to Incanter''s `jaccard-index` function. Recall that this returns the
+    ratio of movies they''ve both rated out of all the movies they''ve rated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: There is an approximate similarity of 29 percent between the two large sets
+    of ratings. Let's see how we can reduce the size of these sets while also preserving
+    the similarity between them using MinHash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MinHash algorithm shares much in common with the Bloom filter. Our first
+    task is to pick *k* hash functions. Rather than hashing the set representation
+    itself, these *k* hash functions are used to hash each element within the set.
+    For each of the *k* hash functions, the MinHash algorithm stores the minimum value
+    generated by any of the set elements. The output therefore, is a set of *k* numbers;
+    each equals the minimum hash value for that hash function. The output is referred
+    to as the MinHash signature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram illustrates the process for two sets, each containing
+    three elements, being converted into MinHash signatures with a *k* of 2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Jaccard similarity for large sets with MinHash](img/7180OS_07_210.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The input sets share two elements out of a total of four unique elements, which
+    equates to Jaccard index of 0.5\. The MinHash signatures for the two sets are
+    `#{3, 0}` and `#{3, 55}` respectively, which equates to a Jaccard Index of 0.33\.
+    Thus, MinHash has reduced the size of our input sets (by just one, in this case),
+    while conserving the approximate similarity between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As with the Bloom filter, an appropriate choice of *k* allows you to specify
+    the loss of precision that it is acceptable to tolerate. We can implement the
+    MinHash algorithm using the following Clojure code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the following code, we define a `minhasher` function with a *k* of 10 and
+    use it to perform a set test using the Jaccard index on the compressed ratings
+    for users 405 and 655:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Jaccard index based on our MinHash signatures is remarkably close to that
+    on the original sets—25 percent compared to 29 percent—despite the fact that we
+    compressed the sets down to only 10 elements each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The benefit of much smaller sets is twofold: clearly storage space is much
+    reduced, but so is the computational complexity required to check the similarity
+    between the two sets as well. It''s much less work to check the similarity of
+    the sets that contain only 10 elements than the sets that contain many hundreds.
+    MinHash is, therefore, not just a space-saving algorithm, but also a time-saving
+    algorithm in cases where we need to make a large number of set similarity tests;
+    cases that occur in recommender systems, for example.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we''re trying to establish a user neighborhood for the purposes of recommending
+    items, we''ll still need to perform a large number of set tests in order to determine
+    which the most similar users are. In fact, for a large number of users, it may
+    be prohibitively time-consuming to check every other user exhaustively, even after
+    we''ve calculated MinHash signatures. The final probabilistic technique will look
+    at addressing this specific problem: how to reduce the number of candidates that
+    have to be compared while looking for similar items.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing pair comparisons with locality-sensitive hashing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous chapter, we computed the similarity matrix for a large number
+    of documents. With the 20,000 documents in the Reuters corpus, this was already
+    a time-consuming process. As the size of the dataset doubles, the length of time
+    required to check every pair of items is multiplied by four. It can, therefore,
+    become prohibitively time-consuming to perform this sort of analysis at scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, suppose we had a million documents and that we computed MinHash
+    signatures of length 250 for each of them. This means we use 1,000 bytes to store
+    each document. As all the signatures can be stored in a Gigabyte, they can all
+    be stored in the main system memory for speed. However, there are ![Reducing pair
+    comparisons with locality-sensitive hashing](img/7180OS_07_34.jpg) pairs of documents,
+    or 499,999, 500,000 pairwise combinations to be checked. Even if it takes only
+    a microsecond to compare two signatures, it will still take almost 6 days to compute
+    all the similarities overall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Locality-sensitive hashing** (**LSH**), addresses this problem by significantly
+    reducing the number of pairwise comparisons that have to be made. It does this
+    by bucketing sets that are likely to have a minimum threshold of similarity together;
+    only the sets that are bucketed together need to be checked for similarity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bucketing signatures
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We consider any pair of items that hash to the same bucket a candidate pair
+    and check only the candidate pairs for similarity. The aim is that only similar
+    items should become candidate pairs. Dissimilar pairs that happen to hash to the
+    same bucket will be false positives and we seek to minimize these. Similar pairs
+    that hash to different buckets are false negatives and we likewise seek to minimize
+    these too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we have computed MinHash signatures for the items, an effective way to bucket
+    them would be to divide the signature matrix into *b* bands consisting of *r*
+    elements each. This is illustrated in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bucketing signatures](img/7180OS_07_220.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Having already written the code to produce the MinHash signatures in the previous
+    section, performing LSH in Clojure is simply a matter of partitioning the signature
+    into a certain number of bands, each of length *r*. Each band is hashed (for simplicity,
+    we''re using the same hashing function for each band) to a particular bucket:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The earlier example defines a locality-sensitive hash simply as a map containing
+    empty bands and some value, *r*. When we come to associate an item into the LSH
+    with `lsh-assoc`, we split the signature into bands based on the value of *r*
+    and determine the bucket for each band. The item''s ID gets added to each of these
+    buckets. Buckets are grouped by the band ID so that items which share a bucket
+    in different bands are not bucketed together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding example shows the result of performing LSH on the signature of
+    user 13 with *k=27* and *r=3*. The buckets for 9 bands are returned. Next, we
+    add further items to the locality-sensitive hash:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the previous example, we can see that both the user IDs `655` and `13` are
+    placed in the same bucket for band `8`, although they're in different buckets
+    for all the other bands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The probability that the signatures agree for one particular band is *s*^r,
+    where *s* is the true similarity of the sets and *r* is the length of each band.
+    It follows that the probability that the signatures do not agree in at least one
+    particular band is ![Bucketing signatures](img/7180OS_07_35.jpg) and so, the probability
+    that signatures don't agree across all bands is ![Bucketing signatures](img/7180OS_07_36.jpg).
+    Therefore, we can say the probability that two items become a candidates pair
+    is ![Bucketing signatures](img/7180OS_07_37.jpg).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless of the specific values of *b* and *r*, this equation describes an
+    S-curve. The threshold (the value of the similarity at which the probability of
+    becoming a candidate is 0.5) is a function of *b* and *r*. Around the threshold,
+    the S-curve rises steeply. Thus, pairs with similarity above the threshold are
+    very likely to become candidates, while those below are correspondingly unlikely
+    to become candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Bucketing signatures](img/7180OS_07_230.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To search for candidate pairs, we now only need to perform the same process
+    on a target signature and see which other items hash to the same buckets in the
+    same bands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code returns the distinct list of items that share at least one
+    bucket in at least one band with the target signature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the previous example, we associate the signature for users `655` and `405`
+    into the locality-sensitive hash. We then ask for the candidates for user ID `13`.
+    The result is a sequence containing the single ID `655`. Thus, `655` and `13`
+    are candidate pairs and should be checked for similarity. User `405` has been
+    judged by the algorithm as not being sufficiently similar, and we therefore will
+    not check them for similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For more information on locality-sensitive hashing, MinHash, and other useful
+    algorithms to deal with huge volumes of data, refer to the excellent *Mining of
+    Massive Datasets* online book for free at [http://www.mmds.org/](http://www.mmds.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Locality-sensitive hashing is a way of significantly reducing the space of pairwise
+    comparisons that we need to make while comparing sets for similarity. Thus, with
+    appropriate values set for *b* and *r*, locality-sensitive hashing allows us to
+    precompute the user neighborhood. The task of finding similar users, given a target
+    user, is as simple as finding the other users who share the same bucket across
+    any of the bands; a task whose time complexity is related to the number of bands
+    rather than the number of users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimensionality reduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What algorithms such as MinHash and LSH aim to do is reduce the quantity of
+    data that must be stored without compromising on the essence of the original.
+    They're a form of compression and they define helpful representations that preserve
+    our ability to do useful work. In particular, MinHash and LSH are designed to
+    work with data that can be represented as a set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, there is a whole class of dimensionality-reducing algorithms that
+    will work with data that is not so easily represented as a set. We saw, in the
+    previous chapter with k-means clustering, how certain data could be most usefully
+    represented as a weighted vector. Common approaches to reduce the dimensions of
+    data represented as vectors are principle component analysis and singular-value
+    decomposition. To demonstrate these, we''ll return to Incanter and make use of
+    one of its included datasets: the Iris dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The previous code should return the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Dimensionality reduction](img/7180OS_07_240.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first four columns of the Iris dataset contain measurements of the sepal
+    length, sepal width, petal length, and petal width of Iris plants. The dataset
+    is ordered by the species of plants. Rows 0 to 49 represent Iris setosa, rows
+    50 to 99 represent Iris virsicolor, and rows above 100 contain Iris virginica.
+    The exact species aren't important; we'll only be interested in the differences
+    between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting the Iris dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s visualize some of the attributes of the Iris dataset on a scatter plot.
+    We''ll make use of the following helper function to plot each of the species as
+    a separate color:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Having defined this function, let''s see how the sepal widths and lengths compare
+    for each of the three species:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The previous example should generate the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Plotting the Iris dataset](img/7180OS_07_250.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can see how one of the species is quite different from the other two while
+    comparing these two attributes, but two of the species are barely distinguishable:
+    the widths and heights for several of the points are evenly overlaid.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s instead plot the petal width and height to see how these compare:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This should generate the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Plotting the Iris dataset](img/7180OS_07_255.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This does a much better job of distinguishing between the different species.
+    This is partly because the variance of the petal width and length is greater—the
+    length, for example, stretches a full 6 units on the *y* axis. A useful side effect
+    of this greater spread is that it allows us to draw a much clearer distinction
+    between the species of Iris.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Principle component analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In principle component analysis, often abbreviated to PCA, we're looking to
+    find a rotation of data that maximizes the variance. In the previous scatter plot,
+    we identified a way of looking at the data that provided a high degree of variance
+    on the *y* axis, but the variance of the *x* axis was not as great.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have four dimensions available in the Iris dataset, each representing the
+    value of the length and width of a petal or a sepal. Principle component analysis
+    allows us to determine whether there is a another basis, which is some linear
+    combination of all the available dimensions, that best re-expresses our data to
+    maximize the variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can apply principle component analysis with the Incanter.stats'' `principle-components`
+    function. In the following code, we pass it a matrix of data and plot the first
+    two returned rotations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding example produces the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Principle component analysis](img/7180OS_07_280.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how the axes can no longer be identified as being sepals or petals—the
+    components have been derived as a linear combination of the values across all
+    the dimensions and define a new basis to view the data that maximizes the variance
+    within each component. In fact, the `principle-component` function returns `:std-dev`
+    along with `:rotation` for each dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For interactive examples demonstrating principle component analysis, see [http://setosa.io/ev/principal-component-analysis/](http://setosa.io/ev/principal-component-analysis/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result of taking the principle components of the data, the variance across
+    the *x* and the *y* axis is greater than even the previous scatter plot showing
+    petal width and length. The points corresponding to the different species of iris
+    are therefore spread out as wide as they can be, so the relative difference of
+    the species is clearly observable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Singular value decomposition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A technique that's closely related to PCA is **Singular Value Decomposition**
+    (**SVD**). SVD is, in fact, a more general technique than PCA which also seeks
+    to change the basis of a matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: An excellent mathematical description of PCA and its relationship to SVD is
+    available at [http://arxiv.org/pdf/1404.1100.pdf](http://arxiv.org/pdf/1404.1100.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As its name implies, SVD decomposes a matrix into three related matrices, commonly
+    referred to as the *U*, *Σ* (or *S*), and *V* matrices, such that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Singular value decomposition](img/7180OS_07_38.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: If *X* is an m x n matrix, *U* is an m x m matrix, *Σ* is an m x n matrix, and
+    *V* is an n x n matrix. *Σ* is, in fact, a diagonal matrix, meaning that all the
+    cells with the exception of those on the main diagonal (top left to bottom right)
+    are zero. Although clearly, it need not be square. The columns of the matrices
+    returned by SVD are ordered by their singular value with the most important dimensions
+    coming first. SVD thus allows us to represent the matrix *X* more approximately
+    by discarding the least important dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the decomposition of our 150 x 4 Iris matrix will result in a *U*
+    of 150 x 150, *Σ* of 150 x 4 and *V* of 4 x 4\. Multiplying these matrices together
+    will yield our original Iris matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, we could choose instead to take only the top two singular values and
+    adjust our matrices such that *U* is 150 x 2, *Σ* is 2 x 2, and *V* is 2 x 4\.
+    Let''s construct a function that takes a matrix and projects it into a specified
+    number of dimensions by taking this number of columns from each of the *U*, *Σ*,
+    and *V* matrices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, *d* is the number of dimensions that we want to retain. Let''s demonstrate
+    this with a simple example by taking a multivariate normal distribution generated
+    by Incanter using `s/sample-mvn` and reducing it to just one dimension:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of the previous example contains the most important aspects of the
+    data reduced to just one dimension. To recreate an approximation of the original
+    dataset in two dimensions, we can simply multiply the three matrices together.
+    In the following code, we project the one-dimensional approximation of the distribution
+    back into two dimensions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This produces the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Singular value decomposition](img/7180OS_07_290.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how SVD has preserved the primary feature of the multivariate distribution,
+    the strong diagonal, but has collapsed the variance of the off-diagonal points.
+    In this way, SVD preserves the most important structure in the data while discarding
+    less important information. Hopefully, the earlier example makes it even clearer
+    than the PCA example that the preserved features need not be explicit in the original
+    data. In the example, the strong diagonal is a *latent* feature of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Latent features are those which are not directly observable, but which can be
+    inferred from other features. Sometimes, latent features refer to aspects that
+    could be measured directly, such as the correlation in the previous example or—in
+    the context of recommendation—they can be considered to represent underlying preferences
+    or attitudes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Having observed the principle of SVD at work on the earlier synthetic data,
+    let''s see how it performs on the Iris dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Singular value decomposition](img/7180OS_07_300.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: After comparing the Iris charts for PCA and SVD, it should be clear that the
+    two approaches are closely related. This scatter plot looks a lot like an inverted
+    version of the PCA plot that we saw previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's return to the problem of movie recommendation now, and see how dimensionality
+    reduction could assist. In the next section, we'll make use of the Apache Spark
+    distributed computing framework and an associated machine learning library, MLlib,
+    to perform movie recommendations on dimensionally-reduced data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large-scale machine learning with Apache Spark and MLlib
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Spark project ([https://spark.apache.org/](https://spark.apache.org/)) is
+    a cluster computing framework that emphasizes low-latency job execution. It's
+    a relatively recent project, growing out of UC Berkley's AMP Lab in 2009.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although Spark is able to coexist with Hadoop (by connecting to the files stored
+    on **Hadoop Distributed File System** (**HDFS**), for example), it targets much
+    faster job execution times by keeping much of the computation in memory. In contrast
+    with Hadoop's two-stage MapReduce paradigm, which stores files on the disk in
+    between each iteration, Spark's in-memory model can perform tens or hundreds of
+    times faster for some applications, particularly those performing multiple iterations
+    over the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [Chapter 5](ch05.xhtml "Chapter 5. Big Data"), *Big Data*, we discovered
+    the value of iterative algorithms to the implementation of optimization techniques
+    on large quantities of data. This makes Spark an excellent choice for large-scale
+    machine learning. In fact, the MLlib library ([https://spark.apache.org/mllib/](https://spark.apache.org/mllib/))
+    is built on top of Spark and implements a variety of machine learning algorithms
+    out of the box.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We won't provide an in-depth account of Spark here, but will explain just enough
+    on the key concepts required to run a Spark job using the Clojure library, Sparkling
+    ([https://github.com/gorillalabs/sparkling](https://github.com/gorillalabs/sparkling)).
+    Sparkling wraps much of Spark's functionality behind a friendly Clojure interface.
+    In particular, the use of the thread-last macro `->>` to chain Spark operations
+    together can make Spark jobs written in Sparkling appear a lot like the code we
+    would write to process data using Clojure's own sequence abstractions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Be sure also to check out Flambo, which makes use of the thread-first macro
+    to chain tasks: [https://github.com/yieldbot/flambo](https://github.com/yieldbot/flambo).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We're going to be producing recommendations based on the MovieLens ratings,
+    so the first step will be to load this data with Sparkling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading data with Sparkling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spark can load data from any storage source supported by Hadoop, including the
+    local file system and HDFS, as well as other data sources such as Cassandra, HBase,
+    and Amazon S3\. Let's start with the basics by writing a job to simply count the
+    number of ratings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The MovieLens ratings are stored as a text file, which can be loaded in Sparkling
+    using the `text-file` function in the `sparkling.core` namespace (referred to
+    as `spark` in the code). To tell Spark where the file is located, we pass a URI
+    that can point to a remote source such as `hdfs://..., s3n://....` Since we''re
+    running Spark in local mode, it could simply be a local file path. Once we have
+    the text file, we''ll call `spark/count` to get the number of lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you run the previous example, you may see many logging statements from Spark
+    printed to the console. One of the final lines will be the count that has been
+    calculated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that we have to pass a Spark context as the first argument to the `text-file`
+    function. The Spark context tells Spark how to access your cluster. The most basic
+    configuration specifies the location of the Spark master and the application name
+    Spark should use for this job. For running locally, the Spark master is `"local"`,
+    which is useful for REPL-based interactive development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mapping data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sparkling provides analogues to many of the Clojure core sequence functions
+    you would expect such as map, reduce, and filter. At the beginning of this chapter,
+    we stored our ratings as a map with the `:item`, `:user`, and `:rating` keys.
+    While we could parse our data into a map again, let's parse each rating into a
+    `Rating` object instead. This will allow us to more easily interact with MLlib
+    later in the chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `Rating` class is defined in the `org.apache.spark.mllib.recommendation`
+    package. The constructor takes three numeric arguments: representations of the
+    user, the item, and the user''s rating for the item. As well as creating a `Rating`
+    object, we''re also calculating the time modulo `10`, returning a number between
+    0 and 9 and creating `tuple` of both values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: The returned value is a tuple with an integer key (defined as the time modulo
+    `10`) and a rating as the value. Having a key which partitions the data into ten
+    groups will be useful when we come to split the data into test and training sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distributed datasets and tuples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Tuples are used extensively by Spark to represent pairs of keys and values.
+    In the preceding example the key was an integer, but this is not a requirement—keys
+    and values can be any type serializable by Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Datasets in Spark are represented as **Resilient Distributed Datasets** (**RDDs**).
+    In fact, RDDs are the core abstraction that Spark provides—a fault-tolerant collection
+    of records partitioned across all the nodes in your cluster that can be operated
+    in parallel. There are two fundamental types of RDDs: those that represent sequences
+    of arbitrary objects (such as the kind returned by `text-file`—a sequence of lines),
+    and those which represent sequences of key/value pairs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can convert between plain RDDs and pair RDDs simply, and this is accomplished
+    in the previous example with the `map-to-pair` function. The tuple returned by
+    our `parse-rating` function specifies the key and the value that should be used
+    for each pair in the sequence. As with Hadoop, there's no requirement that the
+    key be unique within the dataset. In fact, as we'll see, keys are often a useful
+    means of grouping similar records together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Filtering data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's now filter our data based on the value of the key and create a subset
+    of the overall data that we can use for training. Like the core Clojure function
+    of the same name, Sparkling provides a `filter` function that will keep only those
+    rows for which a predicate returns logical true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given our pair RDD of ratings, we can filter only those ratings that have a
+    key value less than 8\. Since the keys roughly and uniformly distributed integers
+    0-9, this will retain approximately 80 percent of the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our ratings are stored in a pair RDD, so the result of filter is also a pair
+    RDD. We're calling `values` on the result so that we're left with a plain RDD
+    containing only the `Rating` objects. This will be the RDD that we pass to our
+    machine learning algorithm. We perform exactly the same process, but for the keys
+    greater than or equal to 8, to obtain the test data we'll be using.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Persistence and caching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spark's actions are lazy and won't be calculated until they're needed. Similarly,
+    once data has been calculated, it won't be explicitly cached. Sometimes, we'd
+    like to keep data around though. In particular, if we're running an iterative
+    algorithm, we don't want the dataset to be recalculated from source each time
+    we perform an iteration. In cases where the results of a transformed dataset should
+    be saved for subsequent use within a job, Spark provides the ability to persist
+    RDDs. Like the RDDs themselves, the persistence is fault-tolerant, meaning that
+    if any partition is lost, it will be recomputed using the transformations that
+    originally created it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can persist an RDD using the `spark/persist` function, which expects us
+    to pass the RDD and also configure the storage level most appropriate for our
+    application. In most cases, this will be in-memory storage. But in cases where
+    recomputing the data would be computationally expensive, we can spill to disk
+    or even replicate the cache across disks for fast fault recovery. In-memory is
+    most common, so Sparkling provides the `spark/cache` function shorthand that will
+    set this storage level on an RDD:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we cache the result of the call to `parse-ratings`.
+    This means that the loading and parsing of ratings is performed a single time,
+    and the training and test ratings functions both use the cached data to filter
+    and perform their counts. The call to `cache` optimizes the performance of jobs
+    and allows spark to avoid recalculating data more than necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine learning on Spark with MLlib
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We've covered enough of the basics of Spark now to use our RDDs for machine
+    learning. While Spark handles the infrastructure, the actual work of performing
+    machine learning is handled by an apache Spark subproject called MLlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: An overview of all the capabilities of the MLlib library are at [https://spark.apache.org/docs/latest/mllib-guide.html](https://spark.apache.org/docs/latest/mllib-guide.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'MLlib provides a wealth of machine learning algorithms for use on Spark, including
+    those for regression, classification, and clustering covered elsewhere in this
+    book. In this chapter, we''ll be using the algorithm MLlib provides for performing
+    collaborative filtering: alternating least squares.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Movie recommendations with alternating least squares
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In [Chapter 5](ch05.xhtml "Chapter 5. Big Data"), *Big Data*, we discovered
+    how to use gradient descent to identify the parameters that minimize a cost function
+    for a large quantity of data. In this chapter, we've seen how SVD can be used
+    to calculate latent factors within a matrix of data through decomposition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **alternating least squares** (**ALS**) algorithm can be thought of as
+    a combination of both of these approaches. It is an iterative algorithm that uses
+    least-squares estimates to decompose the user-movies matrix of rankings into two
+    matrices of latent factors: the user factors and the movie factors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Movie recommendations with alternating least squares](img/7180OS_07_310.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Alternating least squares is therefore based on the assumption that the users'
+    ratings are based on some latent property of the movie that can't be measured
+    directly, but can be inferred from the ratings matrix. The earlier diagram shows
+    how the sparse matrix of user-movie ratings can be decomposed into two matrices
+    containing the user factors and the movie factors. The diagram associates just
+    three factors with each user and movie, but let's make it even more simplistic
+    by just using two factors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could hypothesize that all the movies exist in a two-dimensional space identified
+    by their level of action, romance, and how realistic (or not) they may be. We
+    visualize such a space as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Movie recommendations with alternating least squares](img/7180OS_07_320.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could likewise imagine all the users represented in an equivalent two-dimensional
+    space, where their tastes were simply expressed as their relative preference for
+    **Romance**/**Action** and **Realist**/**Escapist**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once we've reduced all the movies and users to their factor representation,
+    the problem of prediction is reduced to a simple matrix multiplication—our predicted
+    rating for a user, given a movie, is simply the product of their factors. The
+    challenge for ALS then is to calculate the two factor matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ALS with Spark and MLlib
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At the time of writing, no Clojure wrapper exists for the MLlib library, so
+    we''ll be using Clojure''s interop capabilities to access it directly. MLlib''s
+    implementation of alternating least squares is provided by the ALS class in the
+    `org.apache.spark.mllib.recommendation` package. Training ALS is almost as simple
+    as calling the `train` static method on the class with our RDD and provided arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The slight complexity is that the RDD of training data returned by our preceding
+    Sparkling job is expressed as a `JavaRDD` type. MLlib, since it has no Java API,
+    expects to receive standard Spark `RDD` types. Converting between the two is a
+    straightforward enough process, albeit somewhat tedious. The following functions
+    convert back and forth between RDD types; into `RDDs` ready for consumption by
+    MLlib and then back into `JavaRDDs` for use in Sparkling:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: The second argument in `from-mllib-rdd` is a value defined in the `sparkling.scalaInterop`
+    namespace. This is required to interact with the JVM bytecode generated by Scala's
+    function definition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For more on Clojure/Scala interop consult the excellent from the `scala` library
+    by Tobias Kortkamp at [http://t6.github.io/from-scala/](http://t6.github.io/from-scala/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the previous boilerplate out of the way, we can finally perform ALS on
+    the training ratings. We do this in the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function takes several arguments—`rank`, `num-iter`, and `lambda`, and it
+    returns a MLlib `MatrixFactorisationModel` function. The rank is the number of
+    features to use for the factor matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making predictions with ALS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once we''ve calculated `MatrixFactorisationModel`, we can use it to make predictions
+    with the `recommendProducts` method. This expects to receive the ID of the user
+    to recommend to and the number of recommendations to return:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can see that the output of the model, like the input, are the `Rating`
+    objects. They contain the user ID, the item ID, and a predicted rating calculated
+    as the product of the factor matrices. Let''s make use of the function that we
+    defined at the beginning of the chapter to give these ratings names:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: It's not particularly clear that these are good recommendations though. For
+    this, we'll need to evaluate the performance of our ALS model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating ALS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Unlike Mahout, Spark doesn't include a built-in evaluator for the model, so
+    we're going to have to write our own. One of the simplest evaluators, and one
+    we've used already in this chapter, is the root mean square error (RMSE) evaluator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first step for our evaluation is to use the model to predict ratings for
+    all of our training set. Spark''s implementation of ALS includes a predict function
+    that we can use, which will accept an RDD containing all of the user IDs and item
+    IDs to return predictions for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `.recommendProducts` method we called previously uses the model to return
+    product recommendations for a specific user. By contrast, the `.predict` method
+    will predict the rating for many users and items at once.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Evaluating ALS](img/7180OS_07_330.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The result of our call to the `.predict` function is a pair RDD, where the key
+    is itself a tuple of user and product. The value of the pair RDD is the predicted
+    rating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the sum of squared errors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To calculate the difference between the predicted rating and the actual rating
+    given to the product by the user, we''ll need to join the `predictions` and the
+    `actuals` together based on a matching user/product tuple. As the keys will be
+    the same in both the `predictions` and `actuals` RDDs, we can simply pass them
+    both to Sparkling''s `join` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can visualize the whole `sum-squared-errors` function as the following flow,
+    comparing the predicted and actual ratings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the sum of squared errors](img/7180OS_07_340.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once we''ve calculated the `sum-squared-errors`, calculating the root mean
+    square is simply a matter of dividing it by the count and taking the square root:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `rmse` function will take a model and some data and calculate RMSE of the
+    prediction against the actual rating. Earlier in the chapter, we plotted the different
+    values of RMSE as the size of the neighborhood changed with a user-based recommender.
+    Let''s employ the same technique now, but alter the rank of the factor matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The earlier code generates the following plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the sum of squared errors](img/7180OS_07_350.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Observe how, as we increase the rank of the factor matrix, the ratings returned
+    by our model become closer and closer to the ratings that the model was trained
+    on. As the dimensions of the factor matrix grow, it can capture more of the variation
+    in individual users' ratings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What we''d really like to do though is to see how well the recommender performs
+    against the test set—the data it hasn''t already seen. The final example in this
+    chapter, `ex-7-41`, runs the preceding analysis again, but tests the RMSE of the
+    model against the test set rather than the training set. The example generates
+    the following plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating the sum of squared errors](img/7180OS_07_355.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we would hope, the RMSE of the predictions fall as the rank of the factor
+    matrix is increased. A larger factor matrix is able to capture more of the latent
+    features that lie within the ratings, and more accurately predict the rating a
+    user will give a movie.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We've covered a lot of ground in this chapter. Although the subject was principally
+    recommender systems, we've also discussed dimensionality reduction and introduced
+    the Spark distributed computation framework as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We started by discussing the difference between content- and collaborative filtering-based
+    approaches to the problem of recommendation. Within the context of collaborative
+    filtering, we discussed item-item recommenders and built a Slope One recommender.
+    We also discussed user-user recommenders and used Mahout's implementations of
+    a variety of similarity measures and evaluators to implement and test several
+    user-based recommenders too. The challenge of evaluation provided an opportunity
+    to introduce the statistics of information retrieval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We spent a lot of time in this chapter covering several different types of dimensionality
+    reduction. For example, we learned about the probabilistic methods offered by
+    Bloom filters and MinHash, and the analytic methods offered by principle component
+    analysis and singular value decomposition. While not specific to recommender systems,
+    we saw how such techniques could be used to help implement more efficient similarity
+    comparisons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we introduced the distributed computation framework Spark and learned
+    how the alternating least squares algorithm uses dimensionality reduction to discover
+    latent factors in a matrix of ratings. We implemented ALS and a RMSE evaluator
+    using Spark, MLlib, and the Clojure library Sparkling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Many of the techniques we learned this chapter are very general, and the next
+    chapter will be no different. We''ll continue to explore the Spark and Sparkling
+    libraries as we learn about network analysis: the study of connections and relationships.'
+  prefs: []
+  type: TYPE_NORMAL

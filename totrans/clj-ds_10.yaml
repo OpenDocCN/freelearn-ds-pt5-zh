@@ -1,0 +1,1274 @@
+- en: Chapter 10. Visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"Numbers have an important story to tell. They rely on you to give them
+    a clear and convincing voice."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Stephen Few* |'
+  prefs: []
+  type: TYPE_TB
+- en: Every chapter in this book has made use of visualization in some way, primarily
+    using Incanter. Incanter is an effective tool to produce a wide variety of charts
+    as we work, and these are often the ones we'll reach out for first while trying
+    to understand a dataset. This initial phase is often called **exploratory data
+    analysis** and, at this stage, we're interested in summarizing statistics such
+    as the distribution of numerical data, the counts of the categorical data, and
+    how the attributes in our data are correlated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having found a meaningful way to interpret data, we'll often want to communicate
+    it to others. One of the most important tools for communication is visualization,
+    and we may be required to convey subtle or complicated ideas to people without
+    a strong analytical background. In this chapter, we'll use the library Quil—which
+    grew out of software developed for visual artists—to produce attractive graphics
+    that can help bring data to life. Visualization and communication design are large,
+    rich fields that we will not cover in detail here. Instead, this chapter will
+    offer two case studies showing how Clojure's data abstractions and Quil's drawing
+    API can be used together for good effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll begin this chapter by coming full circle and returning to the data we
+    used in [Chapter 1](ch01.xhtml "Chapter 1. Statistics"), *Statistics*. We'll introduce
+    Quil by demonstrating how to build a simple two-dimensional histogram from the
+    Russian election data. Having covered the basics of drawing in Quil, we'll show
+    how a few basic drawing instructions can combine to produce a compelling representation
+    of the distribution of wealth in the United States.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the code and data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we''ll return to the data we used in the very first chapter
+    of this book: data from the 2011 Russian election. Back, in [Chapter 1](ch01.xhtml
+    "Chapter 1. Statistics"), *Statistics*, we used a scatter plot with transparency
+    to visualize the relationship between voter turnout and the victor''s percentage
+    of the vote. In this chapter, we''ll produce code to render the data as a two-dimensional
+    histogram.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ll also be making use of the data on the distribution of wealth in the
+    United States. This data is so small that we won''t have anything to download:
+    we''ll type the figures directly into the source code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The source code for this chapter is available at [https://github.com/clojuredatascience/ch10-visualization](https://github.com/clojuredatascience/ch10-visualization).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The example code for this chapter contains a script to download the election
+    data we used in [Chapter 1](ch01.xhtml "Chapter 1. Statistics"), *Statistics*.
+    Once you''ve downloaded the source code, you can execute the script by running
+    the following command line from within the project root:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you downloaded the data for [Chapter 1](ch01.xhtml "Chapter 1. Statistics"),
+    *Statistics* previously, you can simply move the data files across into this chapter's
+    data directory, if you prefer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploratory data visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At the outset of any data science project, there is likely to be a period of
+    iterative data exploration when you gain insight into the data. Throughout this
+    book, Incanter has been our primary visualization tool. Although it includes a
+    large number of charts there will be occasions when it won't contain the ideal
+    chart for the data you seek to represent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Other Clojure libraries are stepping in to offer exploratory data visualization
+    capabilities. For examples, see **clojurewerkz/envision** [https://github.com/clojurewerkz/envision](https://github.com/clojurewerkz/envision)
+    and Karsten Schmidt's **thi-ng/geom** at [https://github.com/thi-ng/geom/tree/master/geom-viz](https://github.com/thi-ng/geom/tree/master/geom-viz).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, back in [Chapter 1](ch01.xhtml "Chapter 1. Statistics"), *Statistics*,
+    we used a scatter plot with alpha transparency to visualize the voter turnout
+    proportion against the proportion of votes for the winner. This wasn''t an ideal
+    chart, because we were primarily interested in the density of points in a particular
+    area. Alpha transparency helped reveal the structure of the data, but it wasn''t
+    an unambiguous representation. Some points were still too feint to be visible
+    or so numerous that they appeared as one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Exploratory data visualization](img/7180OS_10_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could have solved these problems with a two-dimensional histogram. This type
+    of plot uses color to communicate areas of high and low density over two dimensions.
+    The chart is split into a grid with each cell of the grid signifying a range in
+    both dimensions. The more the points fall into a cell of the grid, the greater
+    is the density within the range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Representing a two-dimensional histogram
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A histogram is simply a representation of a continuous distribution into a
+    series of bins. Histograms were introduced in [Chapter 1](ch01.xhtml "Chapter 1. Statistics"),
+    *Statistics* and, at the time, we wrote a binning function that would separate
+    continuous data into discrete bins:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code will take a range of continuous `xs` and bucket them into distinct
+    groups based on the `n-bins` parameter. For example, binning the range between
+    0 and 19 into 5 bins yields the following sequence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `bin` function returns the bin index for each data point rather than the
+    count, so we use Clojure''s `frequencies` function to determine the count of the
+    points falling into the bin:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is a reasonable representation of a one-dimensional histogram: as a map
+    of the bins to be counted. To represent a two-dimensional histogram, we can simply
+    perform the same calculation on both the *xs* and the *ys*. We map the vector
+    function over the bin indices so that each point is converted into a representation
+    of `[x-bin y-bin]`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This function returns a map keyed by a vector of two values. The `frequencies`
+    function will now count all the points that share both an *x* and a *y* bin:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''ll want to plot real data with our histogram, so let''s load the Russian
+    data from [Chapter 1](ch01.xhtml "Chapter 1. Statistics"), *Statistics*. If you''ve
+    downloaded the data into the sample code''s `data` directory, you can run the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can see the huge range of values in the histogram bins: from just 1 in bin
+    `[0 4]` to 24,302 in bin `[2 1]`. These counts will be the density values we plot
+    on our histogram.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Quil for visualization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Quil ([https://github.com/quil/quil](https://github.com/quil/quil)) is a Clojure
+    library that provides an enormous amount of flexibility to produce custom visualizations.
+    It wraps Processing ([https://processing.org/](https://processing.org/)), a Java
+    framework that's been actively developed for many years by visual artists and
+    designers, which aims promote "software literacy in visual arts and visual literacy
+    within technology".
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any visualization done with Quil involves creating a *sketch*. A sketch is processing's
+    term for a running a program that consists of drawing instructions. Most API functions
+    are available from the `quil.core` namespace. We'll include it in our code as
+    `q`. Calling `q/sketch` without any arguments will cause an empty window to pop
+    up (although it may be obscured by other windows).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Drawing to the sketch window
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The default window size is 500px by 300px. We''d like our two-dimensional histogram
+    to be square, so let''s make the window 250px in both directions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since we have 5 bins for each of our two axes, it means that each bin will be
+    represented by a square that is 50px wide and 50px high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Quil provides the standard 2D shape primitives for drawing: points, lines,
+    arcs, triangles, quadrilaterals, rectangles, and ellipses. To draw a rectangle,
+    we call the `q/rect` function with the location specified as the *x* and *y* coordinates,
+    as well as a width and height.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s draw a square at the origin, 50px across. There are a couple of ways
+    to supply drawing instructions to Quil but, in this chapter, we''ll pass what''s
+    known as a `setup` function. This is a function of no arguments that we pass to
+    sketch. Our zero-argument function simply calls `rect` with a position [0, 0]
+    and a width and height of 50:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The code generates the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Drawing to the sketch window](img/7180OS_10_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The rectangle may not be where you expected it to be, depending on your familiarity
+    with computer graphics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Rectangles can also be drawn with rounded corners by passing a radius as the
+    fifth argument. Different radii can be used for each corner by passing the values
+    as arguments five to eight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we proceed further, we need to understand Quil's coordinate system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quil's coordinate system
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The coordinate system Quil uses is the same as processing and most other computer
+    graphics programs. If you're unfamiliar with drawing, this may seem counter-intuitive
+    that the origin is at the top left corner of the display. The *y* axis runs down
+    the screen and the *x* axis runs to the right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly, this is not the direction of the *y* axis on most graphs, which means
+    that the *y* coordinate will often need to be flipped while drawing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Quil''s coordinate system](img/7180OS_10_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: A common way to do this is to subtract the desired *y* value (as measured from
+    the bottom of the sketch) from the height of the sketch. This transformation causes
+    a *y* of zero to correspond to the bottom of the sketch. Greater values of *y*
+    will correspond to the values higher up the sketch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting the grid
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s put this into practice with a simple grid. The following function accepts
+    a number of bins, `n-bins`, and a `size` parameter expressed as a vector of `[width
+    height]`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: From this, we can calculate `x-scale` and `y-scale`, a factor that enables us
+    to convert bin index to pixel offset in each of the *x* and the *y* dimensions.
+    These are used by our `setup` function that loops over both the *x* and the *y*
+    bins, placing a rectangle for each bin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Notice how we're executing the loop inside `doseq`. Our drawing instructions
+    are executed as a side effect. If we don't do this, Clojure's lazy evaluation
+    would cause nothing to be drawn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The previous code generates the following graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Plotting the grid](img/7180OS_10_130.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Having defined the earlier function, we''ve almost created a histogram. We
+    just need to color each square in the grid with a color that represents an appropriate
+    value for each bin in the histogram. To achieve this, we''ll need two more functions:
+    one to fetch the value from the data corresponding to the bin and the other to
+    interpret these values as a color.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifying the fill color
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Filling colors in Quil is achieved with the `q/fill` function. Any fill we specify
+    will continue to be used until we specify a new fill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Many functions in Quil affect the current drawing context and are *stateful*.
+    For example, when we specify a fill value, it will be used for all subsequent
+    drawing instructions until the fill is altered. Other examples are fill, stroke,
+    scale, and font.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code is an adapted version of our `draw-grid` function. The addition
+    to `draw-filled-grid` is `fill-fn`: some way of coloring the rectangle at a point
+    in the grid. The `fill-fn` function should be a function of two arguments, the
+    *x* and *y* indices of the bin. It should return a representation that Quil can
+    use as a fill:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Quil''s fill function accepts multiple arities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**One argument**: The RGB value (either as a number or the `q/color` representation)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Two arguments**: The RGB, as with one argument, plus an alpha transparency'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Three arguments**: The red, green, and blue components of the color as numbers
+    between 0 and 255 inclusive'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Four arguments**: The red, green, blue, and alpha components as numbers'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We''ll see how to use the `color` representations shortly but, for now, we''ll
+    represent colors with a simple numeric representation: as a number between 0 and
+    255\. When the same number is used for red, green, and blue (or when `fill` is
+    called with one or two arguments), we get a gray color. 0 corresponds to black
+    and 255 corresponds to white.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we divide the frequency of the value in each bin in the histogram by the
+    maximum value, we''ll get a number between 0 and 1.0\. Multiplying by 255 will
+    yield a value that Quil will convert into a gray color for us. We do this in the
+    following `fill-fn` implementation, passing it to the `draw-filled-grid` function
+    that we defined earlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The previous code generates the following graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Specifying the fill color](img/7180OS_10_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The chart is doing what we want, but it''s a very crude representation of our
+    data. Let''s increase the number of bins to increase the resolution of our histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Specifying the fill color](img/7180OS_10_150.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: With 25 rectangles along each of the *x* and the *y* axes, we have a finer-grained
+    picture of the structure of the data. However, a side effect is that it's become
+    hard to discern detail in the histogram, because of how dim most of the cells
+    are. Part of the problem is that the top right corner has such a high value that
+    even the central area (previously the brightest) is now not much more than a gray
+    smudge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two solutions to this problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mitigate the effect of the outlier by plotting the *z*-score instead of the
+    actual value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Diversify the range of visual queues by using a greater range of colors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We'll discover how to convert values into a full spectrum of colors in the next
+    section, but first, let's convert the histogram value to a *z*-score. Plotting
+    *z*-scores is a distribution-aware way of coloring the chart that will go a long
+    way toward diminishing the effect of the extreme outlier in the top right corner.
+    With a *z*-score, we'll be plotting the number of standard deviations away from
+    the mean for each cell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To accomplish this, we need to know two things: the mean and the standard deviation
+    of the frequencies in the histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code subtracts the mean from each value in the histogram and divides
+    it by the mean. This will yield a value with a mean of zero. `1` will represent
+    one standard deviation from the mean, `2` will represent two standard deviations
+    from the mean, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quil exposes a useful `map-range` function that will take one range of values
+    and map it onto another range of values. For example, we could take the desired
+    range of standard deviations (-1 to 3 in the earlier example) and map them onto
+    the range 0 and 255\. This would correspond to four standard deviations of the
+    distribution being represented as the full range of gray from black to white.
+    Any data exceeding this range would simply be clipped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Specifying the fill color](img/7180OS_10_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The result is a much more striking representation of the data in grayscale.
+    The use of *z*-scores has brought more detail out in the main body of the histogram
+    and we can perceive more of the variation in the tail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the histogram is still not quite as clear as it could be, as distinguishing
+    between the different shades of gray can be challenging. Where cells aren't adjacent
+    to each other, it can be hard to determine whether they share the same value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can increase the range open to us by making use of color to represent each
+    cell. This makes the histogram more like a heat map: "cooler" colors such as blue
+    and green represent low values, while "hotter" colors such as orange and red represent
+    the most dense regions of the heatmap.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Color and fill
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To create a heat map version of our two-dimensional histogram, we'll have to
+    take our *z*-score and find some way of mapping it to a color value. Rather than
+    showing a discrete palette of colors, say 5, our heat map should have a smooth
+    palette containing all the colors in the spectrum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For those reading the print book or in black and white, you can download color
+    images from Packt Publishing's website [https://www.packtpub.com/sites/default/files/downloads/Clojure_for_Data_Science_ColorImages.pdf](https://www.packtpub.com/sites/default/files/downloads/Clojure_for_Data_Science_ColorImages.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is exactly what the Quil function `q/lerp-color` does. Given two colors
+    and a ratio between zero and one, `lerp-color` will return a new color that interpolates
+    between them. An amount of zero will return the first color and one the second,
+    while 0.5 will return a color halfway between the two:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code makes use of an array of colors in the order of the spectrum. We use
+    `q/map-range` to determine which two colors we will interpolate between and call
+    `q/lerp-color` with the floating-point portion of the range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve already implemented a `draw-filled-grid` function that accepts `fill-fn`
+    to determine which color should be used to fill the grid. Let''s pass our `z-score->heat`
+    function to it now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Color and fill](img/7180OS_10_170.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The heat map has exposed even more of the internal structure of the data. In
+    particular, while the strong diagonal shape of the data is still evident, we can
+    now see more of the variation within it. Details that were previously hard to
+    determine (either because the region was too dense or too sparse) have become
+    more apparent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outputting an image file
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we''re happy with the histogram, we want to output a high-quality
+    version. By adding a call to `q/save` within the setup function, passing a filename,
+    Quil will output to a file as well as the screen. The format of the image created
+    will depend on the filename suffix: `.tif` for TIFF files, `.jpg` for JPEG files,
+    `.png` for PNG files, and `.tga` for TARGA files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We're also able to output to PDF, as we'll show with the next visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualization for communication
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the course of our work as data scientists, we may find ourselves needing
+    to communicate with a wide variety of people. Our close colleagues and managers
+    may be able to read and interpret our Incanter charts, but they're unlikely to
+    impress the CEO. We may also have a role that requires us to communicate with
+    the general public.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In either case, we should focus on making visualizations that are simple and
+    powerful, but which don't sacrifice the integrity of the data. A lack of statistical
+    training is no barrier to being able to understand subtle and nuanced arguments
+    and we should respect our audience's intelligence. The challenge for us as data
+    scientists is to find a representation that conveys the message effectively to
+    them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the remainder of this chapter, we'll work on a visualization that aims to
+    communicate a more complex set of data in a succinct and faithful way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The visualization we're going to create is a version of one of the graphs presented
+    in the **Wealth Inequality in America** video online at [https://www.youtube.com/watch?v=QPKKQnijnsM](https://www.youtube.com/watch?v=QPKKQnijnsM).
+    Produced by anonymous film maker Politizane, the powerful video has gathered more
+    than 16 million hits on YouTube.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As is often the case with graphical representations like these, our data will
+    come from several different sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing wealth distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first dataset we'll make use of is from an article by G. William Domhoff,
+    research professor in psychology and sociology at the University of California,
+    Santa Cruz. The numbers we will quote next are from an article entitled **Wealth,
+    Income, and Power** at [http://www2.ucsc.edu/whorulesamerica/power/wealth.html](http://www2.ucsc.edu/whorulesamerica/power/wealth.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although the article is well worth reading in its entirety, a particularly
+    striking graphic is a pie chart that shows the financial net worth breakdown of
+    people in the U.S. in 2010:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing wealth distribution](img/7180OS_10_180.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The pie chart is striking for several reasons. Firstly, the concept that over
+    40 percent of the financial wealth is owned by such a small percentage is hard
+    to comprehend. Secondly, each slice of the pie represents not just the vastly
+    different quantities of wealth, but vastly different quantities of people, too:
+    from 1 percent of the population to 80 percent of the population. Pie charts are
+    notoriously difficult to read at the best of times, so this chart is doubly challenging.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Pie charts are generally not a good way to represent data, even where the totals
+    do conceptually represent parts of the whole. Author and programmer Steve Fenton
+    has documented many of the reasons and provided appropriate alternatives at [https://www.stevefenton.co.uk/2009/04/pie-charts-are-bad/](https://www.stevefenton.co.uk/2009/04/pie-charts-are-bad/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how we could go about reinterpreting this data to make it more comprehensible.
+    As a first step, let''s extract the numbers we''ll be working with that are presented
+    in the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Percentile | Total financial wealth, 2010 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0-79 | 5% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 80-89 | 11% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 90-95 | 13% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 96-99 | 30% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 100 | 42% |'
+  prefs: []
+  type: TYPE_TB
+- en: 'A small improvement over the pie chart would be to represent the same data
+    as a bar chart. While people generally struggle to interpret the relative sizes
+    of the pie chart segments successfully, bar charts present no such problem. The
+    next example simply creates a bar chart out of the earlier numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will return the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing wealth distribution](img/7180OS_10_190.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is an improvement on the pie chart in the respect that it''s easier to
+    compare the relative sizes of the categories. A significant problem remains though:
+    the number of people represented by each category are so vastly different. The
+    bar to the left represents 80 percent of the population, while the bar to the
+    right represents 1 percent of the population.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we wanted to make this data more comprehensible, we could divide up the total
+    into 100 equal units, each representing one percentile of the population. The
+    width of each bar could be adjusted according to the number of percentiles it
+    represents while preserving its area. Since each percentile unit represents an
+    equal number of people, the resulting chart would allow us to more easily make
+    comparisons across groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One way we could achieve this is by returning a sequence of 100 elements, one
+    for each percentile of the population. The value of each element in the sequence
+    would be the proportion of overall wealth accounted for by the percentile. We
+    already know that the top 1 percent owns 42 percent of overall wealth, but the
+    other groups would get a value adjusted downwards for the number of percentiles
+    they span:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example generates the following bar chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing wealth distribution](img/7180OS_10_200.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: By applying a simple transformation, we're able to gain a much better understanding
+    of the true distribution. Each bar now represents an equal proportion of the population
+    and the area of each bar represents the proportion of wealth owned by the percentile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bringing data to life with Quil
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The transformation in the previous section results in a chart that shows the
+    difference between the extreme ends of the scale almost too starkly: it''s hard
+    to interpret anything but the largest bars. One solution would be to display the
+    numbers on a log scale or a log-log scale as we did elsewhere in the book. If
+    the audience for this chart are statistically literate, this might be the most
+    appropriate thing to do, but let''s assume that the intended audience for our
+    visualization is the general public.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem with the chart presented earlier is that the rightmost bar is so
+    large that it overwhelms all the other bars. 80 percent of the area is represented
+    by nothing more than a few pixels. In the next section, we'll make use of Quil
+    to produce a visualization that makes better use of space while it simultaneously
+    preserving the integrity of the chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Drawing bars of differing widths
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Over the next several sections, we''ll build up a visualization in stages.
+    Since we''ll be drawing a Quil sketch, we''ll first define some constants that
+    will allow us to produce drawing instructions relative to the dimensions of the
+    sketch. Some constants are omitted from the next code for brevity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With these in place, we can begin to represent the bar chart in a more comprehensible
+    way. The following code takes the wealth distribution and plots all but the final
+    bar as a series of rectangles. The *y*-scale is calculated so that the largest
+    bar we will draw will fill the height of the plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The bars we''ve drawn so far represent the 99 percent. The final bar will represent
+    the final 1 percent of the population. So it fits the vertical scale we''ve devised
+    without disappearing off the top of the sketch, we will make the bar correspondingly
+    wider while preserving its area. As a result, the bar is 5 times shorter—but also
+    5 times wider—than the others:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The example outputs the following graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Drawing bars of differing widths](img/7180OS_10_210.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Already, we can see the relationship between largest bars more clearly, but
+    it's not clearly apparent yet that it's a chart. In the next section, we'll add
+    text to identify the subject of the chart and the range of the axes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding a title and axis labels
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the convenient aspects of specialized visualization tools such as Incanter
+    is that the axes can be automatically generated for our charts. Quil provides
+    no help for us here, but since the bar widths are known, it''s not terribly hard
+    for us to achieve. In the following code, we''ll make use of the `text`, `text-align`,
+    `text-size` functions to write text to our visualization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What we lose by using a nonspecialist charting library we gain in terms of
+    flexibility. Next, we''ll write a function to produce letterpress-style embossing
+    on the text:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We use the `emboss-text` function to draw a large title at the center of our
+    chart. Notice how we also specify the alignment of the text with the positions
+    being measured optionally from the top, bottom, center, left, or right of the
+    text:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The earlier example generates the following graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Adding a title and axis labels](img/7180OS_10_220.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This chart, which is a mix of bar heights and areas, and custom text visualization
+    would be very difficult to achieve in a standard charting application. Using Quil,
+    we have a toolbox that allows us to freely mix graphics and data with ease.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improving the clarity with illustrations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We're getting somewhere with our chart, but it's very spare at the moment. One
+    way to add more visual interest would be with images. In the resources directory
+    of the example project, are two SVG image files. One is a person icon and the
+    other is a map of the United States sourced from Wikipedia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Wikipedia contains a wide variety of SVG maps issued under a flexible creative
+    commons license. For example, maps of the United States at [https://commons.wikimedia.org/wiki/Category:SVG_maps_of_the_United_States](https://commons.wikimedia.org/wiki/Category:SVG_maps_of_the_United_States).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The map we're using in this chapter is available at [https://commons.wikimedia.org/wiki/File:Blank_US_Map,_Mainland_with_no_States.svg](https://commons.wikimedia.org/wiki/File:Blank_US_Map,_Mainland_with_no_States.svg)
+    and was made available by Lokal_Profil under a CC-BY-SA-2.5 license.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using SVG images in Quil is a two-step process. First, we have to load the
+    image into the memory using `q/load-shape`. This function accepts a single argument:
+    the path to the SVG file that is to be loaded. Next, we have to actually draw
+    the image on the screen. This is accomplished using the `q/shape` function, which
+    expects a *x*, *y* position for the image and also an optional width and height.
+    If we were using pixel-based images such as JPEGs or PNGs, we would instead use
+    the corresponding `q/load-image` and `q/image` functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this code, we called `.disableStyle` on both the `usa` and the `person` shapes.
+    This is because SVG files may contain embedded style such as fill color, stroke
+    color, or border width information that will affect the way Quil draws the shape.
+    We'd like complete control over our representation, so we choose to disable all
+    the styles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, note that we''re loading the person shape once and drawing it many times
+    with `dotimes`. We are setting the color based on `quintile` in which the user
+    falls:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is shown in the next image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Improving the clarity with illustrations](img/7180OS_10_230.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The graphic is beginning to look like one we could show people without blushing.
+    The people icons help communicate the idea that each bar represents a percentile
+    of the population. The bars are not very attractive yet. Since each bar represents
+    the wealth of each person, let's represent each bar as a pile of bank notes. While
+    this might appear to be an overly literal interpretation, it would actually make
+    it clearer that the 1 percent bar is actually 5 times as wide as everyone else's.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding text to the bars
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'By now, it should be no surprise that we can draw the banknotes as a series
+    of rectangles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: The only slight complexity in the previous code is the need to adjust the starting
+    *y* position as an even multiple of `3`. This will ensure that all the banknotes
+    meet the *x* axis after an even number of multiples, irrespective of the height
+    of the bar on the *y* axis. This is a side-effect of drawing the bars from top
+    to bottom, rather than vice versa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ll add the earlier function to our sketch in the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Adding text to the bars](img/7180OS_10_240.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is now a reasonably complete chart representing the actual distribution
+    of wealth in the United States. One of the strengths of the original YouTube video
+    link provided earlier is that it contrasts the actual distribution with several
+    other distributions: the distribution of wealth people expected and the distribution
+    of wealth they would prefer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Incorporating additional data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Michael Norton, a Harvard Business Professor, and Dan Ariely, a behavioral economist
+    performed a study on more than 5,000 Americans to assess their perception of wealth
+    distribution. When they were shown a variety of examples on wealth distribution
+    and asked to identify which one was sourced from the United States, most chose
+    a distribution much more balanced than it actually was. When asked to choose their
+    ideal distribution of wealth, 92 percent picked one that was even more equitable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following graphic shows the results of this study:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_250.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding graphic was published by Mother Jones on [http://www.motherjones.com/politics/2011/02/income-inequality-in-america-chart-graph](http://www.motherjones.com/politics/2011/02/income-inequality-in-america-chart-graph)
+    based on the data sourced form [http://www.people.hbs.edu/mnorton/norton%20ariely%20in%20press.pdf](http://www.people.hbs.edu/mnorton/norton%20ariely%20in%20press.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The previous chart does a good job of showing the relative differences between
+    people's perceptions and reality for each of the 5 quintiles. We'll be converting
+    this data into an alternative representation so, like before, we can convert the
+    data into a table representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reading off the earlier chart and with reference to the linked paper, I''ve
+    arrived at the following approximate breakdown by quintile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Quintile | Ideal % | Expected % | Actual % |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 100th | 32.0% | 58.5% | 84.5% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 80th | 22.0% | 20.0% | 11.5% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 60th | 21.5% | 12.0% | 3.7% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 40th | 14.0% | 6.5% | 0.2% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 20th | 10.5% | 3.0% | 0.1% |'
+  prefs: []
+  type: TYPE_TB
+- en: Let's take the *ideal* and *expected* distributions and find a way to plot them
+    on our existing wealth distribution chart. Our bar chart already represents the
+    relative wealth of different percentiles as an area. In order to make the two
+    datasets comparable, we should also do the same with this data. The previous table
+    assisted us by already representing the data as five equally sized groups, so
+    we don't need to apply a transformation like we did with the data sourced from
+    the pie chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, let''s use this as an opportunity to learn more about drawing complex
+    shapes in Quil and see whether we can arrive at a presentation of the data more
+    like the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_260.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The table provides the relative areas that we want to represent by the shapes
+    labeled **A**, **B**, and **C**. In order to draw the earlier shapes, we'll have
+    to calculate the heights *x*, *y*, and *z*. These will give us the coordinates
+    that we can plot on our chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The width of the areas **A**, **B**, and **C** is **w**. Therefore, the product
+    of **x** and **w** will equal the area of **A**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_01.jpg)![Incorporating additional
+    data](img/7180OS_10_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It follows that the height of *x* is simply the area of *A* divided by *w*.
+    *Y* is a little more complicated, but not much. The area of the triangular component
+    of *B* is equal to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'therefore:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can calculate *z* in the same way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Expanding our definitions gives the following equation for *z*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If we assume that *w* is 1 (all our quintiles are of a constant width), then
+    we arrive at the following equations and so on for any number of sections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Incorporating additional data](img/7180OS_10_07.jpg)![Incorporating additional
+    data](img/7180OS_10_08.jpg)![Incorporating additional data](img/7180OS_10_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This can be expressed as a simple recursive function. The first of our proportions
+    will be assigned the value *x*. Subsequent values can be calculated from it as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `reductions` function behaves exactly like `reduce`, but preserves the intermediate
+    steps of our calculation. Rather than a single value, we'll get back a sequence
+    of values that correspond to the (proportional) heights of our *y*-coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Drawing complex shapes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `area-points` function defined in the previous section will provide a series
+    of points for us to plot. However, we haven't yet covered the functions in Quil
+    that will allow us to plot them. To draw lines, we could use the `q/line` function.
+    The line function will accept a start and an end coordinate and draw a straight
+    line between them. We would be able to construct an area graph this way, but it
+    would have no fill. Lines simply describe outlines; we are not able to use them
+    to construct colored shapes like we did with `q/rect` while making a histogram.
+    To give our shapes a fill color, we need to build them up one vertex at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To build arbitrarily complex shapes with Quil, we first call `q/begin-shape`.
+    This is a stateful function that lets Quil know that we want to start building
+    up a series of vertices. Subsequent calls to `q/vertex` will be associated with
+    the shape that we're constructing. Finally, a call to `q/end-shape` will complete
+    the shape. We'll draw it with the stroke and fill the styles specified in the
+    current drawing context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how it works by drawing some test shapes using the `area-points`
+    function defined in the previous section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example plots the `[3 6.5 12 20 58.5]` series using the area-points function
+    defined previously. This is the series of percentage values listed in the data
+    table for the `expected` distribution of wealth in the United States. The `plot-area`
+    function calls `begin-shape`, iterates over the sequence of *ys* returned by `area-points`,
+    and calls `end-shape`. The result is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Drawing complex shapes](img/7180OS_10_270.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This isn''t quite what we want. Although we''re asking to fill the shape, we''re
+    not describing the full shape to be filled. Quil doesn''t know how we want to
+    close off the shape, so it''s simply drawing an edge from the last point back
+    to the first, cutting across the diagonal of our chart. Fortunately, the problem
+    can be easily resolved by ensuring there are points at both the bottom corners
+    of the diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `plot-full-area` function adds an extra call to `vertex` before and after
+    iterating over the sequence of *ys*. The points specified ensure that the shape
+    is fully described before the call to `end-shape`. The result is shown in the
+    following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Drawing complex shapes](img/7180OS_10_280.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is better, and it's starting to look like an area plot. In the next section,
+    we'll cover how to describe more complex shapes using curves. Although curves
+    aren't required for our area plot, it will help make the results a little more
+    attractive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Drawing curves
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The area plot is starting to look good, but we could remove those sharp corners
+    by making use of Quil's spline curves. Rather than building up the shape by adding
+    vertices, we could call `q/curve-vertex` to smoothen out the joins between the
+    edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `q/curve-vertex` function implements a method of curve drawing known as
+    Catmull-Rom splines. To draw a curve, we must specify at least four vertices:
+    the first and last will be treated as the control points and the curve will be
+    drawn between the middle two.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We visualize how Catmull-Rom splines work in the following diagram, which shows
+    the path specified by points *a*, *b*, *c*, and *d*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Drawing curves](img/7180OS_10_290.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The tangent to the curve at point **c** is parallel to **X**: the line described
+    between points **a** and **b**; the tangent to the curve at **b** is parallel
+    to **Y**: the line described by points **c** and **d**. Thus, to draw a curve,
+    we''ll need ensure we add these additional control points at the beginning and
+    the end of our line. Each control point is added with `curve-vertex`, which we
+    call once before we iterate over our points and then again at the end:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we''ve defined a `smooth-curve` function, we''ll use it in the following
+    two functions, `smooth-stroke` and `smooth-area`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `smooth-stroke` function will draw the shape defined by the *xs* and *ys*
+    by creating vertices for each of them. The `smooth-area` function extends this
+    by closing off the shape and avoiding the situation we saw previously with a fill
+    that crosses the shape diagonally. Bringing the two functions together is `plot-curve`,
+    a function that accepts the *xs* and *ys* to be plotted, plus a fill color, stroke
+    color, and stroke weight to use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s call the `plot-curve` function on the same sequence of expected values
+    we plotted earlier, and compare the difference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example generates the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Drawing curves](img/7180OS_10_300.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The effect of the curve is subtle, but it provides a polish to our chart that
+    would otherwise be lacking. The previous chart shows the *expected* distribution
+    of wealth from the study by Norton and Ariely. Before we combine this with the
+    *actual* wealth distribution plot we created earlier, let's see how it could be
+    combined with the *ideal* distribution of wealth from the same study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting compound charts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The earlier description shows how to create a single curved graph scaled to
+    fit an area. As we''ve defined it, the `plot-smooth-area` function will fill the
+    height we specify for every area we draw. This makes sense from a drawing perspective,
+    but it doesn''t make sense while trying to draw two comparable charts: we need
+    to make sure they use the same scale.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the next block of code, we''ll calculate a scale based on the larger of
+    the two graphs and then plot both using this scale. This ensures that all of the
+    series we plot will be comparable with each other. The combined chart will fill
+    the width and height we allot to it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We plot both the `expected` and `ideal` series using the `plot-areas` function,
+    having set a darker background to our sketch with the `background` function. In
+    our call to `plot-curve`, we specify semitransparent white as the fill to be used.
+    The following image shows the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Plotting compound charts](img/7180OS_10_310.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To combine this chart with the chart showing the actuals created previously,
+    we simply need to adjust its scale to match. The highest point on this chart at
+    the top right corresponds to a probability density of 5 percent. The 96-99^(th)
+    percentiles on our actual plot represents 7.5 percent of the total, each on their
+    plot. This means that we need to draw the previous chart at 2/3 of the height
+    of the plot we already have for the axes to be comparable. Let''s do this now,
+    and add a series of labels to the two new series while we''re at it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we call the `draw-expected-ideal` function from our sketch along with
+    the other functions defined previously:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The finished result is shown in the next graphic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Plotting compound charts](img/7180OS_10_320.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hopefully, you'll agree that the finished chart is attractive as well as informative.
+    Most importantly, we've generated the chart by drawing instructions from actual
+    data. The finished result has an integrity to it that would be harder to establish
+    if the chart were produced by hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Output to PDF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All the elements combined together yield a graphic of the kind that might end
+    up in print. The drawing instructions we provided are vector-based—rather than
+    pixel-based—so it will scale to any resolution required without loss of quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rather than output to a pixel-based format using `save` as we did with the histogram,
+    let's output to a PDF. The PDF format will preserve the scalability of our artwork
+    and allow us to output at any resolution desired. To do this, we configure the
+    sketch to use the PDF renderer by passing the `:pdf` keyword and also an `:output-file`
+    path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: The final example will output our finished PDF file to the root of the project
+    directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we've seen how very simple visualizations—using nothing but
+    colored rectangles—can bring useful insight from data, and how a combination of
+    Clojure core functions and Quil's drawing API can enable us to generate powerful
+    graphics that communicate a message.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We achieved all of this using the Quil library. There''s much more to Quil
+    than what we''ve shown here: it enables interactive animation, it supports ClojureScript
+    output for the web, and it can produce 3D rendering as well. Visualization is
+    a huge topic too, and we couldn''t hope to provide more than a few examples to
+    pique your interest in this chapter. By showing how even basic drawing instructions
+    using rectangles, curves, and SVGs can combine into powerful graphics, we hope
+    to have inspired you with the possibilities to create your own custom visualizations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This was the final chapter of *Clojure for Data Science*. Be sure to visit the
+    book's website at [http://clojuredatascience.com](http://clojuredatascience.com)
+    for more information on the topics covered and links to further reading. We intend
+    to provide an ongoing resource for data scientists in general and Clojure programmers
+    in particular.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It was an ambitious task to convey the breadth and depth of a field as diverse
+    and quickly evolving as data science using a language whose libraries are quickly
+    evolving as well. Nonetheless, we hope *Clojure for Data Science* has given you
+    an appreciation for some of the fundamental concepts of statistics, machine learning,
+    and big data processing. This conceptual basis should serve you well, even as
+    the technical options—and perhaps even your choice of programming language—continue
+    evolving into the future.
+  prefs: []
+  type: TYPE_NORMAL

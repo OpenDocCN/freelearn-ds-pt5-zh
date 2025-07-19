@@ -1,0 +1,1099 @@
+- en: Random Forests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A random forest is a set of random decision trees (similar to the ones described
+    in [Chapter 3](a0ddbfd8-ce5c-45bc-8fba-ba4cfa048d0f.xhtml), *Decision Trees*),
+    each generated on a random subset of data. A random forest classifies the features
+    that belong to the class that is voted for by the majority of the random decision
+    trees. Random forests tend to provide a more accurate classification of a feature
+    than decision trees because of their decreased bias and variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tree bagging (or bootstrap aggregation) technique as part of random forest
+    construction, but which can also be extended to other algorithms and methods in
+    data science in order to reduce bias and variance and, hence, improve accuracy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to construct a random forest and classify a data item using a random forest
+    constructed through the swim preference example
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to implement an algorithm in Python that will construct a random forest
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The differences between the analysis of a problem using the Naive Bayes algorithm,
+    decision trees, and random forest using the example of playing chess
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How the random forest algorithm can overcome the shortcomings of the decision
+    tree algorithm and thus outperform it using the example of going shopping
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How a random forest can express level of confidence in its classification of
+    a feature using the example of going shopping
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How decreasing the variance of a classifier can yield more accurate results,
+    in the *Problems* section
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction to the random forest algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In general, in order to construct a random forest, first we have to choose the
+    number of trees that it will contain. A random forest does not tend to overfit
+    (unless the data is very noisy), so choosing many decision trees will not decrease
+    the accuracy of the prediction. A random forest does not tend to overfit (unless
+    the data is very noisy), so having a higher number of decision trees will not
+    decrease the accuracy of the prediction. It is important to have a sufficient
+    number of decision trees so that more data is used for classification purposes
+    when chosen randomly for the construction of a decision tree. On the other hand,
+    the more decision trees there are, the more computational power is required. Also,
+    increasing the number of decision trees fails to increase the accuracy of the
+    classification by any significant degree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, you can run the algorithm on a specific number of decision trees,
+    increase their number, and compare the results of the classification of smaller
+    and bigger forests. If the results are very similar, then there is no reason to
+    increase the number of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To simplify the demonstration, throughout this book, we will use a small number
+    of decision trees in a random forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview of random forest construction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will describe how each tree is constructed in a random fashion. We construct
+    a decision tree by selecting *N* training features randomly. This process of selecting
+    the data randomly with a replacement for each tree is called **bootstrap aggregating**,
+    or **tree bagging**. The purpose of bootstrap aggregating is to reduce the variance
+    and bias in the results of the classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Say a feature has *M* variables that are used to classify the feature using
+    the decision tree. When we have to make a branching decision at a node, in the
+    ID3 algorithm, we choose the variable that resulted in the highest information
+    gain. Here, in a random decision tree, at each node, we consider only at most
+    *m* variables. We do not consider the ones that were already chosen sampled in
+    a random fashion without any replacement from the given *M* variables. Then, of
+    these *m* variables, we choose the one that results in the highest information
+    gain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The remainder of the construction of a random decision tree is carried out just
+    as it was for a decision tree in [Chapter 3](a0ddbfd8-ce5c-45bc-8fba-ba4cfa048d0f.xhtml), *Decision
+    Trees*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Swim preference – analysis involving a random forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We will use the example from [Chapter 3](a0ddbfd8-ce5c-45bc-8fba-ba4cfa048d0f.xhtml), *Decision
+    Trees* concerning swim preferences. We have the same data table, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Swimming suit** | **Water temperature** | **Swim preference** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| None | Cold | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| None | Warm | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Small | Cold | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Small | Warm | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Good | Cold | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Good | Warm | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: We would like to construct a random forest from this data and use it to classify
+    an item `(Good,Cold,?)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We are given *M=3* variables, according to which a feature can be classified.
+    In a random forest algorithm, we usually do not use all three variables to form
+    tree branches at each node. We only use a subset (*m*) of variables from *M*.
+    So we choose *m* such that *m* is less than, or equal to, *M*. The greater *m*
+    is, the stronger the classifier is in each constructed tree. However, as mentioned
+    earlier, more data leads to more bias. But, because we use multiple trees (with
+    a lower *m*), even if each constructed tree is a weak classifier, their combined
+    classification accuracy is strong. As we want to reduce bias in a random forest,
+    we may want to consider choosing an *m* parameter that is slightly less than *M*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hence, we choose the maximum number of variables considered at the node to be: *m=min(M,math.ceil(2*math.sqrt(M)))=min(M,math.ceil(2*math.sqrt(3)))=3*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are given the following features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: When constructing a random decision tree as part of a random forest, we will
+    choose only a subset of these features randomly, together with their replacements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random forest construction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will construct a random forest that will consist of two random decision trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Construction of random decision tree number 0
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We are given six features as the input data. Of these, we choose six features
+    at random with a replacement for the construction of this random decision tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We start the construction with the root node to create the first node of the
+    tree. We would like to add children to the [root] node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variables available: `[''swimming_suit'', ''water_temperature'']`.
+    As there are fewer of these than the `m=3` parameter, we consider both of them.
+    Of these variables, the one with the highest information gain is a swimming suit.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, we will branch the node further on this variable. We will also remove
+    this variable from the list of available variables for the children of the current
+    node. Using the `swimming_suit` variable, we partition the data in the current
+    node as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition for `swimming_suit=Small: [[''Small'', ''Cold'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `swimming_suit=None: [[''None'', ''Warm'', ''No''], [''None'',
+    ''Warm'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `swimming_suit=Good: [[''Good'', ''Cold'', ''No''], [''Good'',
+    ''Cold'', ''No''], [''Good'', ''Cold'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the preceding partitions, we create the branches and the child nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now add a child node, `[swimming_suit=Small]`, to the `[root]` node. This
+    branch classifies a single feature: `[[''Small'', ''Cold'', ''No'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[swimming_suit=Small]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''water_temperature'']`. As there
+    is only one variable here, which is less than the `m=3` parameter, we will consider
+    this one. The one with the highest information gain is the `water_temperature` variable. Therefore,
+    we will branch the node further on this variable. We will also remove this variable
+    from the list of available variables for the children of the current node. For
+    the chosen variable, `water_temperature`, all the remaining features have the
+    same value: `Cold`. So, we end the branch with a leaf node, adding `[swim=No]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now add a child node, `[swimming_suit=None]`, to the `[root]` node. This
+    branch classifies two features: `[[''None'', ''Warm'', ''No''], [''None'', ''Warm'',
+    ''No'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[swimming_suit=None]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''water_temperature'']`. As there
+    is only one variable here, which is less than the `m=3` parameter, we will consider
+    this one.The one with the highest information gain is the `water_temperature` variable. Therefore,
+    we will branch the node further on this variable. We will also remove this variable
+    from the list of available variables for the children of the current node. For
+    the chosen variable, `water_temperature`, all the remaining features have the
+    same value: `Warm`. So, we end the branch with a leaf node, adding `[swim=No]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now add a child node, `[swimming_suit=Good]`, to the `[root]` node. This
+    branch classifies three features: `[[''Good'', ''Cold'', ''No''], [''Good'', ''Cold'',
+    ''No''], [''Good'', ''Cold'', ''No'']]`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[swimming_suit=Good]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''water_temperature'']`. As there
+    is only one variable here, which is less than the `m=3` parameter, we will consider
+    this one. The one with the highest information gain is the `water_temperature`
+    variable. Therefore, we will branch the node further on this variable. We will
+    also remove this variable from the list of available variables for the children
+    of the current node. For the chosen variable, `water_temperature`, all the remaining
+    features have the same value: `Cold`. So, we end the branch with a leaf node, adding
+    `[swim=No]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have added all the children nodes to the `[root]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Construction of random decision tree number 1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We are given six features as input data. Of these, we choose six features at
+    random with a replacement for the construction of this random decision tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The remainder of the construction of random decision tree number 1 is similar
+    to the construction of the previous random decision tree, number 0\. The only
+    difference is that the tree is built using a different randomly generated subset
+    (as seen previously) of the initial data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We begin construction with the root node to create the first node of the tree.
+    We would like to add children to the `[root]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have the following variables available: `['swimming_suit', 'water_temperature']`.
+    As there is only one variable here, which is less than the `m=3` parameter, we
+    will consider this one. Of these variables, the one with the highest information
+    gain is the `swimming_suit` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, we will branch the node further on this variable. We will also remove
+    this variable from the list of available variables for the children of the current
+    node. Using the `swimming_suit` variable, we partition the data in the current
+    node as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition for `swimming_suit=Small: [[''Small'', ''Warm'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `swimming_suit=None: [[''None'', ''Warm'', ''No''], [''None'',
+    ''Cold'', ''No''], [''None'', ''Warm'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `swimming_suit=Good: [[''Good'', ''Warm'', ''Yes''], [''Good'',
+    ''Cold'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, given the partitions, let's create the branches and the child nodes. We
+    add a child node, `[swimming_suit=Small]`, to the `[root]` node. This branch classifies
+    a single feature: `[['Small', 'Warm', 'No']]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[swimming_suit=Small]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available:  `[''water_temperature'']`. As there
+    is only one variable here, which is less than the `m=3` parameter, we will consider
+    this one. The one with the highest information gain is the `water_temperature` variable. Therefore,
+    we will branch the node further on this variable. We will also remove this variable
+    from the list of available variables for the children of the current node. For
+    the chosen variable, `water_temperature`, all the remaining features have the
+    same value: `Warm`. So, we end the branch with a leaf node, adding `[swim=No]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[swimming_suit=None]`, to the `[root]` node. This branch
+    classifies three features: `[[''None'', ''Warm'', ''No'']`, `[''None'', ''Cold'',
+    ''No'']`, and `[''None'', ''Warm'', ''No'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[swimming_suit=None]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''water_temperature'']`. As there
+    is only one variable here, which is less than the `m=3` parameter, we will consider
+    this one. The one with the highest information gain is the `water_temperature` variable. Therefore,
+    we will branch the node further on this variable. We will also remove this variable
+    from the list of available variables for the children of the current node. Using
+    the `water temperature` variable, we partition the data in the current node as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition for `water_temperature=Cold: [[''None'', ''Cold'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `water_temperature=Warm: [[''None'', ''Warm'', ''No''], [''None'',
+    ''Warm'', ''No'']]`; now, given the partitions, let''s create the branches and
+    the child nodes'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[water_temperature=Cold]`, to the `[swimming_suit=None]` node. This
+    branch classifies a single feature: `[[''None'', ''Cold'', ''No'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We do not have any available variables on which we could split the node further;
+    therefore, we add a leaf node to the current branch of the tree. We add the `[swim=No]` leaf
+    node. We add a child node, `[water_temperature=Warm]`, to the `[swimming_suit=None]` node. This
+    branch classifies two features: `[[''None'', ''Warm'', ''No'']`, and  `[''None'',
+    ''Warm'', ''No'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We do not have any available variables on which we could split the node further;
+    therefore, we add a leaf node to the current branch of the tree. We add the `[swim=No]`
+    leaf node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have added all the children nodes to the `[swimming_suit=None]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[swimming_suit=Good]`, to the `[root]` node. This branch
+    classifies two features: `[[''Good'', ''Warm'', ''Yes'']`, and `[''Good'', ''Cold'',
+    ''No'']]`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[swimming_suit=Good]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''water_temperature'']`. As there
+    is only one variable here, which is less than the `m=3` parameter, we will consider
+    this one. The one with the highest information gain is the  `water_temperature` variable. Therefore,
+    we will branch the node further on this variable. We will also remove this variable
+    from the list of available variables for the children of the current node. Using
+    the `water temperature` variable, we partition the data in the current node as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition for `water_temperature=Cold: [[''Good'', ''Cold'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `water_temperature=Warm: [[''Good'', ''Warm'', ''Yes'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, given the partitions, let's create the branches and the child nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[water_temperature=Cold]`, to the `[swimming_suit=Good]` node. This
+    branch classifies a single feature: `[[''Good'', ''Cold'', ''No'']]`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We do not have any available variables on which we could split the node further;
+    therefore, we add a leaf node to the current branch of the tree. We add the `[swim=No]`
+    leaf node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[water_temperature=Warm]`, to the `[swimming_suit=Good]` node. This
+    branch classifies a single feature: `[[''Good'', ''Warm'', ''Yes'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We do not have any available variables on which we could split the node further;
+    therefore, we add a leaf node to the current branch of the tree. We add the `[swim=Yes]`
+    leaf node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have added all the children nodes of the `[swimming_suit=Good]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have also added all the children nodes to the `[root]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Constructed random forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We have completed the construction of the random forest, consisting of two
+    random decision trees, as shown in the following code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Classification using random forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Because we use only a subset of the original data for the construction of the
+    random decision tree, we may not have enough features to form a full tree that
+    is able to classify every feature. In such cases, a tree will not return any class
+    for a feature that should be classified. Therefore, we will only consider trees
+    that classify a feature of a specific class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The feature we would like to classify is `['Good', 'Cold', '?']`. A random decision
+    tree votes for the class to which it classifies a given feature using the same
+    method to classify a feature as in [Chapter 3](a0ddbfd8-ce5c-45bc-8fba-ba4cfa048d0f.xhtml),
+    *Decision Trees*. Tree 0 votes for the `No` class. Tree 1 votes for the `No` class. The
+    class with the maximum number of votes is `No`. Therefore, the constructed random
+    forest classifies the feature `['Good', 'Cold', '?']` according to the class `No`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation of the random forest algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We implement a random forest algorithm using a modified decision tree algorithm
+    from the previous chapter. We also add an option to set a verbose mode within
+    the program that can describe the whole process of how the algorithm works on
+    a specific input—how a random forest is constructed with its random decision trees,
+    and how this constructed random forest is used to classify other features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You are encouraged to consult the `decision_tree.construct_general_tree`  function from
+    the previous chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an input file to the implemented algorithm, we provide the data from the
+    swim preference example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We type the following command in the command line to get the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`2` means that we would like to construct two decision trees, and `3` is the
+    level of the verbosity of the program, which includes detailed explanations of
+    the construction of the random forest, the classification of the feature, and
+    the graph of the random forest. The last part, `> swim.out`, means that the output
+    is written to the `swim.out` file. This file can be found in the chapter directory
+    `source_code/4`. This output of the program was used previously to write the analysis
+    of the swim preference problem.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Playing chess example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We will again use the examples from Chapter 2, *Naive Bayes,* and [Chapter
+    3](4f3fafce-e9a1-4593-bd9d-847a94cde2bf.xhtml), *Decision Tree*, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Temperature** | **Wind** | **Sunshine** | **Play** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | Strong | Cloudy | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | Strong | Cloudy | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | None | Sunny | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Hot | None | Sunny | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Hot | Breeze | Cloudy | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | Breeze | Sunny | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | Breeze | Cloudy | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | None | Sunny | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Hot | Strong | Cloudy | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | None | Cloudy | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | Strong | Sunny | ? |'
+  prefs: []
+  type: TYPE_TB
+- en: However, we would like to use a random forest consisting of four random decision
+    trees to find the result of the classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We are given *M=4* variables from which a feature can be classified. Thus,
+    we choose the maximum number of the variables considered at the node to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/67f7de1d-b134-48f2-9de2-fc61f30107c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We are given the following features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: When constructing a random decision tree as part of a random forest, we will
+    choose only a subset of these features randomly, together with their replacements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random forest construction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will construct a random forest that will consist of four random decision
+    trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Construction of random decision tree number 0**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are given 10 features as input data. Of these, we choose all features randomly
+    with their replacements for the construction of this random decision tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We start the construction with the root node to create the first node of the
+    tree. We would like to add children to the `[root]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variables available: `[''Temperature'', ''Wind'', ''Sunshine'']`.
+    As there are fewer of them than the `m=4` parameter, we consider all of them.
+    Of these variables, the one with the highest information gain is the `Temperature` variable. Therefore,
+    we will branch the node further on this variable. We will also remove this variable
+    from the list of available variables for the children of the current node. Using
+    the `Temperature` variable, we partition the data in the current node as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition for `Temperature=Cold: [[''Cold'', ''Breeze'', ''Cloudy'', ''No''],
+    [''Cold'', ''None'', ''Sunny'', ''Yes''], [''Cold'', ''Breeze'', ''Cloudy'', ''No''],
+    [''Cold'', ''Breeze'', ''Cloudy'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `Temperature=Warm: [[''Warm'', ''Strong'', ''Cloudy'', ''No''],
+    [''Warm'', ''Strong'', ''Cloudy'', ''No''], [''Warm'', ''Breeze'', ''Sunny'',
+    ''Yes'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `Temperature=Hot: [[''Hot'', ''Breeze'', ''Cloudy'', ''Yes''],
+    [''Hot'', ''Breeze'', ''Cloudy'', ''Yes''], [''Hot'', ''Breeze'', ''Cloudy'',
+    ''Yes'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, given the partitions, let's create the branches and the child nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We add a child node, `[Temperature=Cold]`, to the `[root]` node. This branch
+    classifies four features: `[['Cold', 'Breeze', 'Cloudy', 'No']`, `['Cold', 'None',
+    'Sunny', 'Yes']`, `['Cold', 'Breeze', 'Cloudy', 'No'],`  and ` ['Cold', 'Breeze',
+    'Cloudy', 'No']]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[Temperature=Cold]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variables available: `[''Wind'', ''Sunshine'']`. As there
+    are fewer of these than the `m=3` parameter, we consider both of them. The one
+    with the highest information gain is the `Wind` variable. Therefore, we will branch
+    the node further on this variable. We will also remove this variable from the
+    list of available variables for the children of the current node. Using the water
+    `Wind` variable, we partition the data in the current node as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition for `Wind=None: [[''Cold'', ''None'', ''Sunny'', ''Yes'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `Wind=Breeze: [[''Cold'', ''Breeze'', ''Cloudy'', ''No''], [''Cold'',
+    ''Breeze'', ''Cloudy'', ''No''], [''Cold'', ''Breeze'', ''Cloudy'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, given the partitions, let's create the branches and the child nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[Wind=None]`, to the `[Temperature=Cold]` node. This
+    branch classifies a single feature: `[[''Cold'', ''None'', ''Sunny'', ''Yes'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[Wind=None]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable: `available[''Sunshine'']`. As there are fewer
+    of these than the `m=3` parameter, we consider both of them. The one with the
+    highest information gain is the `Sunshine` variable. Therefore, we will branch
+    the node further on this variable. We will also remove this variable from the
+    list of available variables for the children of the current node. For the chosen
+    variable, `Sunshine`, all the remaining features have the same value: `Sunny`.
+    So, we end the branch with a leaf node, adding `[Play=Yes]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[Wind=Breeze]`, to the `[Temperature=Cold]` node. This
+    branch classifies three features: `[[''Cold'', ''Breeze'', ''Cloudy'', ''No''],
+    [''Cold'', ''Breeze'', ''Cloudy'', ''No''],`  and ` [''Cold'', ''Breeze'', ''Cloudy'',
+    ''No'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[Wind=Breeze]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''Sunshine'']`. As there are fewer
+    of these than the `m=3` parameter, we consider both of them. The one with the
+    highest information gain is the `Sunshine` variable. Therefore, we will branch
+    the node further on this variable. We will also remove this variable from the
+    list of available variables for the children of the current node. For the chosen
+    variable, Sunshine, all the remaining features have the same value: Cloudy. So,
+    we end the branch with a leaf node, adding [Play=No].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have added all the children nodes for the `[Temperature=Cold]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[Temperature=Warm]`, to the `[root]` node. This branch
+    classifies three features: `[[''Warm'', ''Strong'', ''Cloudy'', ''No''], [''Warm'',
+    ''Strong'', ''Cloudy'', ''No''], ` and  ` [''Warm'', ''Breeze'', ''Sunny'', ''Yes'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[Temperature=Warm]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The available variables that we still have left are `[''Wind'', ''Sunshine'']`.
+    As there are fewer of these than the `m=3` parameter, we consider both of them.
+    The one with the highest information gain is the `Wind` variable. Thus, we will
+    branch the node further on this variable. We will also remove this variable from
+    the list of available variables for the children of the current node. Using the
+    `Wind` variable, we partition the data in the current node, where each partition
+    of the data will be for one of the new branches from the current node, `[Temperature=Warm]`.
+    We have the following partitions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition for `Wind=Breeze: [[''Warm'', ''Breeze'', ''Sunny'', ''Yes'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Partition for `Wind=Strong: [[''Warm'', ''Strong'', ''Cloudy'', ''No''], [''Warm'',
+    ''Strong'', ''Cloudy'', ''No'']]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, given the partitions, let's form the branches and the child nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[Wind=Breeze]`, to the `[Temperature=Warm]` node. This
+    branch classifies a single feature: `[[''Warm'', ''Breeze'', ''Sunny'', ''Yes'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[Wind=Breeze]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''Sunshine'']`. As there are fewer
+    of these than the `m=3` parameter, we consider both of them. The one with the
+    highest information gain is the `Sunshine` variable. Therefore, we will branch
+    the node further on this variable. We will also remove this variable from the
+    list of available variables for the children of the current node. For the chosen
+    variable, `Sunshine`, all the remaining features have the same value: `Sunny`.
+    So, we end the branch with a leaf node, adding `[Play=Yes]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[Wind=Strong]`, to the `[Temperature=Warm]` node. This
+    branch classifies two features: `[[''Warm'', ''Strong'', ''Cloudy'', ''No''],`
+     and ` [''Warm'', ''Strong'', ''Cloudy'', ''No'']]`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the `[Wind=Strong]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variable available: `[''Sunshine'']`. As there are fewer
+    of these than the `m=3` parameter, we consider both of them. The one with the
+    highest information gain is the `Sunshine` variable. Therefore, we will branch
+    the node further on this variable. We will also remove this variable from the
+    list of available variables for the children of the current node. For the chosen
+    variable, `Sunshine`, all the remaining features have the same value: `Cloudy`.
+    So, we end the branch with a leaf node, adding `[Play=No]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have added all the children nodes to the `[Temperature=Warm]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We add a child node, `[Temperature=Hot]`, to the `[root]` node. This branch
+    classifies three features: `[[''Hot'', ''Breeze'', ''Cloudy'', ''Yes''], [''Hot'',
+    ''Breeze'', ''Cloudy'', ''Yes''],`  and ` [''Hot'', ''Breeze'', ''Cloudy'', ''Yes'']]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to add children to the  `[Temperature=Hot]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the following variables available: `[''Wind'', ''Sunshine'']`. As there
+    are fewer of these than the `m=3` parameter, we consider both of them. The one with
+    the highest information gain is the `Wind` variable. Therefore, we will branch
+    the node further on this variable. We will also remove this variable from the
+    list of available variables for the children of the current node. For the chosen
+    variable, `Wind`, all the remaining features have the same value: `Breeze`. So,
+    we end the branch with a leaf node, adding `[Play=Yes]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have added all the children nodes to the `[root]` node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Construction of random decision trees numbers 1, 2, and 3**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We construct the next three trees in a similar fashion. We should note that,
+    since the construction is random, a reader who performs another correct construction
+    may arrive at a different construction. However, if there are a sufficient number
+    of random decision trees in a random forest, then the result of the classification
+    should be very similar across all the random constructions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full construction can be found in the program output in the `source_code/4/chess.out` file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Constructed random forest**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Given the random forest constructed, we classify the  `[''Warm'', ''Strong'',
+    ''Sunny'', ''?'']` feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Tree 0 votes for the class**: `No`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tree 1 votes for the class**: `No`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tree 2 votes for the class**: `No`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tree 3 votes for the class**: `No`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The class with the maximum number of votes is `No`. Thus, the constructed random
+    forest classifies the feature `['Warm', 'Strong', 'Sunny', '?']` into the class
+    `No`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To perform the preceding analysis, we use a program implemented earlier in
+    this chapter. First, we insert the data from the table into the following CSV
+    file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We produce the output by executing the following command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The number `4` here means that we want to construct four decision trees, and
+    `2` is the level of verbosity of the program that includes the explanations of
+    how a tree is constructed. The last part, `> chess.out`, means that the output
+    is written to the `chess.out` file. This file can be found in the chapter directory
+    `source_code/4`. We will not put all the output here, as it is very large and
+    repetitive. Instead, some of it was included in the preceding analysis and in
+    the construction of a random forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going shopping – overcoming data inconsistencies with randomness and measuring
+    the level of confidence
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We take the problem from the previous chapter. We have the following data relating
+    to the shopping preferences of our friend, Jane:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Temperature** | **Rain** | **Shopping** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | None | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | None | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | Strong | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | None | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | Strong | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | None | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | None | ? |'
+  prefs: []
+  type: TYPE_TB
+- en: In the previous chapter, decision trees were not able to classify the feature
+    `(Cold, None)`. So, this time, we would like to establish whether Jane would go
+    shopping if the temperature was cold and there was no rain using the random forest
+    algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To perform an analysis using the random forest algorithm, we use the program
+    implemented.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We insert the data from the table into the following CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We want to use a slightly higher number of trees than we used in the previous
+    examples and explanations to obtain more accurate results. We want to construct
+    a random forest with 20 trees with low-verbosity output – level 0\. Thus, we undertake
+    execution in a terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, we should note that only 12 out of the 20 trees voted for the answer
+    `Yes`. Therefore, although we have a definite answer, it might not be that certain,
+    similar to the results we got with an ordinary decision tree. However, unlike
+    in decision trees, where an answer was not produced because of data inconsistency,
+    here, we have an answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, by measuring the strength of the voting power for each individual
+    class, we can measure the level of confidence that the answer is correct. In this
+    case, the feature `['Cold', 'None', '?']` belongs to the `*Yes*` class with a
+    confidence level of 12/20, or 60%. To determine the level of certainty of the
+    classification more precisely, an even larger ensemble of random decision trees
+    would be required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we learned that a random forest is a set of decision trees,
+    where each tree is constructed from a sample chosen randomly from the initial
+    data. This process is called **bootstrap aggregating**. Its purpose is to reduce
+    variance and bias in classifications made by a random forest. Bias is further
+    reduced during the construction of a decision tree by considering only a random
+    subset of the variables for each branch of the tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also learned that once a random forest is constructed, the result of the
+    classification of a random forest is a majority vote from among all the trees
+    in a random forest. The level of the majority also determines the level of confidence
+    that the answer is correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since random forests consist of decision trees, it is good to use them for every
+    problem where a decision tree is a good choice. As random forests reduce the bias
+    and variance that exists in decision tree classifiers, they outperform decision
+    tree algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will learn the technique of clustering data into similar
+    clusters. We will also exploit this technique to classify data into one of the
+    created clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Problem** **1**: Let''s take the example of playing chess from Chapter 2,
+    *Naive Bayes*. How would you classify a `(Warm,Strong,Spring,?)` data sample according
+    to the random forest algorithm?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Temperature** | **Wind** | **Season** | **Play** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | Strong | Winter | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | Strong | Autumn | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | None | Summer | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Hot | None | Spring | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Hot | Breeze | Autumn | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | Breeze | Spring | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | Breeze | Winter | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Cold | None | Spring | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Hot | Strong | Summer | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | None | Autumn | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Warm | Strong | Spring | ? |'
+  prefs: []
+  type: TYPE_TB
+- en: '**Problem 2**: Would it be a good idea to use only one tree and a random forest?
+    Justify your answer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Problem 3**: Can cross-validation improve the results of the classification
+    by the random forest? Justify your answer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Problem 1:** We run the program to construct the random forest and classify
+    the feature (`Warm, Strong, Spring`).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We construct four trees in a random forest, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The whole construction and the analysis are stored in the `source_code/4/chess_with_seasons.out` file. Your
+    construction may differ because of the randomness involved. From the output, we
+    extract the random forest graph, consisting of random decision trees, given the
+    random numbers generated during our run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Executing the preceding command again will most likely result in a different
+    output and a different random forest graph. Yet there is a high probability that
+    the results of the classification will be similar because of the multiplicity
+    of the random decision trees and their voting power combined. The classification
+    by one random decision tree may be subject to significant variance. However, the
+    majority vote combines the classification from all the trees, thus reducing the
+    variance. To verify your understanding, you can compare your classification results
+    with the classification by the following random forest graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Random forest graph and classification:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s have a look at the output of the random forest graph and the classification
+    of the feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Problem 2**: When we construct a tree in a random forest, we only use a random
+    subset of the data, with replacements. This is to eliminate classifier bias toward
+    certain features. However, if we use only one tree, that tree may happen to contain
+    features with bias and might be missing an important feature to enable it to provide
+    an accurate classification. So, a random forest classifier with one decision tree
+    would likely lead to a very poor classification. Therefore, we should construct
+    more decision trees in a random forest to benefit from reduced bias and variance
+    in the classification.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Problem 3**: During cross-validation, we divide the data into training and
+    testing data. Training data is used to train the classifier, and testing data
+    is used to evaluate which parameters or methods would be the best fit for improving
+    classification. Another advantage of cross-validation is the reduction in bias,
+    because we only use partial data, thereby decreasing the chance of overfitting
+    the specific dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in a decision forest, we address problems that cross-validation addresses
+    in an alternative way. Each random decision tree is constructed only on the subset
+    of the data—reducing the chance of overfitting. In the end, classification is
+    the combination of results from each of these trees. The best decision, in the
+    end, is not made by tuning the parameters on a test dataset, but by taking the
+    majority vote of all the trees with reduced bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hence, cross-validation for a decision forest algorithm would not be of much
+    use as it is already intrinsic within the algorithm.
+  prefs: []
+  type: TYPE_NORMAL

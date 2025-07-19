@@ -1,0 +1,1165 @@
+- en: '*Chapter 4*'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Diving Deeper with Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Learning Objectives
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'By the end of this chapter, you will be able to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement the basic Spark DataFrame API
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Read data and create Spark DataFrames from different data sources
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Manipulate and process data using different Spark DataFrame options
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize data in Spark DataFrames using different plots
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will use the Spark as an analysis tool for big datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last chapter introduced us to one of the most popular distributed data processing
+    platforms used to process big data—Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we will learn more about how to work with Spark and Spark DataFrames
+    using its Python API—**PySpark**. It gives us the capability to process petabyte-scale
+    data, but also implements **machine learning** (**ML**) algorithms at petabyte
+    scale in real time. This chapter will focus on the data processing part using
+    Spark DataFrames in PySpark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: We will be using the term DataFrame quite frequently during this chapter. This
+    will explicitly refer to the Spark DataFrame, unless mentioned otherwise. Please
+    do not confuse this with the pandas DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark DataFrames are a distributed collection of data organized as named columns.
+    They are inspired from R and Python DataFrames and have complex optimizations
+    at the backend that make them fast, optimized, and scalable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The DataFrame API was developed as part of **Project Tungsten** and is designed
+    to improve the performance and scalability of Spark. It was first introduced with
+    Spark 1.3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark DataFrames are much easier to use and manipulate than their predecessor
+    RDDs. They are *immutable,* like RDDs, and support lazy loading, which means no
+    transformation is performed on the DataFrames unless an action is called. The
+    execution plan for the DataFrames is prepared by Spark itself and hence is more
+    optimized, making operations on DataFrames faster than those on RDDs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Started with Spark DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To get started with Spark DataFrames, we will have to create something called
+    a SparkContext first. SparkContext configures the internal services under the
+    hood and facilitates command execution from the Spark execution environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: We will be using Spark version 2.1.1, running on Python 3.7.1\. Spark and Python
+    are installed on a MacBook Pro, running macOS Mojave version 10.14.3, with a 2.7
+    GHz Intel Core i5 processor and 8 GB 1867 MHz DDR3 RAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code snippet is used to create `SparkContext`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: In case you are working in the PySpark shell, you should skip this step, as
+    the shell automatically creates the `sc (SparkContext)` variable when it is started.
+    However, be sure to create the `sc` variable while creating a PySpark script or
+    working with Jupyter Notebook, or your code will throw an error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also need to create an `SQLContext` before we can start working with DataFrames.
+    `SQLContext` in Spark is a class that provides SQL-like functionality within Spark.
+    We can create `SQLContext` using `SparkContext`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are three different ways of creating a DataFrame in Spark:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can programmatically specify the schema of the DataFrame and manually enter
+    the data in it. However, since Spark is generally used to handle big data, this
+    method is of little use, apart from creating data for small test/sample cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Another method to create a DataFrame is from an existing RDD object in Spark.
+    This is useful, because working on a DataFrame is way easier than working directly
+    with RDDs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can also read the data directly from a data source to create a Spark DataFrame.
+    Spark supports a variety of external data sources, including CSV, JSON, parquet,
+    RDBMS tables, and Hive tables.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Exercise 24: Specifying the Schema of a DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will create a small sample DataFrame by manually specifying
+    the schema and entering data in Spark. Even though this method has little application
+    in a practical scenario, it will be a good starting point in getting started with
+    Spark DataFrames:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Importing the necessary files:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Import SQL utilities from the PySpark module and specify the schema of the
+    sample DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create rows for the DataFrame as per the specified schema:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Combine the rows together to create the DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, show the DataFrame using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 4.1: Sample PySpark DataFrame](img/C12913_04_01.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.1: Sample PySpark DataFrame'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 25: Creating a DataFrame from an Existing RDD'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will create a small sample DataFrame from an existing
+    RDD object in Spark:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create an RDD object that we will convert into DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Convert the RDD object into a DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, show the DataFrame using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.2: DataFrame converted from the RDD object](img/C12913_04_02.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.2: DataFrame converted from the RDD object'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 25: Creating a DataFrame Using a CSV File'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A variety of different data sources can be used to create a DataFrame. In this
+    exercise, we will use the open source Iris dataset, which can be found under datasets
+    in the scikit-learn library. The Iris dataset is a multivariate dataset containing
+    150 records, with 50 records for each of the 3 species of Iris flower (Iris Setosa,
+    Iris Virginica, and Iris Versicolor).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The dataset contains five attributes for each of the Iris species, namely,
+    `petal length`, `petal width`, `sepal length`, `sepal width`, and `species`. We
+    have stored this dataset in an external CSV file that we will read into Spark:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Download and install the PySpark CSV reader package from the Databricks website:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Read the data from the CSV file into the Spark DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, show the DataFrame using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.3: Iris DataFrame, first four rows](img/C12913_04_03.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.3: Iris DataFrame, first four rows'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Note for the Instructor
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: Motivate the students to explore other data sources, such as tab-separated files,
+    parquet files, and relational databases, as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing Output from Spark DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spark gives us the ability to write the data stored in Spark DataFrames into
+    a local pandas DataFrame, or write them into external structured file formats
+    such as CSV. However, before converting a Spark DataFrame into a local pandas
+    DataFrame, make sure that the data would fit in the local driver memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following exercise, we will explore how to convert the Spark DataFrame
+    to a pandas DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 27: Converting a Spark DataFrame to a Pandas DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will use the pre-created Spark DataFrame of the Iris dataset
+    in the previous exercise, and convert it into a local pandas DataFrame. We will
+    then store this DataFrame into a CSV file. Perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Convert the Spark DataFrame into a pandas DataFrame using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now use the following command to write the pandas DataFrame to a CSV file:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'Writing the contents of a Spark DataFrame to a CSV file requires a one-liner
+    using the `spark-csv` package:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`df.write.csv(''iris.csv'')`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Exploring Spark DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the major advantages that the Spark DataFrames offer over the traditional
+    RDDs is the ease of data use and exploration. The data is stored in a more structured
+    tabular format in the DataFrames and hence is easier to make sense of. We can
+    compute basic statistics such as the number of rows and columns, look at the schema,
+    and compute summary statistics such as mean and standard deviation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 28: Displaying Basic DataFrame Statistics'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will show basic DataFrame statistics of the first few
+    rows of the data, and summary statistics for all the numerical DataFrame columns
+    and an individual DataFrame column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Look at the DataFrame schema. The schema is displayed in a tree format on the
+    console:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.4: Iris DataFrame schema](img/Image39860.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.4: Iris DataFrame schema'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Now, use the following command to print the column names of the Spark DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.5: Iris column names](img/C12913_04_05.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.5: Iris column names'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'To retrieve the number of rows and columns present in the Spark DataFrame,
+    use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Let''s fetch the first *n* rows of the data. We can do this by using the `head()`
+    method. However, we use the `show()` method as it displays the data in a better
+    format:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 4.6: Iris DataFrame, first four rows](img/C12913_04_06.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.6: Iris DataFrame, first four rows'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Now, compute the summary statistics, such as mean and standard deviation, for
+    all the numerical columns in the DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 4.7: Iris DataFrame, summary statistics](img/C12913_04_07.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.7: Iris DataFrame, summary statistics'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'To compute the summary statistics for an individual numerical column of a Spark
+    DataFrame, use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 4.8: Iris DataFrame, summary statistics of Sepalwidth column](img/C12913_04_08.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.8: Iris DataFrame, summary statistics of Sepalwidth column'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Activity 9: Getting Started with Spark DataFrames'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this activity, we will use the concepts learned in the previous sections
+    and create a Spark DataFrame using all three methods. We will also compute DataFrame
+    statistics, and finally, write the same data into a CSV file. Feel free to use
+    any open source dataset for this activity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a sample DataFrame by manually specifying the schema.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a sample DataFrame from an existing RDD.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a sample DataFrame by reading the data from a CSV file.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Print the first seven rows of the sample DataFrame read in step 3.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Print the schema of the sample DataFrame read in step 3.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Print the number of rows and columns in the sample DataFrame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Print the summary statistics of the DataFrame and any 2 individual numerical
+    columns.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Write the first 7 rows of the sample DataFrame to a CSV file using both methods
+    mentioned in the exercises.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The solution for this activity can be found on page 215.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Data Manipulation with Spark DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data manipulation is a prerequisite for any data analysis. To draw meaningful
+    insights from the data, we first need to understand, process, and massage the
+    data. But this step becomes particularly hard with the increase in the size of
+    data. Due to the scale of data, even simple operations such as filtering and sorting
+    become complex coding problems. Spark DataFrames make data manipulation on big
+    data a piece of cake.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manipulating the data in Spark DataFrames is quite like working on regular pandas
+    DataFrames. Most of the data manipulation operations on Spark DataFrames can be
+    done using simple and intuitive one-liners. We will use the Spark DataFrame containing
+    the Iris dataset that we created in previous exercises for these data manipulation
+    exercises.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 29: Selecting and Renaming Columns from the DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this exercise, we will first rename the column using the `withColumnRenamed`
+    method and then select and print the schema using the `select` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rename the columns of a Spark DataFrame using the `withColumnRenamed()` method:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: Spark does not recognize column names containing a period(`.`). Make sure to
+    rename them using this method.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Select a single column or multiple columns from a Spark DataFrame using the
+    `select` method:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.9: Iris DataFrame, Sepalwidth and Sepallength column](img/C12913_04_09.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.9: Iris DataFrame, Sepalwidth and Sepallength column'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 30: Adding and Removing a Column from the DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will add a new column in the dataset using the `withColumn`
+    method, and later, using the `drop` function, will remove it. Now, let''s perform
+    the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Add a new column in a Spark DataFrame using the `withColumn` method:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use the following command to show the dataset with the newly added column:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.10: Introducing new column, Half_sepal_width](img/C12913_04_10.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.10: Introducing new column, Half_sepal_width'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Now, to remove a column in a Spark DataFrame, use the `drop` method illustrated
+    here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Let''s show the dataset to verify that the column has been removed:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.11: Iris DataFrame after dropping the Half_sepal_width column](img/C12913_04_11.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.11: Iris DataFrame after dropping the Half_sepal_width column'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 31: Displaying and Counting Distinct Values in a DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'To display the distinct values in a DataFrame, we use the `distinct().show()`
+    method. Similarly, to count the distinct values, we will be using the `distinct().count()`
+    method. Perform the following procedures to print the distinct values with the
+    total count:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Select the distinct values in any column of a Spark DataFrame using the `distinct`
+    method, in conjunction with the `select` method:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.12: Iris DataFrame, Species column](img/C12913_04_12.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.12: Iris DataFrame, Species column'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'To count the distinct values in any column of a Spark DataFrame, use the `count`
+    method, in conjunction with the `distinct` method:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Exercise 32: Removing Duplicate Rows and Filtering Rows of a DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this exercise, we will learn how to remove the duplicate rows from the dataset,
+    and later, perform filtering operations on the same column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perform these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remove the duplicate values from a DataFrame using the `dropDuplicates()` method:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.13: Iris DataFrame, Species column after removing duplicate column](img/C12913_04_13.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.13: Iris DataFrame, Species column after removing duplicate column'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Filter the rows from a DataFrame using one or multiple conditions. These multiple
+    conditions can be passed together to the DataFrame using Boolean operators such
+    as and (`&`), or `|`, similar to how we do it for pandas DataFrames:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![](img/Image39953.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.14: Iris DataFrame after filtering with single conditions'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Now, to filter the column using multiple conditions, use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.15: Iris DataFrame after filtering with multiple conditions](img/C12913_04_16.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.15: Iris DataFrame after filtering with multiple conditions'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 33: Ordering Rows in a DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will explore how to sort the rows in a DataFrame in ascending
+    and descending order. Let''s perform these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sort the rows in a DataFrame, using one or multiple conditions, in ascending
+    or descending order:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.16: Filtered Iris DataFrame](img/C12913_04_161.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.16: Filtered Iris DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'To sort the rows in descending order, use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.17: Iris DataFrame after sorting it in the descending order](img/C12913_04_17.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.17: Iris DataFrame after sorting it in the descending order'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 34: Aggregating Values in a DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We can group the values in a DataFrame by one or more variable, and calculate
+    aggregated metrics such as `mean`, `sum`, `count`, and many more. In this exercise,
+    we will calculate the mean sepal width for each of the flower species in the Iris
+    dataset. We will also calculate the count of the rows for each species:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the mean sepal width for each species, use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![](img/Image39999.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.18: Iris DataFrame, calculating mean sepal width'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Now, let''s calculate the number of rows for each species by using the following
+    command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.19: Iris DataFrame, calculating number of rows for each species](img/C12913_04_19.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.19: Iris DataFrame, calculating number of rows for each species'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Activity 10: Data Manipulation with Spark DataFrames'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this activity, we will use the concepts learned in the previous sections
+    to manipulate the data in the Spark DataFrame created using the Iris dataset.
+    We will perform basic data manipulation steps to test our ability to work with
+    data in a Spark DataFrame. Feel free to use any open source dataset for this activity.
+    Make sure the dataset you use has both numerical and categorical variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rename any five columns of the DataFrame. If the DataFrame has more than columns,
+    rename all the columns.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select two numeric and one categorical column from the DataFrame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Count the number of distinct categories in the categorical variable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create two new columns in the DataFrame by summing up and multiplying together
+    the two numerical columns.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Drop both the original numerical columns.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sort the data by the categorical column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the mean of the summation column for each distinct category in the
+    categorical variable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Filter the rows with values greater than the mean of all the mean values calculated
+    in step 7.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: De-duplicate the resultant DataFrame to make sure it has only unique records.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The solution for this activity can be found on page 219.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Graphs in Spark
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The ability to effectively visualize data is of paramount importance. Visual
+    representations of data help the user develop a better understanding of data and
+    uncover trends that might go unnoticed in text form. There are numerous types
+    of plots available in Python, each with its own context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will be exploring some of these plots, including bar charts, density plots,
+    boxplots, and linear plots for Spark DataFrames, using the widely used Python
+    plotting packages of Matplotlib and Seaborn. The point to note here is that Spark
+    deals with big data. So, make sure that your data size is reasonable enough (that
+    is, it fits in your computer's RAM) before plotting it. This can be achieved by
+    filtering, aggregating, or sampling the data before plotting it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are using the Iris dataset, which is small, hence we do not need to do any
+    such pre-processing steps to reduce the data size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note for the Instructor
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The user should install and load the Matplotlib and Seaborn packages beforehand,
+    in the development environment, before getting started with the exercises in this
+    section. If you are unfamiliar with installing and loading these packages, visit
+    the official websites of Matplotlib and Seaborn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 35: Creating a Bar Chart'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will try to plot the number of records available for each
+    species using a bar chart. We will have to first aggregate the data and count
+    the number of records for each species. We can then convert this aggregated data
+    into a regular pandas DataFrame and use Matplotlib and Seaborn packages to create
+    any kind of plots of it that we wish:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, calculate the number of rows for each flower species and convert the
+    result to a pandas DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, create a bar plot from the resulting pandas DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The plot is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 4.20: Bar plot for Iris DataFrame after calculating the number of
+    rows for each flower species](img/C12913_04_20.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.20: Bar plot for Iris DataFrame after calculating the number of rows
+    for each flower species'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 36: Creating a Linear Model Plot'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will plot the data points of two different variables and
+    fit a straight line on them. This is similar to fitting a linear model on two
+    variables and can help identify correlations between the two variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create a `data` object from the pandas DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Plot the DataFrame using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.21: Linear model plot for Iris DataFrame](img/C12913_04_21.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.21: Linear model plot for Iris DataFrame'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Exercise 37: Creating a KDE Plot and a Boxplot'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will create a **kernel density estimation** (**KDE**)
+    plot, followed by a **boxplot**. Follow these instructions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, plot a KDE plot that shows us the distribution of a variable. Make sure
+    it gives us an idea of the skewness and the kurtosis of a variable:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.22: KDE plot for the Iris DataFrame](img/C12913_04_22.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.22: KDE plot for the Iris DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Now, plot the boxplots for the Iris dataset using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 4.23: Boxplot for the Iris DataFrame](img/C12913_04_23.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 4.23: Boxplot for the Iris DataFrame'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Boxplots are a good way to look at the data distribution and locate outliers.
+    They represent the distribution using the 1st quartile, the median, the 3rd quartile,
+    and the interquartile range (25th to 75th percentile).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Activity 11: Graphs in Spark'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this activity, we will use the plotting libraries of Python to visually
+    explore our data using different kind of plots. For this activity, we are using
+    the `mtcars` dataset from Kaggle ([https://www.kaggle.com/ruiromanini/mtcars](https://www.kaggle.com/ruiromanini/mtcars)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import all the required packages and libraries in the Jupyter Notebook.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Read the data into Spark object from the `mtcars` dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Visualize the discrete frequency distribution of any continuous numeric variable
+    from your dataset using a histogram:![Figure 4.24: Histogram for the Iris DataFrame](img/C12913_04_24.jpg)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Figure 4.24: Histogram for the Iris DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Visualize the percentage share of the categories in the dataset using a pie
+    chart:![Figure 4.25: Pie chart for the Iris DataFrame](img/C12913_04_25.jpg)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Figure 4.25: Pie chart for the Iris DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Plot the distribution of a continuous variable across the categories of a categorical
+    variable using a boxplot:![Figure 4.26: Boxplot for the Iris DataFrame](img/Image40067.jpg)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Figure 4.26: Boxplot for the Iris DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Visualize the values of a continuous numeric variable using a line chart:![Figure
+    4.27: Line chart for the Iris DataFrame](img/C12913_04_27.jpg)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Figure 4.27: Line chart for the Iris DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Plot the values of multiple continuous numeric variables on the same line chart:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![Figure 4.28: Line chart for the Iris DataFrame plotting multiple continuous
+    numeric variables](img/C12913_04_28.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4.28: Line chart for the Iris DataFrame plotting multiple continuous
+    numeric variables'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The solution for this activity can be found on page 224.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this chapter, we saw a basic introduction of Spark DataFrames and how they
+    are better than RDDs. We explored different ways of creating Spark DataFrames
+    and writing the contents of Spark DataFrames to regular pandas DataFrames and
+    output files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We tried out hands-on data exploration in PySpark by computing basic statistics
+    and metrics for Spark DataFrames. We played around with the data in Spark DataFrames
+    and performed data manipulation operations such as filtering, selection, and aggregation.
+    We tried our hands at plotting the data to generate insightful visualizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, we consolidated our understanding of various concepts by practicing
+    hands-on exercises and activities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will explore how to handle missing values and compute
+    correlation between variables in PySpark.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1023 @@
+- en: Chapter 7. RDBMS Cleaning Techniques
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Home refrigerators all come with shelves and most have one or two drawers for
+    vegetables. But if you ever visit a home organization store or talk to a professional
+    organizer, you will learn that there are also numerous additional storage options,
+    including egg containers, cheese boxes, soda can dispensers, wine bottle holders,
+    labeling systems for leftovers, and stackable, color-coded bins in a variety of
+    sizes. But do we really need all these extras? To answer this, ask yourself these
+    questions, are my frequently used foods easy to find? Are food items taking up
+    more space than they should? Are leftovers clearly labeled so I remember what
+    they are and when I made them? If our answers are *no*, organization experts say
+    that containers and labels can help us optimize storage, reduce waste, and make
+    our lives easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The same is true in our **Relational Database Management System** (**RDBMS**).
+    As the classic long-term data storage solution, RDBMS is a standard part of the
+    modern data science toolkit. But all too often, we are guilty of just depositing
+    data in the database, with little thought about the details. In this chapter,
+    we will learn how to design an RDBMS that goes beyond *two shelves and a drawer*.
+    We will learn a few techniques that will ensure our RDBMS is optimizing storage,
+    reducing waste, and making our lives easier. Specifically, we will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to find anomalies in our RDBMS data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learn several strategies to clean different types of problematic data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learn when and how to create new tables for your cleaned data, including creating
+    both child tables and lookup tables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learn how to document the rules governing the changes you made
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To set up the examples in this chapter, we will be working with a popular dataset
+    called **Sentiment140**. This dataset was created to help learn about the positive
+    and negative sentiments in messages on Twitter. We are not really concerned with
+    sentiment analysis in this book, but we are going to use this dataset to practice
+    cleaning data after it has already been imported into a relational database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get started with the Sentiment140 dataset, you will need a MySQL server set
+    up and ready to go, just like in the earlier Enron examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – download and examine Sentiment140
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The version of the Sentiment140 data that we want to use is the original set
+    of two files available directly from the Sentiment140 project at [http://help.sentiment140.com/for-students](http://help.sentiment140.com/for-students).
+    This ZIP file of tweets and their positive and negative polarity (or sentiment,
+    on a scale of 0, 2, or 4) was created by some graduate students at Stanford University.
+    Since this file was made publicly available, the original Sentiment140 files have
+    been added by other websites and made available as part of many larger collections
+    of tweets. For this chapter, we will use the original Sentiment140 text file,
+    which is either available as a link from the preceding site or by following the
+    precise path to [http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip](http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the ZIP file, extract it, and take a look at the two CSV files inside
+    using your text editor. Right away, you will notice that one file has many more
+    lines than the other, but both these files have the same number of columns in
+    them. The data is comma-delimited, and each column has been enclosed in double
+    quotes. The description of each column can be found on the `for-students` page
+    linked in the preceding section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – clean for database import
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For our purposes—learning how to clean data—it will be sufficient to load the
+    smaller of these files into a single MySQL database table. Everything we need
+    to do to learn, we can accomplish with the smaller file, the one called `testdata.manual.2009.06.14.csv`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we are looking at the data, we may notice a few areas that will trip us
+    up if we try to import this file directly into MySQL. One of the trouble spots
+    is located at line 28 in the file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Do you see the triple quotation marks `"""` right before the `booz` keyword
+    and after the word `allen`? The same issue comes up later on line 41 with double
+    quotation marks around the song title `P.Y.T`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The problem with these extra quotation marks is that the MySQL import routine
+    will use the quotation marks to delimit the column text. This will produce an
+    error, as MySQL will think that the line has more columns than there really are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To fix this, in our text editor, we can use **Find and Replace** to replace
+    all instances of `"""` with `"` (double quote) and all instances of `""` with
+    `'` (single quote).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: These `""` could also probably be removed entirely with very little negative
+    effect on this cleaning exercise. To do this, we would simply search for `""`
+    and replace it with nothing. But if you want to stick close to the original intent
+    of the tweet, a single quote (or even an escaped double quote like this `\"`)
+    is a safe choice for a replacement character.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Save this cleaned file to a new filename, something like `cleanedTestData.csv`.
+    We are now ready to import it into MySQL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step three – import the data into MySQL in a single table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To load our somewhat cleaner data file into MySQL, we will need to revisit
+    the CSV-to-SQL techniques from the *Importing spreadsheet data into MySQL* section
+    in [Chapter 3](part0024.xhtml#aid-MSDG2 "Chapter 3. Workhorses of Clean Data –
+    Spreadsheets and Text Editors"), *Workhorses of Clean Data – Spreadsheets and
+    Text Editors*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the command line, navigate to the directory where you have saved the file
+    you created in step two. This is the file we are going to import into MySQL.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Then, launch your MySQL client, and connect to your database server:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Enter your password, and after you are logged in, create a database within
+    MySQL to hold the table, as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Next, we need to create a table to hold the data. The data type and lengths
+    for each column should represent our best attempt to match the data we have. Some
+    of the columns will be varchars, and each of them will need a length. As we might
+    not know what those lengths should be, we can use our cleaning tools to discern
+    an appropriate range.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If we open our CSV file in Excel (Google Spreadsheets will work just fine for
+    this as well), we can run some simple functions to find the maximum lengths of
+    some of our text fields. The `len()` function, for example, gives the length of
+    a text string in characters, and the `max()` function can tell us the highest
+    number in a range. With our CSV file open, we can apply these functions to see
+    how long our varchar columns in MySQL should be.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The following screenshot shows a method to use functions to solve this problem.
+    It shows the `length()` function applied to column **G**, and the `max()` function
+    used in column **H** but applied to column **G**.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Step three – import the data into MySQL in a single table](img/image00294.jpeg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: Columns **G** and **H** show how to get the length of a text column in Excel
+    and then get the maximum value.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'To calculate these maximum lengths more quickly, we can also take an Excel
+    shortcut. The following array formula can work to quickly combine the maximum
+    value with the length of a text column in a single cell—just make sure you press
+    *Ctrl* + *Shift* + *Enter* after typing this nested function rather than just
+    *Enter*:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: This nested function can be applied to any text column to get the maximum length
+    of the text in that column, and it only uses a single cell to do this without
+    requiring any intermediate length calculations.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: After we run these functions, it turns out that the maximum length for any of
+    our tweets is 144 characters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detecting and cleaning abnormalities
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You might be wondering how a tweet in this dataset could possibly be 144 characters
+    long as Twitter limits all tweets to a maximum length of 140 characters. It turns
+    out that in the sentiment140 dataset, the **&** character was sometimes translated
+    to the HTML equivalent code, `&amp`, but not always. Some other HTML code was
+    used too, for instance, sometimes, the **<** character became `&lt;` and **>**
+    became `&gt;`. So, for a few very long tweets, this addition of just a few more
+    characters can easily push this tweet over the length limit of 140\. As we know
+    that these HTML-coded characters were not what the original person tweeted, and
+    because we see that they happen sometimes but not all the time, we call these
+    **data abnormalities**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To clean these, we have two choices. We can either go ahead and import the
+    messy data into the database and try to clean it there, or we can attempt to clean
+    it first in Excel or a text editor. To show the difference in these two techniques,
+    we will do both here. First, we will use find and replace in our spreadsheet or
+    text editor to try to convert the characters shown in the following table. We
+    can import the CSV file into Excel and see how much cleaning we can do there:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| HTML code | Replace with | The count of instances | The Excel function used
+    to find count |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `&lt;` | `<` | 6 | `=COUNTIF(F1:F498,"*&lt*")` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `&gt;` | `>` | 5 | `=COUNTIF(F1:F498,"*&gt*")` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `&amp;` | `&` | 24 | `=COUNTIF(F1:F498,"*&amp*")` |'
+  prefs: []
+  type: TYPE_TB
+- en: 'The first two character swaps work fine with **Find and Replace** in Excel.
+    The `&lt`; and `&gt`; HTML-encoded characters are changed. Take a look at the
+    text like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding becomes text like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'However, when we attempt to use Excel to find `&amp;` and replace it with `&`,
+    you may run into an error, as shown:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Detecting and cleaning abnormalities](img/image00295.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Some operating systems and versions of Excel have a problem with our selection
+    of the **&** character as a replacement. At this point, if we run into this error,
+    we could take a few different approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could use our search engine of choice to attempt to find an Excel solution
+    to this error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could move our CSV text data into a text editor and perform the find and
+    replace function in there
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could forge ahead and throw the data into the database despite it having
+    the weird `&amp`; characters in it and then attempt to clean it inside the database
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Normally, I would be in favor of not moving dirty data into the database if
+    it is even remotely possible to clean it outside of the database. However, as
+    this is a chapter about cleaning inside a database, let's go ahead and import
+    the half-cleaned data into the database, and we will work on cleaning the `&amp`;
+    issue once the data is inside the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating our table
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To move our half-cleaned data into the database, we will first write our `CREATE`
+    statement and then run it on our MySQL database. The `CREATE` statement is shown
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'This statement uses the simple and fast MyISAM engine as we do not anticipate
+    needing any InnoDB features such as row-level locking or transactions. For more
+    on the difference between MyISAM and InnoDB, there is a handy discussion of when
+    to use each storage engine located here: [http://stackoverflow.com/questions/20148/myisam-versus-innodb](http://stackoverflow.com/questions/20148/myisam-versus-innodb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might notice that the code still requires 144 for the length of the `tweet_text`
+    column. This is because we were unable to clean these columns with the `&amp`;
+    code in them. However, this does not bother me too much because I know that varchar
+    columns will not use their extra space unless they need it. After all, this is
+    why they are called varchar, or variable character, columns. But if this extra
+    length really bothers you, you can alter the table later to only have 140 characters
+    for that column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we will use the MySQL command line to run the following import statement
+    from the location:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This command loads the data from our cleaned CSV file into the new table we
+    created. A success message will look like this, indicating that all 498 rows were
+    loaded into the table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If you have access to a browser-based interface such as phpMyAdmin (or a desktop
+    application such as MySQL Workbench or Toad for MySQL), all of these SQL commands
+    can be completed inside these tools very easily and without having to type on
+    the command line, for example, in phpMyAdmin, you can use the Import tab and upload
+    the CSV file there. Just make sure that the data file is cleaned following the
+    procedures in *Step two – clean for database import*, or you may get errors about
+    having too many columns in your file. This error is caused by quotation mark problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step four – clean the &amp; character
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the last step, we decided to postpone cleaning the `&amp`; character because
+    Excel was giving a weird error about it. Now that we have finished *Step three
+    – import the data into MySQL in a single table* and our data is imported into
+    MySQL, we can very easily clean the data using an `UPDATE` statement and the `replace()`string
+    function. Here is the SQL query needed to take all instances of `&amp`; and replace
+    them with `&`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `replace()`function works just like find and replace in Excel or in a text
+    editor. We can see that tweet ID 594, which used to say `#at&amp;t is complete
+    fail`, now reads `#at&t is complete fail`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step five – clean other mystery characters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As we are perusing the `tweet_text` column, we may have noticed a few odd tweets,
+    such as tweet IDs 613 and 2086:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `?` character is what we should be concerned about. As with the HTML-encoded
+    characters we saw earlier, this character issue is also very likely an artifact
+    of a prior conversion between character sets. In this case, there was probably
+    some kind of high-ASCII or Unicode apostrophe (sometimes called a **smart quote**)
+    in the original tweet, but when the data was converted into a lower-order character
+    set, such as plain ASCII, that particular flavor of apostrophe was simply changed
+    to a `?`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depending on what we plan to do with the data, we might not want to leave out
+    the `?` character, for example, if we are performing word counting or text mining,
+    it may be very important that we convert `I?ll` to `I'll` and `University?s` to
+    `University's`. If we decide that this is important, then our job is to detect
+    the tweets, where this error happened, and then devise a strategy to convert the
+    question mark back to a single quote. The trick, of course, is that we cannot
+    just replace every question mark in the `tweet_text` column with a single quote
+    character, because some tweets have question marks in them that should be left
+    alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To locate the problem characters, we can run some SQL queries that attempts
+    to locate the problems using a regular expression. We are interested in question
+    marks that appear in odd places, such as with an alphabetic character immediately
+    following them. Here is an initial pass at a regular SQL expression using the
+    MySQL `REGEXP` feature. Running this will give us a rough idea of where the problem
+    question marks might reside:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This SQL regular expression asks for any question mark characters that are
+    immediately followed by one or more alphabetic characters. The SQL query yields
+    six rows, four of which turn out to have odd question marks and two of which are
+    **false positives**. False positives are tweets that matched our pattern but that
+    should not actually be changed. The two false positives are tweets with IDs **234**
+    and **2204**. These two included question marks as part of a legitimate URL. Tweets
+    **139**, **224**, **613**, and **2086** are **true positives**, which means tweets
+    that were correctly detected as anomalous and should be changed. All the results
+    are shown in the following phpMyAdmin screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step five – clean other mystery characters](img/image00296.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tweet **139** is strange, though. It has a question mark before the word **Obama**,
+    as if the name of a news article was being quoted, but there is no matching quote
+    (or missing quote) at the end of the string. Was this supposed to be some other
+    character? This might actually be a false positive too, or at least not enough
+    of a true positive to actually make us fix it. While we are looking at the tweets
+    closely, **224** also has an extra strange question mark in a place where it does
+    not seem to belong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we are going to write a `replace()` function to change problematic question
+    marks to single quotes, we will somehow need to write a regular expression that
+    matches only the true positives and does not match any of the false positives.
+    However, as this dataset is small, and there are only four true positives—or three
+    if we decide **139** does not need to be cleaned—then we could just clean the
+    true positives by hand. This is especially a good idea as we have a few questions
+    about other possible issues such as the extra question mark in tweet **224**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this case, as we only have three problem rows, it will be faster to simply
+    run three small `UPDATE` commands on the data rather than attempting to craft
+    the perfect regular expression. Here is the SQL query to take care of tweets **224**
+    (first issue only), **613**, and **2086**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Note that we had to escape our single quotes in these update statements. In
+    MySQL, the escape character is either the backslash or single quote itself. These
+    examples show the single quote as the escape character.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step six – clean the dates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we take a look at the `date_of_tweet` column, we see that we created it
+    as a simple variable character field, `varchar(30)`. What is so wrong with that?
+    Well, suppose we want to put the tweets in order from earliest to latest. Right
+    now, we cannot use a simple SQL `ORDER BY` clause and get the proper date order,
+    because we will get an alphabetical order instead. All Fridays will come before
+    any Mondays, and May will always come after June. We can test this with the following
+    SQL query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first few rows are in order but down near row 28, we start to see a problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`May 11` does not come after `May 15` or `June 8`. To fix this, we will need
+    to create a new column that cleans these date strings and turns them into proper
+    MySQL datetime data types. We learned in the *Converting between data types* section
+    in [Chapter 2](part0020.xhtml#aid-J2B82 "Chapter 2. Fundamentals – Formats, Types,
+    and Encodings"), *Fundamentals – Formats, Types, and Encodings*, that MySQL works
+    best when dates and time are stored as native **date**, **time**, or **datetime**
+    types. The format to insert a datetime type looks like this: `YYYY-MM-DD HH:MM:SS`.
+    But this is not what our data looks like in the `date_of_tweet` column.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are numerous built-in MySQL functions that can help us format our messy
+    date string into the preferred format. By doing this, we will be able to take
+    advantage of MySQL's ability to perform math on the dates and time, for example,
+    finding the difference between two dates or times or sorting items properly in
+    the order of their dates or times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get our string into a MySQL-friendly datetime type, we will perform the
+    following procedure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alter the table to include a new column, the purpose of which is to hold the
+    new datetime information. We can call this new column `date_of_tweet_new` or `date_clean`
+    or some other name that clearly differentiates it from the original `date_of_tweet`
+    column. The SQL query to perform this task is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Perform an update on each row, during which we format the old date string into
+    a properly formatted datetime type instead of a string and add the new value into
+    the newly created `date_clean` column. The SQL to perform this task is as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'At this point, we have a new column that has been populated with the clean
+    datetime. Recall that the old `date_of_tweet` column was flawed in that it was
+    not sorting dates properly. To test whether the dates are being sorted correctly
+    now, we can select our data in the order of the new column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: We see that the rows are now perfectly sorted, with the May 11 date coming first,
+    and no dates are out of order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Should we remove the old `date` column? This is up to you. If you are worried
+    that you may have made a mistake or that you might need to have the original data
+    for some reason, then by all means, keep it. But if you feel like removing it,
+    simply drop the column, as shown:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: You could also create a copy of the Sentiment140 table that has the original
+    columns in it as a backup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step seven – separate user mentions, hashtags, and URLs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another problem with this data right now is that there are lots of interesting
+    pieces of information hidden inside the `tweet_text` column, for example, consider
+    all the times that a person directs a tweet to the attention of another person
+    using the `@` symbol before their username. This is called a **mention** on Twitter.
+    It might be interesting to count how many times a particular person is mentioned
+    or how many times they are mentioned in conjunction with a particular keyword.
+    Another interesting piece of data hidden in some of the tweets is **hashtags**;
+    for example, the tweet with ID 2165 discusses the concepts of jobs and babysitting
+    using the `#jobs` and `#sittercity` hashtags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This same tweet also includes an external, non-Twitter **URL**. We can extract
+    each of these mentions, hashtags, and URLs and save them separately in the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This task will be similar to how we cleaned the dates, but with one important
+    difference. In the case of the dates, we only had one possible corrected version
+    of the date, so it was sufficient to add a single new column to hold the new,
+    cleaned version. With mentions, hashtags, and URLs, however, we may have zero
+    or more in a single `tweet_text` value, for example, the tweet we looked at earlier
+    (ID 2165) had two hashtags in it, as does this tweet (ID 2223):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This tweet has zero mentions, one URL, and two hashtags. Tweet 13078 includes
+    three mentions but no hashtags or URLs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will need to change our database structure to hold these new pieces of information—hashtags,
+    URLs, and mentions—all the while keeping in mind that a given tweet can have a
+    lot of these in it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create some new tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Following relational database theory, we should avoid creating columns that
+    will store multivalue attributes, for example, if a tweet has three hashtags,
+    we should not just deposit all three hashtags into a single column. The impact
+    of this rule for us is that we cannot just copy the `ALTER` procedure we used
+    for the date cleaning problem earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead, we need to create three new tables: `sentiment140_mentions`, `sentiment140_urls`,
+    and `sentiment140_hashtags`. The primary key for each new table will be a synthetic
+    ID column, and each table will include just two other columns: `tweet_id`, which
+    ties this new table back to the original `sentiment140` table, and the actual
+    extracted text of the hashtag, mention, or URL. Here are three `CREATE` statements
+    to create the tables we need:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: These tables do not use foreign keys back to the original `sentiment140` tweet
+    table. If you would like to add these, that is certainly possible. For the purposes
+    of learning how to clean this dataset, however, it is not necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that our tables are created, it is time to fill them with the data that
+    we have carefully extracted from `tweet_text column`. We will work on each extraction
+    case separately, starting with user mentions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extract user mentions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To design a procedure that can handle the extraction of the user mentions,
+    let''s first review what we know about mentions in tweets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The user mention always starts with the **@** sign
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The user mention is the word that immediately follows the **@** sign
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If there is a space after **@**, it is not a user mention
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are no spaces inside the user mention itself
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As e-mail addresses also use **@**, we should be mindful of them
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Using these rules, we can construct some valid user mentions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '@foo'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '@foobar1'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '@_1foobar_'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can construct some examples of invalid user mentions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '@ foo (the space following the @ invalidates it)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: foo@bar.com (bar.com is not recognized)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '@foo bar (only @foo will be recognized)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '@foo.bar (only @foo will be recognized)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this example, we assume that we do not care about the difference between
+    a regular `@mention` and.`@mention`, sometimes called a dot-mention. These are
+    tweets with a period in front of the `@` sign. They are designed to push a tweet
+    to all of the user's followers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As this rule set is more complicated than what we can execute efficiently in
+    SQL, it is preferable to write a simple little script to clean these tweets using
+    some regular expressions. We can write this type of script in any language that
+    can connect to our database, such as Python or PHP. As we used PHP to connect
+    to the database in [Chapter 2](part0020.xhtml#aid-J2B82 "Chapter 2. Fundamentals
+    – Formats, Types, and Encodings"), *Fundamentals – Formats, Types, and Encodings*,
+    let''s use a quick PHP script here as well. This script connects to the database,
+    searches for user mentions in the `tweet_text` column, and moves any found mentions
+    into the new `sentiment140_mentions` table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After running this little script on the `sentiment140` table, we see that 124
+    unique user mentions have been extracted out of the 498 original tweets. A few
+    interesting things about this script include that it will handle Unicode characters
+    in usernames, even though this dataset does not happen to have any. We can test
+    this by quickly inserting a test row at the end of the `sentiment140` table, for
+    example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, run the script again; you will see that a row has been added to the `sentiment140_mentions`
+    table, with the `@тест` Unicode user mention successfully extracted. In the next
+    section, we will build a similar script to extract hashtags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extract hashtags
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Hashtags have their own rules, which are slightly different to user mentions.
+    Here is a list of some of the rules we can use to determine whether something
+    is a hashtag:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hashtags start with the `#` sign
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The hashtag is the word that immediately follows the `#` sign
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hashtags can have underscores in them but no spaces and no other punctuation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The PHP code to extract hashtags into their own table is mostly identical to
+    the user mentions code, with the exception of the regular expression in the middle
+    of the code. We can simply change the `$mentions` variable to `$hashtags`, and
+    then adjust the regular expression to look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This regular expression says that we are interested in matching case-insensitive
+    Unicode letter characters. Then, we need to change our `INSERT` line to use the
+    correct table and column names like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we successfully run this script, we see that 54 hashtags have been added
+    to the `sentiment140_hashtags` table. Many more of the tweets have multiple hashtags,
+    even more than the tweets that had multiple user mentions, for example, we can
+    see right away that tweets 174 and 224 both have several embedded hashtags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we will use this same skeleton script and modify it again to extract URLs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extract URLs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Pulling out the URLs from the text can be as simple as looking for any string
+    that starts with *http://* or *https://*, or it could get a lot more complex depending
+    on what types of URLs the text string includes, for example, some strings might
+    include *file://* URLs or torrent links, such as magnet URLs, or other types of
+    unusual links. In the case of our Twitter data, we have it somewhat easier, as
+    the URLs that were included in our dataset all start with HTTP. So, we could be
+    lazy and just design a simple regular expression to extract any string that follows
+    http:// or https://. This regular expression would just look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, if we do a bit of hunting on our favorite search engine, it turns out
+    that we can easily find some pretty impressive and useful generic URL matching
+    patterns that will handle more sophisticated link patterns. The reason that this
+    is useful is that if we write our URL extraction to handle more sophisticated
+    cases, then it will still work if our data changes in the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A very well-documented URL pattern matching routine is given on the [http://daringfireball.net/2010/07/improved_regex_for_matching_urls](http://daringfireball.net/2010/07/improved_regex_for_matching_urls)
+    website. The following code shows how to modify our PHP code to use this pattern
+    for URL extraction in the Sentiment140 dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: This program is nearly identical to the mention extracting program we wrote
+    earlier, with two exceptions. First, we stored the regular expression pattern
+    in a variable called `$pattern`, as it was long and complicated. Second, we made
+    small changes to our database `INSERT` command, just as we did for the hasthtag
+    extraction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A full line-by-line explanation of the regular expression pattern is available
+    on its original website, but the short explanation is that the pattern shown will
+    match any URL protocol, such as http:// or file://, and it also attempts to match
+    valid domain name patterns as well and directory/file patterns a few levels deep.
+    The source website provides its own test dataset too if you want to see the variety
+    of patterns that it will match and a few known patterns that will definitely *not*
+    match.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step eight – cleaning for lookup tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the *Step seven – Separate user mentions, hashtags, and URLs* section, we
+    created new tables to hold the extracted hashtags, user mentions, and URLs, and
+    then provided a way to link each row back to the original table via the `id` column.
+    We followed the rules of database normalization by creating new tables that represent
+    the one-to-many relationship between a tweet and user mentions, between a tweet
+    and hashtags, or between a tweet and URLs. In this step, we will continue optimizing
+    this table for performance and efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The column we are concerned with now is the `query_phrase` column. Looking
+    at the column data, we can see that it contains the same phrases repeated over
+    and over. These were apparently the search phrases that were originally used to
+    locate and select the tweets that now exist in this dataset. Of the 498 tweets
+    in the `sentiment140` table, how many of the query phrases are repeated over and
+    over? We can use the following SQL to detect this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: The query result shows that there are only 80 distinct query phrases, but these
+    are used over and over in the 498 rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This may not seem like a problem in a table of 498 rows, but if we had an extremely
+    large table, such as with hundreds of millions of rows, we should be concerned
+    with two things about this column. First, duplicating these strings over and over
+    takes up unnecessary space in the database, and second, searching for distinct
+    string values is very slow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To solve this problem, we will create a **lookup table** of query values. Each
+    query string will exist only once in this new table, and we will also create an
+    ID number for each one. Then, we will change the original table to use these new
+    numeric values rather than the string values that it is using now. Our procedure
+    to accomplish this is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create a new lookup table:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Populate the lookup table with the distinct query phrases and automatically
+    give each one a `query_id` number:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a new column in the original table to hold the query phrase number:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Make a backup of the `sentiment140` table in case the next step goes wrong.
+    Any time we perform `UPDATE` on a table, it is a good idea to make a backup. To
+    create a copy of the `sentiment140` table, we can use a tool like phpMyAdmin to
+    copy the table easily (use the **Operations** tab). Alternately, we can recreate
+    a copy of the table and then import into it the rows from the original table,
+    as shown in the following SQL:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Populate the new column with the correct number. To do this, we join the two
+    tables together on their text column, then look up to the correct number value
+    from the lookup table, and insert it into the `sentiment140` table. In the following
+    query, each table has been given an alias, `s` and `sq`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Remove the old `query_phrase` column in the `sentiment140` table:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'At this point, we have an effective way to create a list of phrases, as follows.
+    These are shown in the alphabetical order:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also find out the tweets with a given phrase (`baseball`) by performing
+    a join between the two tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this point, we have a cleaned `sentiment140` table and four new tables to
+    hold various extracted and cleaned values, including hashtags, user mentions,
+    URLs, and query phrases. Our `tweet_text` and `date_clean` columns are clean,
+    and we have a lookup table for query phrases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step nine – document what you did
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With nine steps of cleaning and multiple languages and tools in use, there is
+    no doubt there'll be a point at which we will make a mistake and have to repeat
+    a step. If we had to describe to someone else what we did, we will almost certainly
+    have trouble remembering the exact steps and all the reasons why we did each thing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To save ourselves mistakes along the way, it is essential that we keep a log
+    of our cleaning steps. At a minimum, the log should contain these in the order
+    in which they were performed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every SQL statement
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Every Excel function or text editor routine, including screenshots if necessary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Every script
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Notes and comments about why you did each thing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Another excellent idea is to create a backup of the tables at each stage, for
+    example, we created a backup just before we performed `UPDATE` on the `sentiment140`
+    table, and we discussed performing backups after we created the new `date_clean`
+    column. Backups are easy to do and you can always drop the backed-up table later
+    if you decide you do not need it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we used a sample dataset, a collection of tweets called Sentiment140,
+    to learn how to clean and manipulate data in a relational database management
+    system. We performed a few basic cleaning procedures in Excel, and then we reviewed
+    how to get the data out of a CSV file and into the database. At this point, the
+    rest of the cleaning procedures were performed inside the RDBMS itself. We learned
+    how to manipulate strings into proper dates, and then we worked on extracting
+    three kinds of data from within the tweet text, ultimately moving these extracted
+    values to new, clean tables. Next, we learned how to create a lookup table of
+    values that are currently stored inefficiently, thus allowing us to update the
+    original table with efficient, numeric lookup values. Finally, because we performed
+    a lot of steps and because there is always the potential for mistakes or miscommunication
+    about what we did, we reviewed some strategies to document our cleaning procedures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will switch our perspective away from cleaning what
+    has been given to us toward preparing cleaned data for others to use. We will
+    learn some best practices to create datasets that require the least amount of
+    cleaning by others.
+  prefs: []
+  type: TYPE_NORMAL

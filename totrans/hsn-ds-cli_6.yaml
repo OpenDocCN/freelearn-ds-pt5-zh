@@ -1,0 +1,874 @@
+- en: SQL, Math, and Wrapping it up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Databases are attractive solutions for storing and accessing data. They supply
+    the developer with an API that allows the structured organization of data, the
+    ability to search that data in flexible ways, and the ability to store new data.
+    When a database's capabilities are a requirement, there's often little room left
+    for negotiation; the question is which database and not whether we should use
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite this fact, the Unix command line provides a suite of tools that lets
+    a developer view streams or files in many of the same ways as they would view
+    a database. Given one or more files with data in it, we can use these tools to
+    query that data without ever having to maintain a database or any of the things
+    that go along with it, such as fixed schemas. Often, we can use this method for
+    processing data instead of standing up a database server and dealing with the
+    issues associated with the **Extract**, **Transformation**, and **Load** (**ETL**)
+    of data into that database. Even better, our pipeline, and therefore our view
+    of the data, can change over time, unlike the relatively static schemas of traditional
+    databases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Often, you'll need to perform computations on numerical data in your workflows.
+    The command line has several tools that enable us to do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bash itself has the capability to do some math in shell scripts. When a little
+    more capability is required, two command-line tools, `bc` and `awk`, are capable
+    of doing many types of calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, we may need the full power of a programming language and mathematics
+    packages, such as Python and Pandas. While this isn't a tutorial on how to do
+    data science in Python, in this chapter, we'll see how to interface your Python
+    routines in line with other command-line tools and build a custom pipeline for
+    your needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll also be using many of the tools that we have seen in this book to perform
+    some real-world analysis on weather data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, to sum it up, in this chapter we will be looking at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Viewing data as columns using `cut`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using `grep` as a `WHERE` clause
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Joining different sets of data using the `join` command
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Simulating `SELECT` clauses using `awk`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning how to use SQLite when a more fully-featured database is needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bash variable assignment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Basic bash arithmetic and comparisons
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Math using `bc`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Streaming calculations with `awk`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interfacing with python routines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Looking at the contents of a publicly available weather API
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Scraping the API and storing the results in lightweight databases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the tools discussed in the previous chapters to analyze the data in the
+    databases we've created
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Drawing some conclusions about how accurate the weather forecast is
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: cut and viewing data as columnar
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first thing you will likely need to do is partition data in files into rows
+    of data and columns of data. We saw some transformations in the previous chapters
+    that allow us to manipulate data one row at a time. For this chapter, we'll assume
+    the rows of your data correspond with the lines of data in your files. If this
+    isn't the case, this may be the first thing you want to do in your pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given that we have some rows of data in our file or stream, we would like to
+    view those rows in a columnar fashion, such as a traditional database. We can
+    do this using the help of the `cut` command. `cut` will allow us to chop the lines
+    of the file into columns by a delimiter, and to select which of those columns
+    get passed through to the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If your data is a comma-separated or tab-separated file, `cut` is quite simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7950562c-771d-46d9-b458-5cdb9ebd0a68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this command, we''re telling `cut` that the delimiter is using `-d$''\t''`.
+    Also, we use the `-f2,8` option to tell `cut` which of the columns we would like
+    to pass from the input to the output. Note that we captured the header row of
+    the data, which probably isn''t desired. To skip it, add `tail -n +2` to the pipe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/29c188b8-b3b5-44c1-9e8e-b1ff9d0b9a2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If your line is more complicated than a CSV or TSV, you may have to do more
+    than one pass using cut, or possibly an intervening step using `awk` or `sed`.
+    For example, in the book-review dataset, say we want to output the date field,
+    but in year-month-date order. We can first select down to the date field, re-cut
+    the date field into its constituent parts, and output them in the desired order:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/fba937fa-eb7d-43a1-a016-dfde2e6b7686.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`cut` can also cut particular bytes or characters from a stream if you have
+    fixed-width fields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c4538db4-1f6d-4769-8a84-7b80e30107dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the case of the book data, this isn't going to make much sense since the
+    fields are variable-width, but sometimes it's just what you need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using `cut` in this fashion will be your tool for a SQL-like `SELECT` of particular
+    characters in each row of your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: WHERE clauses
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The powerful grep regular-expression-matching tool we discussed in a previous
+    chapter allows us to perform `WHERE` clauses on our files. The clause may be a
+    bit less intuitive than a SQL `WHERE` clause, but we can do as much or more with
+    grep as we can with the SQL `WHERE` clause. For example, perhaps we only care
+    about accounts starting with the number `3`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following will be displayed on your screen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b17384d7-b377-4f51-8776-1776fc96bf5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Join, for joining data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Join works how an `INNER JOIN` might work in your SQL-style database. Two sorted
+    files or streams are passed to the `join` command (see the section on sort to
+    see how to `sort` your streams). The lines of the files must be sorted on the
+    field you are attempting to join on. The `join` command will then output the results
+    of the inner join on these two files, where if there's a matching field it will
+    output the `join` key along with the remainder of the data lines of the first
+    file concatenated with the second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, say we would like to find users who are present both in the first
+    review file and the second, and how many reviews they have in each. We can run
+    the following `join` command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4ee4b7a3-0e09-4690-b5e5-f56271cf9f5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, we're using process substitution to slice the review files' data. This
+    is done in parallel, increasing the speed of the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Group by and ordering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can perform a `GROUP BY` operation by using `sort` piped to `uniq -c` (as
+    discussed in [Chapter 5](df05c890-510b-4e7e-8cc2-200f68f2febf.xhtml), *Loops,
+    Functions, and String Processing*):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b7a2eabd-a1eb-48f2-b4f4-4ea27d0c84a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we are simply counting how many reviews each user
+    made. We might want to get the average review of each user, which can be done
+    using `awk` associative arrays:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/937340b2-4a8b-4126-a4cc-48930c9c597d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, the output of the command is the ID, the sum of the reviews, the count
+    of the reviews, and the average review for each user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also sort the resulting data using the same tool, `sort`. For example,
+    we can take our preceding `GROUP BY` example, and `ORDER BY` the number of reviews
+    each user made to find the most prolific reviewers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c226f381-1029-4d67-ad2b-edee031027c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of reviews each user made to find the most prolific reviewers
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simulating selects
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous sections, we saw how to `SELECT` data, inner `JOIN` data, and
+    even do `GROUP BY` and `ORDER BY` operations on flat files or streams of data.
+    Rounding out the commonly-used operations, we can also create sub-selected tables
+    of data by simply wrapping a set of calls into a stream and then processing them
+    further. This is what we''ve been doing using the piping model, but to illustrate
+    a point, say we wanted to sub-select out of the grouped-by reviews only those
+    reviewers who had between `100` and `200` reviews. We can take the command in
+    the preceding example and `awk` it once more:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a1a328d6-07c8-486d-b271-fc58abeea197.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sub-selecting out of the grouped-by reviews only those reviewers who had between
+    100 and 200 reviews
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using all of these tools, you saw how we can simulate most of the common SQL
+    expressions on rows of file or stream data using the command line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keys to the kingdom
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we can explore data with the command line and have mastered transforming
+    text, we'll provide you with the keys to the kingdom. SQLite is a public domain
+    library that implements a SQL engine and provides a `sqlite` command shell for
+    interacting with database files. Unlike Oracle, MySQL, and other database engines
+    that provide a network endpoint, sqlite is offline and locally driven by library
+    calls to interact with a single file that is the entire database. This makes backups
+    easy. Backups can be created by doing ``cp database.sq3 backups/`date +%F`-database.sq3``.
+    One can version control it, but that's unlikely to compress well with delta comparisons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using SQLite
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Easy import of CSV files (with custom delimiter):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The data needs some massaging to get it into CSV format—it has a few problematic
+    characters in the dataset – let''s use some shell hackery to make it uniform:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Show the tables by using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code shows the tables in the database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/38620955-256e-4f22-9ad6-45c5b3355570.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To show the datatypes for the table columns, run the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6544e972-38fc-465d-9cbf-1ba65f3a7be8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Showing the datatypes for the table columns
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load 20 lines of Amazon reviews into the sqlite database, named `reviews.sq3`,
+    into the `aws_reviews` table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We read the first 21 lines. Our stream editor strips the first line (the header),
+    escapes any double-quotes with a second pair of quotes (funky escaping, we know),
+    and replaces the "tab" delimiter with a value separator that terminates the string
+    and indicates it has a following element.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we convert the read `LINE` into our input `VALUES` by prepending a double-quote
+    and appending a double-quote to finish properly formatting our values. Finally,
+    our data is ready to insert into the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that sqlite3 uses a second quote character as a quote-escape sequence,
+    similar to using `%%` with `printf` to get a literal `%` character.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can query the data like any traditional database, because sqlite is
+    a database engine in library form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Math in bash itself
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Bash itself is able to do simple integer arithmetic. There are at least three
+    different ways to accomplish this in bash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using let
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You can use the let command to do simple bash arithmetic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Basic arithmetic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You can do addition, subtraction, multiplication (be sure to escape the `*`
+    operator with `\*`) and integer division*:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The numbers must be separated by spaces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Double-parentheses
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Similar to let, you can do simple integer arithmetic in bash using doubled
+    parentheses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To see the full range of operations available in the shell, check out the GNU
+    reference page: [https://www.gnu.org/software/bash/manual/html_node/Shell-Arithmetic.html](https://www.gnu.org/software/bash/manual/html_node/Shell-Arithmetic.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: bc, the unix basic calculator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`bc` is a calculator scripting language. Scripts in `bc` can be executed with
+    the `bc` command. Imagine a `test.bc` file contains the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That means you can run `bc` like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`bc` can do far more than just divide two numbers. It''s a fully-fledged scripting
+    language on its own and you can do arbitrarily complex things with a `bc` script.
+    A `bc` script might be the ending point of a pipeline of data, where, initially,
+    the data files are massaged into a stream of data rows, and then a `bc` script
+    is used to compute the values we''re looking for. Let''s illustrate this with
+    a simple example.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, we need to take a CSV data file and compute the average of
+    the second number in each row, and also compute the sum of the fourth number in
+    each row. Say we have a `bc` function to compute something interesting on these
+    two numbers, such as a harmonic mean. We can use `awk` to output the numbers into
+    a `bc` script and then feed the result into `bc` using a pipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, say our `bc` function to compute the harmonic mean of two numbers looks
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can use `awk` to find the two numbers and construct the `bc` script, and
+    then pipe it to `bc` to execute:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: See the `bc` documentation at [https://www.gnu.org/software/bc/manual/html_mono/bc.html](https://www.gnu.org/software/bc/manual/html_mono/bc.html)
+    for more things you could do with `bc`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Math in (g)awk
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`awk` (including the `gnu` implementation, `gawk`) is designed to stream text
+    processing, data extraction, and reporting. A large percentage of practical statistics
+    is made up of counting things in specific ways, and this is one of the things
+    `awk` excels at. Tallying totals, histograms, and grouped counts are all very
+    easy in `awk`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An `awk` program is structured as a set of patterns that are matched, and actions
+    to take when those patterns are matched:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: For each record (usually each line of text passed to `awk`), each pattern is
+    tested to see whether the record matches, and if so, the action is taken. Additionally,
+    each record is automatically split into a list of fields by a delimiter. The default
+    action, if none is given, is to print the record. The default pattern is to match
+    everything. There are two special patterns, `BEGIN` and `END`, which are matched
+    only before any records are processed, or after, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The power of `awk` lies in its variables: variables can be used without a declaration.
+    There''s some special variables already available to you that are useful for math:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additionally, you can assign values to your own variables. `awk` natively supplies
+    variables that can hold strings, integers, floating point numbers, and regular
+    expressions and associative arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, say we want to count the word frequency in the reviews of our
+    test data. Run this code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It will produce these results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/731421e3-4a37-4ed0-8f2b-bac5e8d90b95.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Counting the word frequency in the reviews of our test data
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Say we''d like to compute a histogram of the star values of the reviews. This
+    is also very easy with `awk`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/02dd2478-2f99-4129-bbae-36bc45a1d83d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Computing a histogram of the star values of the reviews
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that four- and five-star reviews dominate this dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Besides counting, `awk` is also great for manipulating the format of strings:
+    look back at [Chapter 5](df05c890-510b-4e7e-8cc2-200f68f2febf.xhtml), *Loops,
+    Functions, and String Processing*, for some examples of using `awk` for string
+    manipulation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python (pandas, numpy, scikit-learn)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Counting things often gets you to where you need to be, but sometimes more complex
+    tools are required to do the job. Fortunately, we can write our own tools in the
+    UNIX paradigm and use them in our workstream pipes along with our other command-line
+    tools if we so desire.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One such tool is python, along with popular data science libraries such as `pandas`,
+    `numpy`, and `scikit-learn`. This isn't a text on all the great things those libraries
+    can do for you (if you'd like to learn, a good place to start is the official
+    python tutorial ([https://docs.python.org/3/tutorial/](https://docs.python.org/3/tutorial/))
+    and the basics of Pandas data structures in the Pandas documentation ([https://pandas.pydata.org/pandas-docs/stable/basics.html](https://pandas.pydata.org/pandas-docs/stable/basics.html)).
+    Make sure you have Python, `pip`, and `pandas` installed before you continue (see
+    [Chapter 1](d26c5d26-6302-4b9d-b6ce-62b1ab13db0d.xhtml), *Data Science at the
+    Command Line and Setting It Up*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you want to connect your python program to a piped stream however, of course
+    there are ways to do it. A simple method is to use the `sys` library. Say we have
+    a small pandas program tuned to our dataset that computes the mean of a couple
+    of the columns that we know are in the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note how we get the data directly from the `sys.stdin` stream and pass that
+    right to pandas'' `read_csv` method (using tab as a separator). If we use this
+    method, we can pipe the data right into the script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b437f3e9-be78-4c1b-b5be-21aff1aeaad3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Analyzing weather data in bash
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The National Weather Service has an API to get weather data: [https://forecast-v3.weather.gov/documentation](https://forecast-v3.weather.gov/documentation) .
+    The API delivers forecast data over a lightweight HTTP interface. If you pass
+    the correct URL and parameters to the web endpoint, the service will return JSON-formatted
+    weather data. Let's take a look at an example of some data exploration we can
+    do with this rich dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The NWS provides both current weather data and forecasts. Let's say I'd like
+    to see just how accurate NWS forecasts are. I'd like to do this over some amount
+    of time, say a week. I'd like to save tomorrow's forecast, and then later on,
+    compare those forecasts to what the temperature really was. For this example,
+    let's look at the forecast highs, and the actual high temperatures. I'd like to
+    do this for a single point in lat-lon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our overall plan will be to record the forecasts for the next day's high temperatures
+    once a day in a CSV file. Once an hour, we'll record the actual temperature in
+    another CSV file. Then, we'll write a script that compares these two files and
+    computes the accuracy of each type of forecast (one-day forecast, two-day forecast,
+    and so on) over multiple days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we need to be able to query the right endpoint in the API. The weather
+    service data is gridded into a set of grid locations. To find the grid for a particular
+    lat-lon point, we can query the API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Querying the API returns the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There''s a lot of extraneous information in JSON, when we really only want
+    the grid coordinates and the forecast region. Let''s use the `jq` UNIX tool to
+    parse this JSON and extract the relevant information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The relevant information looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/737ef681-b54a-48c8-931d-5ff08789a98d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, we''ve used `jq` to parse and format a bit of text that we could then
+    insert into a URL, which we can re-curl for the forecast. Helpfully, however,
+    the API actually gives us the entire URL of the forecast inside the JSON, in the
+    `properties.forecastGridData` feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''re going to take this URL, `curl` it into `jq` again, and extract the high
+    temperature forecasts for the next day. Using `jq`, we''re going to format these
+    into a CSV line that we''ll later on append to our flat file data table. For this
+    example, we''re going to ignore time zones, and assume days start and end on Zulu
+    time. Run this code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It produces the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: The output will be different since you're running this after 2018-06-22.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looks great! Save this command as is to a bash script, say `forecast.sh`, using
+    the editor of your choice. Be sure to make the script executable with the `chmod`
+    command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And let''s `cat` the file to view the contents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s add this to a cron[1] task and run this once a day at noon, and append
+    the resulting line to a `.csv` file. Cron is a system utility that will run a
+    command on a schedule. The schedules look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, if we''d like to run this once a day, we want to run it on a particular
+    minute of a particular hour, but on every day, month, and day of week giving the
+    following cron pattern, if say, we''d like to run at noon every day:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To add a script to cron''s list, the `crontab` you''ll need to run the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Add the following line to your `crontab`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, every day the forecast will be appended to the file you specified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get the current weather data, we need to find the closest weather station
+    to our gridpoint:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces this output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The current weather is located at the following API point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'From this API point, we can grab a timestamp and current temperature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Add this to a script file, and to your crontab as well, set to run every hour.
+    To do this, we need to specify a minute but wildcard everything else in the cron
+    pattern:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: We let this run for a couple of weeks to build our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we want to take the maximum temperature we record each day, join that
+    to the forecast we recorded for that day, and compute the difference. To find
+    the max temperature for any given day, we can once again use `gawk`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we can join this result back to our forecasts. Since the output is already
+    sorted by date in a sortable YYYY-MM-DD order, we don''t need to pre-sort. Run
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code produces the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And we can pipe this stream to `awk` to compute the difference between the
+    actual and predicted temperatures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding code results in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: We grabbed real data from the Internet, massaged it using a workflow, stored
+    it into files, and computed numeric values with the data in the tables we made!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we used `cut`, `grep`, `awk`, and `sort` to deeply inspect
+    our data, as one would in a more traditional database. We then saw how sqlite
+    can provide a lightweight alternative to other databases. Using these tools together,
+    we were able to mine useful knowledge from our raw files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also saw how the command line offers several options for doing arithmetic
+    and other mathematical operations. Simple arithmetic and grouped tallies can be
+    performed using bash itself or `awk`. More complex mathematics can be done using
+    a scripting language, such as `bc` or python, and be called like other command-line
+    workflow tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we used many of the tools we discussed to produce a useful and interesting
+    result from publicly-available data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We hope that this book broadens your understanding of just how powerful the
+    command line actually is, especially for data science. However, this is only the
+    very beginning. There's a number of tools and other commands we haven't even mentioned,
+    which are very powerful and deserve to be mentioned. `BashHTTPD` ([https://github.com/avleen/bashttpd](https://github.com/avleen/bashttpd))
+    is a web server in bash; it may sound silly, but the shell can really do amazing
+    things. `BashReduce` ([https://github.com/erikfrey/bashreduce](https://github.com/erikfrey/bashreduce))
+    gives the user the ability to run bash commands over multiple machines/cores.
+    You might have noticed some of the commands took a little while to run. We recommend
+    taking a look at `BashReduce` to speed things up. Those who are familiar with
+    the `MapReduce` concept should have no issue picking up and working with `BashReduce`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also want to mention that there are so many other great command-line tools
+    out there; we could write about them forever. However, for this book, we decided
+    to focus on the everyday commands and provide examples on how to use them. We
+    hope you enjoyed this book!
+  prefs: []
+  type: TYPE_NORMAL

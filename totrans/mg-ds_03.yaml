@@ -1,0 +1,1084 @@
+- en: Testing Your Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Coming up with a perfect machine learning model is not simple if you do not
+    use a good testing methodology. This seemingly perfect model will fail the moment
+    you deploy it. Testing the model's performance is not an easy task, but it is
+    an essential part of every data science project. Without proper testing, you can't
+    be sure whether your models will work as expected, and you can't choose the best
+    approach to solve the task at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter will explore various approaches for model testing and look at different
+    types of metrics, using mathematical functions that evaluate the quality of predictions.
+    We will also go through a set of methods for testing classifier models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Offline model testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Online model testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Offline model testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Offline model testing encompasses all the model-evaluation processes that are
+    performed before the model is deployed. Before discussing online testing in detail,
+    we must first define model errors and ways to calculate them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding model errors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Every model can make mistakes because collected data, and the model itself,
+    introduces implications about the nature of your problem. The best example of
+    a good working model is inside your brain. You use modeling in real time—the brain
+    renders everything you see by interpreting electromagnetic impulses recorded by
+    your eyes. While this picture of the world is imperfect, it is useful as we receive
+    over 90% of information through the visual channel. The last 10% comes from hearing,
+    touch, and our other senses. Thus, each model, **M**, tries to predict real value,
+    **Y**, by making a guess, [![](img/c76546bd-25e3-4ecf-912a-d99afa7820eb.png)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The difference between the real value and model''s approximation makes up the
+    model error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/91dce14c-f063-4766-9b5c-6f57446e1e70.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For regression problems, we can measure the error in quantities that the model
+    predicts. For example, if we predict house prices using a machine learning model
+    and get a prediction of $300,000 for a house with a real price of $350,000, we
+    can say that the error is $350,000 - $300,000 = $50,000.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For classification problems in the simplest setting, we can measure the error
+    as 0 for a guess, and 1 for a wrong answer. For example, for a cat/dog recognizer,
+    we give an error of 1 if the model predicts that there is a cat in a dog photo,
+    and 0 if it gives a correct answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decomposing errors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You won''t find a machine learning model that perfectly solves your problems
+    without making even a single mistake, no matter how small. Since every model makes
+    mistakes, it is critical to understand their nature. Suppose that our model makes
+    a prediction and we know the real value. If this prediction is incorrect, then there
+    is some difference between the prediction and the true value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d24ad2f9-c167-4252-a586-8eab3b33ffc4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The other part of this error will come from imperfections in our data, and some
+    from imperfections in our model. No matter how complex our model is, it can only
+    reduce the modeling error. Irreducible error is out of our control, hence its
+    name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at it in the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a9aa3c92-9622-4e74-a604-6389a73e0725.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Not all reducible errors are the same. We can decompose reducible errors further.
+    For example, look at the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/737bbad2-ca32-44e0-918e-4821c09f8c73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The red center of each target represents our goal (real value), and the blue
+    shots represent the model predictions. In the target, the model''s aim is off—all
+    predictions are close together, but they are far away from the target. This kind
+    of error is called **bias**. The simpler our model is, the more bias it will have.
+    For a simple model, the bias component can become prevailing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d5bf457f-5afb-4cf4-8109-4be8f3003775.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding plot, we try to model a complex relationship between variables
+    with a simple line. This kind of model has a high bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second component of the model error is **variance**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3226d01c-6805-4da1-b48b-d87d7faa061c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All predictions appear to be clustered around the true target, but the spread
+    is too high. The source of this error comes from the model's sensitivity to fluctuations
+    in data. If the model has high variance, randomness in measurements can lead to
+    very different predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So far, we have decomposed model error into the three following numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d46b3109-8245-44da-95f4-62f6017375bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is not a coincidence that bias and variance sit close together in the same
+    formula. There is a relationship between them. Predictive models show a property
+    called the **bias-variance** **tradeoff**—the more biased a model, the lower the
+    variance component of the error. And in reverse, the more variance it has, the
+    lower its bias will be. This important fact will be a game-changer for building
+    ensemble models, which we will explore in [Chapter 3](eb2995e4-1a9a-43d9-b162-557a4664069b.xhtml), *Understanding
+    AI*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Typically, models that impose some kind of structure in the data have a high
+    bias (they assume certain laws that the data conforms to). Biased models will
+    work well, as long as the data does not contradict the underlying logic of the
+    model. To give you an example of such a model, think of a simple line. For example,
+    we will predict a housing price as a linear function of its size in square feet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c9e0c82d-5039-401e-a129-8dcf13e4c6d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Notice that if we change the square footage by a little, say 0.1, then the
+    prediction won''t change by much. Thus, this model has low variance. When the
+    model is sensitive to changes in its input, its variance will outgrow the bias.
+    The variance component will grow with your model increases in complexity and the
+    total number of parameters grows. In the following plot, you can see how two different
+    models fit the same dataset. The first simple model has low variance, and the
+    second complex model has high variance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/84bb9ab9-a0d4-4e34-a62c-4ef303df7ff7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding plot, slight changes in **X** can lead to large fluctuations
+    of **Y**. Models with high variance are robust and imply that the data is much
+    less structured.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding overfitting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The bias-variance trade-off goes hand in hand with a very important problem
+    in machine learning called **overfitting**. If your model is too simple, it will
+    cause large errors. If it is too complex, it will memorize the data too well.
+    An overfitted model remembers data too well and acts like a database. Suppose
+    that our housing dataset contains some lucky deals where previous houses had a
+    low price because of circumstances not captured in the data. An overfit model
+    will memorize those examples too closely and predict incorrect price values on
+    unseen data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, having understood the error decomposition, can we use it as a stepping
+    stone to design a model-testing pipeline?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need to determine how to measure model error in such a way that it will
+    correspond to the real model performance on unseen data. The answer comes from
+    the question itself. We will split all the available data into two sets: a training
+    set and a test set, as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a6fd01ba-178a-4d6f-aace-c1717aa27156.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We will use data in the training set to train our model. The test set acts
+    as unseen data and you should not use the test set in the training process. When
+    the model''s training is finished, you can feed the test data into your model.
+    Now you can calculate errors for all predictions. The model did not use the test
+    data during training, so the test set error represents the model error on unseen
+    data. The drawback to this approach is that you take a significant amount of data,
+    usually up to 30%, to use for testing. This means less training data and lower
+    model quality. There is also a caveat – if you use your test set too much, error
+    metrics will start to lie. For example, suppose that you did the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trained a model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Measured the error on the test data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Changed your model to improve the metrics
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeated steps 1-3 ten times
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Deployed the model to production
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It is likely that the quality of your model will be much lower than expected.
+    Why did this happen? Let's look more closely *step 3*. You looked at a score,
+    and changed your model or data processing code several consecutive times. In fact,
+    you did several learning iterations by hand. By repeatedly improving the test
+    score, you indirectly disclosed information about the test data to your model.
+    When the metric values measured on a test set deviate from the metrics measured
+    on the real data, we say that the test data has leaked into our model. Data leaks
+    are notoriously hard to detect before they cause damage. To avoid them, you should
+    always be mindful of the possibility of a leak, think critically, and follow best
+    practices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use a separate piece of data to fight test set leakage. Data scientists
+    use validation sets to tune model parameters and compare different models before
+    choosing the best one. Then, the test data is used only as a final check that
+    informs you about model quality on unseen data. After you have measured the test
+    metric scores, the only decision left is to make is whether the model will proceed
+    to testing in a real-world scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following screenshot, you can see an example of a train/validation/test
+    split of the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b0e5b92e-1785-463b-bb97-2e720e6c2af0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Unfortunately, the following two problems persist when we use this approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The information about our test set might still leak into our solution after
+    many iterations. Test-set leakage does not disappear completely when you use the
+    validation set, it just becomes slower. To overcome this, change your test data
+    from time to time. Ideally, make a new test set for every model-deployment cycle.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You might overfit your validation data quickly, because of the train-measure-change
+    feedback cycle for tuning your models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To prevent overfitting, you can randomly select train and validation sets from
+    your data for each experiment. Randomly shuffle all available data, then select
+    random train and validation datasets by splitting the data into three parts according
+    to proportions you have chosen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is no general rule for how much training, validation, and testing data
+    you should use. Often, more training data means a more accurate model, but it
+    means that you will have less data to assess the model's performance. The typical
+    split for medium-sized datasets (up to 100,000 data points) is to use 60-80% of
+    the data to train the model and use the rest for validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The situation changes for large datasets. If you have a dataset with 10,000,000
+    rows, using 30% for testing would comprise 3,000,000 rows. It is likely that this
+    amount would be overkill. Increasing test and validation test sizes will yield
+    diminishing returns. For some problems, you will get good results with 100,000
+    examples for testing, which would amount for a 1% test size. The more data you
+    have, the lower the proportion you should use for testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Often, there is too little data. In those situations, taking from 30%-40% data
+    for testing and validation might severely decrease the model''s accuracy. You
+    can apply a technique called cross-validation in data-scarce situations. With
+    cross-validation, there''s no need to create a separate validation or test set.
+    Cross-validation proceeds in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You choose some fixed number of iterations—three, for example.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Split the dataset into three parts.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each iteration, cross-validation uses 2/3 of the dataset as a training data
+    and 1/3 as validation data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train model for each of the three train-validation set pairs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the metric values using each validation set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Aggregate the metrics into a single number by averaging all metric values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The following screenshot explains cross-validation visually:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/029fc396-016c-4c6d-b0aa-0cc072c3b1ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Cross-validation has one main drawback: it requires significantly more computational
+    resources to assess model quality. In our example, to make a single assessment
+    we needed to fit three models. With a regular train/test split, we would train
+    only one model. In addition, cross-validation accuracy will grow with the number
+    of iterations you use (also called folds). So cross-validation allows you to use
+    more data for training, while requiring more computational resources. How do we
+    choose between cross-validation and train-validation-test splits for projects?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In cross-validation, [![](img/50985a49-a4a0-4825-850d-cde48295079d.png)] is
+    a variable parameter that is set up by a data scientist. The lowest possible value
+    is 1, which is equivalent to a simple train/test split. The largest extreme is [![](img/14ec3d61-d29f-4a58-8f3c-cdf28e242428.png)] equal
+    to the number of data points in the dataset. This means that if we have [![](img/94f8ab10-6399-4c76-a3ce-7f21586c2418.png)]
+    points in the dataset, the model will be trained and tested [![](img/f3838149-cf5b-433b-8eea-3ee7c78648a5.png)] times.
+    This special case of cross-validation is called **leave-one-out cross-validation**.
+    In theory, a larger number of folds means that the cross-validation will return
+    more accurate metric values. While leave-one-out cross-validation is the most
+    theoretically accurate method, it is seldom used in practice because of the large
+    computational requirements. In practice, the values of [![](img/50985a49-a4a0-4825-850d-cde48295079d.png)] range
+    from 3 to 15 folds, depending on the dataset size. Your project may need to use
+    more, so take this as advice and not as a rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following table sums up a general way of thinking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **Model training requires low to moderate computational resources and
+    time** | **Model training requires large computational resources and takes a long
+    time** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Small to medium dataset** | Cross-validation | Either |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Large dataset** | Either | Train/validation/test split |'
+  prefs: []
+  type: TYPE_TB
+- en: Another important aspect related to model testing is how to split the data.
+    A slight error in your splitting logic can mean all your testing efforts were
+    in vain. Splitting is easy, if all observations in your dataset are independent.
+    Then you can use random data splits. But what if we are solving the stock-price
+    prediction problem? When our data rows are tied to time, we can't look at them
+    as independent values. Today's stock prices depend on their past values. If this
+    wasn't true, the prices would randomly jump from $0 to $1,000\. In this situation,
+    suppose we have two years' worth of stock data, from January 2017 to December
+    2018\. If we use random splits, it is possible that our model will train in September
+    2018 and test on February 2017\. This makes no sense. We must always think about
+    causal relationships and dependencies between your observations and be sure to
+    check whether your validation procedure is correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we will learn about metrics, which are formulas we can use to summarize
+    validation and test errors. Metrics will allow us to compare different models
+    and choose the best candidates for production use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using technical metrics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Each model, no matter how complex and accurate, makes mistakes. It is natural
+    to expect that some models will be better than others when solving a specific
+    problem. Currently, we can measure errors by comparing individual model predictions
+    with the ground truth. It would be useful to summarize them into a single number
+    for measuring the model's performance. We can use a metric to do this. There are
+    many kinds of metrics that are suitable for different machine learning problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In particular, for regression problems the most common metric is the **root
+    mean square error**, or **RMSE**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/04394a71-3018-4d3e-82d0-2bb8f07996be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s examine the elements of this formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*N* is the total number of data points.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*predicted - actual* measures the error between ground truth and model prediction.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Sigma sign at the start of the formula means sum.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Another popular way to measure regression errors is **mean absolute error**
+    (**MAE**):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6f81be96-3130-428c-9cac-d5bab44c92ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that MAE is very similar to RMSE. Compared to MAE, RMSE has a square root
+    instead of absolute value and it squares errors. While MAE and RMSE may seem identical,
+    there are some technical differences between them. Data scientists can choose
+    best metrics for a problem, knowing their trade-offs and shortcomings. You don't
+    need to learn them all, but I would like to highlight one difference to give you
+    a general feel of the thought process. RMSE penalizes large errors more than MAE.
+    This property comes from the fact that RMSE uses squared errors, while MAE uses
+    absolute values. To illustrate, an error of 4 would be 4 in MAE, but in RMSE it
+    will turn into 16 because of the square.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For classification problems, the metric-calculation process is more involved.
+    Let''s imagine that we are building a binary classifier that estimates the probability
+    of a person having pneumonia. To calculate how accurate the model is, we may just
+    divide the total of correct answers by the number of rows in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6aabef97-73f4-434d-8301-331290a05a0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, [![](img/a63ff15c-921b-49d1-a89b-55c00b1d2ac7.png) ]is the amount of correct
+    predictions, and [![](img/4b8b3e08-085a-41d7-8772-0d9defe1ec0a.png)] is the total
+    number of predictions. Accuracy is simple to understand and calculate, but it
+    has a major flaw. Let's assume the average probability of having pneumonia is
+    0.001%. That is, one person out of 100,000 has the illness. If you had collected
+    data on 200,000 people, it is feasible that your dataset would contain only two
+    positive cases. Imagine you have asked a data scientist to build a machine learning
+    model that estimates pneumonia probability based on a patient's data. You have
+    said that you would only accept an accuracy of no less than 99.9%. Suppose that
+    someone created a dummy algorithm that always outputs zeros.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This model has no real value, but its accuracy on our data will be high as
+    it will make only two errors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/300e6318-20d0-4d3a-814e-6cb59bd9947f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The problem is that accuracy considers only global fraction of answers. When
+    one class outnumbers the others, accuracy outputs misleading values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at model predictions in more detail by constructing a confusion
+    table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **Model prediction:****Has pneumonia** | **Model prediction:****Does not
+    have pneumonia** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****Has pneumonia** | 0 | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****Does not have pneumonia** | 0 | 199,998 |'
+  prefs: []
+  type: TYPE_TB
+- en: After looking at this table, we can see that the dummy model won't be helpful
+    to anyone. It didn't identify two people with the condition as positive. We call
+    those errors **False Negatives** (**FN**). The model also correctly identified
+    all patients with no pneumonia, or **True Negatives** (**TN**), but it has failed
+    to diagnose ill patients correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, suppose that your team has built a real model and got the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **Model prediction:****Has pneumonia** | **Model prediction:****Does not
+    have pneumonia** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****Has pneumonia** | 2 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****Does not have pneumonia** | 30 | 199,968 |'
+  prefs: []
+  type: TYPE_TB
+- en: This model correctly identified two cases, making two **True Positive** (**TP**)
+    predictions. This is a clear improvement over the previous iteration. However,
+    the model also identified 30 people as having pneumonia, while they were not ill
+    in reality. We call such an error a **False Positive** (**FP**) prediction. Is
+    having 30 false positives a significant disadvantage? That depends on how physicians
+    will use the model. If all subjects will be automatically prescribed with heavy
+    medication with side-effects, false positives can be critical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It may be less severe if we consider a positive model only as a possibility
+    of having a disease. If a positive model answer only signals that the patient
+    must go through a specific set of diagnostic procedures, then we can see a benefit:
+    to achieve the same level of pneumonia identification, therapists will diagnose
+    only 32 patients, where previously they had to investigate 200,000 cases. If we
+    had not used the confusion table, we might have missed dangerous model behavior
+    that would negatively affect people''s health.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, your team has done another experiment and created a new model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **Model prediction:****Has pneumonia** | **Model prediction:****Does not
+    have pneumonia** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****Has pneumonia** | 0 | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****Does not have pneumonia** | 100,000 | 99,998 |'
+  prefs: []
+  type: TYPE_TB
+- en: Does this model perform better? The model would have missed one patient that
+    needed therapy and assigned 100,000 healthy people to a treatment group, making
+    physicians do unnecessary work. In truth, you can make the final decision only
+    after presenting results to the people who will use the model. They may have a
+    different opinion on what is best. It would be best to define this at the first
+    stages of the project by creating a model-testing methodology document by collaborating
+    with experts in the field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will face binary classification problems everywhere, thus having a good
+    understanding of terminology is important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can see all new concepts summed up in the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **Model prediction:****1 (positive case)** | **Model prediction:****0
+    (negative case)** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****1 (positive case)** | TP | FN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****0 (negative case)** | FP | TN |'
+  prefs: []
+  type: TYPE_TB
+- en: It is crucial to note that you can control the amount of false positive and
+    false negative responses for a single model. Classifiers output a probability
+    of a data point belonging to a class. That is, the model prediction is a number
+    between 0 and 1\. You can decide whether a prediction belongs to a positive or
+    negative class by comparing it with a threshold. For example, if the threshold
+    is 0.5, then any model prediction greater than 0.5 will belong to class 1 and
+    to 0 otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By changing the threshold, you can change the proportions between the cells
+    in the confusion table. By choosing a large threshold, like 0.9, the volume of
+    false positive responses will decrease, but false negative responses will increase.
+    Threshold selection is essential for binary classification problems. Some environments,
+    such as digital advertising, will be more forgiving to false positives, while
+    in others, such as healthcare or insurance, you may find them unacceptable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Confusion tables provide deep insights into classification problems but require
+    your attention and time. This can be limiting when you want to do numerous experiments
+    and compare many models. To simplify the process, statisticians and data scientists
+    have designed many metrics that sum up classifier performance without suffering
+    from problems like accuracy metrics do. First, let's examine some ways to summarize
+    confusion table rows and columns. From there, we will explore how to condense
+    it into a single statistic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following table, you can see two new metrics for summarizing different
+    kinds of errors, precision and recall:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **Model prediction:****1** (**positive case**) | **Model prediction:****0**
+    (**negative case**) | **Combined metric** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****1** (**positive case**) | True Positive | False Negative
+    | ![](img/7714af33-14b7-42ca-a21b-8ed301f8b76c.png) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Real outcome:****0** (**negative case**) | False Positive | True Negative
+    |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Combined metric** | ![](img/9e75cead-a17d-444b-804a-6e25c5aa57f9.png),
+    also called **True Positive Rate** (**TPR**) |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: Precision measures a proportion of positive (relevant) cases that your model
+    has identified. If your model predicted 10 positive cases and 2 positive predictions
+    turned out to be negative in reality, then its precision would be 0.8\. Recall
+    represents a probability of correctly predicting a positive case. If out of 10
+    positive cases, the model had predicted all 10 correctly (10 true positives) and
+    marked 5 negative cases as positive (5 false positives), then its recall would
+    be 0.67\. A recall of 0.67 means that if our model predicts a positive case, it
+    will be correct 67 times out of 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For binary classification, precision and recall diminish the amount of metrics
+    we must work with to two. This is better, but not ideal. We can sum up everything
+    into a single number by using a metric called **F1-score**. You can calculate
+    F1 using the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/692dbd05-b1da-4d50-b59d-f082413b7b83.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: F1 is 1 for a perfect classifier and 0 for the worst classifier. Because it
+    considers both precision and recall, it does not suffer from the same problem
+    as accuracy and is a better default metric for classification problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More about imbalanced classes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the preceding examples, you might have noticed that many prediction problems
+    suffer from a phenomenon where one class occurs much more frequently than the
+    others. Identifying diseases such as cancer, estimating probabilities of credit
+    default, or detecting fraud in financial transactions are all examples of imbalanced
+    problems – positive cases are much less frequent than the negative ones. In such
+    situations, estimating classifier performance becomes tricky. Metrics such as
+    accuracy start to show an overly optimistic picture, so you need to resort to
+    more advanced technical metrics. The F1 score gives much more realistic values
+    in this setting. However, the F1 score is calculated from class assignments (0
+    or 1 in the case of binary classification) rather than class probabilities (0.2
+    and 0.95 in the case of binary classification).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most machine learning models output a probability of an example belonging to
+    a certain class, rather than direct class assignment. In particular, a cancer-detection
+    model could output a 0.32 (32%) disease probability based on the incoming data.
+    Then we must decide whether the patient will be labeled as having cancer or not.
+    To do this, we can use a threshold: all values lower than or equal to this threshold
+    will be labeled as 0 (does not have cancer), and all values greater than this
+    threshold will be considered as 1 (has cancer). The threshold can greatly affect
+    the resulting model''s quality, especially for imbalanced datasets. For example,
+    lower threshold values of will likely result in more 0 labels, however, the relationship
+    is not linear.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To illustrate this, let''s take a trained model and generate predictions for
+    the test dataset. If we calculate class assignments by taking lots of different
+    thresholds, and then calculate the precision, recall, and F1 score for each of
+    those assignments, we could depict each precision and recall value in a single
+    plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c11524ea-c914-4a1d-97b1-75b79b2d55e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding plot was made using the `yellowbrick` library, which contains
+    many useful visualization tools for model selection and interpretation. You can
+    see the capabilities of this library here: [https://www.scikit-yb.org/en/latest/index.html](https://www.scikit-yb.org/en/latest/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the preceding plot, you can see the precision (blue), recall (green), and
+    F1 (red) values for each threshold between 0 and 1\. Based on this plot, we can
+    see that 0.5, which is the default in many machine learning libraries, might not
+    be the best choice and that something like 0.45 would yield more optimal metric
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another useful concept shown in the plot is the queue rate (depicted in magenta),
+    which shows the proportion of instances in the test dataset labeled as positive.
+    For the 0.45 threshold (identified in the plot as a dashed line), you can see
+    that the queue rate is 0.4\. This means that approximately 40% of all cases will
+    be labeled as fraudulent. Depending on the business process in which the model
+    will be used, positive cases might need to be further investigated by humans.
+    In some cases, manual checking takes a lot of time or resources, but it is OK
+    to misclassify a few positive instances for a much lower queue rate. In such cases,
+    you might want to choose models with lower queue rates even if their performance
+    is lower.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All information about precision, recall, and thresholds can be further summarized
+    into a single number called the **area under precision-recall curve** (**PR AUC**).
+    This metric can be used to make quick judgments over a large number of different
+    models without making manual evaluations of model quality on different thresholds.
+    Another metric that is frequently used for binary classifier evaluations is called
+    the **area under the** **receiver operating characteristic curve** (**ROC AUC**).
+    In general, you will want to use PR AUC for imbalanced datasets and ROC AUC for
+    balanced datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference arises from the ways in which those metrics are calculated, but
+    we will omit the technical details here for the sake of brevity. Calculating AUC
+    metrics is a bit more involved than the other metrics presented in this chapter.
+    For more information, check out [https://www.chioka.in/differences-between-roc-auc-and-pr-auc/](https://www.chioka.in/differences-between-roc-auc-and-pr-auc/) and
+    [https://en.wikipedia.org/wiki/Receiver_operating_characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is no single rule for choosing the right balance for the precision, recall,
+    F1, and queue rate. Those values should be thoughtfully investigated with respect
+    to the business process. Relying solely on technical metrics for model selection
+    can result in a disaster, as models that are the best for your customers are not
+    always the most accurate models. In some cases, high precision might be more important
+    than recall, while for others, the queue rate will be most important. At this
+    point, we need to introduce another kind of metric that will act as a bridge between
+    technical metrics and business requirements: business metrics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying business metrics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While technical metrics may be essential in the model-development process, they
+    do not speak the language of business. A bunch of confusion tables with the F1
+    score will rarely impress your customers or stakeholders. They are more concerned
+    with the problem that the model will solve than with its internals. They won't
+    be interested in the false positive rate, but they will listen when you will talk
+    about the money that the model would save them in the next quarter. Therefore,
+    designing a business metric is important. Your project will need a quality measure
+    that is crystal clear for all key stakeholders, with or without experience in
+    data science. If you are in the business environment, a good start would be to
+    look at the **key performance indicators** (**KPI**) of business processes you
+    are trying to improve using machine learning. It is likely that you will find
+    a ready-to-use business metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, we conclude an introduction to technical metrics. There are many
+    more ways to test classification and regression models, all with pros and cons.
+    Enumerating and describing them all would take a book in itself and would be unnecessary
+    because we have already achieved our goal. Armed with new concepts from this chapter,
+    you now understand the general flow of how to evaluate a machine learning model
+    before testing it in real-world conditions. Now you can use offline model testing
+    to check the model's quality before deploying the model. Next, we will explore
+    online testing to complete your understanding of a model's quality assessment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Online model testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Even a great offline model testing pipeline won''t guarantee that the model
+    will perform exactly the same in production. There are always risks that can affect
+    your model performance, such as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Humans**: We can make mistakes and leave bugs in the code.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data collection**: Selection bias and incorrect data-collection procedures
+    may disrupt true metric values.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Changes**: Real-world data may change and deviate from your training dataset,
+    leading to unexpected model behavior.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The only way to be certain about model performance in the near future is to
+    perform a live test. Depending on the environment, such test may introduce big
+    risks. For example, models that assess airplane engine quality or patient health
+    would be unsuitable for real-world testing before we become confident in their
+    performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When the time for a live test comes, you will want to minimize risks while
+    making statistically valid conclusions. Thankfully, there is a statistical framework
+    for that purpose known as hypothesis testing. When performing a hypothesis test,
+    you check the validity of some idea (hypothesis) by collecting data and executing
+    a statistical test. Imagine you need to check whether your new advertising model
+    increases revenues from the ad service. To do this, you randomly split all your
+    clients into two groups: one group uses the old advertising algorithm, while the
+    others see ads recommended by a new algorithm. After you have collected a sufficient
+    volume of data, you compare two groups and measure differences between them. Why
+    do we need to bother with statistics, you may ask?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because we can answer the following questions only with the help of stats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How should I sort (sample) individuals into each group? Can my sampling process
+    distort results of the test?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is the minimum number of clients in each group? Can random fluctuations
+    in the data affect my measurements?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How long should I run the test for to get a confident answer?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What formula should I use to compare results in each group?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The experiment setup for a hypothesis test splits test targets into two groups
+    on purpose. We can try to use a single group instead. For instance, we can take
+    one set of measurements with the old model. After the first part of the experiment
+    is finished, we can deploy the new algorithm and measure its effect. Then, we
+    compare two measurements made one after another. What could go wrong? In fact,
+    the results we get wouldn''t mean anything. Many things could have changed in
+    between our measurements, such as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: User preferences
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: General user mood
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Popularity of our service
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Average user profile
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Any other attribute of users or businesses
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'All these hidden effects could affect our measurements in unpredictable ways,
+    which is why we need two groups: test and control. We must select these groups
+    in such a way that the only difference between them is our hypothesis. It should
+    be present in the test group and missing from the control group. To illustrate,
+    in medical trials, control groups are the ones who get the placebo. Suppose we
+    want to test the positive effect of a new painkiller. Here are some examples of
+    bad test setups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The control group consists only of women.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The test and control groups are in different geographical locations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You use biased interviews to preselect people for an experiment.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The easiest way to create groups is random selection. Truly random selection
+    may be hard to do in the real world, but is easy if you deal with internet services.
+    There, you may just randomly decide which version of your algorithm to use for
+    each active user. Be sure to always design experiment setups with an experienced
+    statistician or data scientist, as correct tests are notoriously hard to execute,
+    especially in offline settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Statistical tests check the validity of a null hypothesis, that is, that the
+    results you got are by chance. The opposite result is called an alternative hypothesis.
+    For instance, here is the hypothesis set for our ad model test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Null hypothesis**: The new model does not affect the ad service revenue.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Alternative hypothesis**: The new model affects the ad service revenue.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Typically, a statistical test measures the probability of a null hypothesis
+    being true. If the chances are low, then the alternative hypothesis is true. Otherwise,
+    we accept the null hypothesis. If, according to a statistical test, the probability
+    that the new model does not affect service revenue would be 5%, we would say that
+    we accept the alternative hypothesis at a 95% confidence level. This means the
+    model affects the ad service revenue with a 95% probability. The significance
+    level for rejecting the null hypothesis depends on the level of risk you want
+    to take. For an ad model, a 95% significance may be enough, while no less than
+    a 99% significance is satisfactory for a model that tests patient health conditions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most typical hypothesis test is comparing two means. If we use this test
+    in our ad model example, we would measure average revenues with and without the
+    new ranking algorithm. We may accept or reject the null hypothesis using a test
+    statistic when the experiment is finished.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The amount of data you need to collect for conducting a hypothesis test depends
+    on several factors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Confidence level**: The more statistical confidence you need, the more data
+    is required to support the evidence.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Statistical power**: This measures the probability of detecting a significant
+    difference, if one exists. The more statistical power your test has, the lower
+    the chance of false negative responses.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Hypothesized difference and population variance**: If your data has large
+    variance, you need to collect more data to detect a significant difference. If
+    the difference between the two means is smaller than population variance, you
+    would need even more data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'You can see how different test parameters determine their data hunger in the
+    following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Confidence level** | **Statistical power** | **Hypothesized difference**  |
+    **Population variance** | **Recommended sample size** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 95% | 90% | $10 | $100 | 22 ad demonstrations to clients |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 99% | 90% | $10 | $100 | 30 ad demonstrations to clients |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 99% | 90% | $1 | $100 | 2,976 ad demonstrations to clients |'
+  prefs: []
+  type: TYPE_TB
+- en: 'While powerful, hypothesis tests have limitations: you need to wait until the
+    experiment ends before you can apply its results. If your model is bad, you won''t
+    be able to reduce damage without compromising the test procedure. Another limitation
+    is that you can test only one model at a time with a single hypothesis test.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In situations where you can trade off statistical rigor for speed and risk-aversion,
+    there is an alternative approach called **Multi-Armed Bandits** (**MABs**). To
+    understand how MABs work, imagine yourself inside a casino with lots of slot machines.
+    You know that some of those machines yield better returns than others. Your task
+    is to find the best slot machine with a minimal number of trials. Thus, you try
+    different (multi) arms of slot machines (bandits) to maximize your reward. You
+    can extend this situation to testing multiple ad models: for each user, you must
+    find a model that is most likely to increase your ad revenue.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most popular MAB algorithm is called an epsilon-greedy bandit. Despite
+    the name, the inner workings of the method are simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select a small number called **epsilon**. Suppose we have chosen 0.01.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choose a random number between 0 and 1\. This number will determine whether
+    MAB will explore or exploit a possible set of choices.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the number is lower or equal to epsilon, make a choice at random and record
+    a reward after making an action tied to your choice. We call this process exploration
+    – MAB tries different actions at random with a low probability to find out their
+    mean reward.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If your number is greater than epsilon, make the best choice according to the
+    data you have collected. We call this process exploitation – MAB exploits knowledge
+    it has collected to execute an action that has the best expected reward. MAB selects
+    the best action by averaging all recorded rewards for each choice and selecting
+    a choice with the greatest reward expectation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Frequently, we start with large values of epsilon and decrease it to smaller
+    values. In this way, MAB explores lots of random choices at the start and exploits
+    the most profitable actions toward the end. The exploration frequency is gradually
+    diminishing, becoming closer to zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you first launch MAB, it collects rewards from random actions. As time
+    passes, you will see that average rewards for all choices converge to their true
+    values. The major benefit of MABs is that they change their behavior in real time.
+    While someone is waiting for a hypothesis test results, MAB gives you a changing
+    picture while covering to the best choice. Bandits are one of the most basic reinforcement
+    learning algorithms. Despite their simplicity, they can provide good results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now have two new testing approaches to use. How do we choose between them?
+    Unfortunately, there is no simple answer. Hypothesis tests and MABs pose different
+    constraints on data, sampling processes, and experiment conditions. It is better
+    to consult an experienced statistician or a data scientist before deciding. Mathematical
+    constraints are not the only things that affect the choice; the environment is
+    also important. MABs are easy to apply in situations where you can test different
+    choices on random individuals from the whole population. This may be very convenient
+    when testing models for a large online retailer, but is impossible for clinical
+    trials, where you are better to apply hypothesis testing. Let''s see a rule of
+    thumb for choosing between MABs and hypothesis tests:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MABs are better suited to environments where you need to test many alternatives
+    with a limited set of resources. You trade off statistical rigor for efficiency
+    when using MABs. MABs can take a lot of time to converge, gradually improving
+    over time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You should apply hypothesis tests if you have only one alternative, if your
+    trial involves great risks, or if you need a statistically-rigorous answer. Hypothesis
+    tests take a fixed amount of time and resources to complete, but impose larger
+    risks than MABs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While testing models in an online setting is extremely important for making
+    sure that your offline test results stay true after the deployment stage, there
+    is still a danger zone that we have not covered. Abrupt and unexpected changes
+    in data can severely affect or even break the deployed model, so it is also important
+    to monitor incoming data quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Online data testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Even after performing successful online tests, you are not fully guarded against
+    unexpected issues with model operation. Machine learning models are sensitive
+    to incoming data. Good models have a certain degree of generalization, but significant
+    changes in data or underlying processes that generate data can lead the model
+    predictions astray. If online data significantly diverges from test data, you
+    can't be certain about model performance before performing online tests. If the
+    test data differs from the training data, then your model won't work as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To overcome this, your system needs to monitor all incoming data and check
+    its quality on the fly. Here are some typical checks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Missing values in mandatory data fields
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Minimum and maximum values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acceptable values of categorical data fields
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: String data formats (dates, addresses)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Target variable statistics (distribution checks, averages)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we answered a very important question: what does it mean for
+    a model to work correctly? We explored the nature of errors and studied metrics
+    that can quantify and measure model errors. We drew a line between offline and
+    online model testing and defined testing procedures for both types. We can perform
+    offline model testing using train/validation/test data splits and cross-validation.
+    For online testing, we can choose between hypothesis tests and MABs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will look into the inner workings of data science. We
+    will dive into the main concepts behind machine learning and deep learning, giving
+    an intuitive understanding of how machines learn.
+  prefs: []
+  type: TYPE_NORMAL

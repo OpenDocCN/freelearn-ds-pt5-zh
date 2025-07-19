@@ -1,0 +1,2067 @@
+- en: Chapter 2. Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"I can see nothing," said I, handing it back to my friend.**"On the
+    contrary, Watson, you can see everything. You fail, however, to reason from what
+    you see. You are too timid in drawing your inferences."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Sir Arthur Conan Doyle, The Adventure of the Blue Carbuncle* |'
+  prefs: []
+  type: TYPE_TB
+- en: In the previous chapter, we introduced a variety of numerical and visual approaches
+    to understand the normal distribution. We discussed descriptive statistics, such
+    as the mean and standard deviation, and how they can be used to summarize large
+    amounts of data succinctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A dataset is usually a sample of some larger population. Sometimes, this population
+    is too large to be measured in its entirety. Sometimes, it is intrinsically unmeasurable,
+    either because it is infinite in size or it otherwise cannot be accessed directly.
+    In either case, we are forced to generalize from the data that we have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we consider statistical inference: how we can go beyond simply
+    describing the samples of data and instead describe the population from which
+    they were sampled. We''ll look in detail at how confident we can be about the
+    inferences we make from the samples of data. We''ll cover hypothesis testing:
+    a robust approach to data analysis that puts the science in data science. We''ll
+    also implement an interactive web page with ClojureScript to simulate the relationship
+    between samples and the population from which they are taken.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To help illustrate the principles, we'll invent a fictional company, AcmeContent,
+    that has recently hired us as a data scientist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing AcmeContent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To help illustrate the concepts in this chapter, let's imagine that we've recently
+    been appointed for the data scientist role at AcmeContent. The company runs a
+    website that lets visitors share video clips that they've enjoyed online.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the metrics AcmeContent tracks through its web analytics is **dwell time**.
+    This is a measure of how long a visitor stays on the site. Clearly, visitors who
+    spend a long time on the site are enjoying themselves and AcmeContent wants its
+    visitors to stay as long as possible. If the mean dwell time increases, our CEO
+    will be very happy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Dwell time is the length of time between the time a visitor first arrives at
+    a website and the time they make their last request to your site.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **bounce** is a visitor who makes only one request—their dwell time is zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the company's new data scientist, it falls to us to analyze the dwell time
+    reported by the website's analytics and measure the success of AcmeContent's site.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the sample code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The code for this chapter is available at [https://github.com/clojuredatascience/ch2-inference](https://github.com/clojuredatascience/ch2-inference)
+    or from the Packt Publishing's website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example data has been generated specifically for this chapter. It's small
+    enough that it has been included with the book's sample code inside the data directory.
+    Consult the book's wiki at [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com)
+    for links to further read about dwell time analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load and inspect the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous chapter, we used Incanter to load Excel spreadsheets with the
+    `incanter.excel/load-xls` function. In this chapter, we will load a dataset from
+    a tab-separated text file. For this, we'll make use of `incanter.io/read-dataset`
+    that expects to receive either a URL object or a file path represented as a string.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The file has been helpfully reformatted by AcmeContent''s web team to contain
+    just two columns—the date of the request and the dwell time in seconds. There
+    are column headings in the first row, so we pass `:header true` to `read-dataset`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run this code (either in the REPL or on the command line with `lein
+    run –e 2.1`), you should see an output similar to the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Load and inspect the data](img/7180OS_02_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let's see what the dwell times look like as a histogram.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing the dwell times
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can plot a histogram of dwell times by simply extracting the `:dwell-time`
+    column with `i/$`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The earlier code generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing the dwell times](img/7180OS_02_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is clearly not a normally distributed data, nor even a very skewed normal
+    distribution. There is no tail to the left of the peak (a visitor clearly can't
+    be on our site for less than zero seconds). While the data tails off steeply to
+    the right at first, it extends much further along the *x* axis than we would expect
+    from normally distributed data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When confronted with distributions like this, where values are mostly small
+    but occasionally extreme, it can be useful to plot the *y* axis as a **log scale**.
+    Log scales are used to represent events that cover a very large range. Chart axes
+    are ordinarily linear and they partition a range into equally sized steps like
+    the "number line" we learned at school. Log scales partition the range into steps
+    that get larger and larger as they go further away from the origin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some systems of measurement for natural phenomena that cover a very large range
+    are represented on a log scale. For example, the Richter magnitude scale for earthquakes
+    is a base-10 logarithmic scale, which means that an earthquake measuring 5 on
+    the Richter scale is 10 times the magnitude of an earthquake measuring 4\. The
+    decibel scale is also a logarithmic scale with a different base—a sound wave of
+    30 decibels has 10 times the magnitude of a sound wave of 20 decibels. In each
+    case, the principle is the same—the use of a log scale allows a very large range
+    of values to be compressed into a much smaller range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Plotting our *y* axis on `log-axis` is simple with Incanter with `c/set-axis`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: By default Incanter will use a base-10 log scale, meaning that each tick on
+    the axis represents a range that is 10 times the previous step. A chart like this—where
+    only one axis is shown on a log scale—is called **log-linear**. Unsurprisingly,
+    a chart showing two log axes is called a **log-log chart**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing the dwell times](img/7180OS_02_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plotting dwell times on a log-linear plot shows hidden consistency in the data—there
+    is a linear relationship between the dwell time and the logarithm of the frequency.
+    The clarity of the relationship breaks down to the right of the plot where there
+    are fewer than 10 visitors but, aside from this, the relationship is remarkably
+    consistent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A straight line on a log-linear plot is a clear indicator of an exponential
+    distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The exponential distribution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The exponential distribution occurs frequently when considering situations where
+    there are many small positive quantities and much fewer larger quantities. Given
+    what we have learned about the Richter scale, it won't be a surprise to learn
+    that the magnitude of earthquakes follows an exponential distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The distribution also frequently occurs in waiting times—the time until the
+    next earthquake of any magnitude roughly follows an exponential distribution as
+    well. The distribution is often used to model failure rates, which is essentially
+    the waiting time until a machine breaks down. Our exponential distribution models
+    a process similar to failure—the waiting time until a visitor gets bored and leaves
+    our site.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The exponential distribution has a number of interesting properties. One relates
+    to the mean and standard deviation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The mean and standard deviations are very similar. In fact, for an ideal exponential
+    distribution, they are exactly the same. This property holds true for all the
+    exponential distributions—as the mean increases, so does the standard deviation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For exponential distributions, the mean and standard deviations are equal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A second property of the exponential distribution is that it is **memoryless**.
+    This is a counterintuitive property best illustrated by an example. We expect
+    that as a visitor continues to browse our site, the probability of them getting
+    bored and leaving increases. Since the mean dwell time is 93 seconds, it might
+    appear that beyond 93 seconds, they are less and less likely to continue browsing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The memoryless property of exponential distributions tells us that the probability
+    of a visitor staying on our site for another 93 seconds is exactly the same whether
+    they have already been browsing the site for 93 seconds, 5 minutes, an hour, or
+    they have just arrived.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For a memoryless distribution, the probability of continuing for an additional
+    *x* minutes is not affected by how much time has already elapsed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The memoryless property of exponential distributions goes some way towards explaining
+    why it is so difficult to predict when an earthquake will occur next. We must
+    rely on other evidence (such as a disturbance in geomagnetism) rather than the
+    elapsed time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the median dwell time is 64 seconds, about half of our visitors are staying
+    on the site for only around a minute. A mean of 93 seconds shows that some visitors
+    are staying much longer than that. These statistics have been calculated on all
+    the visitors over the last 6 months. It might be interesting to see how these
+    statistics vary per day. Let's calculate this now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The distribution of daily means
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The file provided by the web team includes the timestamp of the visit. In order
+    to aggregate by day, it's necessary to remove the time portion from the date.
+    While we could do this with string manipulation, a more flexible approach would
+    be to use a date and time library such as `clj-time` ([https://github.com/clj-time/clj-time](https://github.com/clj-time/clj-time))
+    to parse the string. This will allow us to not only remove the time, but also
+    perform arbitrarily complex filters (such as filtering to particular days of the
+    week or the first or last day of the month, for example).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `clj-time.predicates` namespace contains a variety of useful predicates
+    and the `clj-time.format` namespace contains parsing functions that will attempt
+    to convert the string to a date-time object using predefined standard formats.
+    If our timestamp wasn''t already in a standard format, we could use the same namespace
+    to build a custom formatter. Consult the `clj-time` documentation for more information
+    and many usage examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Combining the previous functions allows us to calculate the mean, median, and
+    standard deviation for the daily mean dwell times:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The mean value of our daily means is 90.2 seconds. This is close to the mean
+    value we calculated previously on the whole dataset, including weekends. The standard
+    deviation is much lower though, just 3.7 seconds. In other words, the distribution
+    of daily means has a much lower standard deviation than the entire dataset. Let''s
+    plot the daily mean dwell times on a chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The distribution of daily means](img/7180OS_02_130.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distribution of sample means is distributed symmetrically around the overall
+    grand mean value of 90 seconds with a standard deviation of 3.7 seconds. Unlike
+    the distribution from which these means were sampled—the exponential distribution—the
+    distribution of sample means is normally distributed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The central limit theorem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We encountered the central limit theorem in the previous chapter when we took
+    samples from a uniform distribution and averaged them. In fact, the central limit
+    theorem works for any distribution of values, provided the distribution has a
+    finite standard deviation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The central limit theorem states that the distribution of sample means will
+    be normally distributed irrespective of the distribution from which they were
+    calculated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It doesn't matter that the underlying distribution is exponential—the central
+    limit theorem shows that the mean of random samples taken from any distribution
+    will closely approximate a normal distribution. Let's plot a normal curve over
+    our histogram to see how closely it matches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To plot a normal curve over our histogram, we have to plot our histogram as
+    a density histogram. This plots the proportion of all the points that have been
+    put in each bucket rather than the frequency. We can then overlay the normal probability
+    density with the same mean and standard deviation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The central limit theorem](img/7180OS_02_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The normal curve plotted over the histogram has a standard deviation of approximately
+    3.7 seconds. In other words, this quantifies the variation of each daily mean
+    being relative to the grand mean of 90 seconds. We can think of each day's mean
+    as a sample from the overall population with the earlier curve representing the
+    distribution of the sample means. Because 3.7 seconds is the amount that the sample's
+    mean differs from the grand mean, it's referred to as the **standard error**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standard error
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While the standard deviation measures the amount of variation there is within
+    a sample, the standard error measures the amount of variation there is between
+    the means of samples taken from the same population.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The standard error is the standard deviation of the distribution of the sample
+    means.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have calculated the standard error of dwell time empirically by looking
+    at the previous 6 months of data. But there is an equation that allows us to calculate
+    it from only a single sample:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Standard error](img/7180OS_02_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *σ[x]* is the standard deviation and *n* is the sample size. This is
+    unlike the descriptive statistics that we studied in the previous chapter. While
+    they described a single sample, the standard error attempts to describe a property
+    of samples in general—the amount of variation in the sample means that variations
+    can be expected for samples of a given size:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The standard error of the mean is thus related to two factors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The size of the sample
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The population standard deviation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The size of the sample has the largest impact on the standard error. Since we
+    take the square root of the sample size, we have to increase the size of the sample
+    by four to halve the size of the standard error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It may seem curious that the proportion of the population sampled has no effect
+    on the size of the standard error. This is just as well, since some populations
+    could be infinite in size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Samples and populations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The words "sample" and "population" mean something very particular to statisticians.
+    A population is the entire collection of entities that a researcher wishes to
+    understand or draw conclusions about. For example, in the second half of the 19th
+    century, Gregor Johann Mendel, the originator of genetics, recorded observations
+    about pea plants. Although he was studying specific plants in a laboratory, his
+    objective was to understand the underlying mechanisms behind heredity in all possible
+    pea plants.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Statisticians refer to the group of entities from which a sample is drawn as
+    the population, whether or not the objects being studied are people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since populations may be large—or in the case of Mendel's pea plants, infinite—we
+    must study representative samples and draw inferences about the population from
+    them. To distinguish the measurable attributes of our samples from the inaccessible
+    attributes of the population, we use the word *statistics* to refer to the *sample*
+    attributes and parameters to refer to the population attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Statistics are the attributes we can measure from our samples. Parameters are
+    the attributes of the population we are trying to infer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, statistics and parameters are distinguished through the use of different
+    symbols in mathematical formulae:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Measure | Sample statistic | Population parameter |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Number of items | *n* | *N* |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Mean | ![Samples and populations](img/7180OS_02_02.jpg) | *µ[x]* |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Standard deviation | *S[x]* | *σ[x]* |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Standard error | ![Samples and populations](img/7180OS_02_03.jpg) |   |'
+  prefs: []
+  type: TYPE_TB
+- en: Here, ![Samples and populations](img/7180OS_02_02.jpg) is pronounced as "x-bar,"
+    *µ[x]* is pronounced as "mu x," and *σ[x]* is pronounced as "sigma x."
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you refer back to the equation for the standard error, you'll notice that
+    it is calculated from the population standard deviation *σ[x]*, not the sample
+    standard deviation *S[x]*. This presents us with a paradox—we can't calculate
+    the sample statistic using population parameters when the population parameters
+    are precisely the values we are trying to infer. In practice, though, the sample
+    and population standard deviations are assumed to be the same above a sample size
+    of about 30.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s calculate the standard error from a particular day''s means. For example,
+    let''s take a particular day, say May 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Although we have only taken a sample from one day, the standard error we calculate
+    is very close to the standard deviation of all the sample means—3.6 compared to
+    3.7s. It's as if, like a cell containing DNA, each sample encodes information
+    about the entire population within it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Confidence intervals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since the standard error of our sample measures how closely we expect our sample
+    mean to match the population mean, we could also consider the inverse—the standard
+    error measures how closely we expect the population mean to match our measured
+    sample mean. In other words, based on our standard error, we can infer that the
+    population mean lies within some expected range of the sample mean with a certain
+    degree of confidence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taken together, the "degree of confidence" and the "expected range" define a
+    **confidence interval**. While stating confidence intervals, it is fairly standard
+    to state the 95 percent interval—we are 95 percent sure that the population parameter
+    lies within the interval. Of course, there remains a 5 percent possibility that
+    it does not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Confidence intervals](img/7180OS_02_150.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Whatever the standard error, 95 percent of the population mean will lie between
+    -1.96 and 1.96 standard deviations of the sample mean. 1.96 is therefore the *critical
+    z-value* for a 95 percent confidence interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The name *z*-value comes from the fact that the normal distribution is also
+    called the *z*-distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The number 1.96 is so commonly used that it''s a number worth remembering,
+    but we can also calculate the critical value using the `s/quantile-normal` function.
+    Our `confidence-interval` function that follows expects a value for `p` between
+    zero and one. This will be 0.95 for our 95 percent confidence interval. We need
+    to subtract it from one and divide it by two to calculate the site of each of
+    the two tails (2.5 percent for the 95 percent confidence interval):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result tells us that we can be 95 percent confident that the population
+    mean lies between 83.53 and 97.75 seconds. Indeed, the population mean we calculated
+    previously lies well within this range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample comparisons
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After a viral marketing campaign, the web team at AcmeContent take a sample
+    of dwell times for us to analyze from a single day. They'd like to know whether
+    their latest campaign has brought more engaged visitors to the site. Confidence
+    intervals provide us with an intuitive way to compare the two samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We load the dwell times from the campaign as we did earlier and summarize them
+    in the same way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The mean seems to be much larger than the means we have been looking at previously—130s
+    compared to 90s. It could be that there is some significant difference here, although
+    the standard error is over twice the size of our previous one day sample, owing
+    to a smaller sample size and larger standard deviation. We can calculate the 95
+    percent confidence interval for the population mean based on this data using the
+    same `confidence-interval` function like before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The 95 percent confidence interval for the population mean is 114.8s to 145.6s.
+    This doesn't overlap with the 90s population mean we calculated previously at
+    all. There appears to be a large underlying population difference that is unlikely
+    to have occurred just through a sampling error alone. Our task now is to find
+    out why.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bias
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A sample should be representative of the population from which it is drawn.
+    In other words, it should avoid bias that would result in certain kinds of population
+    members being systematically excluded (or included) over others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A famous example of sample bias is the 1936 Literary Digest poll for the US
+    Presidential Election. It was one of the largest and most expensive polls ever
+    conducted with 2.4 million people being surveyed by mail. The results were decisive—Republican
+    governor of Kansas Alfred Landon would defeat Franklin D. Roosevelt, taking 57
+    percent of the vote. In the event, Roosevelt won the election with 62 percent
+    of the vote.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The primary cause of the magazine's huge sampling error was sample selection
+    bias. In their attempt to gather as many voter addresses as possible, the Literary
+    Digest scoured telephone directories, magazine subscription lists, and club membership
+    lists. In an era when telephones were more of a luxury item, this process was
+    guaranteed to be biased in favor of upper- and middle-class voters and was not
+    representative of the electorate as a whole. A secondary cause of bias was **nonresponse
+    bias**—less than a quarter of those who were approached actually responded to
+    the survey. This is a kind of selection bias that favors only those respondents
+    who actually wish to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A common way to avoid sample selection bias is to ensure that the sampling is
+    randomized in some way. Introducing chance into the process makes it less likely
+    that experimental factors will unfairly influence the quality of the sample. The
+    Literary Digest poll was focused on getting the largest sample possible, but an
+    unbiased small sample is much more useful than a badly chosen large sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we open up the `campaign-sample.tsv` file, we''ll discover that our sample
+    has come exclusively from June 6, 2015\. This was a weekend, a fact we can easily
+    confirm with `clj-time`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our summary statistics so far have all been based on the data we filtered just
+    to include weekdays. This is a bias in our sample, and if the weekend visitor
+    behavior turns out to be different from the weekday behavior—a very likely scenario—then
+    we would say that the samples represent two different populations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing different populations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s remove the filter for weekdays and plot the daily mean dwell time for
+    both week days and weekends:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The code generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing different populations](img/7180OS_02_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distribution is no longer a normal distribution. In fact, the distribution
+    is **bimodal**—there are two peaks. The second smaller peak, which corresponds
+    to the newly added weekend data, is lower both because there are not as many weekend
+    days as weekdays and because the distribution has a larger standard error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In general, distributions with more than one peak are referred to as **multimodal**.
+    They can be an indicator that two or more normal distributions have been combined,
+    and therefore, that two or more populations may have been combined. A classic
+    example of bimodality is the distribution of people's heights, since the modal
+    height for men is larger than that for women.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The weekend data has different characteristics than the weekday data. We should
+    make sure that we''re comparing like with like. Let''s filter our original dataset
+    just to weekends:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The grand mean value at weekends (based on 6 months of data) is 117.8s, which
+    falls within the 95 percent confidence interval of the marketing sample. In other
+    words, although 130s is a high mean dwell time, even for a weekend, the difference
+    is not so big that it couldn't simply be attributed to chance variation within
+    the sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approach we have just taken to establish a genuine difference in populations
+    (between the visitors to our site on weekends compared to the visitors during
+    the week) is not the way statistical testing would conventionally proceed. A more
+    usual approach is to begin with a theory, and then to test that theory against
+    the data. The statistical method defines a rigorous approach for this called **hypothesis
+    testing**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hypothesis testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hypothesis testing is a formal process for statisticians and data scientists.
+    The standard approach to hypothesis testing is to define an area of research,
+    decide which variables are necessary to measure what is being studied, and then
+    to set out two competing hypotheses. In order to avoid only looking at the data
+    that confirms our biases, researchers will state their hypothesis clearly ahead
+    of time. Statistics can then be used to confirm or refute this hypothesis, based
+    on the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to help retain our visitors, designers go to work on a variation of
+    our home page that uses all the latest techniques to keep the attention of our
+    audience. We'd like to be sure that our effort isn't in vain, so we will look
+    for an increase in dwell time on the new site.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, our research question is "does the new site cause the visitor's dwell
+    time to increase"? We decide that this should be tested with reference to the
+    mean dwell time. Now, we need to set out our two hypotheses. By convention, the
+    data is assumed not to contain what the researcher is looking for. The conservative
+    opinion is that the data would not show anything unusual. This is called the **null
+    hypothesis** and is normally denoted *H[0]*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Hypothesis testing assumes that the null hypothesis is true until the weight
+    of the evidence makes this proposition unlikely. This "back to front" way of looking
+    for proof is driven partly by the simple psychological fact that when people go
+    looking for something, they tend to find it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The researcher then forms an alternate hypothesis, denoted by *H[1]*. This
+    could simply be that the population mean is different from the baseline. Or, it
+    could be that the population mean is greater or lesser than the baseline, or even
+    greater or lesser by some specified value. We''d like to test whether the new
+    site increases dwell time, so these will be our null and alternate hypotheses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*H[0]*: The dwell time for the new site is no different than the dwell time
+    of the existing site'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*H[1]*: The dwell time is greater for the new site compared to the existing
+    site'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our conservative assumption is that the new site has no effect on the dwell
+    time of users. The null hypothesis doesn't have to be nil hypothesis (that there
+    is no effect), but in this case, we have no reasonable justification to assume
+    otherwise. If the sample data does not support the null hypothesis (if the data
+    differs from its prediction by a margin too large to be by chance alone), then
+    we will reject the null hypothesis and propose the alternative hypothesis as the
+    best alternative explanation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having set out the null and alternative hypotheses, we must set a significance
+    level at which we are looking for an effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Significance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Significance testing was originally developed independent of hypothesis testing,
+    but the two approaches are now very often used in concert together. The purpose
+    of significance testing is to set the threshold beyond which we determine that
+    the observed data no longer supports the null hypothesis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are therefore two risks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We may accept a difference as significant when in fact, it arose by chance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We may attribute a difference to chance when, in fact, it indicates a true population
+    difference
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'These two possibilities are respectively referred to as Type I and Type II
+    errors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | *H[0]* false | *H[0]* true |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Reject H[0]** | True negative | Type I error |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Accept** *H[0]* | Type II error | True positive |'
+  prefs: []
+  type: TYPE_TB
+- en: The more we reduce our risk of making Type I errors, the more we increase our
+    risk of making Type II errors. In other words, the more confident we wish to be
+    to not claim a real difference when there is none, the bigger the difference we'll
+    demand between our samples to claim statistical significance. This increases the
+    probability that we'll disregard a genuine difference when we encounter it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two significance thresholds are commonly used by statisticians. These are the
+    5 percent and 1 percent levels. A difference at 5 percent is commonly called *significant*
+    and at 1 percent is called *highly significant*. The choice of threshold is often
+    referred to in formulae by the Greek letter alpha, *α*. Since finding no effect
+    might be regarded as a failure (either of the experiment or of the new site),
+    we might be tempted to adjust *α* until we find an effect. Because of this, the
+    textbook approach to significance testing requires us to set a significance level
+    before we look at our data. A level of 5 percent is often chosen, so let's go
+    with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing a new site design
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The web team at AcmeContent have been hard at work, developing a new site to
+    encourage visitors to stick around for an extended period of time. They've used
+    all the latest techniques and, as a result, we're pretty confident that the site
+    will show a marked improvement in dwell time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rather than launching it to all users at once, AcmeContent would like to test
+    the site on a small sample of visitors first. We've educated them about sample
+    bias, and as a result, the web team diverts a random 5 percent of the site traffic
+    to the new site for one day. The result is provided to us as a single text file
+    containing all the day's traffic. Each row shows the dwell time for a visitor
+    who is given a value of either "0" if they used the original site design, or "1"
+    if they saw the new (and hopefully improved) site.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing a z-test
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While testing with the confidence intervals previously, we had a single population
+    mean to compare to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With *z*-testing, we have the option of comparing two samples. The people who
+    saw the new site were randomized, and the data for both groups was collected on
+    the same day to rule out other time-dependent factors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we have two samples, we also have two standard errors. The *z*-test is
+    performed against the pooled standard error, which is simply the square root of
+    the sum of the variances divided by the sample sizes. This is the same as the
+    result we would get if we took the standard error of the samples combined:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Performing a z-test](img/7180OS_02_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, ![Performing a z-test](img/7180OS_02_05.jpg) is the variance of sample
+    *a* and ![Performing a z-test](img/7180OS_02_06.jpg) is the variance of sample
+    *b*. *n[a]* and *n[b]* are the sample sizes of *a* and *b*, respectively. The
+    pooled standard error can be calculated in Clojure like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To determine if the difference we''re seeing is unexpectedly large, we can
+    take the ratio of the observed difference between the means over the pooled standard
+    error. This quantity is given the variable name *z*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Performing a z-test](img/7180OS_02_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using our `pooled-standard-error` function, the *z*-statistic can be calculated
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The ratio *z* captures how much the means differ relative to the amount we
+    would expect given the standard error. The *z*-statistic therefore tells us how
+    many standard errors apart the means are. Since the standard error has a normal
+    probability distribution, we can associate this difference with a probability
+    by looking up the *z*-statistic in the normal CDF:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following example uses the *z*-test to compare the performance of the two
+    sites. We do this by grouping the rows by site, returning a map that indexes the
+    site to the collection of rows for the site. We call `map-vals` with `(partial
+    map :dwell-time)` to convert the collection of rows into a collection of dwell
+    times. `map-vals` is a function defined in Medley ([https://github.com/weavejester/medley](https://github.com/weavejester/medley)),
+    a library of lightweight utility functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Setting a significance level of 5 percent is much like setting a confidence
+    interval of 95 percent. In essence, we're looking to see if the observed difference
+    falls outside the 95 percent confidence interval. If it does, we can claim to
+    have found a result that's significant at the 5 percent level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The *p*-value is the probability of making a Type I error by wrongly rejecting
+    the null hypothesis if it is, in fact, true. The smaller the *p*-value, the more
+    certainty we have that the null hypothesis is false, and that we have found a
+    genuine effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This code returns a value of 0.0498, equating to 4.98 percent. As it is just
+    less than our significance threshold of 5 percent, we can claim to have found
+    something significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s remind ourselves of the null and alternative hypotheses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*H[0]*: The dwell time for the new site is no different from the dwell time
+    of the existing site'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*H[1]*: The dwell time is greater for the new site compared to the existing
+    site'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our alternate hypothesis is that the dwell time is greater for the new site.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are ready to claim statistical significance, and that the dwell time is greater
+    for the new site compared to the existing site, but we have a problem—with a smaller
+    sample, there is an increased uncertainty that the sample standard deviation matches
+    the population standard deviation. Our new site sample has only 16 visitors, as
+    shown in the output of the previous example. Samples as small as this invalidate
+    the assumption that the standard error is normally distributed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, there is a statistical test and an associated distribution which
+    models the increased uncertainty of standard errors for smaller sample sizes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Student's t-distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The *t*-distribution was popularized by William Sealy Gossett, a chemist working
+    for the Guinness Brewery in Ireland, who incorporated it into his analysis of
+    Stout.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: William Gosset published the test in Biometrika in 1908, but was forced to use
+    a pen name by his employer, who regarded the fact that they were using statistics
+    as a trade secret. The pen name he chose was "Student".
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the normal distribution is completely described by two parameters—the
+    mean and standard deviation, the *t*-distribution is described by only one parameter
+    called the **degrees of freedom**. The larger the degrees of freedom, the closer
+    the *t*-distribution resembles the normal distribution with a mean of zero and
+    a standard deviation of one. As the degrees of freedom decreases, the distribution
+    becomes wider with tails that are fatter than the normal distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Student''s t-distribution](img/7180OS_02_170.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The earlier chart shows how the *t*-distribution varies with respect to the
+    normal distribution for different degrees of freedom. Fatter tails for smaller
+    sample sizes correspond to an increased chance of observing larger deviations
+    from the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Degrees of freedom
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The degrees of freedom, often abbreviated to *df*, is closely related to the
+    sample size. It is a useful statistic and an intuitive property of the series
+    that can be demonstrated simply by example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you were told that the mean of two values is 10 and that one of the values
+    is 8, you would not need any additional information to be able to infer that the
+    other value is 12\. In other words, for a sample size of two and a given mean,
+    one of the values is constrained if the other is known.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If instead you're told that the mean of three values is 10 and the first value
+    is also 10, you would not be able to deduce what the remaining two values are.
+    Since there are an infinite number of sets of three numbers beginning with 10
+    whose mean is 10, the second value must also be specified before you can infer
+    the value of the third.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For any set of three numbers, the constraint is simple: you can freely pick
+    the first two numbers, but the final number is constrained. The degrees of freedom
+    can thus be generalized in the following way: for any single sample, the degrees
+    of freedom is one less than the sample size.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When comparing two samples of data, the degrees of freedom is two less than
+    the sum of the sample sizes, which is the same as the sum of their individual
+    degrees of freedom.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The t-statistic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While using the *t*-distribution, we look up the *t*-statistic. Like the *z*-statistic,
+    this value quantifies how unlikely a particular observed deviation is. For a dual
+    sample *t*-test, the *t*-statistic is calculated in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The t-statistic](img/7180OS_02_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, ![The t-statistic](img/7180OS_02_09.jpg) is the pooled standard error.
+    We could calculate the pooled standard error in the same way as we did earlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The t-statistic](img/7180OS_02_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, the equation assumes knowledge of the population parameters *σ[a]*
+    and *σ[b]*, which can only be approximated from large samples. The *t*-test is
+    designed for small samples and does not require us to make assumptions about population
+    variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a result, for the *t*-test, we write the pooled standard error as the square
+    root of the sum of the standard errors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The t-statistic](img/7180OS_02_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In practice, the earlier two equations for the pooled standard error yield
+    identical results, given the same input sequences. The difference in notation
+    just serves to illustrate that with the *t*-test, we depend only on sample statistics
+    as input. The pooled standard error ![The t-statistic](img/7180OS_02_09.jpg) can
+    be calculated in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Although they are represented differently in mathematical notation, in practice,
+    the calculation of *t*-statistic is identical to *z*-statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: The difference between the two statistics is conceptual rather than algorithmic—the
+    *z*-statistic is only applicable when the samples follow a normal distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performing the t-test
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The difference in the way *t*-test works stems from the probability distribution
+    from which our *p*-value is calculated. Having calculated our *t*-statistic, we
+    need to look up the value in the *t*-distribution parameterized by the degrees
+    of freedom of our data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: The degrees of freedom are two less than the sizes of the samples combined,
+    which is 298 for our samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Performing the t-test](img/7180OS_02_180.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Recall that we are performing a hypothesis test. So, let''s state our null
+    and alternate hypotheses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*H[0]*: This sample is drawn from a population with a supplied mean'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*H[1]*: This sample is drawn from a population with a greater mean'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let''s run the example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: This returns a *p*-value of over 0.05\. Since this is greater than the *α* of
+    5% we set for our hypothesis test, we are not able to reject the null hypothesis.
+    Our test for the difference between the means has not discovered a significant
+    difference using the *t*-test. Our barely significant result of the *z*-test was
+    therefore partly due to it having such a small sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two-tailed tests
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There has been an implicit assumption in our alternate hypothesis that the new
+    site would perform better than the previous site. The process of hypothesis testing
+    goes to great lengths to ensure that we don't encode hidden assumptions while
+    looking for statistical significance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tests where we look only for a significant increase or decrease in quantity
+    are called **one-tailed tests** and are generally frowned upon, except in the
+    case where a change in the opposite direction would be impossible. The name comes
+    from the fact that a one-tailed test allocates all of the *α* to a single tail
+    of the distribution. By not testing in the other direction, the test has more
+    power to reject the null hypothesis in a particular direction and, in essence,
+    lowers the threshold by which we would judge a result as significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Statistical power is the probability of correctly accepting the alternative
+    hypothesis. This can be thought of as the ability of the test to detect an effect,
+    where there is an effect to be detected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While higher statistical power sounds desirable, it comes at the cost of there
+    being a greater probability of making a Type I error. A more correct approach
+    would be to entertain the possibility that the new site could realistically be
+    worse than the existing site. This allocates our *α* equally to both tails of
+    the distribution and ensures a significant outcome that is not biased by a prior
+    assumption of improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Two-tailed tests](img/7180OS_02_190.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In fact, Incanter already provides functions to perform two-sample *t*-tests
+    with the `s/t-test` function. We provide a sample of data as the first argument
+    and a sample to compare against with the `:y` keyword argument. Incanter will
+    assume that we want to perform a two-tailed test, unless we pass the `:alternative`
+    keyword with a value of `:greater` or `:lower`, in which case a one-tailed test
+    will be performed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Incanter's *t*-test returns a lot of information, including the *p*-value. The
+    *p*-value is around twice what we calculated for the one-tailed test. In fact,
+    the only reason it's not exactly double is because Incanter implements a slight
+    variant of the *t*-test called **Welch's t-test**, which is slightly more robust
+    when two samples have different standard deviations. Since we know that, for exponential
+    distributions, the mean and the variance are intimately related, the test is slightly
+    more rigorous to apply and returns an even lower significance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One-sample t-test
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Independent samples of *t*-tests are the most common sort of statistical analysis,
+    which provide a very flexible and generic way of comparing whether two samples
+    represent the same or different population. However, in cases where the population
+    mean is already known, there is an even simpler test represented by `s/simple-t-test`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We pass a sample and a population mean to test against with the `:mu` keyword.
+    So, if we simply want to see whether our new site is significantly different from
+    the previous population mean dwell time of 90s, we can run a test like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `simple-t-test` function returns not only the *p*-value for the test, but
+    also the confidence interval for the population mean. It is wide, running from
+    78.5s to 165.5s, certainly overlapping with the 90s of our test. This explains
+    why we were not able to reject the null hypothesis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To develop an intuition as to how the *t*-test can confirm and calculate these
+    statistics from so little data, we can apply an approach called **resampling**.
+    Resampling is based on the premise that each sample is just one of an infinite
+    number of possible samples from a population. We can gain an insight into the
+    nature of what these other samples could have been, and therefore have a better
+    understanding of the underlying population, by taking many new samples from our
+    existing sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are actually several resampling techniques, and we'll discuss one of the
+    simplest—bootstrapping. In bootstrapping, we generate a new sample by repeatedly
+    taking a random value from the original sample with replacement until we generate
+    a sample that is of the same size as the original. Because these values are replaced
+    between each random selection, the same source value can appear multiple times
+    in the new sample. It is as if we were drawing a random card from a deck of playing
+    cards repeatedly, but replacing the card after each draw. Occasionally, we will
+    pick a card that we have previously selected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can bootstrap our sample easily in Incanter to generate many resamples with
+    the bootstrap function. The `bootstrap` function takes two arguments—the original
+    sample and a summary statistic to be calculated on the bootstrapped samples as
+    well as the number of optional arguments—`:size` (the number of bootstrapped samples
+    to be calculated on, each sample being the size of the original sample), `:smooth`
+    (whether to smooth the output of discrete statistics such as the median), `:smooth-sd`,
+    and `:replacement`, which defaults to true:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s visualize the output in a histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Resampling](img/7180OS_02_200.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The histogram shows how the values of the mean value have changed with repeated
+    (re) samples of the new site dwell times. Although the input was just a single
+    sample of 16 visitors, the bootstrapped samples have simulated the standard error
+    of our original sample very clearly and visualized the confidence interval (78s
+    to 165s) calculated earlier by our single sample *t*-test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Through bootstrapping, we simulated by taking multiple samples, even though
+    we only had one sample as our input. It's a generally useful technique to estimate
+    parameters that we cannot or do not know to calculate analytically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing multiple designs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It's been disappointing to discover that there is no statistical significance
+    behind the increased dwell time of users on the new site design. Better that we
+    discovered this on a small sample of users before we rolled it out to the world
+    though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not to be discouraged, AcmeContent's web team works overtime and devises a suite
+    of alternative site designs. Taking the best elements from the other designs,
+    they devise 19 variations to be tested. Together with our original site, which
+    will act as a control, there are 20 different sites to direct visitors to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating sample means
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The web team deploys the 19 new site designs alongside the original site. As
+    mentioned earlier, each receives a random 5 percent of the visitors. We let the
+    test run for 24 hours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next day, we receive a file that shows the dwell times for visitors to
+    each of the site designs. Each has been labeled with a number, with site `0` corresponding
+    to the original unaltered design, and numbers `1` to `19` representing the other
+    designs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Calculating sample means](img/7180OS_02_210.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We would like to test out each of the site designs to see if any generate a
+    statistically significant result. To do so, we could compare the sites with each
+    other as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, this would be a bad idea. We are very likely to see a statistical difference
+    between the pages that performed particularly well against the pages that performed
+    particularly poorly, even if these differences were by chance. If you run the
+    earlier example, you'll see that many of the pages are statistically different
+    from each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alternatively, we could compare each site against our current baseline—the
+    mean dwell time of 90 seconds currently measured for our site:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This test determines two sites as being significantly different from the baseline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: The small *p*-values (smaller than 1 percent) indicate that there is a very
+    statistically significant difference. This looks very promising, but we have an
+    issue. We have performed a *t*-test on 20 samples of data with an *α* of 0.05\.
+    The definition of *α* is that it is the probability of wrongly rejecting the null
+    hypothesis. By running a *t*-test 20 times, it actually becomes probable that
+    we would wrongly reject the null hypothesis for at least one of the pages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By comparing multiple pages at once like this, we invalidate the results of
+    the *t*-test. There exist a variety of alternative techniques to address the problem
+    of making multiple comparisons in statistical tests, which we'll introduce in
+    a later section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple comparisons
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The fact that with repeated trials, we increase the probability of discovering
+    a significant effect is called the multiple comparisons problem. In general, the
+    solution to the problem is to demand more significant effects when comparing many
+    samples. There is no straightforward solution to this issue though; even with
+    an *α* of 0.01, we will make a Type I error on an average of 1 percent of the
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To develop our intuition about how multiple comparisons and statistical significance
+    relate to each other, let's build an interactive web page to simulate the effect
+    of taking multiple samples. It's one of the advantages of using a powerful and
+    general-purpose programming language like Clojure for data analysis that we can
+    run our data processing code in a diverse array of environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code we''ve written and run so far for this chapter has been compiled for
+    the Java Virtual Machine. But since 2013, there has been an alternative target
+    environment for our compiled code: the web browser. ClojureScript extends the
+    reach of Clojure even further to any computer that has a JavaScript-enabled web
+    browser.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing the simulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To help visualize the problems associated with multiple significance testing,
+    we'll use ClojureScript to build an interactive simulation, looking for statistically
+    significant differences between the samples drawn at random from two exponential
+    distributions. To see how other factors relate to our hypothesis testing, our
+    simulation will allow us to change the underlying population mean for each of
+    the two distributions, as well as set the sample size and desired confidence level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have downloaded the sample code for this chapter, you will see, in the
+    resources directory, an `index.html` file. If you open this code in a web browser,
+    you should see a message prompting you to compile the JavaScript. We can do this
+    with the Leiningen plugin called `cljsbuild`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compile the simulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`cljsbuild` is a Leiningen plugin that compiles ClojureScript to JavaScript.
+    To use it, we simply have to let the compiler know where we would like to output
+    the JavaScript file. While Clojure code outputs to a `.jar` file (short for Java
+    Archive), ClojureScript outputs to a single `.js` file. We specify the name of
+    the output file and the compiler settings to use with the `:cljsbuilds` section
+    of `project.clj`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The plugin is accessible on the command line as `lein cljsbuild`. In the root
+    of the project directory, run the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This command will compile a JavaScript file for us. An alternative command
+    is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding will compile the code, but will remain active, monitoring changes
+    to the source files. If any of these files are updated, the output will be recompiled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open the file `resources/index.html` in a web browser now to see the effect
+    of the JavaScript.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The browser simulation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'An HTML page has been supplied in the resources directory of the sample project.
+    Open the page in any modern browser and you should see something similar to the
+    following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The browser simulation](img/7180OS_02_220.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The left of the page shows a dual histogram with the distribution of two samples,
+    both taken from an exponential distribution. The means of the populations from
+    which the samples are generated are controlled by the sliders at the top right
+    corner of the web page in the box marked as **Parameters**. Underneath the histogram
+    is a plot showing the two probability densities for the population means based
+    on the samples. These are calculated using the *t*-distribution, parameterized
+    by the degrees of freedom of the sample. Below these sliders, in a box marked
+    as **Settings**, are another pair of sliders that set the sample size and confidence
+    intervals for the test. Adjusting the confidence intervals will crop the tails
+    of the *t*-distributions; at the 95 percent confidence interval, only the central
+    95 percent of the probability distributions are displayed. Finally, in a box marked
+    as **Statistics**, are the sliders that show the mean of both the samples. These
+    cannot be changed; their values are measured from the samples. A button marked
+    as **New Sample** can be used to generate two new random samples. Observe how
+    the sample means fluctuate with each new pair of samples being generated. Keep
+    generating samples and you'll occasionally observe significant differences between
+    sample means, even when the underlying population means are identical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While we explore the effects of changing the sample size and the confidence
+    for different population means, let's look at how the simulation was constructed
+    with the libraries `jStat`, `Reagent`, and `B1`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: jStat
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As ClojureScript compiles to JavaScript, we can't make use of the libraries
+    that have Java dependencies. Incanter is heavily reliant on several underlying
+    Java libraries, so we have to find an alternative to Incanter for our browser-based
+    statistical analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: While building ClojureScript applications, we can't make use of the libraries
+    that depend on Java libraries, as they won't be available in the JavaScript engine
+    which executes our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`jStat` ([https://github.com/jstat/jstat](https://github.com/jstat/jstat))
+    is a JavaScript statistical library. It provides functions to generate sequences
+    according to specific distributions, including the exponential and *t*-distributions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To use it, we have to make sure it's available on our webpage. We can do this
+    either by linking it to a remote **content distribution network** (**CDN**) or
+    by hosting the file ourselves. The advantage of linking it to a CDN is that visitors,
+    who previously downloaded `jStat` for another website, can make use of their cached
+    version. However, since our simulation is for local use, we've included the file
+    so that the page works even when our browser is offline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `jstat.min.js` file has been downloaded in the `resources/js/vendor` directory.
+    The file is loaded in the main body of `index.html` with a standard HTML tag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make use of jStat's distribution generating functions, we have to interact
+    with the JavaScript library from ClojureScript. As with the Java interop, Clojure
+    provides pragmatic syntax to interact with the libraries written in the host language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`jStat` provides a variety of distributions documented at [https://jstat.github.io/distributions.html](https://jstat.github.io/distributions.html).
+    To generate samples from an exponential distribution, we''d like to call the `jStat.exponential.sample(lambda)`
+    function. The JavaScript interop for it is very straightforward; we prefix the
+    expression with `js/` to ensure that we access JavaScript''s namespace and move
+    the position of the brackets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once we have the ability to generate samples from an exponential distribution,
+    creating a lazy sequence of samples will be as simple as calling the function
+    repeatedly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: ClojureScript exposes almost all of Clojure, including lazy sequences. Refer
+    to the book's wiki at [http://wiki.clojuredatascience.com](http://wiki.clojuredatascience.com)
+    for links to resources on the JavaScript interop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: B1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we can generate samples of data in ClojureScript, we'd like to be able
+    to plot them on a histogram. We need a pure Clojure alternative to Incanter that
+    will draw histograms in a web-accessible format; the B1 library ([https://github.com/henrygarner/b1](https://github.com/henrygarner/b1))
+    provides just this functionality. The name is derived from the fact that it is
+    adapted and simplified from the ClojureScript library `C2`, which in turn is a
+    simplification of the popular JavaScript data visualization framework `D3`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll be using B1's simple utility functions in `b1.charts` to build histograms
+    out of our data in ClojureScript. B1 does not mandate a particular display format;
+    we could use it to draw on a canvas element or even to build diagrams directly
+    out of the HTML elements. However, B1 does contain functions to convert charts
+    to SVG in `b1.svg` and these can be displayed in all modern web browsers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scalable Vector Graphics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SVG stands for Scalable Vector Graphics and defines a set of tags that represent
+    drawing instructions. The advantage of SVG is that results can be rendered at
+    any size without the blurring associated with raster (pixel-based) graphics that
+    are scaled up. An additional benefit is that modern browsers know how to render
+    SVG drawing instructions to produce images directly in the web page and can style
+    and animate the images with CSS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although a detailed discussion of SVG and CSS is beyond the scope of this book,
+    B1 does provide syntax that is very much like Incanter''s to build simple charts
+    and graphs using SVG. Given a sequence of values, we call the `c/histogram` function
+    to convert it into an internal representation of the data structure. We can add
+    additional histograms with the `c/add-histogram` function and call `svg/as-svg`
+    to render the chart to an SVG representation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Unlike Incanter, when we choose to render our histogram, we must also specify
+    the desired width and height of the chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotting probability densities
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In addition to using jStat to generate samples from the exponential distribution,
+    we''ll also use it to calculate the probability density for the *t*-distribution.
+    We can construct a simple function to wrap the `jStat.studentt.pdf(t, df)` function,
+    providing the correct *t*-statistic and degrees of freedom to parameterize the
+    distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'An advantage of using ClojureScript is that we have already written the code
+    to calculate the *t*-statistic from a sample. The code, which worked in Clojure,
+    can be compiled to ClojureScript with no changes whatsoever:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: To render the probability density, we can use B1's `c/function-area-plot`. This
+    will generate an area plot from the line described by a function. The provided
+    function simply needs to accept an *x* and return the corresponding *y*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A slight complication is that the value of *y* we return will be different
+    for different samples. This is because `t-pdf` will be highest at the sample mean
+    (corresponding to a *t*-statistic of zero). Because of this, we''ll need to generate
+    a different function for each sample to be passed to `function-area-plot`. This
+    is accomplished by the `probability-density` function, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we're defining a higher-order function called `probability-density` that
+    accepts a single value, `sample`. We calculate some simple summary statistics
+    and then return an anonymous function that calculates the probability density
+    for a given value in the distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This anonymous function is what will be passed to `function-area-plot`. It
+    accepts an *x* and calculates a *t*-statistic for the given sample from it. The
+    *y* value returned is the probability of the *t*-distribution associated with
+    the *t*-statistic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: As with histograms, generating multiple plots is as straightforward as calling
+    `add-function` with the chart, and the new function we'd like to add.
+  prefs: []
+  type: TYPE_NORMAL
+- en: State and Reagent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: State in ClojureScript is managed in the same way as Clojure applications—through
+    the use of atoms, refs, or agents. Atoms provide uncoordinated, synchronous access
+    to a single identity and are an excellent choice for storing the application state.
+    Using an atom ensures that the application always sees a single, consistent view
+    of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reagent is a ClojureScript library that provides a mechanism to update the content
+    of a web page in response to changing the value of an atom. Markup and state are
+    bound together, so that markup is regenerated whenever the application state is
+    updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reagent also provides syntax to render HTML in an idiomatic way using Clojure
+    data structures. This means that both the content and the interactivity of the
+    page can be handled in one language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updating state
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With data held in a Reagent atom, updating the state is achieved by calling
+    the `swap!` function with two arguments—the atom we wish to update and a function
+    to transform the state of the atom. The provided function needs to accept the
+    current state of the atom and return the new state. The exclamation mark indicates
+    that the function has side effects and, in this case, the side effects are desirable;
+    in addition to updating the atom, Reagent will ensure that relevant sections of
+    our HTML page are updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The exponential distribution has a single parameter—the rate symbolized by
+    lambda, *λ*. The rate of an exponential distribution is the reciprocal of the
+    mean, so we calculate `(/ 1 mean-a)` to pass it as the argument to the exponential
+    distribution function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we have defined an `update-sample` function that accepts
+    a map containing `:sample-size`, `:mean-a`, and `:mean-b`, and returns a new map
+    with the associated new samples and sample means.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `update-sample` function is pure in the sense that it doesn't have side
+    effects, which makes it easier to test. The `update-sample!` function wraps it
+    with a call to `swap!`. Reagent ensures that any code that depends on the value
+    contained in this atom will be executed when the value in the atom changes. This
+    causes our interface to be re-rendered in response to the new samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binding the interface
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To bind the interface to the state, Reagent defines a `render-component` function.
+    This links a particular function (in this case, our `layout-interface` function)
+    with a particular HTML node (the element with the ID `root` on our page):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our `layout-interface` function contains an HTML markup expressed as nested
+    Clojure data structures. Amongst the calls to `:div` and `:h1`, elements are calls
+    to our two `sample-histograms` and `sample-means` functions. They will be substituted
+    with their return values—the SVG representations of the histograms and the probability
+    densities of the means.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the sake of brevity, we have omitted the implementation of the `controllers`
+    function, which handles the rendering of the sliders and the **New Sample** button.
+    Consult the `cljds.ch2.app` namespace in the sample code to see how this is implemented.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simulating multiple tests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Each time the **New** **Sample** button is pressed, a pair of new samples from
+    an exponential distribution with population means taken from the sliders are generated.
+    The samples are plotted on a histogram and, underneath, a probability density
+    function is drawn showing the standard error for the sample. As the confidence
+    intervals are changed, observe how the acceptable deviation of the standard error
+    changes as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each time the button is pressed, we could think of it as a significance test
+    with an alpha set to the complement of the confidence interval. In other words,
+    if the probability distributions for the sample means overlap at the 95 percent
+    confidence interval, we cannot reject the null hypothesis at the 5 percent significance
+    level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe how, even when the population means are identical, occasional large
+    deviations in the means will occur. Where samples differ by more than our standard
+    error, we can accept the alternate hypothesis. With a confidence level of 95 percent,
+    we will discover a significant result around one in 20 trials, even when the population
+    means of the distributions are identical. When this happens, we are making a Type
+    1 error in mistaking a sampling error for a real population difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Simulating multiple tests](img/7180OS_02_230.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Despite the identical population parameters, large sample differences are occasionally
+    observed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Bonferroni correction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We therefore require an alternative approach while conducting multiple tests
+    that will account for an increased probability of discovering a significant effect
+    through repeated trials. The Bonferroni correction is a very simple adjustment
+    that ensures we are unlikely to make Type I errors. It does this by adjusting
+    the alpha for our tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The adjustment is a simple one—the Bonferroni correction simply divides our
+    desired alpha by the number of tests we are performing. For example, if we had
+    *k* site designs to test and an experimental alpha of *0.05*, the Bonferroni correction
+    is expressed as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The Bonferroni correction](img/7180OS_02_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is a safe way to mitigate the increased probability of making a Type I
+    error in multiple testing. The following example is identical to `ex-2-22`, except
+    the alpha value has been divided by the number of groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you run the preceding example, you'll see that none of the pages count as
+    statistically significant any longer using the Bonferroni correction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Significance testing is a balancing act—the lower our chances of making a Type
+    I error, the greater our risk of making a Type II error. The Bonferroni correction
+    is very conservative and it's possible that we're missing a genuine difference
+    due to being so cautious.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the final part of this chapter, we'll investigate an alternative approach
+    to significance testing that strikes a balance between making Type I and Type
+    II errors while allowing us to test all the 20 pages simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis of variance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Analysis of variance, often shortened to **ANOVA**, is a series of statistical
+    methods used to measure the statistical significance of the difference between
+    groups. It was developed by Ronald Fisher, an extremely gifted statistician, who
+    also popularized significance testing through his work on biological testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our tests, using the *z*-statistic and *t*-statistic, have focused on sample
+    means as the primary mechanism to draw a distinction between the two samples.
+    In each case, we looked for a difference in the means divided by the level of
+    difference we could reasonably expect and quantified by the standard error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mean isn't the only statistic that might indicate a difference between samples.
+    In fact, it is also possible to use the sample variance as an indicator of statistical
+    difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Analysis of variance](img/7180OS_02_240.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: To illustrate how this might work, consider the preceding diagram. Each of the
+    three groups on the left could represent samples of dwell times for a specific
+    page with its own mean and standard deviation. If the dwell times for all the
+    three groups are combined into one, the variance is larger than the average variance
+    for the groups taken individually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The statistical significance of an ANOVA test is derived from the ratio of two
+    variances—the variance *between* the groups of interest and the variance *within*
+    the groups of interest. If there is a significant difference between the groups
+    that is not reflected within the groups, then those groupings help explain some
+    of the variance between the groups. Conversely, if the variance within the groups
+    is identical to the variance between the groups, the groups are not statistically
+    different from one another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The F-distribution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The *F*-distribution is parameterized by two degrees of freedom—those of the
+    sample size and those of the number of groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first degree of freedom is the count of groups less one and the second
+    degree of freedom is the size of the sample less the number of groups. If *k*
+    represents the number of groups, and *n* represents the sample size:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-distribution](img/7180OS_02_13.jpg)![The F-distribution](img/7180OS_02_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can visualize different *F*-distributions with an Incanter function plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-distribution](img/7180OS_02_250.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The lines of the preceding diagram show various *F*-distributions for a sample
+    of 100 points split into 5, 10, and 50 groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The F-statistic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The test statistic that represents the ratio of the variance within and between
+    the groups is called the *F*-statistic. The closer *F*-statistic is to one, the
+    more alike the two variances are. The *F*-statistic is calculated very simply
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-statistic](img/7180OS_02_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, ![The F-statistic](img/7180OS_02_16.jpg) is the *variance between* the
+    groups and ![The F-statistic](img/7180OS_02_17.jpg) is the *variance within* the
+    groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the ratio *F* gets larger, the larger the variance between the groups is
+    compared to the variance within the groups. This implies that the grouping is
+    doing a good job in explaining the variance observed in the sample as a whole.
+    Where this ratio exceeds a critical threshold, we can say that the difference
+    is statistically significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The *F*-test is always a one-tailed test, because any variance among the groups
+    tends to make *F* large. It is impossible for *F* to decrease below zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The *variance within* for an *F*-test is calculated as the mean squared deviation
+    from the mean. We calculate this as the sum of squared deviations from the mean
+    divided by the first degree of freedom. For example, if there are *k* groups,
+    each with a mean of ![The F-statistic](img/7180OS_02_18.jpg), we could calculate
+    the variance within like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-statistic](img/7180OS_02_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *SSW* represents the *sum of squares within* and *x[jk]* represents the
+    value of the *j^(th)* element in group *k*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The preceding formula for calculating the *SSW* looks intimidating. But, in
+    fact, Incanter defines a useful `s/sum-of-square-devs-from-mean` function that
+    makes calculating the sum of squares within as trivial as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *variance between* for an *F*-test has a similar formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-statistic](img/7180OS_02_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *SST* is the *total sum of squares* and *SSW* is the value we just calculated.
+    The total sum of the squares is the sum of squared differences from the "grand"
+    mean that can be calculated like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-statistic](img/7180OS_02_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thus, *SST* is simply the overall sum of the squares without any grouping.
+    We can calculate both the SST and SSW in Clojure, like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *F*-statistic is calculated as the ratio of the variance between and the
+    variance within the groups. Combining both our `ssb` and `ssw` functions defined
+    previously and the two degrees of freedom, we can calculate the *F*-statistic
+    in Clojure as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, we can calculate the *F*-statistic from our groups and our two degrees
+    of freedom as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we can calculate the *F*-statistic from our groups, we're ready to
+    use it in an *F*-test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The F-test
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As with all of the hypothesis tests we have looked at in this chapter, once
+    we have a statistic and a distribution, we simply need to pick a value of *α*
+    and see if our data has exceeded the critical value for the test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Incanter provides an `s/f-test` function, but this only measures the variance
+    between and within the two groups. To run an *F*-test on our 20 different groups,
+    we will need to implement our own *F*-test function. Fortunately, we''ve already
+    done the hard work in the previous sections by calculating an appropriate *F*-statistic.
+    We can perform the *F*-test by looking up the *F*-statistic in an *F*-distribution
+    parameterized with the correct degrees of freedom. In the following code, we will
+    write an `f-test` function, which uses this to perform the test on an arbitrary
+    number of groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the last line of the preceding function, we convert the value of the *F*-statistic
+    into a *p*-value using Incanter''s `s/cdf-f` function parameterized by the correct
+    degrees of freedom. This *p*-value is a measure of the whole model, how well the
+    different pages explain the variance of the dwell times overall. All that remains
+    for us to do is to choose a significance level and run the test. Let''s stick
+    with a 5 percent significance level:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: The test returns a *p*-value of 0.014, which is a significant result. The different
+    pages indeed have different variances that cannot simply be explained away by
+    random sampling error alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-test](img/7180OS_02_260.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We could use a box plot to visualize the distributions of each site together
+    in one chart to compare them side by side:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we reduce over the groups, calling `c/add-box-plot` for
+    each group. The groups are sorted by their site ID before plotting, so our original
+    page 0 is to the extreme left of the chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The F-test](img/7180OS_02_270.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It might appear that site ID `10` has the longest dwell times, since its interquartile
+    range extends furthest up the chart. However, if you look closely, you''ll see
+    its mean value is lower than site 6, having a mean dwell time of over 144 seconds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have confirmed a statistically significant effect using the *F*-test,
+    we''re justified in claiming that site ID `6` is statistically different from
+    the baseline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we have evidence to suggest that page ID 6 is a genuine improvement
+    over the current site. As a result of our analysis, the AcmeContent CEO authorizes
+    the launch of a new look website. The web team is delighted!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Effect size
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we focused on statistical significance—the methods employed
+    by statisticians to ensure a difference is discovered, which cannot be easily
+    explained as chance variation. We must always remember that finding a significant
+    effect isn't the same as finding a large effect. With very large samples, even
+    a tiny difference in sample means will count as significant. To get a better sense
+    of whether our discovery is both significant and important, we should state the
+    effect size as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cohen's d
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Cohen''s d is an adjustment that can be applied to see whether the difference
+    we have observed is not just statistically significant, but actually large. Like
+    the Bonferroni correction, the adjustment is a straightforward one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Cohen''s d](img/7180OS_02_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *S[ab]* is the pooled standard deviation (not the pooled standard error)
+    of the samples. It can be calculated in a way similar to the pooled standard error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Thus, we can calculate Cohen''s d for our page 6, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: In contrast with the *p*-values, there is no absolute threshold for Cohen's
+    d. Whether an effect can be considered large is partly dependent on the context,
+    but it does provide a useful, normalized measure of the effect size. Values above
+    0.5 are typically considered large, so 0.38 is a moderate effect. It certainly
+    represents a meaningful increase in the dwell time on our site and is certainly
+    worth the effort of a site upgrade.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we've learned about the difference between descriptive and
+    inferential statistics. Once again, we've seen the importance of normal distribution
+    and the central limit theorem, and learned how to quantify population differences
+    with *z*-tests, *t*-tests, and *F*-tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We've learned about how the techniques of inferential statistics analyze the
+    samples themselves to make claims about the population that was sampled. We've
+    seen a variety of techniques—confidence intervals, bootstrapping, and significance
+    tests—that can yield insight into the underlying population parameters. By simulating
+    repeated tests with ClojureScript, we've also gained an insight into the difficulty
+    of significance testing with multiple comparisons and seen how the *F*-test attempts
+    to address the issue and strike a balance between Type I and Type II errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we'll apply the lessons we've learned on variance and *F*-testing
+    to single samples. We'll introduce the technique of regression analysis and use
+    it to find correlations among variables within a sample of Olympic athletes.
+  prefs: []
+  type: TYPE_NORMAL

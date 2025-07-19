@@ -1,0 +1,956 @@
+- en: Statistical Modeling in Anaconda
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will first present the simplest statistical model: the
+    one-factor linear model. To make the learning process more interesting, we will
+    discuss an application of such a model: the famous financial model called the **Capital
+    Asset Pricing Model** (**CAPM**). In terms of processing data, we will show you
+    how to detect and remove missing values, and how to replace missing values with
+    means or other values in R, Python, or Julia. Also, **outliers** would distort
+    our statistical results. Thus, we need to know how to detect and deal with them.
+    After that, we talk about multi-factor linear models. Again, to make our discussion
+    more meaningful, we will discuss the famous **Fama-French** 3-factor and 5-factor
+    linear models, and the **Fama-French-Carhart** 4-factor linear model. Then, we
+    will discuss how to rank those different models, that is, how to measure the performance
+    of different models. In this chapter, the following topics will be covered:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to linear models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Running a linear regression in R, Python, Julia, and Octave
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Critical value and the decision rule
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: F-test, critical value, and the decision rule
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dealing with missing data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detecting outliers and treatments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Several multivariate linear models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Collinearity and its solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A model's performance measure
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction to linear models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The one-factor linear model is the simplest way to show a relationship between
+    two variables: *y* and *x*. In other words, we try to use *x* to explain *y*.
+    The general form for a one-factor linear model is given here, where *y[t]* is
+    the dependent variable at time *t*, *α* is the intercept, β is the slope, *x[t]*
+    is the value of an independent variable at time *t*, and *ε[t]* is a random term:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f297f98b-bbf1-4ffd-9c98-ae239138099c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To run a linear regression, we intend to estimate the intercept (*α*) and the
+    slope (*β*). One-factor means that the model has just one explanatory variable,
+    that is, one independent variable of `x`, and linear means that when drawing a
+    graph based on the equation (1), we would have a straight line. With the following
+    R program, we could get a linear line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related graph is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/331f78ac-5e43-44cb-a036-eb3166523eed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Another explanation for a linear model is that the power of the independent
+    variable of `x` is `1`. There are many applications for such a simple one-factor
+    linear model. Later in the chapter, we present the famous CAPM, which is a one-factor
+    linear model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running a linear regression in R, Python, Julia, and Octave
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The following code block shows how to run such a one-factor linear regression
+    in R:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first line of `set.seed(12345)` guarantees that different users will get
+    the same random numbers when the same `seed()` is applied, that is, `12345` in
+    this case. The R function `rnorm(n)` is used to generate *n* random numbers from
+    a standard normal distribution. Also, the two letters of the `lm()` function stand
+    for linear model. The result is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The estimated intercept is `4.11`, while the estimated slope is `5.00`. To
+    get more information about the function, we can use the `summary()` function,
+    shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The alpha, that is, the intercept, is `4.11` and it is statistically significant.
+    The reason is that its T-value is `18.27`, which is higher than `2` if we choose
+    a 5% significance value. However, it is also significant at any significance level,
+    indicated by the three stars: `***`. Alternatively, we could look at its P-value
+    to determine significance. With the same logic, the slope value is `5`, which
+    is statistically significant. Usually, we have the following two critical values
+    for the T-value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/46d5ad70-5beb-4521-bf68-71f6b2cdaf79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Alternatively, we have the following decision rule for *pValue*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1ea7a5bc-ebed-41aa-86ee-9199a2a9311e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The following Python code would run a linear regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, in the following code, for a set of *x* and *y* values, we could
+    run a linear regression in Julia:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b6a1c1d9-eb98-4d12-889e-6082f063bf22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Note that there is no meaning in `X` and `Y` since their values are arbitrarily
+    chosen. Based on the z values for both intercept and *β*, we can conclude that
+    the intercept is statistically the same as zero since its `z value` is `-1.09`
+    and the slope is statistically different from zero since its `z value` if `8.66`.
+    In the previous Julia program, we assume that the `GLM` package is installed.
+    If not, see the following screenshot to install the package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f0b74a26-0d21-4ef8-acf0-79d384ebcfde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In other words, if the `DataFrames` Julia package is not installed, we need
+    to issue a command of `Pkg.add("DataFrames")`. For more information on handling
+    various packages for R, Python, and Julia, see [Chapter 6](c812a40e-eb24-4bb8-8af5-1cfe1834ec77.xhtml),
+    *Managing Packages*. To run a linear regression for Octave, we generate `x` and
+    `y` first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related graph is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d0a55b69-6dec-4280-8b27-5ca391e2e651.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Based on the previously generated `x` and `y` values, we have the following
+    Octave program to run a linear regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Critical value and the decision rule
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A T-test is any statistical hypothesis test in which the test statistic follows
+    a student''s T-distribution under the null hypothesis. It can be used to determine
+    whether two sets of data are significantly different from each other. For a one-sample
+    *T*-test and for the null hypothesis that the mean is equal to a specified value
+    *μ[0]*, we use the following statistic, where *t* is the T-value, ![](img/98cefac5-8dc6-4f27-ad6c-f9d66caf3882.png) is
+    the sample mean, *μ[0]* is the our assumed return mean, *σ* is the sample standard
+    deviation of the sample, *n* is the sample size, and *S.E.* is the standard error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/adc69a2d-b42c-40bc-93dc-8a4db2806f62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The degrees of freedom used in this test are *n - 1*. The critical *T*-value
+    is used to accept or reject the null hypothesis. The decision rule is given here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c70c67be-bbcc-499c-a644-45093038d010.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the previous section, we mentioned two critical values: `2` for a T-value
+    and `0.05` for a P-value. Actually, those two critical values are correlated.
+    For a 5% critical P-value, its related critical T-value will be about `2`. The
+    following function, `qt()`, shows this relationship:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The general function will be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5b3af1cd-1922-4397-98fa-aa85f8917347.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where `qt()` is the student''s T-distribution, α is the significance level,
+    such as 1%, 5%, or 10%, *degree_freedom* is the degree of freedom (*n-p*) where
+    *n* is the number of data points, and *p* is the number of repressors, that is,
+    the number of independent variables. When we want a much stronger result, we can
+    choose `0.01` as our *α*. Assume that from the code that follows, our degree of
+    freedom is `50`; the corresponding critical T-value will be `2.68`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following Python code would give us the critical value for a two-sided
+    test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: F-test, critical value, and the decision rule
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous examples, we saw the F-value for the performance of the whole
+    model. Now, let''s look at the F-distribution. Assume that *x[1]* and *x[2]* are
+    two independent random variables with the [Chi-Square distribution](http://www.r-tutor.com/node/60)
+    with *df[1]* and *df[2]* degrees of freedom, respectively. The ratio of *x[1]/df[1]*
+    divided by *x[2]/df[2]* would follow an F-distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6aa00651-92ca-4301-8aa6-1a9f3e271d57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'An R program to draw a graph for the F distribution with (10, 2) degrees of
+    freedom is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related plot is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/113bf502-a271-4cd5-9bce-3d652065a80b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The following R program shows the critical value for a given α of `0.1` and
+    (1, 2) degrees of freedom:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following Python program estimates the critical F-value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The related decision rule is that if our F-value is higher than the critical
+    value, we would conclude that our overall model is significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An application of a linear regression in finance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In finance, a famous application of a one-factor linear model is associated
+    with CAPM, which was developed in the 1960s; see *Sharpe* (1964), *Litner* (1965),
+    and *Mossin* (1966). Up until today, CAPM has been discussed in almost all finance
+    textbooks because of its simplicity and usefulness. Its general formula is shown
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/fc6e90ba-1bda-45c6-ad7f-7eb7ee26fd87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where `E()` is the expectation, *R[i]* is return for stock *i*, R[f] is the
+    risk-free interest rate, and *E(R[mkt])* is the expected market return. Usually,
+    we could use the S&P500 index as our market index. The slope of the equation,
+    that is *β*, is a measure of the market risk. For individual stock, β represents
+    the sensitivity of a stock''s expected returns in response to the market risk
+    premium, that is, E(R[mkt])-R[f]. A risk premium represents the required extra
+    return for bearing extra risk when compared with the risk-free rate. The following
+    formula could be used to estimate *β*, where *β[i]* is the beta for stock *i*,
+    *cov(R[i],R[m])* is the covariance between the returns of stock i, and the returns
+    of a market index, *ρ,* is the correlation between stock *i* and the market index. *σ[i]*
+    is the standard deviation of stock *i* and *σ[m]* is the standard deviation of
+    the market index:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a17e8178-c7c3-4ea6-8ceb-83a647a27827.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For the beta value, we could run a linear regression for CAPM by using historical
+    data. There is another variable of the previous formula shown next, where *R[i,t]* is
+    stock i''s return at time *t*, *R[f,t]* is the risk-free interest rate at time
+    t, and R[mkt,t] is the market return at time t while ![](img/4436b8c9-48f4-4ffe-82f0-591a062c4f95.png) is
+    a random factor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/461d54bd-94ba-4d06-b3d9-75a5df45d38a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The previous equation associated with CAPM can be applied to estimate the expected
+    cost of equity, that is, the expected stock return, after we estimate the beta
+    successfully. In the preceding variation, one added advantage is that the logic
+    of CAPM is much clearer. On the left-hand side, we have an individual stock''s
+    risk premium while on the right-hand side, we have the market risk premium, shown
+    in the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/99c63600-13e7-4f4e-8bf7-67482c21140e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Later in the chapter, we will show you how to run CAPM by using historical
+    monthly stock data and the *S&P500* data as the market index; programs written
+    in R, Python, and Julia will be available. Using R, we could estimate a stock''s
+    market risk, that is, the beta value. First, let''s write a function called `ret_f()`
+    to estimate returns for a given input price dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the previous R program, we define a function called `ret_f()`. Then, we
+    call this function twice to estimate returns for the download IBM''s price data
+    and S&P500 monthly data. Again, these two time series can be manually downloaded
+    from Yahoo!Finance at [http://finance.yahoo.com](http://finance.yahoo.com). The
+    first several lines of the final dataset are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can apply the `lm()` function, shown as follows, with the corresponding
+    output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e85e6273-de2b-444d-bbf5-c3418169187b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Based on the result, the intercept is `0.00277` and it is not statistically
+    significant. The slope (or the beta value) is `0.96`, which is statically significant.
+    R2 is 35%, which means that the model could explain 35% of the variation in the
+    dependent variable. The F-statistic is a measure of goodness of fit of the whole
+    model, which is statistically significant since its P-value is extremely small.
+    Note that for the previous beta estimation, we use the whole input data set, that
+    is, all years, while in real-world market risk (*β*) estimation, researchers or
+    professionals working on Wall Street usually use only a few years'' data, such
+    as a 3-year window. Before writing a Python program to estimate a stock''s beta,
+    first we have to retrieve stock data from `quandl`, shown in the program here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b6d0497f-2d3f-438f-98e1-cf27becafca2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From the previous output, we know that the frequency of data is daily. For
+    monthly data, we have the following Python code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`quandl` is a data delivery platform which includes many free datasets, but
+    users might need to register to get specific datasets (for a more detailed discussion,
+    see [Chapter 3](b40472e2-4998-4d7c-ac22-b77f4ad21a22.xhtml), *Data Basics*). The
+    following Python program downloads IBM''s monthly data from `quandl` and the monthly
+    S&P500 market index data from the author''s website, and runs a linear regression
+    to get the market risk, that is, β for IBM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By using daily data, the next Python program estimates the annual betas for
+    Walmart, with a ticker symbol of WMT using `quandl` to download data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/11262017-2fb0-4a63-a536-5dfdba3a6d0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the following Julia program, we assume that two files are downloaded from
+    Yahoo!Finance at [http://finance.yahoo.com](http://finance.yahoo.com). Those input
+    files are `ibmMonthly5years.csv` and `sp500Monthly5years.csv`, and they are the
+    latest 5-year monthly historical data. The Julia program is given here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that we manually removed the first observation since it contained a non-numerical
+    value. The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f47d91af-ea7c-4b98-9aab-b3a6e2ef0ac9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dealing with missing data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many ways to deal with missing records. The simplest one is to delete
+    them. This is especially true when we have a relative large dataset. One potential
+    issue is that our final dataset should not be changed in any fundamental way after
+    we delete the missing data. In other words, if the missing records happened in
+    a random way, then simply deleting them would not generate a biased result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removing missing data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The following R program uses the `na.omit()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Another R function called `na.exclude()` could be used as well. The following
+    Python program removes all `sp.na` code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: For brevity, we omitted the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Replacing missing data with another value
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the following dataset, we have three valid values: `*2*`, `*3*`, and `*4*`.
+    Obviously, their mean is `3`. Since there are two NAs, we plan to replace them
+    with the mean, that is, *3* in this case. The following R code achieves this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For Python, see the following program:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: Detecting outliers and treatments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, a word of caution: one person''s waste might be another person''s treasure,
+    and this is true for outliers. For example, for the week of 2/5/2018 to 2/15/2018,
+    the **Dow Jones Industrial Average** (**DJIA**) suffers a huge loss. Cheng and
+    Hum (2018) show that the index travels more than 22,000 points, as shown in the
+    following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Weekday** | **Points** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Monday | 5,113 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Tuesday | 5,460 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Wednesday | 2,886 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Thursday | 3,369 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Friday | 5,425 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Total | 22,253 |'
+  prefs: []
+  type: TYPE_TB
+- en: Table 5.1 Dow Jones industrial average points traveled
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we want to study the relationship between a stock and the DJIA index, the
+    observations might be treated as outliers. However, when studying the topic related
+    to the impact of the market on individual stocks, we should pay special attention
+    to those observations. In other words, those observations should not be treated
+    as outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are many different definitions of an outlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, for a given dataset, an outlier is a data point, or an observation, that
+    is located an abnormal distance from other observations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Second, if removing an observation results in a metrical change for a regression,
+    then this observation will be an outliner
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Third, the distance between an outlier and the mean is at least three standard
+    deviations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Assume that we have download the weekly S&P500 historical data from Yahoo!Finance
+    at [https://finance.yahoo.com/](https://finance.yahoo.com/). The ticker symbol
+    for the S&P500 market index is `^GSPC`. Assume further that the dataset is saved
+    under `c:/temp` with a name of `^GSPCweekly.csv`. The following R program shows
+    the number of cases satisfying the following condition: *n* standard deviations
+    from their mean. In the program, we assign `n` a value of `3`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is a good idea to show a few output results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Among `3554` weekly returns, `15` of them could be treated as outliers if defined
+    as at least three standard deviations from the mean. Of course, users could use
+    other ways to define an outlier. How to treat those outliers depends on the research
+    topic. One way is to delete them, but the most important reminder is that researchers
+    should detail their methods of treating outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Several multivariate linear models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As we mentioned at the beginning of the chapter, we could show several applications
+    of multivariable linear models. The first one is a three-factor linear model.
+    The general formula is quite similar to the one-factor linear model, shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/590f701a-5550-4ec0-90a6-e61d96de449e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The definitions are the same as before. The only difference is that we have
+    three independent variables instead of one. Our objective is to estimate four
+    parameters, one intercept plus three coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/92a1dee0-b7a2-4925-8ab0-720a95711e27.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For example, the equation of the famous Fama-French 3-factor model is given,
+    where *R[i]* is the stock i''s return and R[m] is the market return. SMB (Small
+    Minus Big) is defined as the returns of the small portfolios minus the returns
+    of the big portfolios and HML (High Minus Low) is the difference of returns of
+    high book-to-market portfolios minus the returns of low book-to-market portfolios.
+    (See the Ken French data library at [http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html](http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html)
+    for more detailed definitions.) To download these three factors, we could go to
+    Prof. French''s data library to download them, as shown in the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go to the previous link.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Choose CSV for the monthly data (the first line in the following screenshot):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/5c583731-0785-4977-a66d-2064f2c2c8b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The first several lines of the unzipped `csv` file are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This file was created by `CMPT_ME_BEME_RETS` using the 201712 CRSP database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In R, we could issue the following code to download it from the author''s website:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the following R program, we can run the Fama-French 3-factor model for
+    IBM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the previous code, we assume that the function called `ret_f()` is available
+    (see the previous discussion about this function). The output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/879ce7f4-bbda-4a08-9879-3b999c299adb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here is the Fama-French-Carhart''s 4-factor model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d01e2160-0af8-4e60-81db-d831227f1d8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To download these four factors (Market, SMB, HML, and Momentum), we go to Professor
+    Ken French''s data library to download two zipped files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: To save space, we would not run a Fama-French-Carhart 4-factor model since it
+    is quite similar to running the CAPM and Fama-French 3-factor model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In 2014, Fama and French developed their 5-factor model, which has the following
+    form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/206f05ba-4c88-4285-85b2-427d4a2c6b19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the equation, RMW[t] is the return difference between portfolios of stocks
+    with robust and weak profitability, and CMA[t] is the return difference between
+    portfolios of low and high investment stocks. Fama and French call the low and
+    high investment stocks conservative and aggressive, respectively. If the sensitivities
+    to the five factors, βi (i=1,2,...,5), capture all the variations in the expected
+    returns, the intercept α[i] will be zero for all securities and portfolios *i*.
+    The following R program downloads the `ff5Monthly.RData` set from the author''s
+    website:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Collinearity and its solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In statistics, multicollinearity, or collinearity, is a phenomenon in which
+    one independent variable (predictor variable) in a multiple regression model can
+    be linearly predicted from the others with a substantial degree of accuracy. Collinearity
+    tends to inflate the variance of at least one estimated regression coefficient.
+    This could cause some regression coefficients to have the wrong sign. Those issues
+    would make our regression results unreliable. Therefore, how can we detect the
+    potential problem? One way is that we could simply look at the correlation between
+    each pair of independent variables. If their correlation is close to ±1, then
+    we might have such an issue:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To find out the correlation between each pair of portfolios, we could use the
+    R function called `cor()` to generate a correlation matrix, shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'According to *Martz* (2013), we have the following warning signs for a collinearity
+    problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **#** | **Description** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | A coefficient is not significant, even though it should be |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | After adding/deleting an `X` variable, the regression coefficients change
+    dramatically |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | A negative coefficient when the opposite should be true |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | A positive coefficient when the opposite should be true |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | Input variables have high pairwise correlations |'
+  prefs: []
+  type: TYPE_TB
+- en: Table 5.2 Warning signs of collinearity
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many ways to treat the issue. The simplest one is to delete one of
+    the input variables that is highly correlated with another input variable. For
+    example, if two input variables are strongly correlated, we could drop one of
+    them. The second way is to use the residuals after running two variables against
+    each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A model's performance measure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we looked at several applications of linear models, including
+    CAPM, the Fama-French 3-factor linear model, the Fama-French-Carhart 4-factor
+    linear model, and the Fama-French 5-factor linear model. Obviously, CAPM is the
+    simplest one since it only involves a market index as the explanatory variable.
+    One question remains though: which model is the best? In other words, how do we
+    rank these models and how is their performance measured? When running linear regressions,
+    the output will show both the R² and adjusted R². When comparing models with different
+    numbers of independent variables, the adjusted R² is a better measure since it
+    is adjusted by the number of input variables. However, note we should not depend
+    only on the adjusted R² since this is in the sample measure. In other words, a
+    higher adjusted R² simply means that based on this sample dataset, model A is
+    better than model B. Hence, a much better measure is to use the performance of
+    the out-of-sample prediction.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have explained many important issues related to statistics,
+    such as T-distribution, F-distribution, T-tests, F-tests, and other hypothesis
+    tests. We have also discussed linear regression, how to deal with missing data,
+    how to treat outliers, collinearity and its treatments, and how to run a multi-variable
+    linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [Chapter 6](c812a40e-eb24-4bb8-8af5-1cfe1834ec77.xhtml), Ma*naging Packages*,
+    we will discuss the importance of managing package; how to find out about all
+    packages available for R, Python, and Julia; and how to find the manual for each
+    package. In addition, we will discuss the issue of package dependency and how
+    to make our programming a little easier when dealing with packages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Review questions and exercises
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What is the definition of a single-factor linear model?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How many independent variables are there in a single-factor model?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What does it mean for something to be statically different from zero?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What are the critical T-values and P-values to tell whether an estimate is statistically
+    significant?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When the significant level is 1%, what is the critical T-value when there are
+    30 degrees of freedom?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What is the difference between a one-sided test and a two-sided test?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What are the corresponding missing codes for missing data items in R, Python,
+    and Julia?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How do we treat missing variables if our sample is big? How about if our sample
+    is small?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How do we generally detect outliners and deal with them?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How do we generate a correlated return series? For example, write an R program
+    to generate 5-year monthly returns for two stocks with a fixed correlation of
+    0.5.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In terms of the critical T-value, is this the same for a one-sided test and
+    a two-sided test when the significance level is fixed?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What is collinearity? What might be damaged if our dependents variables are
+    strongly correlated?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How do we detect the multicollinearity? What are the functions to estimate the
+    correlation matrix in R, Python, and Julia?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Write an R program to estimate Microsoft''s annual βs over the last 10 years
+    by using daily data. (Source of data: [http://finance.yahoo.com](http://finance.yahoo.com).)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Based on the following code, we could download monthly data. Find out whether
+    the last day of each week is a trading day or not (hint: you could use an R dataset
+    downloadable at [http://canisius.edu/~yany/RData/tradingDaysM.RData](http://canisius.edu/~yany/RData/tradingDaysM.RData)):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Download the monthly price data for Walmart from the Quandl platform and S&P500
+    data from Yahoo!Finance. Estimate Walmart''s *β* by using monthly data from the
+    last 5 years. A few lines of sample code are given here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: Write an R program by using the monthly data over the last 10 years for IBM
+    and run a Fama-French-Carhart 4-factor model. Then, compare it with CAPM. Which
+    model is better?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Generate a pickle dataset similar to the following R dataset:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When estimating *β*, we could have the following formula, where *βi* is the
+    beta for stock *i*, *Ri* is the return for stock *i*, *Rm* is the return for a
+    market index, and ![](img/0ae88abb-5d23-424f-b85d-f5d7d24e9411.png) is the variance
+    for the market:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/cc2d06e5-cab4-4967-8e4e-d22eb575f1e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Write an R program to estimate the correlation matrix for the following five
+    stocks:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '| **#** | **Name** | **Ticker** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | International Business Machines | IBM |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | Walmart | WMT |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | Citigroup | CG |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | Microsoft | MSFT |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | Johnson and Johnson | JNJ |'
+  prefs: []
+  type: TYPE_TB
+- en: Use the 10-year monthly price data to estimate the correlation matrix based
+    on the previous five stocks (assume the returns of those five stocks follow a
+    normal distribution).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Based on the correlation matrix, generate a return matrix to simulate their
+    future monthly returns over the next 10 years.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Write programs in R or Python to generate similar F-tables (see the link at [http://www.socr.ucla.edu/applets.dir/f_table.html](http://www.socr.ucla.edu/applets.dir/f_table.html)).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In this chapter, we have the following Julia program to run CAPM (one-factor
+    linear model). Simplify the program by writing a subroutine to estimate a return:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE

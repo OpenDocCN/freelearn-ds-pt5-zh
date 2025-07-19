@@ -1,0 +1,815 @@
+- en: Analyzing Image Data
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are in the age of information, where every movement will generate data in
+    a variety of formats, such as text, images, geospatial data, and videos. Smartphones
+    have reached rural areas of the world and people are capturing activities, especially
+    in images and videos, and sharing them on social media platforms. This is how
+    lots of big chunks of data are generated and most of the data is in image and
+    video formats. Industry and research institutes want to analyze image and video
+    datasets to generate value and make automated solutions to reduce costs. Image
+    processing and computer vision are fields that explore and develop image- and
+    video-based solutions. There are lots of opportunities for research, innovation,
+    and start-ups in the area of computer vision. In this chapter, we focus on the
+    basics of image processing to build your fundamental knowledge in the computer
+    vision area.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image processing is a subset of computer vision. Computer vision is an advanced
+    and more powerful field within machine learning and artificial intelligence. Computer
+    vision offers enormous applications, such as detecting objects, classifying images
+    and objects, image captioning, and image segmentation. An image can be defined
+    as two-dimensional signals in signal processing, a set of points in 2D or 3D in
+    geometry, and a two-dimensional or three-dimensional NumPy array in Python. Image
+    processing refers to processing image data and performing operations such as drawing,
+    writing, resizing, flipping, blurring, changing the brightness, and detecting
+    faces. In this chapter, we will focus on all these image processing operations
+    in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will cover the following topics in this chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing OpenCV
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding image data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Color models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Drawing on images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Writing on images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Resizing images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Flipping images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Changing the brightness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Blurring an image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Face detection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Technical requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter has the following technical requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find the code, face classifier file, and the datasets at the following
+    Github link: [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter13](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter13)[.](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Python-Data-Analysis-Third-Edition/Ch13)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All the code blocks are available in the `ch13.ipynb` file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This chapter uses `.jpg`/`.jpeg` files (`google.jpg`, `image.jpg`, `messi.png`,
+    `nature.jpeg`, `barcelona.jpeg`, and `tajmahal.jpg`) for practice purposes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This chapter uses one face classifier XML file (`haarcascade_frontalface_default.xml`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will use the OpenCV, NumPy, and matplotlib Python libraries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Installing OpenCV
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'OpenCV is an open source library for computer vision operations such as image
+    and video analysis. OpenCV is primarily developed by Intel in C++ and offers interfaces
+    with Python, Java, and Matlab. OpenCV has the following features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is an open source image processing Python library.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OpenCV is the core Python library for image processing and computer vision.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OpenCV is easy to learn and deploy with web and mobile applications.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OpenCV in Python is an API and wrapper around its C++ core implementation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is fast due to background C++ code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can install OpenCV using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the preceding pip command, we can easily install OpenCV. OpenCV is the
+    most popular library for image processing and computer vision tasks. It offers
+    various use cases related to image analysis operations such as improving image
+    quality, filtering and transforming images, drawing on images, changing colors,
+    detecting faces and objects, identifying human actions, tracking objects, analyzing
+    motion, and finding similar images. After installing the OpenCV library, it's
+    time to understand the basics of image processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding image data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Image data is a two-dimensional array or function `f(x,y)` with spatial coordinates.
+    The amplitude of the `coordinate(x,y)` is known as intensity. In Python, an image
+    is a 2D or 3D NumPy array with pixel values. Pixels are the smallest, core tiny
+    picture elements, which decide the image quality. A large number of pixels results
+    in a higher resolution. Also, there are various image formats available, such
+    as `.``jpeg`, `.png`, `.gif`, and `.tiff`. These file formats are helpful in organizing
+    and maintaining digital image files. Before analyzing image data, we need to understand
+    the types of images. Image data can be of three types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Grayscale
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Color
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Binary images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Binary image pixels have only two colors, generally black and white. Binary
+    image pixels take only binary values 0 or 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/be833763-eeaf-4f2d-83e5-96cd7826d04e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding image is an example of a binary image. It has only two colors,
+    black and white. It does not use shades of black and white.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Grayscale images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A grayscale image looks like a black and white image. It is represented by 8
+    bits per pixel, that is, 256 intensity values or tones ranging from 0 to 255\.
+    These 256 shades move from pure black to pure white; 0 represents pure black while
+    255 represents the color white.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/707a69e9-3a34-42f3-83a8-5b962598e35e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding image is a grayscale image. It is a black and white image where
+    shades move from pure black to pure white.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Color images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Color images are a mixture of the primary colors red, blue, and green. These
+    primary colors have the capability to form new colors by blending in certain proportions.
+    Each color uses eight bits (intensity values between 0-255), that is, 24 bits
+    per pixel. Let''s take an example of a color image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/be37f829-ac45-43a3-aec0-8d91aedeae31.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding image file, we can see most of the color shades with different
+    intensities. After understanding the type of images, it's time to understand color
+    models such as RGB, CMYK, HSV, HSL, and grayscale. Let's jump to color models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Color models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Color models are a structure for processing and measuring the combination of
+    primary colors. They help us to explain how colors will display on the computer
+    screen or on paper. Color models can be of two types: additive or subtractive.
+    Additive models are used for computer screens, for example, the RGB (red, green,
+    and blue) model, and subtractive models are used for printing images, for example,
+    the CMYK (cyan, magenta, yellow, and black) model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/abbdc731-fa1c-4e51-ad1b-301597242bd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There are lots of models other than RGB and CMYK, such as HSV, HSL, and Gray
+    Scale. HSV is an acronym for hue, saturation, and value. It is a three-dimensional
+    color model, which is an improved version of the RGB model. In the HSV model,
+    the top of the center axis is white, the bottom is black, and the remaining colors
+    lie in between. Here, the hue is the angle, saturation is the distance from the
+    center axis, and value is the distance from the bottom of the axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: HSL is an acronym for hue, saturation, and lightness. The main difference between
+    HSV and HSL is the amount of lightness and the value of colors from the center
+    axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/04a62af2-b68e-4586-ab6d-cf2789b9a00e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s learn how to read and display the image file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/29a3e562-3c87-4a8c-9067-7307faf75f69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we imported `cv2`, NumPy, and `matplotlib.pyplot`.
+    `cv2` is for image processing, NumPy is for arrays, and `matplotlib.pyplot` is
+    for displaying an image. We read the image using the `imread()` function and returned
+    an array of images. We can check its type using the `type()` function and its
+    shape using the `shape` attribute of the NumPy array. We can display the image
+    using the `show()` function of the `matpltlib.pyplot` module. The preceding image
+    is not showing the correct colors of the Google logo image. This is because `imread()`
+    reads images in the BGR color model. Lets convert BGR to the RGB color model using
+    the `cvtColor()` function and passing tthe flag `cv2.COLOR_BGR2RGB`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/52f718fb-86b0-4a87-a371-41e86a25057f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, you can see the correct image in RGB format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s write the image file on a local disk using the `imwrite()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code block, we have written the image file on a local disk
+    with the image name `image.jpg`. After understanding color models, it's time to
+    learn how to draw elements on an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Drawing on images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s learn how to draw different figure shapes, such as a line, square, or
+    triangle, on an image using OpenCV. When we draw any shape on an image, we need
+    to take care of the coordinates, color, and thickness of the shape. Let''s first
+    create a blank image with a white or black background:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ecdc3915-4e69-4fc3-ac05-c7c2abc70fd7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we created a blank image with a black background using
+    the `zeros()` function of the NumPy module. The `zeros()` function creates an
+    array of the given size and fills the matrix with zeros.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s create a blank image with a white background:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/fa9e9d82-e338-4be8-83d7-f8f96c6f1de2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we created a blank image with a white background
+    using the `zeros()` function of the NumPy module and filled the image with 255
+    for each pixel. The `zeros()` function creates an array of the given size and
+    fills the matrix with zeros. The `fill()` function assigns a given value to all
+    the elements of the matrix. Let''s draw a line using OpenCV on a black image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ad50b113-98f2-4ec4-83a6-95967e4c3ebf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we drew the green line on the black image using the
+    `line()` function. The `line()` function takes the following arguments: image
+    file, `start_point`, `end_point`, color, and thickness. In our example, the start
+    and endpoints are (599,0) and (0,599), the color tuple is (0,255,0), and the thickness
+    is 4\. Similarly, we can create a line on a white image. Let''s see the following
+    example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b0f328e6-f9f3-47fc-9448-a3cea18c12e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s see an example of drawing a circle on a white image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/dc8f192c-851a-470b-956f-260e9843a5af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we created a white image and drew a circle using
+    the `circle()` function. The `circle()` function takes the following arguments:
+    image, `center_coordinates`, radius, color, and thickness. In our example, the
+    center is (300, 300), the radius is 100, a color tuple is (255,0,0), and the thickness
+    is 6.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see an example of drawing a rectangle on a black image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2ec1550b-9e86-4e38-83f4-dc9c15e8a4f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we created a black image and drew a rectangle using
+    the `rectangle()` function. The `rectangle()` function takes the following arguments:
+    image, `start_point`, `end_point`, color, and thickness. Here, thickness also
+    takes an argument `-1`, the `-1` px value will fill the rectangle shape with the
+    specified color. Let''s see an example of a filled rectangle:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/fad53d80-1e53-4070-9fde-3a996e76ca8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we filled the rectangle by passing thickness values
+    as -1 px. In a nutshell, we can say that the line takes mainly the start and endpoints
+    as the input, the rectangle takes the top-left and the bottom-right coordinates,
+    and the circle takes center coordinates and radius values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing on images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous section, we created various shapes on images. Now, we will
+    learn how to write text on images. Writing text on an image is similar to drawing
+    shapes. Let''s see an example of writing on an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a1e7e723-853d-4407-8eda-080ed11f136b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we created a blank image with the color black. We
+    have written text on an image using the `putText()` function. The `putText()`
+    function will take the following arguments: image, text, coordinates of the bottom-left
+    corner, font, `fontScale`, color, thickness, and `linetype`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resizing images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Resizing an image means changing the dimension or scaling of a given image.
+    Scaling or resizing is done either from the width, height, or both. One of the
+    applications of resizing images is training deep learning models where reduced
+    image sizes can speed up the training. Training a deep learning model is out of
+    the scope of this book. If you are interested, then you can refer to any deep
+    learning book from Packt Publishing. Let''s see an example of resizing an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/68efbd7f-e4d1-4474-96a7-68e4580c7376.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code, we read the image and converted it from BGR into the
+    RGB space. Let''s resize it now using the `resize()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b2deb151-83b5-4020-9698-96f27f21013b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we read the image, converted BGR to RGB color using
+    the `cvtColor()` function, and resized the image using the `resize()` function.
+    The `resize()` function takes the following arguments: image, size, and interpolation.
+    Interpolation is used to scale moire-free images. Interpolation takes one of the
+    following flags: `INTER_NEAREST` (for nearest-neighbor interpolation), `INTER_LINEAR`
+    (bilinear interpolation), and `INTER_AREA` (resampling using pixel area relation).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Flipping images
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Flipping an image is equivalent to a mirror effect. Let''s learn how to flip
+    an image across the *x* axis (vertical flipping), *y* axis (horizontal flipping),
+    or both axes. OpenCV offers the `flip()` function to flip an image. The `flip()`
+    function will take two arguments: image and flipcode. The image is a NumPy array
+    of pixel values and the flipcode used defines the type of flip, such as horizontal,
+    vertical, or both. The following flipcode values are for different types of flips:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Flipcode > 0 is for a horizontal flip.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Flipcode = 0 is for a vertical flip.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Flipcode < 0 is for both a horizontal and vertical flip.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let''s see an example of flipping an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5663bc78-a38a-4ab9-9120-0fa76efb8fb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is the original image, of Lionel Messi. Let''s flip it horizontally using
+    the `flip()` function by passing 1 as the flipcode in the `flip()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bad1b298-a750-4f95-97af-8e70a9f17024.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is the horizontally flipped image. Let''s flip the original image vertically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/42ddf381-81cc-462d-a6dd-e74e98db6c5e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You can see the vertically flipped image. Let''s flip the original image on
+    both axes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7d664c59-8a20-4ede-9030-3ae72e769a4c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see the vertically and horizontally flipped image. After flipping the
+    image, let's learn how to change the brightness of the image in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Changing the brightness
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Brightness is a comparative term that is determined by visual perception. Sometimes
+    it is difficult to perceive the brightness. The value of pixel intensity can help
+    us to find a brighter image. For example, if two pixels have the intensity values
+    110 and 230, then the latter one is brighter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In OpenCV, adjusting image brightness is a very basic operation. Brightness
+    can be controlled by changing the intensity of each pixel in an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7d7bd975-084f-48d1-9e10-615dec4e44c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code example, we have read the image and converted the BGR
+    color model-based image into an RGB color model-based image. Let''s change the
+    brightness of the image in the following code block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/565994a3-d029-43a2-985a-c145bf7694dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we added the two matrices with the given weightage;
+    alpha and beta using the `addWeighted()` function. `addWeighted()` takes the following
+    arguments: `first_image`, `alpha, second_image`, `gamma`, and `beta`. In our example,
+    the argument `first_image` input image and the argument `second_image` is the
+    null matrix. The values of `alpha` and `beta` are the weights for both matrices
+    and `gamma` is 0.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Blurring an image
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Blurring is one of the crucial steps of image preprocessing. In preprocessing,
+    the removal of noise impacts the performance of algorithms. Blurring is the process
+    of reducing noise in image data to achieve better accuracy. Blurring also helps
+    us to take charge of handling pixel intensity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see an example of blurring an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5c7fadcd-940c-41ec-af6f-20f83059e767.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code sample, we read the image and converted it from a BGR
+    to RGB based image. Let''s blur it using the `blur()` function. Blur takes two
+    arguments: image and kernel size. The `blur()` function uses the average blurring
+    method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/163204d0-ae8f-450c-8d1f-74eca759d268.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we read the image, converted BGR to RGB color using
+    the `cvtColor()` function, and displayed the image. Here, we blurred the image
+    using the `blur()` function. The `blur()` function applies average blurring, which
+    uses a normalized box filter. The `blur()` function takes the following arguments:
+    image and kernel size.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have seen a blurred image using average blurring. Let''s explore blurring
+    using Gaussian blurring. In this blurring, the Gaussian kernel is used instead
+    of a box filter. `GaussianBlur()` will take the image and kernel size. The kernel
+    size will be a tuple of the width and height. Both width and height must be a
+    positive and odd number:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f4346a12-f6e3-42b9-9abf-bf8b9c9c26e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s explore the median blurring of the given image. Median blur takes pixels
+    in the kernel area and replaces the central element with the median value. `medianBlur()`
+    will take image and kernel size as an argument. It is recommended that the kernel
+    size should be an odd number and greater than 1, for example, 3, 5, 7, 9, 11,
+    and so on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f5ac0ef4-2ceb-4d7a-8924-d03d8bce731c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code block, we blurred the image using median blurring. Here,
+    we used the `medianBlur()` method for median blurring and we can observe the blurred
+    image in the output. In this section, we discussed average blurring, Gaussian
+    blurring, and median blurring techniques. In the next section, we will learn how
+    to detect human faces in images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Face detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Nowadays, everyone is using Facebook and you all must have seen facial recognition
+    in an image on Facebook. Facial recognition identifies who a face belongs to and
+    face detection only finds faces in an image, that is, face detection does not
+    determine to whom the detected face belongs. Face detection in a given input image
+    is quite a popular functionality in lots of applications; for example, counting
+    the number of people in an image. In face detection, the algorithm tries to find
+    human faces in a digital image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Face detection is a kind of classification problem. We can classify images
+    into two classes, face or not face. We need lots of images to train such a model
+    for classification. Thankfully, OpenCV offers pre-trained models such as the Haar
+    Feature-Based Cascade Classifier and the **Local Binary Pattern** (**LBP**) classifier,
+    trained on thousands of images. In our example, we will use Haar feature extraction
+    to detect a face. Let''s see how to capture a face in an image using OpenCV:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Read the image and convert it into grayscale:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f3468c8d-b2ff-4b9a-81fe-6249cfa3f3f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code example, we read the Lionel Messi image and converted
+    it into a grayscale image using the `cvtColor()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s find the faces in the generated gray image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load the Haar cascade face classifier file:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Get coordinates for all the faces in the image:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Draw a rectangle on detected faces:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Convert image color space BGR to RGB and display the image:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7c803d9f-c090-4999-951b-28b500decdab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we converted the BGR image to a grayscale image.
+    OpenCV has pre-trained classifiers for face, eye, and smile detection. We can
+    use a pre-trained face cascade classifier XML file (`haarcascade_frontalface_default.xml`).
+    You can get the classifier file (`haarcascade_frontalface_default.xml`) from the
+    official Git repo: [https://github.com/opencv/opencv/tree/master/data/haarcascades](https://github.com/opencv/opencv/tree/master/data/haarcascades)
+    or you can get it from our GitHub repo: [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter13](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter13).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After this, we can pass the image to the cascade classifier and get the face
+    coordinates in the image. We have drawn rectangles on these face coordinates using
+    the `rectangle()` function. Before displaying the output, we need to convert the
+    RGB image to BGR to display it properly. Let''s try this example on an image with
+    multiple faces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a5fb031e-9d60-4b9a-8848-5d93a2cfca36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we can see the program has detected all the faces
+    in the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we discussed image processing using OpenCV. The main focus
+    of the chapter was on basic image processing operations and face detection. The
+    chapter started with an introduction to types of images and image color models.
+    In later sections, the focus was on image operations such as drawing, resizing,
+    flipping, and blurring an image. In the last section, we discussed face detection
+    in a given input image
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next chapter, [Chapter 14](b106abe7-1a2a-44d1-bf17-778e1588e0f1.xhtml),
+    *Parallel Computing Using Dask*, will focus on parallel computation on basic data
+    science Python libraries such as Pandas, NumPy, and scikit-learn using Dask. The
+    chapter will start with Dask data types such as dataframes, arrays, and bags.
+    In later sections, we'll shift focus from dataFrames and arrays to delayed, preprocessing,
+    and machine learning algorithms in parallel using Dask.
+  prefs: []
+  type: TYPE_NORMAL

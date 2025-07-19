@@ -1,0 +1,1374 @@
+- en: Chapter 2. Writing Hadoop MapReduce Programs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous chapter, we learned how to set up the R and Hadoop development
+    environment. Since we are interested in performing Big Data analytics, we need
+    to learn Hadoop to perform operations with Hadoop MapReduce. In this chapter,
+    we will discuss what MapReduce is, why it is necessary, how MapReduce programs
+    can be developed through Apache Hadoop, and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the basics of MapReduce
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introducing Hadoop MapReduce
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding the Hadoop MapReduce fundamentals
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Writing a Hadoop MapReduce example
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding several possible MapReduce definitions to solve business problems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning different ways to write Hadoop MapReduce in R
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding the basics of MapReduce
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Understanding the basics of MapReduce could well be a long-term solution if
+    one doesn't have a cluster or uses **Message Passing Interface** (**MPI**). However,
+    a more realistic use case is when the data doesn't fit on one disk but fits on
+    a **Distributed File System** (**DFS**), or already lives on Hadoop-related software.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, MapReduce is a programming model that works in a distributed fashion,
+    but it is not the only one that does. It might be illuminating to describe other
+    programming models, for example, MPI and **Bulk Synchronous Parallel** (**BSP**).
+    To process Big Data with tools such as R and several machine learning techniques
+    requires a high-configuration machine, but that's not the permanent solution.
+    So, distributed processing is the key to handling this data. This distributed
+    computation can be implemented with the MapReduce programming model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MapReduce is the one that answers the Big Data question. Logically, to process
+    data we need parallel processing, which means processing over large computation;
+    it can either be obtained by clustering the computers or increasing the configuration
+    of the machine. Using the computer cluster is an ideal way to process data with
+    a large size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we talk more about MapReduce by parallel processing, we will discuss
+    Google MapReduce research and a white paper written by *Jeffrey Dean* and *Sanjay
+    Ghemawat* in 2004\. They introduced MapReduce as simplified data processing software
+    on large clusters. MapReduce implementation runs on large clusters with commodity
+    hardware. This data processing platform is easier for programmers to perform various
+    operations. The system takes care of input data, distributes data across the computer
+    network, processes it in parallel, and finally combines its output into a single
+    file to be aggregated later. This is very helpful in terms of cost and is also
+    a time-saving system for processing large datasets over the cluster. Also, it
+    will efficiently use computer resources to perform analytics over huge data. Google
+    has been granted a patent on MapReduce.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For MapReduce, programmers need to just design/migrate applications into two
+    phases: Map and Reduce. They simply have to design Map functions for processing
+    a key-value pair to generate a set of intermediate key-value pairs, and Reduce
+    functions to merge all the intermediate keys. Both the Map and Reduce functions
+    maintain MapReduce workflow. The Reduce function will start executing the code
+    after completion or once the Map output is available to it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Their execution sequence can be seen as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding the basics of MapReduce](img/3282OS_02_00.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: MapReduce assumes that the Maps are independent and will execute them in parallel.
+    The key aspect of the MapReduce algorithm is that if every Map and Reduce is independent
+    of all other ongoing Maps and Reduces in the network, the operation will run in
+    parallel on different keys and lists of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A distributed filesystem spreads multiple copies of data across different machines.
+    This offers reliability as well as fault tolerance. If a machine with one copy
+    of the file crashes, the same data will be provided from another replicated data
+    source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The master node of the MapReduce daemon will take care of all the responsibilities
+    of the MapReduce jobs, such as the execution of jobs, the scheduling of Mappers,
+    Reducers, Combiners, and Partitioners, the monitoring of successes as well as
+    failures of individual job tasks, and finally, the completion of the batch job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Hadoop processes the distributed data in a parallel manner by running
+    Hadoop MapReduce jobs on servers near the data stored on Hadoop's distributed
+    filesystem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Companies using MapReduce include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Amazon**: This is an online e-commerce and cloud web service provider for
+    Big Data analytics'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**eBay**: This is an e-commerce portal for finding articles by its description'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Google**: This is a web search engine for finding relevant pages relating
+    to a particular topic'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**LinkedIn**: This is a professional networking site for Big Data storage and
+    generating personalized recommendations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Trovit**: This is a vertical search engine for finding jobs that match a
+    given description'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Twitter**: This is a social networking site for finding messages'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Apart from these, there are many other brands that are using Hadoop for Big
+    Data analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing Hadoop MapReduce
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Basically, the MapReduce model can be implemented in several languages, but
+    apart from that, Hadoop MapReduce is a popular Java framework for easily written
+    applications. It processes vast amounts of data (multiterabyte datasets) in parallel
+    on large clusters (thousands of nodes) of commodity hardware in a reliable and
+    fault-tolerant manner. This MapReduce paradigm is divided into two phases, Map
+    and Reduce, that mainly deal with key-value pairs of data. The Map and Reduce
+    tasks run sequentially in a cluster, and the output of the Map phase becomes the
+    input of the Reduce phase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All data input elements in MapReduce cannot be updated. If the input `(key,
+    value)` pairs for mapping tasks are changed, it will not be reflected in the input
+    files. The Mapper output will be piped to the appropriate Reducer grouped with
+    the key attribute as input. This sequential data process will be carried away
+    in a parallel manner with the help of Hadoop MapReduce algorithms as well as Hadoop
+    clusters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MapReduce programs transform the input dataset present in the list format into
+    output data that will also be in the list format. This logical list translation
+    process is mostly repeated twice in the Map and Reduce phases. We can also handle
+    these repetitions by fixing the number of Mappers and Reducers. In the next section,
+    MapReduce concepts are described based on the old MapReduce API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Listing Hadoop MapReduce entities
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following are the components of Hadoop that are responsible for performing
+    analytics over Big Data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Client**: This initializes the job'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**JobTracker**: This monitors the job'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**TaskTracker**: This executes the job'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**HDFS**: This stores the input and output data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding the Hadoop MapReduce scenario
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The four main stages of Hadoop MapReduce data processing are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The loading of data into HDFS
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The execution of the Map phase
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shuffling and sorting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The execution of the Reduce phase
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Loading data into HDFS
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The input dataset needs to be uploaded to the Hadoop directory so it can be
+    used by MapReduce nodes. Then, **Hadoop Distributed File System** (**HDFS**) will
+    divide the input dataset into data splits and store them to DataNodes in a cluster
+    by taking care of the replication factor for fault tolerance. All the data splits
+    will be processed by TaskTracker for the Map and Reduce tasks in a parallel manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, there are some alternative ways to get the dataset in HDFS with Hadoop
+    components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sqoop**: This is an open source tool designed for efficiently transferring
+    bulk data between Apache Hadoop and structured, relational databases. Suppose
+    your application has already been configured with the MySQL database and you want
+    to use the same data for performing data analytics, Sqoop is recommended for importing
+    datasets to HDFS. Also, after the completion of the data analytics process, the
+    output can be exported to the MySQL database.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Flume**: This is a distributed, reliable, and available service for efficiently
+    collecting, aggregating, and moving large amounts of log data to HDFS. Flume is
+    able to read data from most sources, such as logfiles, sys logs, and the standard
+    output of the Unix process.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using the preceding data collection and moving the framework can make this data
+    transfer process very easy for the MapReduce application for data analytics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Executing the Map phase
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Executing the client application starts the Hadoop MapReduce processes. The
+    Map phase then copies the job resources (unjarred class files) and stores it to
+    HDFS, and requests JobTracker to execute the job. The JobTracker initializes the
+    job, retrieves the input, splits the information, and creates a Map task for each
+    job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The JobTracker will call TaskTracker to run the Map task over the assigned input
+    data subset. The Map task reads this input split data as input `(key, value)`
+    pairs provided to the Mapper method, which then produces intermediate `(key, value)`
+    pairs. There will be at least one output for each input `(key, value)` pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Executing the Map phase](img/3282OS_02_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mapping individual elements of an input list
+  prefs: []
+  type: TYPE_NORMAL
+- en: The list of (key, value) pairs is generated such that the key attribute will
+    be repeated many times. So, its key attribute will be re-used in the Reducer for
+    aggregating values in MapReduce. As far as format is concerned, Mapper output
+    format values and Reducer input values must be the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the completion of this Map operation, the TaskTracker will keep the result
+    in its buffer storage and local disk space (if the output data size is more than
+    the threshold).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, suppose we have a `Map` function that converts the input text into
+    lowercase. This will convert the list of input strings into a list of lowercase
+    strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Keys and values**: In MapReduce, every value has its identifier that is considered
+    as key. The key-value pairs received by the Mapper are dependent on the input
+    datatype as specified in the job configuration file.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shuffling and sorting
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: To optimize the MapReduce program, this intermediate phase is very important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As soon as the Mapper output from the Map phase is available, this intermediate
+    phase will be called automatically. After the completion of the Map phase, all
+    the emitted intermediate (key, value) pairs will be partitioned by a Partitioner
+    at the Mapper side, only if the Partitioner is present. The output of the Partitioner
+    will be sorted out based on the key attribute at the Mapper side. Output from
+    sorting the operation is stored on buffer memory available at the Mapper node,
+    TaskTracker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Combiner is often the Reducer itself. So by compression, it's not **Gzip**
+    or some similar compression but the Reducer on the node that the map is outputting
+    the data on. The data returned by the Combiner is then shuffled and sent to the
+    reduced nodes. To speed up data transmission of the Mapper output to the Reducer
+    slot at TaskTracker, you need to compress that output with the `Combiner` function.
+    By default, the Mapper output will be stored to buffer memory, and if the output
+    size is larger than threshold, it will be stored to a local disk. This output
+    data will be available through **Hypertext Transfer Protocol** (**HTTP**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing phase execution
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: As soon as the Mapper output is available, TaskTracker in the Reducer node will
+    retrieve the available partitioned Map's output data, and they will be grouped
+    together and merged into one large file, which will then be assigned to a process
+    with a `Reducer` method. Finally, this will be sorted out before data is provided
+    to the `Reducer` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `Reducer` method receives a list of input values from an input `(key, list
+    (value))` and aggregates them based on custom logic, and produces the output `(key,
+    value)` pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Reducing phase execution](img/3282OS_02_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reducing input values to an aggregate value as output
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of the `Reducer` method of the Reduce phase will directly be written
+    into HDFS as per the format specified by the MapReduce job configuration class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the limitations of MapReduce
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s see some of Hadoop MapReduce''s limitations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MapReduce framework is notoriously difficult to leverage for transformational
+    logic that is not as simple, for example, real-time streaming, graph processing,
+    and message passing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data querying is inefficient over distributed, unindexed data than in a database
+    created with indexed data. However, if the index over the data is generated, it
+    needs to be maintained when the data is removed or added.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can't parallelize the Reduce task to the Map task to reduce the overall processing
+    time because Reduce tasks do not start until the output of the Map tasks is available
+    to it. (The Reducer's input is fully dependent on the Mapper's output.) Also,
+    we can't control the sequence of the execution of the Map and Reduce task. But
+    sometimes, based on application logic, we can definitely configure a slow start
+    for the Reduce tasks at the instance when the data collection starts as soon as
+    the Map tasks complete.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Long-running Reduce tasks can't be completed because of their poor resource
+    utilization either if the Reduce task is taking too much time to complete and
+    fails or if there are no other Reduce slots available for rescheduling it (this
+    can be solved with YARN).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding Hadoop's ability to solve problems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since this book is geared towards analysts, it might be relevant to provide
+    analytical examples; for instance, if the reader has a problem similar to the
+    one described previously, Hadoop might be of use. Hadoop is not a universal solution
+    to all Big Data issues; it's just a good technique to use when large data needs
+    to be divided into small chunks and distributed across servers that need to be
+    processed in a parallel fashion. This saves time and the cost of performing analytics
+    over a huge dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we are able to design the Map and Reduce phase for the problem, it will
+    be possible to solve it with MapReduce. Generally, Hadoop provides computation
+    power to process data that does not fit into machine memory. (R users mostly found
+    an error message while processing large data and see the following message: cannot
+    allocate vector of size 2.5 GB.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the different Java concepts used in Hadoop programming
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are some classic Java concepts that make Hadoop more interactive. They
+    are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Remote procedure calls**: This is an interprocess communication that allows
+    a computer program to cause a subroutine or procedure to execute in another address
+    space (commonly on another computer on shared network) without the programmer
+    explicitly coding the details for this remote interaction. That is, the programmer
+    writes essentially the same code whether the subroutine is local to the executing
+    program or remote.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Serialization/Deserialization**: With serialization, a **Java Virtual Machine**
+    (**JVM**) can write out the state of the object to some stream so that we can
+    basically read all the members and write out their state to a stream, disk, and
+    so on. The default mechanism is in a binary format so it''s more compact than
+    the textual format. Through this, machines can send data across the network. Deserialization
+    is vice versa and is used for receiving data objects over the network.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Java generics**: This allows a type or method to operate on objects of various
+    types while providing compile-time type safety, making Java a fully static typed
+    language.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Java collection**: This framework is a set of classes and interfaces for
+    handling various types of data collection with single Java objects.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Java concurrency**: This has been designed to support concurrent programming,
+    and all execution takes place in the context of threads. It is mainly used for
+    implementing computational processes as a set of threads within a single operating
+    system process.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Plain Old Java Objects** (**POJO**): These are actually ordinary JavaBeans.
+    POJO is temporarily used for setting up as well as retrieving the value of data
+    objects.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding the Hadoop MapReduce fundamentals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To understand Hadoop MapReduce fundamentals properly, we will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understand MapReduce objects
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learn how to decide the number of Maps in MapReduce
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learn how to decide the number of Reduces in MapReduce
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understand MapReduce dataflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Take a closer look at Hadoop MapReduce terminologies
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding MapReduce objects
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we know, MapReduce operations in Hadoop are carried out mainly by three
+    objects: Mapper, Reducer, and Driver.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Mapper**: This is designed for the Map phase of MapReduce, which starts MapReduce
+    operations by carrying input files and splitting them into several pieces. For
+    each piece, it will emit a key-value data pair as the output value.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reducer**: This is designed for the Reduce phase of a MapReduce job; it accepts
+    key-based grouped data from the Mapper output, reduces it by aggregation logic,
+    and emits the `(key, value)` pair for the group of values.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Driver**: This is the main file that drives the MapReduce process. It starts
+    the execution of MapReduce tasks after getting a request from the client application
+    with parameters. The Driver file is responsible for building the configuration
+    of a job and submitting it to the Hadoop cluster. The Driver code will contain
+    the `main()` method that accepts arguments from the command line. The input and
+    output directory of the Hadoop MapReduce job will be accepted by this program.
+    Driver is the main file for defining job configuration details, such as the job
+    name, job input format, job output format, and the Mapper, Combiner, Partitioner,
+    and Reducer classes. MapReduce is initialized by calling this `main()` function
+    of the Driver class.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Not every problem can be solved with a single Map and single Reduce program,
+    but fewer can't be solved with a single Map and single Reduce task. Sometimes,
+    it is also necessary to design the MapReduce job with multiple Map and Reduce
+    tasks. We can design this type of job when we need to perform data operations,
+    such as data extraction, data cleaning, and data merging, together in a single
+    job. Many problems can be solved by writing multiple Mapper and Reducer tasks
+    for a single job. The MapReduce steps that will be called sequentially in the
+    case of multiple Map and Reduce tasks are Map1 followed by Reduce1, Map2 followed
+    by Reduce2, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we need to write a MapReduce job with multiple Map and Reduce tasks, we
+    have to write multiple MapReduce application drivers to run them sequentially.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the time of the MapReduce job submission, we can provide a number of Map
+    tasks, and a number of Reducers will be created based on the output from the Mapper
+    input and Hadoop cluster capacity. Also, note that setting the number of Mappers
+    and Reducers is not mandatory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deciding the number of Maps in MapReduce
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The number of Maps is usually defined by the size of the input data and size
+    of the data split block that is calculated by the size of the HDFS file / data
+    split. Therefore, if we have an HDFS datafile of 5 TB and a block size of 128
+    MB, there will be 40,960 maps present in the file. But sometimes, the number of
+    Mappers created will be more than this count because of speculative execution.
+    This is true when the input is a file, though it entirely depends on the `InputFormat`
+    class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Hadoop MapReduce processing, there will be a delay in the result of the job
+    when the assigned Mapper or Reducer is taking a long time to finish. If you want
+    to avoid this, speculative execution in Hadoop can run multiple copies of the
+    same Map or Reduce task on different nodes, and the result from the first completed
+    nodes can be used. From the Hadoop API with the `setNumMapTasks(int)` method,
+    we can get an idea of the number of Mappers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deciding the number of Reducers in MapReduce
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A numbers of Reducers are created based on the Mapper's input. However, if you
+    hardcode the number of Reducers in MapReduce, it won't matter how many nodes are
+    present in a cluster. It will be executed as specified in the configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, we can set the number of Reducers at runtime along with the MapReduce
+    command at the command prompt `-D mapred.reduce.tasks`, with the number you want.
+    Programmatically, it can be set via `conf.setNumReduceTasks(int)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding MapReduce dataflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have seen the components that make a basic MapReduce job possible,
+    we will distinguish how everything works together at a higher level. From the
+    following diagram, we will understand MapReduce dataflow with multiple nodes in
+    a Hadoop cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Understanding MapReduce dataflow](img/3282OS_02_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: MapReduce dataflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The two APIs available for Hadoop MapReduce are: New (Hadoop 1.x and 2.x) and
+    Old Hadoop (0.20). YARN is the next generation of Hadoop MapReduce and the new
+    Apache Hadoop subproject that has been released for Hadoop resource management.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hadoop data processing includes several tasks that help achieve the final output
+    from an input dataset. These tasks are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preloading data in HDFS.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Running MapReduce by calling Driver.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Reading of input data by the Mappers, which results in the splitting of the
+    data execution of the Mapper custom logic and the generation of intermediate key-value
+    pairs
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Executing Combiner and the shuffle phase to optimize the overall Hadoop MapReduce
+    process.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sorting and providing of intermediate key-value pairs to the Reduce phase. The
+    Reduce phase is then executed. Reducers take these partitioned key-value pairs
+    and aggregate them based on Reducer logic.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The final output data is stored at HDFS.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Here, Map and Reduce tasks can be defined for several data operations as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data extraction
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data loading
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data segmentation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data cleaning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data transformation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data integration
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will explore MapReduce tasks in more detail in the next part of this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taking a closer look at Hadoop MapReduce terminologies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, we will see further details on Hadoop MapReduce dataflow with
+    several MapReduce terminologies and their Java class details. In the MapReduce
+    dataflow figure in the previous section, multiple nodes are connected across the
+    network for performing distributed processing with a Hadoop setup. The ensuing
+    attributes of the Map and Reduce phases play an important role for getting the
+    final output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The attributes of the Map phase are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `InputFiles` term refers to input, raw datasets that have been created/extracted
+    to be analyzed for business analytics, which have been stored in HDFS. These input
+    files are very large, and they are available in several types.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `InputFormat` is a Java class to process the input files by obtaining the
+    text of each line of offset and the contents. It defines how to split and read
+    input data files. We can set the several input types, such as `TextInputFormat`,
+    `KeyValueInputFormat`, and `SequenceFileInputFormat`, of the input format that
+    are relevant to the Map and Reduce phase.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `InputSplits` class is used for setting the size of the data split.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `RecordReader` is a Java class that comes with several methods to retrieve
+    key and values by iterating them among the data splits. Also, it includes other
+    methods to get the status on the current progress.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The `Mapper` instance is created for the Map phase. The `Mapper` class takes
+    input `(key, value)` pairs (generated by RecordReader) and produces an intermediate
+    `(key, value)` pair by performing user-defined code in a `Map()` method. The `Map()`
+    method mainly takes two input parameters: key and value; the remaining ones are
+    `OutputCollector` and `Reporter. OutputCollector`. They will provide intermediate
+    the key-value pair to reduce the phase of the job. Reporter provides the status
+    of the current job to JobTracker periodically. The JobTracker will aggregate them
+    for later retrieval when the job ends.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The attributes of the Reduce phase are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After completing the Map phase, the generated intermediate `(key, value)` pairs
+    are partitioned based on a key attribute similarity consideration in the `hash`
+    function. So, each Map task may emit `(key, value)` pairs to partition; all values
+    for the same key are always reduced together without it caring about which Mapper
+    is its origin. This partitioning and shuffling will be done automatically by the
+    MapReduce job after the completion of the Map phase. There is no need to call
+    them separately. Also, we can explicitly override their logic code as per the
+    requirements of the MapReduce job.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After completing partitioning and shuffling and before initializing the Reduce
+    task, the intermediate `(key, value)` pairs are sorted based on a key attribute
+    value by the Hadoop MapReduce job.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `Reduce` instance is created for the Reduce phase. It is a section of user-provided
+    code that performs the Reduce task. A `Reduce()` method of the `Reducer` class
+    mainly takes two parameters along with `OutputCollector` and `Reporter`, which
+    is the same as the `Map()` function. They are the `OutputCollector` and `Reporter`
+    objects. `OutputCollector` in both Map and Reduce has the same functionality,
+    but in the Reduce phase, `OutputCollector` provides output to either the next
+    Map phase (in case of multiple map and Reduce job combinations) or reports it
+    as the final output of the jobs based on the requirement. Apart from that, `Reporter`
+    periodically reports to JobTracker about the current status of the running task.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, in `OutputFormat` the generated output (key, value) pairs are provided
+    to the `OutputCollector` parameter and then written to `OutputFiles`, which is
+    governed by `OutputFormat`. It controls the setting of the `OutputFiles` format
+    as defined in the MapReduce Driver. The format will be chosen from either `TextOutputFormat`,
+    `SequenceFileOutputFileFormat`, or `NullOutputFormat`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The factory `RecordWriter` used by `OutputFormat` to write the output data in
+    the appropriate format.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The output files are the output data written to HDFS by `RecordWriter` after
+    the completion of the MapReduce job.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To run this MapReduce job efficiently, we need to have some knowledge of Hadoop
+    shell commands to perform administrative tasks. Refer to the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Shell commands | Usage and code sample |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To copy source paths to `stdout`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To change the permissions of files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To copy a file from local storage to HDFS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To copy a file from HDFS to local storage:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To copy a file from the source to the destination in HDFS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To display the aggregate length of a file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To display the summary of file length:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To copy files to a local filesystem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To list all files in the current directory in HDFS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To create a directory in HDFS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To move files from the source to the destination:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To remove files from the current directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To change the replication factor of a file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '| To display the last kilobyte of a file to `stdout`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing a Hadoop MapReduce example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we will move forward with MapReduce by learning a very common and easy example
+    of word count. The goal of this example is to calculate how many times each word
+    occurs in the provided documents. These documents can be considered as input to
+    MapReduce's file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, we already have a set of text files—we want to identify the
+    frequency of all the unique words existing in the files. We will get this by designing
+    the Hadoop MapReduce phase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we will see more on Hadoop MapReduce programming using Hadoop
+    MapReduce's old API. Here we assume that the reader has already set up the Hadoop
+    environment as described in [Chapter 1](ch01.html "Chapter 1. Getting Ready to
+    Use R and Hadoop"), *Getting Ready to Use R and Hadoop*. Also, keep in mind that
+    we are not going to use R to count words; only Hadoop will be used here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Basically, Hadoop MapReduce has three main objects: Mapper, Reducer, and Driver.
+    They can be developed with three Java classes; they are the `Map` class, `Reduce`
+    class, and `Driver` class, where the `Map` class denotes the Map phase, the `Reducer`
+    class denotes the Reduce phase, and the `Driver` class denotes the class with
+    the `main()` method to initialize the Hadoop MapReduce program.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous section of Hadoop MapReduce fundamentals, we already discussed
+    what Mapper, Reducer, and Driver are. Now, we will learn how to define them and
+    program for them in Java. In upcoming chapters, we will be learning to do more
+    with a combination of R and Hadoop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: There are many languages and frameworks that are used for building MapReduce,
+    but each of them has different strengths. There are multiple factors that by modification
+    can provide high latency over MapReduce. Refer to the article *10 MapReduce Tips*
+    by Cloudera at [http://blog.cloudera.com/blog/2009/05/10-mapreduce-tips/](http://blog.cloudera.com/blog/2009/05/10-mapreduce-tips/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make MapReduce development easier, use **Eclipse** configured with **Maven**,
+    which supports the old MapReduce API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the steps to run a MapReduce job
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s see the steps to run a MapReduce job with Hadoop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the initial steps of preparing Java classes, we need you to develop a Hadoop
+    MapReduce program as per the definition of our business problem. In this example,
+    we have considered a word count problem. So, we have developed three Java classes
+    for the MapReduce program; they are `Map.java`, `Reduce.java`, and `WordCount.java`,
+    used for calculating the frequency of the word in the provided text files.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`Map.java`: This is the Map class for the word count Mapper.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`Reduce.java`: This is the Reduce class for the word count Reducer.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: '`WordCount.java`: This is the task of Driver in the Hadoop MapReduce Driver
+    main file.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: Compile the Java classes.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Create a `.jar` file from the compiled classes.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Start the Hadoop daemons.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Check all the running daemons.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Create the HDFS directory `/wordcount/input/`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Extract the input dataset to be used in the word count example. As we need to
+    have text files to be processed by the word count example, we will use the text
+    files provided with the Hadoop distribution (`CHANGES.txt`, `LICENSE.txt`, `NOTICE.txt`,
+    and `README.txt`) by copying them to the Hadoop directory. We can have other text
+    datasets from the Internet input in this MapReduce algorithm instead of using
+    readymade text files. We can also extract data from the Internet to process them,
+    but here we are using readymade input files.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Copy all the text files to HDFS.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the Hadoop MapReduce job with the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: This is how the final output will look.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Tip
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'During the MapReduce phase, you need to monitor the job as well as the nodes.
+    Use the following to monitor MapReduce jobs in web browsers:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'localhost:50070: NameNode Web interface (for HDFS)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`localhost:50030`: JobTracker Web interface (for MapReduce layer)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`localhost:50060`: TaskTracker Web interface (for MapReduce layer)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning to monitor and debug a Hadoop MapReduce job
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this section, we will learn how to monitor as well as debug a Hadoop MapReduce
+    job without any commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is one of the easiest ways to use the Hadoop MapReduce administration
+    UI. We can access this via a browser by entering the URL `http://localhost:50030`
+    (web UI for the JobTracker daemon). This will show the logged information of the
+    Hadoop MapReduce jobs, which looks like following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Learning to monitor and debug a Hadoop MapReduce job](img/3282OS_02_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Map/Reduce administration
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we can check the information and status of running jobs, the status of
+    the Map and Reduce tasks of a job, and the past completed jobs as well as failed
+    jobs with failed Map and Reduce tasks. Additionally, we can debug a MapReduce
+    job by clicking on the hyperlink of the failed Map or Reduce task of the failed
+    job. This will produce an error message printed on standard output while the job
+    is running.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring HDFS data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this section, we will see how to explore HDFS directories without running
+    any **Bash** command. The web UI of the NameNode daemon provides such a facility.
+    We just need to locate it at `http://localhost:50070`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Exploring HDFS data](img/3282OS_02_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: NameNode administration
+  prefs: []
+  type: TYPE_NORMAL
+- en: This UI enables us to get a cluster summary (memory status), NameNode logs,
+    as well as information on live and dead nodes in the cluster. Also, this allows
+    us to explore the Hadoop directory that we have created for storing input and
+    output data for Hadoop MapReduce jobs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding several possible MapReduce definitions to solve business problems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Until now we have learned what MapReduce is and how to code it. Now, we will
+    see some common MapReduce problem definitions that are used for business analytics.
+    Any reader who knows MapReduce with Hadoop will easily be able to code and solve
+    these problem definitions by modifying the MapReduce example for word count. The
+    major changes will be in data parsing and in the logic behind operating the data.
+    The major effort will be required in data collection, data cleaning, and data
+    storage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Server web log processing**: Through this MapReduce definition, we can perform
+    web log analysis. Logs of the web server provide information about web requests,
+    such as requested page''s URL, date, time, and protocol. From this, we can identify
+    the peak load hours of our website from the web server log and scale our web server
+    configuration based on the traffic on the site. So, the identification of no traffic
+    at night will help us save money by scaling down the server. Also, there are a
+    number of business cases that can be solved by this web log server analysis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Web analytics with website statistics**: Website statistics can provide more
+    detailed information about the visitor''s metadata, such as the source, campaign,
+    visitor type, visitor location, search keyword, requested page URL, browser, and
+    total time spent on pages. Google analytics is one of the popular, free service
+    providers for websites. By analyzing all this information, we can understand visitors''
+    behavior on a website. By descriptive analytics, we can identify the importance
+    of web pages or other web attributes based on visitors'' addiction towards them.
+    For an e-commerce website, we can identify popular products based on the total
+    number of visits, page views, and time spent by a visitor on a page. Also, predictive
+    analytics can be implemented on web data to predict the business.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Search engine**: Suppose we have a large set of documents and want to search
+    the document for a specific keyword, inverted indices with Hadoop MapReduce will
+    help us find keywords so we can build a search engine for Big Data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Stock market analysis**: Let''s say that we have collected stock market data
+    (Big Data) for a long period of time and now want to identify the pattern and
+    predict it for the next time period. This requires training of all historical
+    datasets. Then we can compute the frequency of the stock market changes for the
+    said time period using several machine-learning libraries with Hadoop MapReduce.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, there are too many possible MapReduce applications that can be applied
+    to improve business cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning the different ways to write Hadoop MapReduce in R
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We know that Hadoop Big Data processing with MapReduce is a big deal for statisticians,
+    web analysts, and product managers who used to use the R tool for analyses because
+    supplementary programming knowledge of MapReduce is required to migrate the analyses
+    into MapReduce with Hadoop. Also, we know R is a tool that is consistently increasing
+    in popularity; there are many packages/libraries that are being developed for
+    integrating with R. So to develop a MapReduce algorithm or program that runs with
+    the log of R and computation power of Hadoop, we require the middleware for R
+    and Hadoop. RHadoop, RHIPE, and Hadoop streaming are the middleware that help
+    develop and execute Hadoop MapReduce within R. In this last section, we will talk
+    about RHadoop, RHIPE, and introducing Hadoop streaming, and from the later chapters
+    we will purely develop MapReduce with these packages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning RHadoop
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'RHadoop is a great open source software framework of R for performing data
+    analytics with the Hadoop platform via R functions. RHadoop has been developed
+    by **Revolution Analytics**, which is the leading commercial provider of software
+    and services based on the open source R project for statistical computing. The
+    RHadoop project has three different R packages: `rhdfs`, `rmr`, and `rhbase`.
+    All these packages are implemented and tested on the Cloudera Hadoop distributions
+    CDH3, CDH4, and R 2.15.0\. Also, these are tested with the R version 4.3, 5.0,
+    and 6.0 distributions of Revolution Analytics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These three different R packages have been designed on Hadoop''s two main features
+    HDFS and MapReduce:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`rhdfs`: This is an R package for providing all Hadoop HDFS access to R. All
+    distributed files can be managed with R functions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rmr`: This is an R package for providing Hadoop MapReduce interfaces to R.
+    With the help of this package, the Mapper and Reducer can easily be developed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rhbase`: This is an R package for handling data at HBase distributed database
+    through R.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning RHIPE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**R and Hadoop Integrated Programming Environment** (**RHIPE**) is a free and
+    open source project. RHIPE is widely used for performing Big Data analysis with
+    **D&R** analysis. D&R analysis is used to divide huge data, process it in parallel
+    on a distributed network to produce intermediate output, and finally recombine
+    all this intermediate output into a set. RHIPE is designed to carry out D&R analysis
+    on complex Big Data in R on the Hadoop platform. RHIPE was developed by *Saptarshi
+    Joy Guha* (Data Analyst at Mozilla Corporation) and her team as part of her PhD
+    thesis in the Purdue Statistics Department.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning Hadoop streaming
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Hadoop streaming is a utility that comes with the Hadoop distribution. This
+    utility allows you to create and run MapReduce jobs with any executable or script
+    as the Mapper and/or Reducer. This is supported by R, Python, Ruby, Bash, Perl,
+    and so on. We will use the R language with a bash script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, there is one R package named `HadoopStreaming` that has been developed
+    for performing data analysis on Hadoop clusters with the help of R scripts, which
+    is an interface to Hadoop streaming with R. Additionally, it also allows the running
+    of MapReduce tasks without Hadoop. This package was developed by *David Rosenberg*,
+    Chief Scientist at SenseNetworks. He has expertise in machine learning and statistical
+    modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have seen what Hadoop MapReduce is, and how to develop it
+    as well as run it. In the next chapter, we will learn how to install RHIPE and
+    RHadoop, and develop MapReduce and its available functional libraries with examples.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1449 @@
+- en: Chapter 7. Machine Learning 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting real-valued numbers using regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning regression with L2 shrinkage – ridge
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning regression with L1 shrinkage – LASSO
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using cross-validation iterators with L1 and L2 shrinkage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we will introduce regression techniques and how they can be
+    coded in Python. We will follow it up with a discussion on some of the drawbacks
+    that are inherent with regression methods, and discuss how to address the same
+    using shrinkage methods. There are some parameters that need to be set in the
+    shrinkage methods. We will discuss cross-validation techniques to find the optimal
+    parameter values for the shrinkage methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We saw classification problems in the previous chapter. In this chapter, let's
+    turn our attention towards regression problems. In classification, the response
+    variable `Y` was either binary or a set of discrete values (in the case of multiclass
+    and multilabel problems). In contrast, the response variable in regression is
+    a real-valued number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regression can be thought of as a function approximation. The job of regression
+    is to find a function such that when `X`, a set of random variables, is provided
+    as an input to that function, it should return `Y`, the response variable. `X`
+    is also referred to as an independent variable and `Y` is referred as a dependent
+    variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will leverage the techniques that we learnt in the previous chapter to divide
+    our dataset into train, dev, and test sets, build our model iteratively on the
+    train set, and validate it on dev. Finally, we will use our test set to get a
+    good picture of the goodness of our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will start the chapter with a recipe for simple linear regression using the
+    least square estimation. At the beginning of the first recipe, we will provide
+    a crisp introduction to the framework of regression, which is essential background
+    information required to understand the other recipes in this chapter. Though very
+    powerful, the simple regression framework suffers from a drawback. As there is
+    no control over the upper and lower limits on the values that the coefficients
+    of linear regression can take, they tend to overfit the given data. (The cost
+    equation of linear regression is unconstrained. We will discuss more about it
+    in the first recipe). The output regression model may not perform very well on
+    unseen datasets. Shrinkage methods are used to address this problem. Shrinkage
+    methods are also called regularization methods. In the next two recipes, we will
+    cover two different shrinkage methods called LASSO and ridge. In our final recipe,
+    we will introduce the concept of cross-validation and see how we can use it to
+    our advantage in estimating the parameter, alpha, that is passed to ridge regression,
+    a type of shrinkage method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting real-valued numbers using regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we delve into this recipe, let's quickly understand how regression generally
+    operates. This introduction is essential for understanding this and subsequent
+    recipes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Regression is a special form of function approximation. Here are the set of
+    predictors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Predicting real-valued numbers using regression](img/B04041_07_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'With each instance, `xi` has `m` attributes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Predicting real-valued numbers using regression](img/B04041_07_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The job of regression is to find a function such that when X is provided as
+    an input to that function, it should return a Y response variable. Y is a vector
+    of real-valued entries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Predicting real-valued numbers using regression](img/B04041_07_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We will use the Boston housing dataset in order to explain the regression framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following link provides a good introduction to the Boston housing dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names](https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The response variable, `Y` in this case, is the median value of an owner-occupied
+    home in the Boston area. There are 13 predictors. The preceding web link provides
+    a good description of all the predictor variables.The regression problem is defined
+    as finding a function, `F`, such that if we give a previously unseen predictor
+    value to this function, it should be able to give us the median house price.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The function, `F(X)`, which is the output of our linear regression model, is
+    a linear combination of the input, `X`, hence the name linear regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Predicting real-valued numbers using regression](img/B04041_07_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The `wi` variable is the unknown value in the preceding equation. The modeling
+    exercise is about discovering the `wi` variable. Using our training data, we will
+    find the value of `wi`; `wi` is called the coefficient of the regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A linear regression modeling problem is framed as: using the training data
+    to find the coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Predicting real-valued numbers using regression](img/B04041_07_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Such that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Predicting real-valued numbers using regression](img/B04041_07_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The above formula is as low as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The lower the value of this equation (called the cost function in optimization
+    terminology), the better the linear regression model. So, the optimization problem
+    is to minimize the preceding equation, that is, find the values for the `wi` coefficient
+    so that it minimizes the equation. We will not delve into the details of the optimization
+    routines that are used. However, it is good to know this objective function because
+    the next two recipes expect you to understand it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, the question is how do we know that the model that we built using the
+    training data, that is, our newly found coefficients, `w1, w2,..wm` are good enough
+    to accurately predict unseen records? Once again, we will leverage the cost function
+    defined previously. When we apply the model in our dev set or test set, we find
+    the average square of the difference between the actual and predicted values,
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Predicting real-valued numbers using regression](img/B04041_07_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The preceding equation is called the mean squared error—the metric by which
+    we can say that our regression model is worthy of use. We want an output model
+    where the average square of the difference between the actual and predicted values
+    is as low as possible. This method of finding the coefficients is called the least
+    square estimation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use scikit-learn''s `LinearRegression` class. However, it internally
+    uses the `scipy.linalg.lstsq` method. The method of least squares provides us
+    with a closed form solution to the regression problem. Refer to the following
+    links for more information on the method of least squares and the derivation for
+    the least squares:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Least_squares](https://en.wikipedia.org/wiki/Least_squares).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)](https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We gave a very simple introduction to regression. Curious readers can refer
+    to the following books [http://www.amazon.com/exec/obidos/ASIN/0387952845/trevorhastie-20](http://www.amazon.com/exec/obidos/ASIN/0387952845/trevorhastie-20).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://www.amazon.com/Neural-Networks-Learning-Machines-Edition/dp/0131471392](http://www.amazon.com/Neural-Networks-Learning-Machines-Edition/dp/0131471392)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Boston data has 13 attributes and 506 instances. The target variable is
+    a real number and the median value of the houses is in the thousands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Refer to the following UCI link for more information about the Boston dataset:
+    [https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names](https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will provide the names of these predictor and response variables, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/B04041_07_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will start with loading all the necessary libraries. We will follow it up
+    by defining our first function, `get_data()`. In this function, we will read the
+    Boston dataset and return it as predictor `x` and response variable `y`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In our `build_model` function, we will construct our linear regression model
+    with the given data. The following two functions, `view_model` and `model_worth`,
+    are used to introspect the model that we have built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `plot_residual` function is used to plot the errors in our regression model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our `main` function, which is used to invoke all the
+    preceding functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s start with the main module and follow the code. We will load the predictor
+    `x` and response variable `y` using the `get_data` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function invokes scikit-learn's convenient `load_boston()` function in order
+    to retrieve the Boston house pricing dataset as NumPy arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will proceed to divide the data into the train and test sets using the `train_test_split`
+    function from the Scikit library. We will reserve 30 percent of our dataset to
+    test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Out of which, we will extract the dev set in the next line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the next line, we will proceed to build our model using the training dataset
+    by calling the `build_model` method. This model creates an object of a `LinearRegression`
+    type. The `LinearRegression` class encloses SciPy''s least squares method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's look at the parameters passed when initializing this class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `fit_intercept` parameter is set to `True`. This tells the linear regression
+    class to center the data. By centering the data, the mean value of each of our
+    predictors is set to zero. The linear regression methods require the data to be
+    centered by its mean value for a better interpretation of the intercepts. In addition
+    to centering each attribute by its mean, we will also normalize each attribute
+    by its standard deviation. We will achieve this using the `normalize` parameter
+    and setting it to `True`. Refer to the [Chapter 3](ch03.xhtml "Chapter 3. Data
+    Analysis – Explore and Wrangle"), *Scaling and data standardization* recipes on
+    how to perform normalization by each column. With the `fit_intercept` parameter,
+    we will instruct the algorithm to include an intercept in order to accommodate
+    any constant shift in the response variable. Finally, we will fit the model by
+    invoking the fit function with our response variable `y` and predictor `x`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Refer to the book, The Elements of Statistical Learning by Trevor Hastie et
+    al. for more information about linear regression methodologies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is good practice to inspect the model that we built so that we can have a
+    better understanding of the model for further improvement or interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s now plot the residuals (the difference between the predicted `y` and
+    actual `y`) and the predicted `y` values as a scatter plot. We will invoke the
+    `plot_residual` method to do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s look at the following graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can validate the regression assumptions in our dataset using this scatter
+    plot. We don't see any pattern and the points are scattered uniformly along zero
+    residual values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Refer to the book, *Data Mining Methods and Models* by *Daniel. T. Larose* for
+    more information about using residual plots in order to validate linear regression
+    assumptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will then inspect our model using the `view_model` method. In this method,
+    we will print our intercept and coefficient values. The linear regression object
+    has two attributes, one called `coef_`, which provides us with an array of coefficients,
+    and one called `intercept_`, which gives the intercept value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s take `coefficient 6`, which is the number of livable rooms in the house.
+    The coefficient value is interpreted as: for every additional room, the price
+    moves up three times.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we will look at how good our model is by invoking the `model_worth`
+    function with our predicted response values and actual response values, both from
+    our training and dev sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This function prints out the mean squared error value, which is the average
+    square of the difference between the actual and predicted values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have a lower value in our dev set, which is an indication of how good our
+    model is. Let''s check whether we can improve our mean squared error. What if
+    we provide more features to our model? Let''s create some features from our existing
+    attributes. We will use the `PolynomialFeatures` class from scikit-learn to create
+    second order polynomials:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will pass `2` as a parameter to `PolynomialFeatures` to indicate that we
+    need second order polynomials. `2` is also the default value used if the class
+    is initialized as empty:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A quick look at the shape of the new `x` reveals that we now have 105 attributes,
+    compared with 13\. Let''s build the model using the new polynomial features and
+    check out the model''s accuracy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_07_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our model has fitted well with the training dataset. Both in the dev and training
+    sets, our polynomial features performed better than the original features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s finally look at how the model with the polynomial features and the model
+    with the regular features perform with our test set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_07_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that our polynomial features have fared better than our original
+    set of features using the test dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is all you need to know about how to do linear regression in Python. We
+    looked at how linear regression works and how we can build models to predict real-valued
+    numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we move on, we will see one more parameter setting in the `PolynomialFeatures`
+    class called `interaction_only`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: By setting `interaction_only` to `true—with x1` and `x2 attributes—only` the
+    `x1*x2` attribute is created. The squares of `x1` and `x2` are not created, assuming
+    that the degree is two.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our test set results were not as good as our dev set results for both the normal
+    and polynomial features. This is a known problem with linear regression. Linear
+    regression is not well equipped to handle variance. The problem that we are facing
+    is a high variance and low bias. As the model complexity increases, that is, the
+    number of attributes presented to the model increases. The model tends to fit
+    the training data very well—hence a low bias—but starts to give degrading outputs
+    with the test data. There are several techniques available to handle this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at a method called recursive feature selection. The number of required
+    attributes is passed as a parameter to this method. It recursively filters the
+    features. In the ith run, a linear model is fitted to the data and, based on the
+    coefficients'' values, the attributes are filtered; the attributes with lower
+    weights are left out. Thus, the iteration continues with the remaining set of
+    attributes. Finally, when we have the required number of attributes, the iteration
+    stops. Let''s look at a code example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code is very similar to the preceding linear regression code, except for
+    the `build_model` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In addition to the predictor `x` and response variable `y`, `build_model` also
+    accepts the number of features to retain `no_features` as a parameter. In this
+    case, we passed a value of 20, asking recursive feature elimination to retain
+    only 20 significant features. As you can see, we first created a linear regression
+    object. This object is passed to the `RFE` class. RFE stands for recursive feature
+    elimination, a class provided by scikit-learn to implement recursive feature elimination.
+    Let''s now evaluate our model against the training, dev, and test datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more...](img/B04041_07_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The mean squared error of the test dataset is 13.20, almost half of what we
+    had earlier. Thus, we are able to use the recursive feature elimination method
+    to perform feature selection effectively and hence improve our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Scaling the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data Analysis
+    – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Standardizing the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data
+    Analysis – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Preparing data for model building* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning regression with L2 shrinkage – ridge
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s extend the regression technique discussed before to include regularization.
+    While training a linear regression model, some of the coefficients may take very
+    high values, leading to instability in the model. Regularization or shrinkage
+    is a way of controlling the weights of the coefficients such that they don''t
+    take very large values. Let''s look at the linear regression cost function once
+    again to understand what issues are inherently present with regression, and what
+    we mean by controlling the weights of the coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Learning regression with L2 shrinkage – ridge](img/B04041_07_05.jpg)![Learning
+    regression with L2 shrinkage – ridge](img/B04041_07_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Linear regression tries to find the coefficients, `w0…wm`, such that it minimizes
+    the preceding equation. There are a few issues with linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the dataset contains many correlated predictors, very small changes in the
+    data can lead to an unstable model. Additionally, we will face a problem with
+    interpreting the model results. For example, if we have two variables that are
+    negatively correlated, these variables will have an opposite effect on the response
+    variable. We can manually look at these correlations and remove one of the variables
+    that is responsible and then proceed with the model building. However, it will
+    be helpful if we can handle these scenarios automatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We introduced a method called recursive feature elimination in the previous
+    recipe to keep the most informative attributes and discard the rest. However,
+    in this approach, we either keep a variable or don't keep it; our decisions are
+    binary. In this section, we will see a way by which we can control the weights
+    associated with the variables in such a way that the unnecessary variables are
+    penalized heavily and they receive extremely low weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will change the cost function of linear regression to include the coefficients.
+    As you know, the value of the cost function should be at a minimum for the best
+    model. By including the coefficients in the cost function, we can heavily penalize
+    the coefficients that take a very high value. In general, these techniques are
+    known as shrinkage methods, as they try to shrink the value of the coefficients.
+    In this recipe, we will see L2 shrinkage, most commonly called ridge regression.
+    Let''s look at the cost function for ridge regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Learning regression with L2 shrinkage – ridge](img/B04041_07_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the sum of the square of the coefficients is added to the cost
+    function. This way, when the optimization routine tries to minimize the preceding
+    function, it has to heavily reduce the value of the coefficients to attain its
+    objective. The alpha parameter decides the amount of shrinkage. Greater the alpha
+    value, greater the shrinkage. The coefficient values are reduced to zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this little math background, let's jump into our recipe to see ridge regression
+    in action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once again, we will use the Boston dataset to demonstrate ridge regression.
+    The Boston data has 13 attributes and 506 instances. The target variable is a
+    real number and the median value of the houses is in the thousands. Refer to the
+    following UCI link for more information about the Boston dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names](https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We intend to generate the polynomial features of degree two and consider only
+    the interaction effects. At the end of this recipe, we will see how much the coefficients
+    are penalized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will start by loading all the necessary libraries. We will follow it up
+    by defining our first function, `get_data()`. In this function, we will read the
+    Boston dataset and return it as predictor `x` and response variable `y`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In our next `build_model` function, we will construct our ridge regression
+    model with the given data. The following two functions, `view_model` and `model_worth`,
+    are used to introspect the model that we built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our `main` function, which is used to invoke all the
+    preceding functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's start with the main module and follow the code. We loaded the predictor
+    `x` and response variable `y` using the `get_data` function. This function invokes
+    scikit-learn' s convenient `load_boston()` function to retrieve the Boston house
+    pricing dataset as NumPy arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will proceed to divide the data into train and test sets using the `train_test_split`
+    function from the scikit-learn library. We will reserve 30 percent of our dataset
+    to test. Out of this, we will extract the dev set in the next line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will then build the polynomial features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, we set `interaction_only` to true. By setting `interaction_only`
+    to true—with `x1` and `x2` attributes—only the `x1*x2` attribute is created. The
+    squares of `x1` and `x2` are not created, assuming that the degree is 2\. The
+    default degree is two:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the `transform` function, we will transform our train, dev, and test datasets
+    to include the polynomial features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the next line, we will build our ridge regression model using the training
+    dataset by calling the `build_model` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: The attributes in the dataset are centered by its mean and standardized by its
+    standard deviation using the `normalize` parameter and setting it to `true`. `Alpha`
+    controls the amount of shrinkage. Its value is set to `0.015`. We didn't arrive
+    at this number magically, but by running the model several times. Later in this
+    chapter, we will see how to empirically arrive at the right value for this parameter.
+    We will also fit the intercept for this model using the `fit_intercept` parameter
+    . However, by default, the `fit_intercept` parameter is set to `true` and hence
+    we do not specify it explicitly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s now see how the model has performed in the training set. We will call
+    the `model_worth` method to get the mean square error. This method takes the predicted
+    response variable and the actual response variable to return the mean square error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our output looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Before we apply our model to the test set, let''s look at the coefficients''
+    weights. We will call a function called `view_model` to view the coefficient''s
+    weight:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_07_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have not shown all the coefficients. There are a total of 92\. However, looking
+    at some of them, the shrinkage effect should be visible. For instance, Coefficient
+    1 is almost 0 (remember that it is a very small value and we have shown only the
+    first three decimal places here).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s proceed to see how our model has performed in the dev set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_07_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Not bad, we have reached a mean square error lower than our training error.
+    Finally, let''s look at our model performance on the test set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compared with our linear regression model in the previous recipe, we performed
+    better on our test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We mentioned earlier that linear regression models are very sensitive to even
+    small changes in the dataset. Let''s see a small example that will demonstrate
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this code, we will fit both the linear regression and ridge regression models
+    on the original data using the `build_model` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will introduce a small noise in our original data, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once again, we will fit the models on the noisy dataset. Finally, we will compare
+    the coefficients'' weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_07_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'After adding a small noise, when we try to fit a model using linear regression,
+    the weights assigned are very different to the the weights assigned by the previous
+    model. Now, let''s see how ridge regression performs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_07_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The weights have not varied starkly between the first and second model. Hopefully,
+    this demonstrates the stability of ridge regression under noisy data conditions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is always tricky to choose the appropriate alpha value. A brute force approach
+    is to run it through multiple values and trace the path of the coefficients. From
+    the path, choose the alpha value where the weights don't vary dramatically. We
+    will plot the coefficients' weights using the `coeff_path` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at the `coeff_path` function. It first generates a list of the
+    alpha values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this case, we generated 300 uniformly spaced numbers between 10 and 100\.
+    For each of these alpha values, we will build a model and save its coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will plot these coefficient weights against the alpha value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_07_23.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the values stabilize around the alpha value of 100\. You can
+    further zoom into a range close to 100 and look for an ideal value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Predicting real valued numbers using regression* recipe in [Chapter 7](ch07.xhtml
+    "Chapter 7. Machine Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Scaling the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data Analysis
+    – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Standardizing the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data
+    Analysis – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Preparing data for model building* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning regression with L1 shrinkage – LASSO
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Least absolute shrinkage and selection operator** (**LASSO**) is another
+    shrinkage method popularly used with regression problems. LASSO leads to sparse
+    solutions compared with ridge. A solution is called sparse if most of the coefficients
+    are reduced to zero. In LASSO, a lot of the coefficients are made zero. In the
+    case of correlated variables, LASSO selects only one of them, whereas ridge assigns
+    equal weights to the coefficients of both the variables. This attribute of LASSO
+    can hence be leveraged for variable selection. In this recipe, let''s see how
+    we can leverage LASSO for variable selection.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at the cost function of LASSO regression. If you followed through
+    the previous two recipes, you can quickly identify the difference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Learning regression with L1 shrinkage – LASSO](img/B04041_07_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The coefficients are penalized by the sum of the absolute value of the coefficients.
+    Once again, the alpha controls the level of penalization. Let's try to understand
+    the intuition behind why L1 shrinkage leads to a sparse solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can rewrite the preceding equation as an unconstrained cost function and
+    a constraint, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Minimize:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Learning regression with L1 shrinkage – LASSO](img/B04041_07_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Subject to the constraint:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Learning regression with L1 shrinkage – LASSO](img/B04041_07_25b.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'With this equation in mind, let''s plot the cost function values in the coefficient
+    space for two coefficients, `w0` and `w1`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Learning regression with L1 shrinkage – LASSO](img/B04041_07_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The blue lines represent the contours of the cost function (without constraint)
+    values for the different values of `w0` and `w1`. The green region represents
+    the constraint shape dictated by the eta value. The optimized value where both
+    the regions meet is when `w0` is set to 0\. We depicted a two-dimensional space
+    where our solution is made sparse with `w0` set to 0\. In a multidimensional space,
+    we will have a rhomboid in the green region, and LASSO will give a sparse solution
+    by reducing many of the coefficients to zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once again, we will use the Boston dataset to demonstrate LASSO regression.
+    The Boston data has 13 attributes and 506 instances. The target variable is a
+    real number and the median value of the houses is in the thousands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Refer to the following UCI link for more information on the Boston dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names](https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will see how we can use LASSO for variable selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will start by loading all the necessary libraries. We will follow it up
+    by defining our first function, `get_data()`. In this function, we will read the
+    Boston dataset and return it as a predictor `x` and response variable `y`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In our next `build_model` function, we will construct our LASSO regression
+    model with the given data. The following two functions, `view_model` and `model_worth`,
+    are used to introspect the model that we built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will define two functions, `coeff_path` and `get_coeff`, to inspect our
+    model coefficients. The `coeff_path` function is invoked from the `build_model`
+    function to plot the weights of the coefficients for different alpha values. The
+    `get_coeff` function is invoked from the main function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our `main` function, which is used to invoke all the
+    preceding functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's start with the main module and follow the code. We will load the predictor
+    `x` and response variable `y` using the `get_data` function. The function invokes
+    scikit-learn's convenient `load_boston()` function to retrieve the Boston house
+    pricing dataset as NumPy arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will proceed by calling `build_models`. In `build_models`, we will construct
+    multiple models for the different values of `alpha`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, in the for loop, we also store the coefficient values for different
+    values of alpha in a list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s plot the coefficient values for different alpha values by calling the
+    `coeff_path` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the `x` axis, you can see that we have the alpha values, and in the `y`
+    axis, we will plot all the coefficients for a given alpha value. Let''s see the
+    output plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The different colored lines represent different coefficient values. As you can
+    see, as the value of alpha increases, the coefficient weights merge towards zero.
+    From this plot, we can select the value of alpha.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our reference, let''s fit a simple linear regression model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s look at the mean square error when we try to predict using our newly
+    built model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_28.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s proceed to select the coefficients based on LASSO:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Based on our preceding graph, we selected `0.22`, `0.08`, and `0.01` as the
+    alpha values. In the loop, we will call the `get_coeff` method. This method fits
+    a LASSO model with the given alpha values and returns only the non-zero coefficients''
+    indices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Essentially, we are selecting only those attributes that have a non-zero coefficient
+    value—feature selection. Let''s get back to our `for` loop where we will fit a
+    linear regression model with the reduced coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What we want to know is how good our models would be if we predicted them with
+    the reduced set of attributes, compared with the model that we built initially
+    using the whole dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Look at the first pass where our alpha value is `0.22`. There are only two coefficients
+    with non-zero values, `5` and `12`. The mean squared error is `30.51`, which is
+    only `9` more than the model fitted with all the variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, for the alpha value of `0.08`, there are three non-zero coefficients.
+    We can see some improvement in the mean squared error. Finally, with `0.01` alpha
+    value, 9 out of 13 attributes are selected and the mean square error is very close
+    to the model built with all the attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, we didn't fit the model with all the attributes. We are able
+    to choose a subset of the attributes automatically using LASSO. Thus, we have
+    seen how LASSO can be used for variable selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By keeping only the most important variables, LASSO avoids overfitting. However,
+    as you can see, the mean squared error values are not that good. We can see that
+    there is a loss in the predictive power because of LASSO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As said before, in the case of the correlated variables, LASSO selects only
+    one of them, whereas ridge assigns equal weights to the coefficients of both the
+    variables. Hence, ridge has a higher predictive power compared with LASSO. However,
+    LASSO can do variable selection, which Ridge is not capable of performing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Refer to the book, *Statistical learning with sparsity: The Lasso and generalization*
+    by *Trevor Hastie et al.* for more information about the LASSO and ridge methodologies.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Scaling the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data Analysis
+    – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Standardizing the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data
+    Analysis – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Preparing data for model building* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Regression with L2 Shrinkage – Ridge* recipe in [Chapter 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using cross-validation iterators with L1 and L2 shrinkage
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous chapter, we saw methods to divide the data into train and test
+    sets. In the subsequent recipes, we again performed a split on the test dataset
+    to arrive at a dev dataset. The idea was to keep the test set away from the model
+    building cycle. However, as we need to improve our model continuously, we used
+    the dev set to test the model accuracy in each iteration. Though it's a good approach,
+    this method is difficult to implement if we don't have a large dataset. We want
+    to provide as much data as possible to train our model but still need to hold
+    some of the data for the evaluation and final testing. In many real-world scenarios,
+    it is very rare to get a very large dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will see a method called cross-validation to help us address
+    this issue. This approach is typically called k-fold cross-validation. The training
+    set is divided into k-folds. The model is trained on K-1 (K minus 1) folds and
+    the left out fold is used to test. This way, we don't need a separate dev dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's see some of the iterators provided by the scikit-learn library to perform
+    the k-fold cross-validation effectively. Equipped with the knowledge of cross-validation,
+    we will further see how we can leverage cross-validation for the selection of
+    the alpha values in shrinkage methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will use the Iris dataset to demonstrate the various cross-validation iterators
+    concepts. We will return to our Boston housing dataset to demonstrate how cross-validation
+    can be used successfully to find the ideal alpha values in shrinkage methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s look at how to use the cross validation iterator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our main function, we will call the `get_data` function to load the Iris
+    dataset. We will then proceed to demonstrate a simple k-fold and stratified k-folds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the knowledge of k-fold cross-validation, let''s write a recipe to leverage
+    this newly found knowledge in enhancing ridge regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will start by loading all the necessary libraries. We will follow it up by
+    defining our first function, `get_data()`. In this function, we will read the
+    Boston dataset and return it as a predictor `x` and response variable `y`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our next `build_model` function, we will construct our ridge regression model
+    with the given data. We will leverage the k-fold cross-validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following two functions, `view_model` and `model_worth`, are used to introspect
+    the model that we built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we will write the `display_param_results` function to view the model
+    errors in each fold:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our `main` function, which is used to invoke all the
+    preceding functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s start with our main method. We will start with the `KFold` class. This
+    iterator class is instantiated with the number of instances in our dataset and
+    the number of folds that we require:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can iterate through the folds, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s see the print statement output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_30.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that the data is split into three parts, each with 100 instances
+    to train and 50 instances to test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will move on next to `StratifiedKFold`. Recall our discussion on having a
+    uniform class distribution in the train and test split from the previous chapter.
+    `StratifiedKFold` achieves a uniform class distribution across the three folds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is invoked as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: As it needs to know the distribution of the class label in the dataset, this
+    iterator object takes the response variable `y` as one of its parameters. The
+    other parameter is the number of folds requested.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s print the shape of our train and test sets in these three folds, along
+    with their class distribution. We will use the `class_distribution` function to
+    print the distribution of the classes in each of the folds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![How it works…](img/B04041_07_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can see that the classes are distributed uniformly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's assume that you build a five-fold dataset, you fit five different models,
+    and you have five different accuracy scores. You can now take the mean of these
+    scores to evaluate how good your model has turned out to be. If you are not satisfied,
+    you can go ahead and start rebuilding your model with a different set of parameters
+    and again run it on the five-fold data and see the mean accuracy score. This way,
+    you can continuously improve the model by finding the right parameter values only
+    using the training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Armed with this knowledge, let's revisit our old ridge regression problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's start with the `main` module and follow the code. We will load the predictor
+    `x` and response variable `y` using the `get_data` function. This function invokes
+    scikit-learn's convenient `load_boston()` function to retrieve the Boston house
+    pricing dataset as NumPy arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will proceed to divide the data into train and test sets using the `train_test_split`
+    function from the scikit-learn library. We will reserve 30 percent of our dataset
+    to test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will then to build the polynomial features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, we set `interaction_only` to `true`. By setting `interaction_only`
+    to `true`—with `x1` and `x2` attributes—only the `x1*x2` attribute is created.
+    The squares of `x1` and `x2` are not created, assuming that the degree is two.
+    The default degree is two:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the transform function, we will transform our train and test dataset
+    to include the polynomial features. Let''s call the `build_model` function. The
+    first thing that we notice in the `build_model` function is the k-fold declaration.
+    We will apply our knowledge of cross-validation here and create a five-fold dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will then create our ridge object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's now see how we can leverage our k-folds to figure out the ideal alpha
+    value for our ridge regression. In the next line, we will create an object out
+    of `GridSearchCV:`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`GridSearchCV` is a convenient function from scikit-learn that helps us train
+    our models with a range of parameters. In this case, we want to find the ideal
+    alpha value, and hence, would like to train our models with different alpha values.
+    Let''s look at the parameters passed to `GridSearchCV`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Estimator: This is the type of model that should be run with the given parameter
+    and data. In our case, we want to run ridge regression. Hence, we will create
+    a ridge object and pass it to `GridSearchCV`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Param-grid: This is a dictionary of parameters that we want to evaluate our
+    model on. Let''s work this through in detail. We will first declare the range
+    of alpha values that we want to build our model on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This gives us a NumPy array of 30 uniformly spaced elements starting from 0.0015
+    and ending at 0.0017\. We want to build a model for each of these values. We will
+    create a dictionary object called `grid_param` and make an entry under the alpha
+    key with the generated NumPy array of alpha values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will pass this dictionary as a parameter to `GridSearchCV`. Look at the entry,
+    `param_grid=grid_param`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cv: This defines the kind of cross-validation that we are interested in. We
+    will pass the k-fold (five-fold) iterator that we created before as the cv parameter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we need to define a scoring function. In our case, we are interested
+    in finding out the squared error. This is the metric with which we will evaluate
+    our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, internal `GridSearchCV` will build five models for each of our parameter
+    values and return the mean score when tested in the left out folds. In our case,
+    we have five folds of test data, so the average of the score values across these
+    five folds of test data is returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this explained, we will then fit our model, that is, start our grid search
+    activity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we want to see the output at the various parameter settings. We will
+    use the `display_param_results` function to display the average mean squared error
+    across the different folds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_32.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Each line in the output displays the parameter alpha value and average mean
+    squared error from the test folds. We can see that as we move deep into the 0.0016
+    range, the mean square error is increasing. Hence, we decide to stop at 0.0015\.
+    We can query the grid object to get the best parameter and estimator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This was not the first set of alpha values that we tested it with. Our initial
+    alpha values were as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following was our output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_33.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'When our alpha values were above 0.01, the mean squared error was shooting
+    up. Hence, we again gave a new range:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our output was as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_34.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This way, iteratively we arrived at the range starting at 0.0015 and ending
+    at 0.0017.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will then get the best estimator from our grid search and apply it to our
+    train and test data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our `model_worth` function prints the mean squared error value in our training
+    dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_35.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s view our coefficient weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_36.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have not displayed all of them but when you run the code, you can view all
+    the values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, let''s apply the model to our test dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_07_37.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thus, we used cross-validation and grid search to arrive at an alpha value for
+    our ridge regression successfully. Our model has resulted in a lower mean squared
+    error compared with the value in the ridge regression recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are other cross-validation iterators available with scikit-learn. Of particular
+    interest in this case is the leave-one-out iterator. You can read more about this
+    at [http://scikit-learn.org/stable/modules/cross_validation.html#leave-one-out-loo](http://scikit-learn.org/stable/modules/cross_validation.html#leave-one-out-loo).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this method, given the number of folds, it leaves one record to test and
+    returns the rest to train. For example, if your input data has 100 instances and
+    if we require five folds, we will get 99 instances to train and one to test in
+    each fold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the grid search method that we used before, if we don''t provide a custom
+    iterator to the **cross validation** (**cv**) parameter, it will by default use
+    the leave-one-out cross-validation method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Scaling the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data Analysis
+    – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Standardizing the data* recipe in [Chapter 3](ch03.xhtml "Chapter 3. Data
+    Analysis – Explore and Wrangle"), *Data Analysis – Explore and Wrangle*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Preparing data for model building* recipe in [Chapter 6](ch06.xhtml "Chapter 6. Machine
+    Learning 1"), *Machine Learning I*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Regression with L2 Shrinkage – Ridge* recipe in [Chapter 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Regression with L2 Shrinkage – Lasso* recipe in [Chapter 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

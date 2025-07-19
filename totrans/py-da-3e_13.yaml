@@ -1,0 +1,1003 @@
+- en: Supervised Learning - Classification Techniques
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most real-world machine learning problems use supervised learning. In supervised
+    learning, the model will learn from a labeled training dataset. A label is a target
+    variable that we want to predict. It is an extra piece of information that helps
+    in making decisions or predictions, for example, which loan application is safe
+    or risky, whether a patient suffers from a disease or not, house prices, and credit
+    eligibility scores. These labels act as a supervisor or teacher for the learning
+    process. Supervised learning algorithms can be of two types: classification or
+    regression. A classification problem has a categorical target variable, such as
+    a loan application status as safe or risky, whether a patient suffers from a "disease"
+    or "not disease," or whether a customer is "potential" or "not potential."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter focuses on supervised machine learning, and specifically covers
+    classification techniques. This chapter will mostly be using scikit-learn. It
+    will delve into basic techniques of classification, such as naive Bayes, **Support
+    Vector Machines** (**SVMs**), **K-Nearest Neighbor** (**KNN**), and decision trees.
+    Also, it focuses on train-test split strategies and model evaluation methods and
+    parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The topics of this chapter are listed as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Naive Bayes classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Decision tree classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: KNN classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SVM classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Splitting training and testing sets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluating the classification model performance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ROC curve and AUC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Technical requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This chapter has the following technical requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find the code and the datasets at the following GitHub link: [https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter10](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter10).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All the code blocks are available in the `ch10.ipynb` file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This chapter uses only one CSV file (`diabetes.csv`) for practice purposes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will use the `pandas` and `scikit-learn` Python libraries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a healthcare data analyst, your job is to identify patients or sufferers
+    that have a higher chance of a particular disease, for example, diabetes or cancer.
+    These predictions will help you to treat patients before the disease occurs. Similarly,
+    a sales and marketing manager wants to predict potential customers who have more
+    of a chance of buying a product. This is the process of categorizing customers
+    into two or more categories known as classification. The classification model
+    predicts the categorical class label, such as whether the customer is potential
+    or not. In the classification process, the model is trained on available data,
+    makes predictions, and evaluates the model performance. Developed models are called
+    classifiers. This means it has three stages: training, prediction, and evaluation.
+    The trained model is evaluated using parameters such as accuracy, precision, recall,
+    F1-score, and **Area Under Curve** (**AUC**). Classification has a variety of
+    applications in various domains, such as banking, finance, citizen services, healthcare,
+    text analysis, image identification, and object detection.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an analyst, you have to first define the problem that you want to solve
+    using classification and then identify the potential features that predict the
+    labels accurately. Features are the columns or attributes that are responsible
+    for prediction. In diabetes prediction problems, health analysts will collect
+    patient information, such as age, exercise routine, junk food-eating habits, alcohol
+    consumption, and smoking habit characteristics or features. These features will
+    be used to predict whether the patient will suffer from diabetes. You can see
+    in the following diagram how data can be classified into two classes using a line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1640f8cc-3ce7-47e7-99b5-f52cd572fd96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Machine learning and data mining processes have various steps: data collection,
+    data preprocessing, train-test split, model generation, and evaluation. We have
+    seen data analysis models such as KDD, SEMMA, and CRISP-DM. In classification,
+    we only focus on the train-test split, model generation, and evaluation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The classification model has three stages: train-test split, model generation,
+    and model evaluation. In the train-test split stage, data is divided into two
+    parts: training and testing sets. In training, the training set is used to generate
+    the model, and testing is used in the model evaluation stage to assess the model''s
+    performance using evaluation metrics such as accuracy, error, precision, and recall.
+    You can see the classification process in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e0deb2e7-0dd2-4bf4-a2c1-162c675ad21f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding diagram, steps for the classification process are presented.
+    Now that we understand the classification process, it's time to learn the classification
+    techniques. In the next section, we will focus on the naive Bayes classification
+    algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Naive Bayes is a classification method based on the Bayes theorem. Bayes' theorem
+    is named after its inventor, the statistician Thomas Bayes. It is a fast, accurate,
+    robust, easy-to-understand, and interpretable technique. It can also work faster
+    on large datasets. Naive Bayes is effectively deployed in text mining applications
+    such as document classification, predicting sentiments of customer reviews, and
+    spam filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The naive Bayes classifier is called naive because it assumes class conditional
+    independence. Class conditional independence means each feature column is independent
+    of the remaining other features. For example, in the case of determining whether
+    a person has diabetes or not, it depends upon their eating habits, their exercise
+    routine, the nature of their profession, and their lifestyle. Even if features
+    are correlated or depend on each other, naive Bayes will still assume they are
+    independent. Let''s understand the Bayes theorem formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/eab7c66a-04d9-4a17-8d6c-80cf6afd72b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, *y* is the target and *X* is the set of features. *p(y)* and *p(X)* are
+    the prior probabilities regardless of evidence. This means the probability of
+    events before evidence is seen. *p(y|X)* is the posterior probability of event
+    *X* after evidence is seen. It is the probability of *y* given evidence *X*. *p(X|y)*
+    is the posterior probability of event *y* after evidence is seen. It is the probability
+    of *X* given evidence *y*. Let''s take an example of the preceding equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d1307850-e64d-4428-b376-8fdad1ece1da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, we are finding the probability of a patient who will suffer from diabetes
+    based on their smoking frequency using Bayes' theorem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see the working of the naive Bayes classification algorithm. Assume
+    that dataset *D* has *X* features and label *y*. Features can be n-dimensional,
+    *X*=*X*1, *X*2, *X*3... *Xn*. Label *y* may have *m* classes, *C*1, *C*2, *C*3...*Cm*.
+    It will work as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the prior probabilities,![](img/8fe3120f-0421-4f46-9e43-dbd9d4abfc96.png)
+    and ![](img/36a92b16-c79e-467c-9b08-19c72ff86086.png), for the given class labels.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Calculate the posterior probabilities, ![](img/8480cb8f-da61-418f-ac55-39bb30687dc2.png)and
+    ![](img/51fa1b1c-b657-4692-93d1-bf6d84a2ca3a.png), with each attribute for each
+    class:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/1b29185a-39c7-4cb6-b2dd-ed851326b4ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Multiply the same class posterior probability,![](img/706c0f20-4bb2-46ba-a418-b7b8b050295c.png):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/d8bd2e11-eeb9-4840-b8ec-b914b3c7f6b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If the attribute is categorical then there should be several records of class
+    ![](img/5a8777da-f995-4a0b-8b00-46bc99b9d197.png) in with ![](img/98048ac3-e469-462f-8485-d38627764f62.png)value,
+    divided by ![](img/c87ea333-1e06-47fd-bdc0-abfe136958fc.png)records in the dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'If the attribute is continuous, then it is calculated using Gaussian distribution:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/92d65d23-c06e-42f8-910a-19e5c8471c8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Multiply the prior probability, *p*(*y*), by the posterior probability from
+    *step 3*:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/052d16b7-760b-4974-bcd1-9df8053f9b06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Find the class with the maximum probability for the given input feature set.
+    This class will be our final prediction.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, let''s create a model using naive Bayes classification in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load the Pima Indians Diabetes dataset ([https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter09/diabetes.csv](https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter09/diabetes.csv))
+    using the following lines of code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/947371ae-5c7c-4092-9ca9-d99c27df1772.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have thus imported `pandas` and read the dataset. In the preceding example,
+    we are reading the Pima Indians Diabetes dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will now split the dataset into two parts, as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: After loading the dataset, we divide the dataset into a dependent or label column
+    (`target`) and independent or feature columns (`feature_set`). After this, the
+    dataset will be broken up into train and test sets. Now, both the dependent and
+    independent columns are broken up into train and test sets (`feature_train`, `feature_test`,
+    `target_train`, and `target_test`) using `train_test_split()`. `train_test_split()`
+    takes dependent and independent DataFrames, `test_size` and `random_state`. Here,
+    `test_size` will decide the ratio of the train-test split (that is, `test_size
+    0.3` means 30% is the testing set and the remaining 70% of data will be the training
+    set), and `random_state` is used as a seed value for reproducing the same data
+    split each time. If `random_state` is `None`, then it will randomly split the
+    records each time, which will give different performance measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will now build the naive Bayes classification model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we have created a naive Bayes model. First, we will import the `GaussianNB`
+    class and create its object or model. This model will fit on the training dataset
+    (`feature_train`, `target_train`). After training, the model is ready to make
+    predictions using the `predict()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we will evaluate the model''s performance:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: scikit-learn's `metrics` class offers various methods for performance evaluation,
+    for example, accuracy, precision, recall, and F1-score metrics. These methods
+    will take actual target labels (`target_test`) and predicted labels (`predictions`).
+    We will understand these metrics in detail in the *Evaluating the classification
+    model performance* section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes is a simple, fast, accurate, and easy-to-understand method for prediction.
+    It has a lower computation cost and can work with large datasets. Naive Bayes
+    can also be employed in multi-class classification problems. The naive Bayes classifier
+    performs better compared to logistic regression when data has a class independence
+    assumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes suffers from the **zero frequency problem**. Zero frequency means
+    that if any category in the feature is missing, then it will have a zero frequency
+    count. This problem is solved by Laplacian correction. Laplacian correction (or
+    Laplace transformation) is a kind of smoothing technique that will add one record
+    for each class so that the frequency count for the missing class will become 1,
+    thus probabilities of Bayes' theorem will not be affected. Another issue with
+    naive Bayes is its assumption of class conditional independence, as it is practically
+    impossible for all the predictors to be fully independent. In this section, we
+    have learned about naive Bayes classification. Now it's time to learn about the
+    decision tree classification algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision tree classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A decision tree is one of the most well-known classification techniques. It
+    can be employed for both types of supervised learning problems (classification
+    and regression problems). It is a flowchart-like tree structure and mimics human-level
+    thinking, which makes it easier to understand and interpret. It also makes you
+    see the logic behind the prediction unlike black-box algorithms such as SVMs and
+    neural networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The decision tree has three basic components: the internal node, the branch,
+    and leaf nodes. Here, each terminal node represents a feature, the link represents
+    the decision rule or split rule, and the leaf provides the result of the prediction.
+    The first starting or master node in the tree is the root node. It partitions
+    the data based on features or attributes values. Here, we divide the data and
+    again divide the remaining data recursively until all the items refer to the same
+    class or there are no more columns left. Decision trees can be employed in both
+    types of problems: classification and regression. There are lots of decision tree
+    algorithms available, for example, CART, ID3, C4.5, and CHAID. But here, we are
+    mainly focusing on CART and ID3 because in scikit-learn, these are the two that
+    are available. Let''s see the decision tree classifier generation process in the
+    following figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/58f77656-6f19-4456-a98b-9595cf104458.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**CART** stands for **Classification and Regression Tree**. CART utilizes the
+    Gini index for selecting the best column. The Gini index is the difference between
+    the sum of the squared probabilities of each class from 1\. The feature or column
+    with the minimum Gini index value is selected as the splitting or partition feature.
+    The value of the Gini index lies in the range of 0 and 1\. If the Gini index value
+    is 0, it indicates that all items belong to one class, and if the Gini index value
+    is exactly 1, it indicates that all the elements are randomly distributed. A 0.5
+    value of the Gini index indicates the equal distribution of items into some classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/92f2aebd-a624-4a83-b54d-b065530bfbff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**ID3** stands for **Iterative Dichotomiser 3**. It uses information gain or
+    entropy as an attribute selection measure. Entropy was invented by Shannon, and
+    it measures the amount of impurity or randomness in a dataset. Information gain
+    measures the variations between entropy before partition and mean entropy after
+    the partition of the dataset for a specific column. The feature or attribute with
+    the largest value of information gain will be selected as a splitting feature
+    or attribute. If entropy is 0, it indicates that there exists only a single class,
+    and if entropy is 1, it indicates that items are equally distributed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/4797209b-540d-4f34-91e9-daf873cbfb9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The decision tree is very intuitive and easy to understand, interpret, and explain
+    to stakeholders. There is no need to normalize features and distribution-free
+    algorithms. Decision trees are also used to predict missing values. They have
+    the capability to capture non-linear patterns. Decision trees can overfit and
+    are sensitive to noisy data. Decision trees are biased with imbalanced data, which
+    is why before applying decision trees, we should balance out the dataset. Decision
+    trees are more expensive in terms of time and complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s work on a decision tree using scikit-learn and perform a prediction
+    dataset. After this, we will be ready for the model building:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, you need to import `pandas` and load the Pimas dataset using the `read_csv()`
+    method that we already saw in the last section.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After this, we need to divide the dataset into training and testing datasets
+    similar to what we performed in the preceding section.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, we will build the decision tree classification model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we have created a decision tree model. First, we will import the `DecisionTreeClassifier`
+    class and create its object or model. This model will fit on the training dataset
+    (`feature_train`, `target_train`). After training, the model is ready to make
+    predictions using the `predict()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will now evaluate the model''s performance:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, model performance is assessed using accuracy, precision,
+    recall, and F1-score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After getting a full understanding of decision trees, let's move on to the KNN
+    classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KNN classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: KNN is a simple, easy-to-comprehend, and easy-to-implement classification algorithm.
+    It can also be used for regression problems. KNN can be employed in lots of use
+    cases, such as item recommendations and classification problems. Specifically,
+    it can suggest movies on Netflix, articles on Medium, candidates on naukari.com,
+    products on eBay, and videos on YouTube. In classification, it can be used to
+    classify instances such as, for example, banking institutes that can classify
+    the loan of risky candidates, or political scientists can classify potential voters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KNN has three basic properties, which are non-parametric, lazy learner, and
+    instance-based learning. Non-parametric means the algorithm is distribution-free
+    and there is no need for parameters such as mean and standard deviation. Lazy
+    learner means KNN does not train the model; that is, the model is trained in the
+    testing phase. This makes for faster training but slower testing. It is also more
+    time- and memory-consuming. Instance-based learning means the predicted outcome
+    is based on the similarity with its nearest neighbors. It does not create any
+    abstract equations or rules for prediction; instead, it stores all the data and
+    queries each record.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The KNN classification algorithm finds the *k* most similar instances from
+    the training dataset and the majority decides the predicted label of the given
+    input features. The following steps will be performed by the KNN classifier to
+    make predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute the distance for an input observation with all the observations in the
+    training dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find the *K* top closest neighbors by sorting the distance with all the instances
+    in ascending order.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform voting on the *K* top closest neighbors and predict the label with the
+    majority of votes.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'This is better represented using the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/90a682db-5fe7-44c1-88cb-918b3096f997.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s work on a KNN classifier using scikit-learn and perform a prediction
+    on a dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Pima Indians Diabetes dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: First, you need to import `pandas` and load the dataset using the `read_csv()`
+    method that we have already seen in the *Naive Bayes classification* session.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split the dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After this, we need to break down the dataset into two sets – a training and
+    a testing set – as we did in the *Naive Bayes classification* section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build the KNN classification model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, we are ready for the model building:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code block, we imported the `KNeighborsClassifier` class and
+    created its object or model. Here, we have taken 3 neighbors as an input parameter
+    to the model. If we do not specify the number of neighbors as an input parameter,
+    then the model will choose 5 neighbors by default. This model will fit on the
+    training dataset (`feature_train`, `target_train`). After training, the model
+    is ready to make predictions using the `predict()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evaluate the model''s performance:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, model performance is assessed using accuracy, precision,
+    recall, and F1-score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After understanding the KNN classification algorithm, it's time to learn about
+    the SVM classification algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SVM classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: SVMs are the most preferred and favorite machine learning algorithms by many
+    data scientists due to their accuracy with less computation power. They are employed
+    for both regression and classification problems. They also offer a kernel trick
+    to model non-linear relationships. SVM has a variety of use cases, such as intrusion
+    detection, text classification, face detection, and handwriting recognition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SVM is a discriminative model that generates optimal hyperplanes with a large
+    margin in n-dimensional space to separate data points. The basic idea is to discover
+    the **Maximum Marginal Hyperplane** (**MMH**) that perfectly separates data into
+    given classes. The maximum margin means the maximum distance between data points
+    of both classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Terminology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will now explore some of the terminology that goes into SVM classification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hyperplane**: Hyperplane is a decision boundary used to distinguish between
+    two classes. Hyperplane dimensionality is decided by the number of features. It
+    is also known as a decision plane.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Support** **vectors**: Support vectors are the closest points to the hyperplane
+    and help in the orientation of the hyperplane by maximizing the margin.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Margin**: Margin is the maximum gap between the closest points. The larger
+    the margin, the better the classification is considered. The margin can be calculated
+    by the perpendicular distance from the support vector line.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The core objective of an SVM is to choose the hyperplane with the largest possible
+    boundary between support vectors. The SVM finds the MMH in the following two stages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create hyperplanes that separate the data points in the best possible manner.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Select the hyperplane with maximum margin hyperplane:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/18fb04d2-0af9-45d5-a9b4-5e492df75aa5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The SVM algorithm is a faster and more accurate classifier compared to naive
+    Bayes. It performs better with a larger margin of separation. SVM is not favorable
+    for large datasets. Its performance also depends upon the type of kernel used.
+    It performs poorly with overlapping classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s work on support vector classifiers using `scikit-learn` and perform
+    a prediction dataset. After this, we will divide the dataset into two sets of
+    training and testing sets as we did in the *Naive Bayes classification* section.
+    After this, we are ready with the model building:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Pima Indians Diabetes dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: First, you need to import `pandas` and load the dataset using the `read_csv()`
+    method that we already saw in the *Naive Bayes classification* session.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split the dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After this, we need to break the dataset up into two sets – a training and testing
+    set – as we did in the *naive Bayes classification* section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build the SVM classification model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, we are ready with the model building:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code block, we will import the `svm` module and create its
+    `svm.SVC()` object or model. Here, we have passed the `linear` kernel. You can
+    also pass another kernel, such as **`poly`**, **`rbf`**, or `sigmoid`. If we don't
+    specify the kernel, then it will select `rbf` by default as the kernel. The linear
+    kernel will create a linear hyperplane to separate diabetic and non-diabetic patients.
+    This model will fit on the training dataset (`feature_train`, `target_train`).
+    After training, the model is ready to make predictions using the `predict()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evaluate the model''s performance:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, model performance will be assessed using metrics such
+    as accuracy, precision, recall, and F1-score. After understanding all these classifiers,
+    it's time to see the training and testing set splitting strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splitting training and testing sets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Data scientists need to assess the performance of a model, overcome overfitting,
+    and tune the hyperparameters. All these tasks require some hidden data records
+    that were not used in the model development phase. Before model development, the
+    data needs to be divided into some parts, such as train, test, and validation
+    sets. The training dataset is used to build the model. The test dataset is used
+    to assess the performance of a model that was trained on the train set. The validation
+    set is used to find the hyperparameters. Let''s look at the following strategies
+    for the train-test split in the upcoming subsections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Holdout method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: K-fold cross-validation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bootstrap method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Holdout
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this method, the dataset is divided randomly into two parts: a training
+    and testing set. Generally, this ratio is 2:1, which means 2/3 for training and
+    1/3 for testing. We can also split it into different ratios, such as 6:4, 7:3,
+    and 8:2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, `test_size=0.3` represents 30% for the testing set
+    and 70% for the training set. `train_test_split()` splits the dataset into 7:3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-fold cross-validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this approach, the data is split into *k* partitions of approximately equal
+    size. It will train *k* models and evaluate them using each partition. In each
+    iteration, one partition will hold for testing, and the remaining *k* partitions
+    are collectively used for training purposes. Classification accuracy will be the
+    average of all accuracies. It also ensures that the model is not overfitting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/0203d2e5-87ec-4e32-981f-1a9c10575719.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In stratified cross-validation, *k* partitions are divided with approximately
+    the same class distribution. This means it preserves the percentages of each class
+    in each partition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bootstrap method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Bootstrap is a resampling technique. It performs a sampling iteratively from
+    the dataset with replacement. Sampling with replacement will make random selections.
+    It requires the size of the sample and the number of iterations. In each iteration,
+    it uniformly selects the records. Each record has equal chances of being selected
+    again. The samples that are not selected are known as "out-of-bag" samples. Let''s
+    understand bootstrap using the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/26693f60-98b4-4383-b4bf-49da50df23f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding diagram, we can see that each element has an equal chance of
+    selection in each bootstrap sample. Let's jump to another important topic of classification,
+    which is classification model evaluation. The next topic helps us to assess the
+    performance of the classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating the classification model performance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Up to now, we have learned how to create classification models. Creating a machine
+    learning classification model is not enough; as a business or data analyst, you
+    also want to assess its performance so that you can deploy it in live projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: scikit-learn offers various metrics, such as a confusion matrix, accuracy, precision,
+    recall, and F1-score, to evaluate the performance of a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Confusion matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A confusion matrix is an approach that gives a brief statement of prediction
+    results on a binary and multi-class classification problem. Let''s assume we have
+    to find out whether a person has diabetes or not. The concept behind the confusion
+    matrix is to find the number of right and mistaken forecasts, which are further
+    summarized and separated into each class. It clarifies all the confusion related
+    to the performance of our classification model. This 2x2 matrix not only shows
+    the error being made by our classifier but also represents what sort of mistakes
+    are being made. A confusion matrix is used to make a complete analysis of statistical
+    data faster and also make the results more readable and understandable through
+    clear data visualization. It contains two rows and columns, as shown in the following
+    list. Let''s understand the basic terminologies of the confusion matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**True Positive** (**TP**): This represents cases that are forecasted as `Yes`
+    and in reality, the cases are `Yes`; for example, we have forecasted them as fraudulent
+    cases and in reality, they are fraudulent.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**True Negative** (**TN**): This represents cases that are forecasted as `No`
+    and in reality, the cases are `No`; for example, we have forecasted them as non-fraudulent
+    cases and in reality, they are non-fraudulent.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**False Positive** (**FP**): This represents cases that are forecasted as `Yes`
+    and in reality, the cases are `No`; for example, we have forecasted them as fraudulent
+    cases and in reality, they are not fraudulent. This type of incident class represents
+    a Type I error.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**False Negative** (**FN**): This represents cases that are forecasted as `No`
+    and in reality, the cases are `No`; for example, we have forecasted them as non-fraudulent
+    cases and in reality, they are fraudulent. This type of incident class represents
+    a Type II error.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let''s take an example of a fraud detection problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/db102069-a0c6-4c33-ab1a-c02bfef8f809.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we have taken two classes of fraud: Yes and No. Yes
+    indicates fraudulent activity and No indicates non-fraudulent activity. The total
+    number of predicted records is 825, which means 825 transactions were tested.
+    In all these 825 cases, the model or classifier forecasted 550 times Yes and 275
+    times No. In reality, actual fraudulent cases are 525 and non-fraudulent cases
+    are 300.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s create a confusion matrix in Python using scikit-learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2d68507c-9909-4826-9122-cc0af782847c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding example, we have loaded the data and divided the data into
+    two parts: training and testing sets. After this, we performed model training
+    using logistic regression as we did in the previous chapter. Here, to plot the
+    confusion matrix, we have used the `plot_confusion_matrix()` method with the model
+    object, testing feature set, testing label set, and `values_format` parameters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accuracy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now, we will find the accuracy of the model calculated from the confusion matrix.
+    It tells us how accurate our predictive model is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7e728bf1-6dd0-48b2-b96b-f24ff72cb7fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/8c6821d9-986d-4396-bf62-0b9a4a4ba929.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Precision
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When the model predicted `Yes`, how often was it correct? This is the percentage
+    of positive cases out of the total predicted cases in the dataset. In simple terms,
+    we can understand precision as "Up to what level our model is right when it says
+    it''s right":'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/03e9f997-f47f-44cd-86d2-7f40f66a4e11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](img/e43eede2-9848-4347-83c5-a83c8acb6087.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Recall
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When it is actually `Yes`, how often did the model predict `Yes`? This is also
+    known as sensitivity. This is the percentage of positive cases out of all the
+    total actual cases present in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a9bdced7-b936-4517-88b1-f0bf3592e0c0.png)![](img/ad712a56-df69-4cae-bcf3-6a1044ab7692.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: F-measure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'F-measure is considered as one of the better ways to assess the model. In lots
+    of areas of data science, competition model performance is assessed using F-measure.
+    It is a harmonic mean of precision and recall. The higher the value of the F1-score,
+    the better the model is considered. F1-score provides equal weightage to precision
+    and recall, which means it indicates a balance between both:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f3139cdd-3edf-4e89-8059-487ef59d4b49.png)![](img/6caa7b33-dbe8-4d9d-b552-2054cb9cd1e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: One drawback of F-measure is that it assigns equal weightage to precision and
+    recall but in some examples, one needs to be higher than the other, which is the
+    reason why the F1-score may not be an exact metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the preceding sections, we have seen classification algorithms such as naive
+    Bayes, decision trees, KNN, and SVMs. We have assessed the model performance using
+    scikit-learn's `accuracy_score()` for model accuracy, `precision_score()` for
+    model precision, `recall_score()` for model recall, and `f1_score()` for model
+    F1-score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also print the classification report to dig down into the details to
+    understand the classification model. Let''s create the confusion report:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/dc2c28e2-df40-4598-9a31-ff995bca8173.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we have printed the confusion matrix report using the
+    `confusion_report()` method with test set labels, prediction set or predicted
+    labels, and target value list parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ROC curve and AUC
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'AUC-ROC curve is a tool to measure and assess the performance of classification
+    models. **ROC** (**Receiver Operating Characteristics**) is a pictorial visualization
+    of model performance. It plots a two-dimensional probability plot between the
+    FP rate (or 1-specificity) and the TP rate (or sensitivity). We can also represent
+    the area covered by a model with a single number using AUC:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/2eadc2fe-ce50-4b8f-b875-d0ffe2e3eef1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s create the ROC curve using the scikit-learn module:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bf293445-39ad-44e0-b00a-236e8908669f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, We have drawn the ROC plot `plot_roc_curve()` method
+    with model object, testing feature set, and testing label set parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the ROC curve, the AUC is a measure of divisibility. It tells us about the
+    model''s class distinction capability. The higher the AUC value, the better the
+    model is at distinguishing between "fraud" and "not fraud." For an ideal classifier,
+    the AUC is equal to 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/6dcb60fc-8600-4651-8ef5-ae66d3c78f63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s compute an AUC score as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: scikit-learn's `metrics` class offers an AUC performance evaluation measure.
+    `roc_auc_score()` methods will take actual labels (`y_test`) and predicted probability
+    (`y_pred_prob`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we discovered classification, its techniques, the train-test
+    split strategy, and performance evaluation measures. This will benefit you in
+    gaining an important skill for predictive data analysis. You have seen how to
+    develop linear and non-linear classifiers for predictive analytics using scikit-learn.
+    In the earlier topics of the chapter, you got an understanding of the basics of
+    classification and machine learning algorithms, such as naive Bayes classification,
+    decision tree classification, KNN, and SVMs. In later sections, you saw data splitting
+    approaches and model performance evaluation measures such as accuracy score, precision
+    score, recall score, F1-score, ROC curve, and AUC score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next chapter, [Chapter 11](cb4ebee8-1420-48f2-ad5d-6e49f241e9e2.xhtml),
+    *Unsupervised Learning – PCA and Clustering*, will concentrate on the important
+    topics of unsupervised machine learning techniques and dimensionality reduction
+    techniques in Python. The chapter starts with dimension reduction and principal
+    component analysis. In the later sections of the chapter, the focus will be on
+    clustering methods such as k-means, hierarchical, DBSCAN, and spectral clustering.
+  prefs: []
+  type: TYPE_NORMAL

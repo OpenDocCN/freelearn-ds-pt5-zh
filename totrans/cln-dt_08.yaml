@@ -1,0 +1,724 @@
+- en: Chapter 8. Best Practices for Sharing Your Clean Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far in this book, we have learned many different ways to clean and organize
+    our datasets. Perhaps now it is time to consider letting our cleaned data be used
+    by others. The goal of this chapter is to present a few best practices for inviting
+    some friends into your data science kitchen. Sharing your data could mean providing
+    it to other people, other teams, or even just some future version of yourself.
+    What is the best way to package your data for consumption by others? How should
+    you tell people about the cleaned data you have? How can you ensure that all your
+    hard work is attributed to you?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to present and package your cleaned data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to provide clear documentation for what is included in your data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to protect and extend your hard work by licensing your cleaned data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to find and evaluate the options for publicizing your cleaned data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One thing we should state clearly before we begin this chapter is that we should
+    only clean and share data that we have the right to share. Perhaps that seems
+    obvious, but it is worth repeating. This entire chapter assumes that you are only
+    cleaning, and subsequently sharing, data that you actually have the right to work
+    with in this way. If you are wondering about this, read the *Setting terms and
+    licenses for your data* section of this chapter, and make sure you follow the
+    same guidelines that you would ask your users to follow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing a clean data package
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we delve into the many important questions that need to be
+    answered before you can release a data package for general consumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do you want people to access your data? If it is in a database, do you want
+    users to be able to log in and run SQL commands on it? Or do you want to create
+    downloadable flat text files for them to use? Do you need to create an API for
+    the data? How much data do you have anyway, and do you want different levels of
+    access for different parts of the data?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The technical aspects of how you want to share your clean data are extremely
+    important. In general, it is probably a good idea to start with the simple things
+    and move to a more sophisticated distribution plan when and if you need to. The
+    following are some options for distributing data, in the order of the least complicated
+    to the most complicated. Of course, with greater sophistication comes greater
+    benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Compressed plain text** – This is a very low-stakes distribution method.
+    As we learned in [Chapter 2](part0020.xhtml#aid-J2B82 "Chapter 2. Fundamentals
+    – Formats, Types, and Encodings"), *Fundamentals – Formats, Types, and Encodings*,
+    plain text can be compressed down to create very small file sizes. A simple CSV
+    or JSON file is universally useful and can be converted to many other formats
+    easily. Some considerations include:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How will you let users download the files? An open link on a web page is extremely
+    easy and convenient, but it does not allow you to require credentials such as
+    usernames and passwords to access the files. If that is important to you, then
+    you will have to consider other methods to distribute files; for example, by using
+    an FTP server with a username and password or by using the access controls on
+    your web server.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How big are your files? How much traffic are you expecting? How much traffic
+    will your hosting provider allow before they start charging extra?
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Compressed SQL files** – Distributing SQL files allows your users to recreate
+    your database structure and data on their own system. Some considerations include:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Your user might be running a different database system than you are, so they
+    will have to clean the data anyway. It may be more efficient just to give them
+    plain text.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Your database system might have different server settings to theirs, so you
+    will have to clarify these custom settings in advance.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You will also need to plan in advance for whether your datasets are designed
+    to grow over time, for example, by deciding whether you will provide only `UPDATE`
+    statements, or whether you will always provide enough `CREATE` and `INSERT` statements
+    to recreate the entire database.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Live database access** – Providing your users with direct access into your
+    database is a very nice way to let them interact with your data at a low level.
+    Some considerations include:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Providing live access does require that you set up an individual username and
+    password for each user, which means keeping track of the users.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Because you have identifiable users, you will need to provide a way to correspond
+    with them about support issues, including lost credentials and how to use the
+    system.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is probably not a good idea to allow generic usernames and passwords unless
+    you have also built a secure frontend onto the database and taken basic precautions
+    like limiting the number of queries a user can execute and limiting the length
+    of time a query can take. An ill-formed `OUTER JOIN` on a table of half a dozen
+    terabytes will likely bring your database to a halt and affect the rest of the
+    users.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Do you want your users to be able to build programs that access your data, for
+    example, through the ODBC or JDBC middleware layer? If so, you will need to take
+    this into account when planning access permissions and when configuring the server.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**API** — Designing an **Application Programming Interface** (**API**) to your
+    data will allow your end users to write their own programs that can access your
+    data and receive result sets in a predictable way. The advantages of an API are
+    that it will provide access over the Internet to your data in a known, limited
+    way and your users do not have to parse data files or wrestle with translating
+    data from one format to another. Some considerations include:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building a good API is more expensive up front than the other choices listed
+    here; however, if you have a lot of needy users and a very limited support staff,
+    then building an API might actually save you money in the long run.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using an API requires more technical knowledge on the part of your users than
+    some of the other methods listed. You should be prepared to have plenty of documentation
+    ready, with examples.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You will need a credentialing and security plan in place to keep track of who
+    is allowed to access your data and what they can do with it. If you are planning
+    multiple levels of access, for example, to monetize different layers of your data,
+    things like users transitioning from one layer to another need to be clearly planned
+    out in advance.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Just like with regular database access, overuse or misuse of the API by users
+    is always a possibility. You will need to plan ahead and take precautions to spot
+    and remove malicious or inattentive users who may—through willful or unintentional
+    misuse—make the service inaccessible to everyone.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Choosing a distribution method will have a lot to do with your budget, including
+    money and time, as well as the expectations of your users. The best advice I can
+    give you is that I have had good luck following the open source software motto,
+    *Release Early and Often*. This works for me because I have a small user community,
+    and a limited budget, and not a lot of spare cycles to devote to exotic packaging
+    plans that may or may not work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A word of caution – Using GitHub to distribute data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: GitHub is a cloud-based file repository designed for software developers to
+    collaborate on software and host their code for others to download. It has exploded
+    in popularity and currently hosts well over 16 million project repositories. For
+    this reason, many data scientists I talk to immediately suggest storing their
+    data on GitHub.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, GitHub has some limitations in its ability to store non-code
+    data, and despite its ubiquity among technical people and its ease-of-use, you
+    should be aware of a few policies it has that might affect your data. These policies
+    are covered in the Help guide, available at [https://help.github.com/articles/what-is-my-disk-quota](https://help.github.com/articles/what-is-my-disk-quota),
+    but we have summarized the important ones here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, GitHub is a wrapper around the source code control system, Git, and that
+    system is not designed to store SQL. The Help guide says, "Large SQL files do
+    not play well with version control systems such as Git." I am not sure what "play
+    well" means, but I am definitely sure I want to avoid learning that when my users'
+    happiness is at stake.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Second, GitHub has some serious file size limits. It lists 1GB per project (repository)
+    as a limit and 100MB per file as a limit. Most of the data files I release are,
+    as individuals, smaller than that limit, but since I release many of the time
+    series files multiple times per year, I would have to create multiple repositories
+    for them. Under this scheme, each time I released new files, I would have to assess
+    whether I was bumping up against file size limits. This quickly becomes a big
+    headache.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In short, GitHub itself recommends a web hosting solution to distribute files,
+    especially if they are large or if they are database-oriented. If you do decide
+    to host on GitHub, be very conscious about posting files with user credentials
+    in them. This includes posting your usernames and passwords for database systems,
+    your authentication keys and secrets for Twitter, or any other personal details.
+    Since GitHub is a Git repository at heart, the mistakes are there forever, unless
+    the repository itself is deleted. If you find that you did make a mistake and
+    post personal details to GitHub, you must immediately deauthenticate all current
+    accounts and recreate all keys and passwords.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Documenting your data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once people have access to the data, and ideally even beforehand, they need
+    to know what it is that they are getting. Documenting the data may feel like an
+    afterthought to you, but it is extremely important for your users, since they
+    are not as familiar with the data or all the things you did to it. In this section,
+    we will review some of the things you can add to your data package to make it
+    easier to understand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: README files
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The simple `README` file has a long history in computing. It is just a text
+    file that is distributed with a software package, or that lives in a directory
+    containing other files, and the idea is that the user should read the `README`
+    file first, before getting started with the rest of the software package or files.
+    The `README` file will tell the user important information about the package,
+    such as who wrote it and why, installation instructions, known bugs, and other
+    basic instructions to use the file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are constructing packages of data, for example, zipped files full of
+    text or SQL files, it is quick and easy to add a `README` file to the file package
+    before zipping it. If you are making a website or online directory for your files,
+    adding a `README` file in a conspicuous place can be very helpful. The following
+    screenshot shows one of the web directories I use to distribute files for a project
+    I work on, called **FLOSSmole**. I have added a `README` directory to include
+    all the files I want the users to read first. I prefaced this directory name with
+    an underscore so that it will always show up at the top of the list, alphabetically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![README files](img/image00297.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: A directory of files on a website showing the README file at the top.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside the `README.txt` file, I give both general and specific instructions
+    to the user about the files. Here is an example of the `README` file I give for
+    my data in this directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This example `README` file is for an entire directory of files, but you can
+    have a `README` file for each file, or for different directories. It is up to
+    you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: File headers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another effective way to communicate information to your users, especially if
+    you are creating flat files of text or SQL commands, is to place a header at the
+    top of each file explaining its format and usage. A common practice is to preface
+    each line of the header with some type of comment-like character, such as `#`
+    or `//`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some items that are commonly included in file headers include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The name of the file and the name of the package in which it was found
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The name of the person or people who were involved in creating it, and their
+    organization and location
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The date it was released
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Its version number, or where to find earlier versions of the file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The purpose of the file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The place where the data originally came from, as well as any changes that were
+    made to the data between now and then
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The format of the file and how it is organized, for example, listing the fields
+    and what they mean
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The terms of use or a license for the file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The following example shows an example header from a TSV file distributed for
+    one of my data projects. In it, I explain what the data is and how to interpret
+    each column in the file. I also explain my policies for how to cite the data,
+    as well as to share the data. We will discuss options to license and share later
+    in this chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you anticipate that your users will be regularly collecting your data files,
+    you should be consistent in your use of a comment character for the header. In
+    the preceding example, I used the `#` character. The reason for this is that your
+    users may write a program to automatically download and parse your data, perhaps
+    loading it in a database or using it in a program. Your consistent use of a comment
+    character will allow the user to skip the headers and not process them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data models and diagrams
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you are distributing SQL files to build a database, or if you are providing
+    live access to a database for querying, you might find that a visual diagram,
+    such as an **entity-relationship diagram** (**ERD**), will really help your users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some of my own projects, I like to provide both a textual description of
+    the tables, such as with the headers and README files previously described, but
+    also a visual diagram of the tables and the relationships between them. Because
+    the databases I distribute are extremely large, I also colorize my diagrams, and
+    I annotate each part of the diagram to indicate what is inside that part of the
+    database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows a high-level overview of what one of my large
+    diagrams looks like. It is zoomed out to show the size of the ERD:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Data models and diagrams](img/image00298.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since this ERD is a bit overwhelming and hard to read, even on a large monitor,
+    I have colorized each separate section of the database and I have provided notes
+    where needed. The following is a screenshot of a closer view of the orange section
+    from the upper left of the big figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Data models and diagrams](img/image00299.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: A close-up view of one of the database sections, including notes describing
+    the purpose of the tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By reading this diagram, the user gets a nice overview of how the different
+    sections of the database fit together. Importantly, high-level notes are shown
+    directly on the diagram, and when the user wants more detailed information about
+    a particular field, they can refer to the README file or the header inside that
+    particular file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To create an ERD, you can use any number of RDBMS tools, including MySQL Workbench
+    (this is the one I used to create the colorized version you see here). Other popular
+    tools include Microsoft Visio, Sparx Enterprise Architect, and draw.io. Many of
+    these tools will allow you to connect to your RDBMS and reverse-engineer a diagram
+    from an existing database, or forward-engineer SQL statements from a drawing.
+    In either case, the ERD will certainly help your users understand the data model
+    better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Documentation wiki or CMS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another way to keep all the documentation for a project organized is to publish
+    it to a wiki or to a **content management system** (**CMS**). There are hundreds
+    of CMS and wiki software packages available for this purpose, but popular options
+    include MediaWiki, WordPress, Joomla!, and Drupal. GitHub also has a wiki service
+    for projects hosted there, as do some of the other software hosting services,
+    such as Sourceforge and Bitbucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use a CMS or wiki to provide the download links to your files themselves,
+    and you can use the CMS to post documentation and explanations. I have also used
+    a CMS in my own work to host a blog of updates, visualizations showing example
+    graphs, charts built with the data, and also a repository for scripts that my
+    users might find helpful to work with my data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are some common sections that most data-oriented projects included in
+    a documentation CMS or wiki:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**About the project** — This tells the users what the purpose of the data project
+    is and how to contact the project leaders. This section may also include ideas
+    for how to get involved, how to join a mailing list or discussion area, or how
+    to contact the project principals.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Getting the data** — This explains the different mechanisms to access the
+    data. Common choices will include direct database access, file downloads, or an
+    API. This section also explains any special signup or login procedures.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Using the data** — This includes starter queries, usage examples, graphics
+    built with the data, and diagrams and ERDs. It provides links to things other
+    people have done with the data. This section also explains, again if necessary,
+    your expectations for the citation of the data and any licensing policies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this section, we discussed a variety of ways to document our data, including
+    READMEs, file headers, ERDs, and web-based solutions. Throughout this discussion,
+    we mentioned the concept of licensing the data and explaining your expectations
+    to cite and share the data. In the next section, we delve deeper into the particulars
+    of licensing your datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting terms and licenses for your data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An important part of any plan for data distribution is deciding the expectations
+    you have for how your users will cite, share, or remix your data. The list of
+    expectations for how you want users to work with your data is called the data's
+    **Terms of Use** (**ToU**). The ToU may also give the users specific rights, such
+    as the ability to make changes or redistribute the data. This collection of rights
+    that you grant to the users is called the **data license**. Users can choose to
+    use your dataset—or not—based on whether they agree to abide by its ToU. They
+    can also decide to use the data based on whether what they want to do with the
+    data has been allowed by its license.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we will outline a few choices you can make for how to set expectations
+    for how users should interact with your data. We will also review some of the
+    most common items you may wish to include in the ToU, as well as some of the more
+    common pre-made licenses that can be applied to your datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common terms of use
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Not everyone has the same goals in sharing their data, for example, I am part
+    of a project where the specific goal is to collect, clean, and redistribute data
+    for the scientific community. Because I am a college professor, part of my work
+    responsibility is to publish academic research papers, software, and datasets
+    that are useful to others. Therefore, it is important to me that people cite my
+    papers and published datasets when they are used. However, one of my other friends,
+    who is not an academic, routinely publishes datasets completely anonymously, and
+    with no expectation for citation or notification when that data is used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a list of common considerations when setting expectations for the use
+    of your data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Citations** – Do you want people who publish something based on your data
+    to state clearly that they got the data from you? If so, what URL or reference
+    should they use?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Privacy** – Do you have any rules about protecting the privacy of your users
+    or their information? Do you want your users to abide by any particular privacy
+    guidelines or research guidelines? For example, some people ask that users follow
+    similar procedures to those they followed with their own **Institutional Research
+    Boards** (**IRB**) or other research ethics groups (for example, the **Association
+    of Internet Researchers** (**AOIR**)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Appropriate uses for the data** – Do you suspect that your dataset could
+    be misused in some way? Could the data be taken out of context? Could its contents
+    be combined with other datasets in a harmful way? For some projects, it would
+    be a very good idea to set expectations for your users for how they can use the
+    data you are providing.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Contact** – Do you have a particular way that you want the users of the data
+    to notify you if they are using the data? Do they need to notify you at all? Guidelines
+    for how and why to contact you, as the dataset provider, are helpful if you anticipate
+    users having questions or concerns about the data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As we discussed earlier in the *Documenting your data* section of this chapter,
+    the ToU for a dataset can be made available to the potential users inside a README
+    file, inside file headers, or on a website. If you are providing live database
+    access, you may also notify your potential users that, by accepting a username
+    and password for the database system, they are agreeing to abide by your terms.
+    A similar structure can be used for API access as well, where actively using an
+    authentication token or access credentials indicates the user is in agreement
+    with your ToU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course, all of these best practices are subject to the laws and policies
+    of various international states and organizations. It can be very complicated
+    to try to get all of this correct without a little help. To assist data providers
+    in setting expectations for their users, a few generic licensing schemes have
+    emerged over time. We will discuss two of these now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creative Commons
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Creative Commons** (**CC**) licenses are prepackaged, generic sets of rules
+    that providers of copyrighted, or copyrightable, materials can apply to their
+    works. These licenses set out what the users of the works are allowed to do. By
+    stating the license up front, the owner of the work can avoid having to grant
+    individual licenses to every single person that wants to change or redistribute
+    a particular work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The issue with CC—and this might not be an issue for you at all, depending
+    on what you are doing with it—is that CC licenses are intended to be applied to
+    copyrightable work. Is your database or dataset copyrightable? Are you interested
+    in licensing the contents of the database, or the database itself? To help you
+    answer that question, we will point you to the Creative Commons wiki, which addresses
+    all the considerations for this question in greater detail than we can hope to
+    do here. This page even has a frequently asked questions section specifically
+    about data and databases: [https://wiki.creativecommons.org/Data](https://wiki.creativecommons.org/Data).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ODbL and Open Data Commons
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Another good choice to license data is the **Open Database License** (**ODbL**).
+    This is a license that has been generically designed for databases. The **Open
+    Knowledge Foundation** (**OKF**) has created a two-minute guide to deciding how
+    to open your data, which you can find here: [http://OpenDataCommons.org/guide/](http://OpenDataCommons.org/guide/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you want even more choice, the [http://OpenDefinition.org](http://OpenDefinition.org)
+    website, also part of the OKF, gives a selection of even more prepackaged licenses
+    that you can apply to your dataset. These range from very open public domain-style
+    licenses, all the way to licenses that require attribution and sharing of derivative
+    works. In addition, they provide an Open Data Handbook, which is extremely helpful
+    at walking you through the process of thinking about the intellectual property
+    in your database or dataset and what you want to do with it. You can download
+    the Open Data Handbook or browse it online here: [http://OpenDataHandbook.org](http://OpenDataHandbook.org).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Publicizing your data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once you have a complete data package, it is time to tell the world about it.
+    Publicizing the existence of your data will ensure its use by the most people
+    possible. If you already have a user community in mind for your data, publicizing
+    it may be as simple as sending out a URL on a mailing list or to a specific research
+    group. Sometimes, though, we create a dataset that we think might be interesting
+    to a larger, more amorphous group.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lists of datasets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many lists of data collections available on the Web, most of which
+    are organized around some kind of theme. The publishers of these types of meta-collections
+    (collections of collections) are usually more than happy to list new sources of
+    data that fit into their niche. Meta-collection themes can include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Datasets related to the same topic, for example, music data, biological data,
+    or collections of articles on news stories
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Datasets related to solving the same type of problem, for example, datasets
+    that can be used to develop recommender systems or datasets used to train machine
+    learning classifiers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Datasets related to a particular technical issue, for example, datasets that
+    are designed to benchmark or test a particular software or hardware design
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Datasets designed for use in particular systems, for example, datasets that
+    are optimized for learning a programming language such as R, a data visualization
+    service such as Tableau, or a cloud-based platform such as Amazon Web Services
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Datasets that all have the same type of license, for example, by listing only
+    sets of public domain data or only data that has been cleared for academic research
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you find that your datasets are not well represented on any of these lists,
+    or do not fit the requirements of the existing meta-collections, another option
+    is to start your own data repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open Data on Stack Exchange
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Open Data area on Stack Exchange, found at [http://opendata.stackexchange.com](http://opendata.stackexchange.com),
+    is a collection of questions and answers relevant to open datasets. There have
+    been many instances where I have found interesting datasets here, and other times
+    I have been able to show other people how to answer a question using one of my
+    own datasets. This Q&A website is also a great way to learn what kinds of questions
+    people have, and what kind of formats they like for the data they want to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before advertising your data as a solution to someone's problem on Stack Exchange,
+    be sure that your access methods, documentation, and licenses are up to standard
+    using the guidelines we discussed previously in this chapter. This is especially
+    important on Stack Exchange, since both questions and answers can be down-voted
+    by users. The last thing you want to do is try to publicize your data with a bunch
+    of broken links and confusing documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hackathons
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another fun way to get people involved with your data is to publicize it as
+    a usable dataset for a hackathon. Data hackathons are usually day-long or multiday
+    events where programmers and data scientists come together to practice different
+    techniques on datasets, or to solve a particular class of problem using data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple search engine query for data hackathon will show you what the focus
+    of the current crop of hackathons is. Some of them are sponsored by companies,
+    and some are designed to respond to social problems. Most of them have a wiki
+    or some other method to add your URL and a brief description of the data to the
+    list of datasets that can be used on the day of the hackathon. I hesitate to recommend
+    a particular one, since the very nature of a hackathon is to happen once and then
+    morph and change into something else. They also tend to be held at irregular times
+    and be organized by ad hoc groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If your dataset is designed with an academic purpose in mind, for example, if
+    it is a research dataset, you might consider hosting your own hackathon during
+    the workshops or poster sessions of an academic conference. This is an excellent
+    way to get people engaged in manipulating your data, and at the very least, you
+    may get some good feedback from the people at the conference for ways to improve
+    your data, or what datasets they think you should build next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we looked at a wide variety of possibilities to share our
+    cleaned data. We discussed various solutions and tradeoffs for different ways
+    of packaging and distributing our data. We also reviewed the basics of providing
+    documentation, including the most important things that your users need to know
+    and how to communicate those items in a documentation file. We noticed that licenses
+    and terms of use nearly always appear in documentation, but what do they mean
+    and how should you choose one for your data? We reviewed some common terms of
+    use for data projects, as well as the most common licensing schemes: Creative
+    Commons, and ODbL. Finally, we brainstormed some ways for you to publicize your
+    data, including data meta-collections, the Open Data Stack Exchange site, and
+    data-centric hackathons.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point in the book, you have seen a complete beginning-to-end overview
+    of data cleaning. The next two chapters consist of longer, more detailed projects
+    that will give you some more practical exposure to data cleaning tasks using the
+    skills we learned earlier in the book.
+  prefs: []
+  type: TYPE_NORMAL

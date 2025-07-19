@@ -1,0 +1,1848 @@
+- en: Chapter 8. Network Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"The enemy of my enemy is my friend."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Ancient proverb* |'
+  prefs: []
+  type: TYPE_TB
+- en: 'This chapter concerns itself with graphs in the mathematical rather than the
+    visual sense. A graph is simply a set of vertices connected by the edges and the
+    simplicity of this abstraction means that graphs are everywhere. They are an effective
+    model for structures as diverse as the hyperlink structure of the web, the physical
+    structure of the internet, and all sorts of networks: roads, telecommunications,
+    and social networks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, network analysis is hardly new, but it has become particularly popular
+    with the rise of social network analysis. Among the largest sites on the web are
+    social networks, and Google, Facebook, Twitter, and LinkedIn all make use of large-scale
+    graph processing to mine their users' data. The huge importance of targeted advertising
+    for the monetization of websites means that there is a large financial reward
+    for companies that effectively infer internet users' interests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we'll use publicly available Twitter data to demonstrate the
+    principles of network analysis. We'll apply pattern matching techniques such as
+    triangle counting to look for a structure within the graph and apply whole-graph
+    processing algorithms such as label propagation and PageRank to tease out the
+    network structure of the graph. Ultimately, we'll use these techniques to identify
+    the interests of a set of Twitter communities from their most influential members.
+    We'll do all of this using Spark and a library called GraphX which uses the Spark
+    distributed computation model to process very large graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But before we scale up, we''ll begin our exploration of graphs by considering
+    a different sort of problem: that of graph traversal. For this, we''ll make use
+    of the Clojure library Loom.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter makes use of the data of follower data from the Twitter social
+    network. The data is provided as a part of the Stanford Large Network Dataset
+    Collection. You can download the Twitter data from [https://snap.stanford.edu/data/egonets-Twitter.html](https://snap.stanford.edu/data/egonets-Twitter.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll be making use of both the `twitter.tar.gz` file and the `twitter_combined.txt.gz`
+    files. Both of these files should be downloaded and decompressed inside the sample
+    code's data directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The sample code for this chapter is available at [https://github.com/clojuredatascience/ch8-network-analysis](https://github.com/clojuredatascience/ch8-network-analysis).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As usual, a script has been provided that will do this for you. You can run
+    it by executing the following command line from within the project directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you'd like to run this chapter's examples, make sure you download the data
+    before continuing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inspecting the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s look at one of the files in the Twitter directory, specifically the
+    `twitter/98801140.edges` file. If you open it in a text editor, you''ll see that
+    each line of the file consists of a pair of integers separated by a space. The
+    data is in what''s known as an edge list format. It''s one of the two primary
+    ways of storing graphs (the other being the adjacency list format, which we''ll
+    come to later). The following code uses Clojure''s `line-seq` function to read
+    the file one line at a time and convert it into a tuple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you execute `(ex-8-1)` in the REPL or run the following on the command line,
+    you should see the following sequence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This simple sequence of pairs of numbers, each representing an edge, is already
+    enough to represent the essence of the graph. It's not intuitive to see how the
+    edges relate to each other, so let's visualize it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing graphs with Loom
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the first half of this chapter, we'll be using Loom ([https://github.com/aysylu/loom](https://github.com/aysylu/loom))
+    to process our graphs. Loom defines an API to create and manipulate graphs. It
+    also contains many built-in graph traversal algorithms. We'll come to these shortly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Firstly, we''ll want to visualize our graph. For this, Loom relies on a system-level
+    library called GraphViz. If you like to be able to replicate many of the images
+    in this chapter, you''ll need to install GraphViz now. If you''re not sure that
+    you have it installed, try running the following on the command line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: GraphViz is available from [http://graphviz.org/](http://graphviz.org/) and
+    there are installers for Linux, MacOS, and Windows. GraphViz isn't a requirement
+    to run all the examples in this chapter, just the ones that visualize the graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Loom is able to create a graph from a sequence of edges like the ones we have
+    when we apply the `loom/graph` function to the sequence. We''ll require `loom.graph`
+    as `loom` and `loom.io` as `lio` in the following examples. If you have GraphViz
+    installed, run the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see a result like the following schematic representation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing graphs with Loom](img/7180OS_08_100.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Depending on your version of GraphViz, you may not get exactly the same layout
+    as the previous version, but it doesn't matter. The relative positions of the
+    nodes and the edges in the image aren't important. The only important fact about
+    the graph is which nodes are connected to which other nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a Clojure programmer, you''re familiar with tree structures as the nested
+    structure of S-expressions and you''ve probably noticed that this graph looks
+    a lot like a tree. In fact, a tree is just a special kind of graph: one that contains
+    no loops. We refer to such graphs as **acyclic**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this graph there are only four edges, whereas there were five in the edge
+    list we saw in the first example. This is because edges can be directed. They
+    go from a node to another node. We can load directed graphs with Loom using the
+    `loom/digraph` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing graphs with Loom](img/7180OS_08_110.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how the act of adding directions to our edges has fundamentally altered
+    the way we read the graph. In particular, the graph is clearly no longer a tree.
+    Directed graphs are extremely important in cases where we want to represent an
+    action that's performed on something by something else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, in Twitter''s social graph, an account may follow one account,
+    but the act may not be reciprocal. Using Twitter''s terminology, we can refer
+    to either the followers or the friends of an account. A follow represents an outgoing
+    edge, whereas a friend is an incoming edge. In the previous graph, for example,
+    account **382951** has two followers: accounts **35432131** and **100873813**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are now two edges between nodes **27475761** and **35432131**. This means
+    that it's possible to get from one node back to the other. We call this a cycle.
+    The technical term for a graph such as the earlier one is a directed, **cyclic**
+    graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A cycle in a graph means that it's possible to get back to a node by moving
+    only in the direction of edges. If a graph contains no such loops, then the graph
+    is said to be acyclic. A **Directed** **Acyclic Graph** (**DAG**), is a model
+    for a huge variety of hierarchical or ordered phenomena such as dependency graphs,
+    family trees, and file system hierarchies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We've seen that graphs can be directed or undirected. The third main type of
+    graph is the **weighted** graph. A weight may be usefully associated with an edge
+    to represent the strength of a connection between two nodes. For example, if the
+    graph represents a social network, the weight between two accounts might be the
+    strength of their connection (for example, their frequency of communication).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can load a weighted graph in `loom` with either the `loom/weighted-graph`
+    or `loom/weighted-digraph` functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our input graph doesn't actually specify the weight of the edges. Loom's default
+    weight for all the edges is **1**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Visualizing graphs with Loom](img/7180OS_08_120.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Another aspect in which graphs can differ is whether its vertices and edges
+    are typed, representing different entities or connections between them. For example,
+    the Facebook graph contains many types of entities: notably "pages" and "people".
+    People can "like" the pages, but they can''t "like" other people. In heterogeneous
+    graphs where nodes of type "A" are always connected to type "B" and vice versa
+    (but never to each other), the graph is said to be **bipartite**. Bipartite graphs
+    can be represented as two disjoint sets, where nodes in one set only ever link
+    to the nodes in the other set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph traversal with Loom
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Traversal algorithms concern themselves with the ways of exploring the graph
+    in a systematic way. Given the huge variety of phenomena that can be modeled with
+    graphs, such algorithms could have a huge variety of uses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithms we''ll consider in the next few sections concern some of the
+    most common tasks such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining whether a path exists that traces each edge exactly once
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Determining the shortest path between two vertices
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Determining the shortest tree that connects all the vertices
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If the graph in question represented the road network covered by a delivery
+    driver''s round, the vertices could represent intersections. Finding a path that
+    traces each edge exactly once would be the way a delivery driver would travel
+    all the roads without doubling back or passing the same addresses twice. The shortest
+    path between the two vertices would be the most efficient way to navigate from
+    one address to the next delivery. Finally, the shortest tree connecting all the
+    vertices would be the most effective way to connect all of the vertices: perhaps,
+    to lay a roadside power line for the lights at each intersection.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The seven bridges of Königsberg
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The city of Königsberg in Prussia (now Kaliningrad, Russia) was set on both
+    sides of the Pregel River, and included two large islands that were connected
+    to each other and the mainland by seven bridges. The Seven bridges of Königsberg
+    is a historically notable problem in mathematics that laid the foundation for
+    graph theory and prefigured the idea of topology. The name Pregel will appear
+    again later in this chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The seven bridges of Königsberg](img/7180OS_08_150.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The problem was to find a walk through the city that would cross each bridge
+    once and only once. The islands could not be reached by any route other than the
+    bridges and the bridges had to be crossed completely every time; one could not
+    walk halfway onto the bridge and then turn around and later cross the other half
+    from the other side (though the walk need not start and end at the same spot).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Euler realized that the problem has no solution: that there could be no non-retracing
+    route via the bridges, and the difficulty led to the development of a technique
+    that established this assertion with mathematical rigor. The only structure of
+    the problem that mattered were the connections between the bridges and landmasses.
+    The essence of the problem could be preserved by representing the bridges as edges
+    in a graph.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The seven bridges of Königsberg](img/7180OS_08_160.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Euler observed that (except at the endpoints of the walk) one enters a vertex
+    by one edge and leaves the vertex by a different edge. If every edge has been
+    traversed exactly once, it follows that the number of connecting edges for each
+    node must be even (half of them will have been traversed "inwards" and the other
+    half will have been traversed "outwards").
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, for an Euler tour to exist in a graph, all the nodes (with the possible
+    exception of the start and end node) must have an even number of connecting edges.
+    We refer to the number of connecting edges as the degree of the node. Determining
+    whether or not an Euler tour exists in a graph therefore is simply a matter of
+    counting the number of odd-degree vertices. If there are zero or two vertices,
+    then an Euler tour can be constructed from the graph. The following function makes
+    use of two utility functions provided by Loom, `out-degree` and `nodes`, to check
+    for the presence of an Euler tour:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this code, we used Loom's `out-degree` function to calculate the degree of
+    each node in the graph. We filter just the `odd` degree vertices and verify that
+    the count is either `0` or `2`. If it is, an Euler tour exists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Breadth-first and depth-first search
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The previous example is historically notable, but a more common desire in graph
+    traversal is to find a node within the graph starting from some other node. There
+    are several ways of addressing this challenge. For unweighted graphs such as our
+    Twitter follow graph, the most common are breadth first and depth first search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Breadth first search starts with a particular vertex and then searches each
+    of its neighbors for the target vertex. If the vertex isn't found, it searches
+    each of the neighbor's neighbors in turn, until either the vertex is found or
+    the entire graph has been traversed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram shows the order in which the vertices are traversed,
+    beginning at the top and working down in tiers, from left to right:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Breadth-first and depth-first search](img/7180OS_08_130.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Loom contains a variety of traversal algorithms in the `loom.alg` namespace.
+    Let''s perform breadth first search on the same Twitter followers graph we have
+    been studying, which is repeated for convenience:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Breadth-first and depth-first search](img/7180OS_08_135.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Breadth-first traversal is provided as the `bf-traverse` function. This will
+    return a sequence of vertices in the order that they were visited which will allow
+    us to see how breadth-first search traverses the graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We're using the `bf-traverse` function to perform a traversal of the graph,
+    beginning at node `100742942`. Notice how the response does not contain the node
+    `100873813`. There's no way of traversing the graph to this vertex, following
+    only the direction of the edges. The only way to get to vertex `100742942` would
+    be to start there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, note that `35432131` is only listed once, even though it's connected to
+    both `27475761` and `3829151`. Loom's implementation of breadth first search maintains
+    a set of the visited vertices in memory. Once a vertex is visited, it need not
+    be visited again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An alternative approach to breadth-first search is depth-first search. This
+    algorithm proceeds immediately to the bottom of the tree and visits the nodes
+    in the order shown in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Breadth-first and depth-first search](img/7180OS_08_140.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Loom includes a depth-first search as `pre-traverse`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The advantage of depth-first search is that it has a much lower memory requirement
+    than breadth-first search, because it's not necessary to store all of the nodes
+    at each tier. This may make it less memory-intensive for large graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, depending on the circumstances, either a depth-first or breadth-first
+    search may be more convenient. For example, if we were traversing a family tree,
+    looking for a living relative, we could assume that person would be near the bottom
+    of the tree, so a depth-first search may reach the target more quickly. If we
+    were looking for an ancient ancestor, then a depth first search might waste its
+    time checking a large number of more recent relatives and take much longer to
+    reach the target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the shortest path
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The algorithms presented earlier traversed the graph vertex by vertex and returned
+    a lazy sequence of all the nodes in the graph. They were convenient for illustrating
+    the two primary ways of navigating the graph structures. However, a more common
+    task would be to find the shortest path from one vertex to another. This means
+    that we'll be interested only in the sequence of nodes that lie between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we have an unweighted graph, such as the previous graphs, we''ll usually
+    count the distance as the number of "hops": a hop being the step between two neighboring
+    nodes. The shortest path will have the fewest number of hops. Breadth-first search
+    is, in general, a more efficient algorithm to use in this case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Loom implements the breadth-first shortest path as the `bf-path` function.
+    To demonstrate it, let''s load a more complex Twitter graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Finding the shortest path](img/7180OS_08_145.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s see if we can identify the shortest path between the top and bottom
+    nodes: **75914648** and **32122637**. There are many paths that the algorithm
+    could return, but we want to identify the path that goes through points **28719244**
+    and **163629705**. This is the one with the fewest hops.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Indeed it does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Loom also implements a bidirectional breadth-first shortest path algorithm as
+    `bf-path-bi`. This searches in parallel from both the source and the destination
+    and may find the shortest path much faster on certain types of graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What if the graph is weighted? In this case, the fewest hops might not correspond
+    to the shortest path between two nodes, because this path might be associated
+    with a large weight. In this case, Dijkstra''s algorithm is a method to find the
+    shortest cost path between two nodes. The path may take a larger number of hops,
+    but the sum of the edge weights traversed would be the lowest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this code, we loaded the graph as a weighted digraph and updated the edge
+    between node `28719244` and `163629705` to have a weight of `100`. All the other
+    edges have a default weight of 1\. This has the effect of assigning a very high
+    cost to the most direct path, and so an alternative path is found.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dijkstra's algorithm is particularly valuable for route finding. For example,
+    if the graph models the road network, the best route may be the one that takes
+    major roads, rather than the one which takes the fewest number of steps. Or, depending
+    on the time of day and the amount of traffic on the roads, the cost associated
+    with particular routes may change. In this case, Dijkstra's algorithm would be
+    able to determine the best route at any time of the day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: An algorithm called **A*** (pronounced A-star) optimizes Dijkstra's algorithm
+    by allowing a heuristic function. It's implemented as `alg/astar-path` in Loom.
+    The heuristic function returns an expected cost to the destination. Any function
+    can be used as a heuristic as long as it does not over-estimate the true cost.
+    The use of this heuristic allows the A* algorithm to avoid making an exhaustive
+    search of the graph and thus, it can be much quicker. For more information on
+    A* algorithm, refer to [https://en.wikipedia.org/wiki/A*_search_algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's continue to consider weighted graphs and ask how we could construct a
+    tree that connects all the nodes with the shortest cost. Such a tree is referred
+    to as the minimum spanning tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minimum spanning trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the help of the previous algorithms, we considered how to traverse the
+    graph between two points. However, what if we want to discover a route that connects
+    all the nodes in the graph? In this case, we could use a minimum spanning tree.
+    We can think of a minimum spanning tree as a hybrid of the full-graph traversal
+    algorithms we have considered and the shortest path algorithm we saw recently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minimum spanning trees are particularly useful for weighted graphs. If the weight
+    represents the cost of connecting two vertices, the minimum spanning tree finds
+    the minimum cost of connecting the whole graph. They occur in problems such as
+    network design. If the nodes represent offices, for example, and the edge weights
+    represent the cost of phone lines between offices, the minimum spanning tree will
+    provide the set of phone lines that connect all the offices with the lowest total
+    cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Loom''s implementation of minimum spanning trees makes use of Prim''s algorithm
+    and is available as the `prim-mst` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This will return the following graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Minimum spanning trees](img/7180OS_08_180.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If, once again, we update the edge between vertices **28719244** and **163629705**
+    to be 100, we will be able to observe the difference it makes to the minimum spanning
+    tree:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code returns the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Minimum spanning trees](img/7180OS_08_185.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The tree has been reconfigured to bypass the edge with the highest cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subgraphs and connected components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A minimum spanning tree can only be specified for *connected* graphs, where
+    all the nodes are connected to all the others by at least one path. Where the
+    graphs are not connected, we're clearly unable to construct a minimum spanning
+    tree (although we could construct a minimum spanning forest instead).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Subgraphs and connected components](img/7180OS_08_190.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If a graph contains a set of subgraphs that are internally connected but are
+    not connected to each other, then the subgraphs are referred to as connected components.
+    We can observe the connected components if we load a still more complicated network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example generates the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Subgraphs and connected components](img/7180OS_08_200.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Thanks to the layout of the graph, we can easily see that there are three connected
+    components and Loom will calculate these for us with the `connected-components`
+    function. We''ll see later in this chapter how we can implement an algorithm to
+    calculate this for ourselves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: A directed graph is strongly connected if there is a path from every node to
+    every other node. A directed graph is weakly connected if, only treating all the
+    edges as being undirected, there is a path from every node to every other node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Subgraphs and connected components](img/7180OS_08_210.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s load the same graph as a directed graph to see if there are any strongly
+    connected components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example generates the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Subgraphs and connected components](img/7180OS_08_220.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'There are three weakly connected components as before. It''s quite difficult
+    to visually determine how many strongly connected components there are by just
+    looking at the graph. Kosaraju''s algorithm will calculate the number of strongly
+    connected components in a graph. It''s implemented by Loom as the `alg/scc` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Kosaraju''s algorithm makes use of the interesting property that the transpose
+    graph—one with all the edges reversed—has exactly the same number of connected
+    components as the input graph. The response contains all the strongly connected
+    components (even the degenerate cases containing only one node) as sequence vectors.
+    If we sort by length in descending order the first component will be the largest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: The largest strongly connected component is merely three nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SCC and the bow-tie structure of the web
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Weakly and strongly connected components can provide an informative way of understanding
+    the structure of a directed graph. For example, research performed on the link
+    structure of the internet has shown that strongly connected components can grow
+    very large indeed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The paper from which the following numbers are quoted is available online at
+    [http://www9.org/w9cdrom/160/160.html](http://www9.org/w9cdrom/160/160.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the following numbers are from a study undertaken in 1999 and so they
+    are therefore very out of date, we can see that at the center of the web was one
+    large strongly connected component consisting of 56 million pages. This meant
+    that from any page within the strongly connected component, you could reach any
+    other within the strongly connected component only by following the outbound hyperlinks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![SCC and the bow-tie structure of the web](img/7180OS_08_230.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 44 million pages linked into the SCC, but were not linked from it, and 44 million
+    pages were linked from the SCC, but did not link back. Only very few links bypassed
+    the SCC entirely (the "tubes" in the preceding illustration).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whole-graph analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's turn our attention away from the smaller graphs we've been working with
+    towards the larger graph of followers provided by the `twitter_combined.txt` file.
+    This contains over 2.4 million edges and will provide a more interesting sample
+    to work with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the simplest metrics to determine about a whole graph is its density.
+    For directed graphs, this is defined as the number of edges *|E|*, over the number
+    of vertices *|V|* multiplied by one less than itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Whole-graph analysis](img/7180OS_08_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For a connected graph (one where every vertex is connected to every other vertex
+    by an edge), the density would be 1\. By contrast, a disconnected graph (one with
+    no edges) would have a density of 0\. Loom implements graph density as the `alg/density`
+    function. Let''s calculate the density of the larger Twitter graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: This seems very sparse, but bear in mind that a value of 1 would correspond
+    to every account following every other account, which is clearly not the case
+    on social networks. Some accounts may have many connections, while others may
+    have none at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how the edges are distributed among nodes. We can re-use Loom''s
+    `out-degree` function to count the number of outgoing edges from each node and
+    plot a histogram of the distribution using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Whole-graph analysis](img/7180OS_08_240.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distribution of out-degrees looks a lot like the exponential distribution
+    we first encountered in [Chapter 2](ch02.xhtml "Chapter 2. Inference"), *Inference*.
+    Notice how most people have very few out-degrees, but a handful have over a thousand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's also plot the histogram of in-degrees. On Twitter, the in-degree corresponds
+    to the number of followers an account has.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Whole-graph analysis](img/7180OS_08_250.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The distribution of in-degrees is even more extreme: the tail extends further
+    to the right than the previous histogram and the first bar is even taller than
+    before. This corresponds to most accounts having very few followers but a handful
+    having several thousand.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Contrast the previous histograms to the degree distribution we get when we
+    generate a random graph of edges and nodes. Next, we use Loom''s `gen-rand` function
+    to generate a random graph with 10,000 nodes and 1,000,000 edges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This generates the following histogram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Whole-graph analysis](img/7180OS_08_260.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The random graph shows that the mean number of out-degrees for a graph of ten
+    thousand vertices connected by a million edges is around 200\. The distribution
+    of the degrees is approximately normal. It's very apparent that the Twitter graph
+    hasn't been generated by a random process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scale-free networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Twitter degree histograms are a characteristic of power-law degree distributions.
+    Unlike the normally distributed, randomly generated graph, the Twitter histograms
+    show that a few vertices are connected to a large majority of the edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The term "scale-free network" was coined by researchers at the University of
+    Notre Dame in 1999 to describe the structure they observed on the World Wide Web.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the graphs that model human interactions, we'll often observe a power law
+    of connectedness. This is also called the **Zipf** scale and it indicates the
+    so-called "law of preferential attachment", where a popular vertex is more likely
+    to develop additional connections. Social media sites are prime examples of this
+    sort of a process, where new users tend to follow already popular users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In [Chapter 2](ch02.xhtml "Chapter 2. Inference"), *Inference*, we identified
+    the exponential distribution by looking for a straight line when the data was
+    plotted on log-linear axes. We can most easily determine a power-law relationship
+    by looking for a straight line on log-log axes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code returns the following plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Scale-free networks](img/7180OS_08_270.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although not perfectly linear, the earlier chart is enough to show that a power
+    law distribution is at work in the Twitter graph. If we visualize the connections
+    between the nodes and edges in the graph, scale-free networks will be recognizable
+    because of their characteristic "clustered" shape. Popular vertices tend to have
+    a halo of other vertices around them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Scale-free networks](img/7180OS_08_280.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaling up to the full Twitter combined dataset has caused the previous examples
+    to run much more slowly, even though this graph is tiny in comparison to many
+    social networks. The rest of this chapter will be devoted to a graph library that
+    runs on top of the Spark framework called **GraphX**. GraphX expresses many of
+    the algorithms we've covered already this chapter, but can take advantage of the
+    Spark distributed computation model to process much larger graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distributed graph computation with GraphX
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: GraphX ([https://spark.apache.org/graphx/](https://spark.apache.org/graphx/))
+    is a distributed graph processing library that is designed to work with Spark.
+    Like the MLlib library we used in the previous chapter, GraphX provides a set
+    of abstractions that are built on top of Spark's RDDs. By representing the vertices
+    and edges of a graph as RDDs, GraphX is able to process very large graphs in a
+    scalable way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve seen in previous chapters how to process a large dataset using MapReduce
+    and Hadoop. Hadoop is an example of a data-parallel system: the dataset is divided
+    into groups that are processed in parallel. Spark is also a data-parallel system:
+    RDDs are distributed across the cluster and processed in parallel.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Distributed graph computation with GraphX](img/7180OS_08_300.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data-parallel systems are appropriate ways of scaling data processing when your
+    data closely resembles a table. Graphs, which may have complex internal structure,
+    are not most efficiently represented as tables. Although graphs can be represented
+    as edge lists, as we've seen, processing a graph stored in this way may involve
+    complex joins and excessive data movement around the cluster because of how interconnected
+    the data is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The growing scale and significance of graph data has driven the development
+    of numerous new graph-parallel systems. By restricting the types of computation
+    that can be expressed and introducing techniques to partition and distribute graphs,
+    these systems can efficiently execute sophisticated graph algorithms orders of
+    a magnitude faster than general data-parallel systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Several libraries bring graph-parallel computation to Hadoop, including Hama,
+    ([https://hama.apache.org/](https://hama.apache.org/)) and Giraph ([http://giraph.apache.org/](http://giraph.apache.org/)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The GraphX library brings graph-parallel computation to Spark. One of the advantages
+    of using Spark as the engine for graph processing is that its in-memory computation
+    model is well-suited to the iterative nature of many graph algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Distributed graph computation with GraphX](img/7180OS_08_310.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This diagram illustrates the challenge of processing graphs in parallel where
+    the nodes may be interconnected. By processing the data within the graph topology,
+    GraphX avoids excessive data movement and duplication. GraphX extends Spark's
+    RDD abstraction by introducing the Resilient Distributed Graph, or RDG, and a
+    set of functions to query and transform the graph in a structurally-aware way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating RDGs with Glittering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spark and GraphX are libraries that are predominantly written in Scala. In this
+    chapter, we'll be using the Clojure library Glittering ([https://github.com/henrygarner/glittering](https://github.com/henrygarner/glittering))
+    to interact with GraphX. In much the same way that Sparkling provides a thin Clojure
+    wrapper around Spark, Glittering provides a thin Clojure wrapper around GraphX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our first task will be to create a graph. Graphs can be instantiated in two
+    ways: either by supplying two RDD representations (one containing the edges and
+    the other the vertices), or simply by supplying an RDD of edges. If only the edges
+    are supplied, then we will supply a default value for each node. We''ll see how
+    to do this next.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since GraphX leverages Spark, every job requires an associated Spark context.
+    In the previous chapter, we used Sparkling''s `sparkling.conf/conf` default configuration.
+    However, in this chapter, we''ll use the default configuration provided by Glittering.
+    Glittering extends Sparkling''s defaults with the configuration necessary to serialize
+    and deserialize GraphX types. In the following code, we''ll include `glittering.core`
+    as `g` and create a small graph of only three edges using Glittering''s graph
+    constructor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result is a GraphX graph object. Note that edges are provided as an RDD
+    of `g/edges`: the `g/edge` function will create an edge type given a source ID,
+    destination ID, and an optional edge attribute. Edge attributes can be any object
+    that Spark can serialize. Note that vertices can have attributes too ("A", "B",
+    and "C" in the previous example).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An alternative way of constructing a graph is to use the `g/graph-from-edges`
+    constructor. This will return a graph based solely on the RDD of edges. The Twitter
+    data is supplied in the edge list format, so this is the function we''ll use to
+    load it. In the next code, we''ll load the full `twitter_combined.txt` as a text
+    file and create an edge list from it by mapping over the lines of the file. From
+    each line, we''ll create an edge of weight 1.0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The second argument to the `graph-from-edges` function is a default value to
+    use as each vertex''s attribute: the vertex attributes can''t be provided in an
+    edge list.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Measuring graph density with triangle counting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: GraphX comes with a small selection of built-in graph algorithms, which Glittering
+    makes available in the `glittering.algorithms` namespace. Before covering Glittering's
+    API in more detail, let's run one of these on the Twitter follows graph. We'll
+    show how to use Glittering to create a simple graph processing job, and then show
+    how to use more of Glittering's API to implement the algorithm ourselves using
+    GraphX's graph-parallel primitives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Triangle counting is an algorithm to measure the density of the graph in the
+    vicinity of each node. It''s similar in principle to counting degrees, but also
+    accounts for how well our neighbors are connected to each other. We can picture
+    the process using this very simple graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Measuring graph density with triangle counting](img/7180OS_08_330.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this example, we can see that vertices A, B, and C all participate in one
+    triangle, and vertex D participates in none. Both B and C follow A, but C also
+    follows B. In the context of social network analysis, triangle counting is a measure
+    of how many friends of friends also know each other. In tight-knit communities,
+    we would expect the number of triangles to be high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Triangle counting is already implemented by GraphX and is accessible as the
+    `triangle-count` function in the `glittering.algorithms` namespace. Before we
+    use this particular algorithm, GraphX requires us to do two things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Point the edges in the "canonical" direction.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ensure the graph is partitioned.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Both of these steps are the artifacts of the way triangle counting is implemented
+    in GraphX. GraphX allows there to be multiple edges between two vertices, but
+    triangle counting seeks only to count the distinct edges. The previous two steps
+    ensure that GraphX is able to efficiently calculate the distinct edges before
+    performing the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The canonical direction of an edge always points from a smaller node ID to
+    a larger node ID. We can achieve this by ensuring all the edges are created in
+    this direction when we first construct our edge RDD:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: By sorting the `from` and `to` IDs before we create the edge, we ensure that
+    the `from` ID is always lower than the `to` ID. This is the first step towards
+    making duplicate edge removal more efficient. The second is to choose a partitioning
+    strategy for the graph. The next section describes our options.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GraphX partitioning strategies
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'GraphX is built for distributed computation and so it must partition graphs
+    across multiple machines. In general, there are two approaches that you could
+    take while partitioning graphs: the ''edge cut'' and ''vertex cut'' approach.
+    Each makes a different trade-off.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![GraphX partitioning strategies](img/7180OS_08_340.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The edge cut strategy may seem the most "natural" way to partition a graph.
+    By splitting the graph along the edges, it ensures that each vertex is assigned
+    to exactly one partition indicated by the shade of gray. This presents an issue
+    for the representation of edges that span partitions though. Any computation along
+    the edge will necessarily need to be sent from one partition to another, and minimizing
+    network communication is key to the implementation of efficient graph algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GraphX implements the "vertex cut" approach, which ensures that the edges are
+    assigned to partitions and that the vertices may be shared across partitions.
+    This appears to simply move the network communication to a different part of the
+    graph—from the edges to the vertices—but GraphX provides a number of strategies
+    that allow us to ensure that vertices are partitioned in the most appropriate
+    way for the algorithm we wish to apply.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Glittering provides the `partition-by` function, which accepts a keyword representing
+    the strategy to partition the graph. Accepted values are `:edge-partition-1d`,
+    `:edge-partition-2d`, `:canonical-random-vertex-cut`, and `:random-vertex-cut`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Your choice about which partitioning strategy to use is based on the structure
+    of the graph and the algorithm you will apply. The `:edge-partition-1d` strategy
+    ensures that all the edges with the same source are partitioned together. This
+    means that operations that aggregate edges by the source (for example, counting
+    outgoing edges) have all the data they require on an individual machine. Although
+    this minimizes network traffic, it also means that with power-law graphs a few
+    partitions may receive a significant proportion of the overall number of edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `:random-vertex-cut` partitioning strategy splits a graph into edges based
+    on both the source and destination vertices. This can help to create more balanced
+    partitions at the cost of run-time performance, as a single source or destination
+    node may be spread across many machines in the cluster. Even the edges that connect
+    the same pair of nodes may be spread across two machines depending on the direction
+    of the edge. To group edges regardless of direction, we can use `:canonical-random-vertex-cut`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, `:edge-partition-2d` partitions edges by both their source and destination
+    vertex using a more sophisticated partitioning strategy. As with the `:canonical-random-vertex-cut`,
+    nodes sharing both a source and a destination will be partitioned together. In
+    addition, the strategy places an upper limit on the number of partitions that
+    each node will be spread across. Where an algorithm aggregates information about
+    edges sharing both a source and a destination node, and also by source or destination
+    independently, this may be the most efficient strategy to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running the built-in triangle counting algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We''ve already seen how to load our edges in the canonical direction. The next
+    step is to choose a partitioning strategy, and we''ll go for `:random-vertex-cut`.
+    The following example shows the full sequence of loading and partitioning the
+    graph, performing triangle counting and visualizing the results using Incanter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: The output of `triangle-count` is a new graph where the attribute of each vertex
+    is a count of the number of triangles that the vertex participates in. The ID
+    of the vertex is unchanged. We're only interested in the triangle counts themselves—the
+    vertex attributes of the returned graph—so we extract `values` from the vertices.
+    The `spark/collect` function gathers all the values into a single Clojure sequence,
+    so it's not something we'd want to do on a very large graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Having gathered the count of triangles, we calculate the frequency of each
+    count and visualize the result on a log-log scatter plot using Incanter. The output
+    is shown next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Running the built-in triangle counting algorithm](img/7180OS_08_350.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again, we see the effect of a power law distribution. A few nodes connect
+    a very large number of triangles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running a built-in algorithm has allowed us to see how to create and manipulate
+    a graph, but the real power of GraphX is the way it allows us to express this
+    sort of computation efficiently for ourselves. In the next section, we'll see
+    how to accomplish triangle counting using lower-level functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement triangle counting with Glittering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many ways to count the number of triangles in a graph, but GraphX
+    implements the algorithm in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute the set of neighbors for each vertex.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each edge, compute the intersection of the vertices at either end.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Send the count of the intersection to both vertices.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the sum of the counts for each vertex.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Divide by two, since each triangle is counted twice.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The following diagram shows the steps on our simple graph consisting of only
+    one triangle:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Implement triangle counting with Glittering](img/7180OS_08_355.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The algorithm ignores the direction of the edges and, as mentioned previously,
+    expects the edges between any two nodes to be distinct. We'll therefore continue
+    to work on the partitioned graph with the canonical edges we defined in the previous
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full code to perform triangle counting isn''t very long, so it''s presented
+    in full next. It''s representative of most of the algorithms we''ll cover for
+    the rest of the chapter so, once we''ve presented the code, we''ll walk through
+    each of the steps one at a time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the algorithm to work, the input graph needs to have distinct edges. Once
+    the canonical graph has been partitioned, we make sure the edges are distinct
+    by calling `(g/group-edges (fn [a b] a) graph)` on the graph. The `group-edges`
+    function is similar to `reduce` and it reduces over the collection of edges that
+    share the same start and end node. We're simply choosing to keep the first edge.
+    The attributes of the edge don't factor into triangle counting, only the fact
+    that there is one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – collecting neighbor IDs
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: At step one, we want to collect the neighbor IDs for each vertex. Glittering
+    makes this operation available as the `g/collect-neighbor-ids` function. We can
+    choose to collect only the incoming or outgoing edges with `:in` or `:out`, respectively,
+    or the edges in either direction with `:either`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `g/collect-neighbor-ids` function returns a pair RDD with the key being
+    the vertex ID in question and the value being the sequence of neighbor IDs. Like
+    MLlib in the previous chapter, the RDD is not the `JavaRDD` class that Sparkling
+    expects, and so we must convert it accordingly. Once we've done so, converting
+    the sequence of neighbor IDs into a set is as simple as calling `set` on each
+    of the values in the pair RDD. The result of step one is a PairRDD containing
+    the of node ID and set of neighbor IDs, so we've flattened the graph to a series
+    of sets stored as the value of `adjacent`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: This graph representation, as a sequence of sets of connected vertices, is commonly
+    known as an adjacency list. Along with the edge list, it's one of the two primary
+    means of representing graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step two requires us to assign values to the graph edges though, so we''ll
+    want to preserve the graph structure. We use the `g/outer-join-vertices` function
+    to combine `adjacent` and the original graph. Given a graph and a pair RDD indexed
+    by vertex ID, `outer-join-vertices` allows us to supply a function whose return
+    value will be assigned as the attribute of each vertex in the graph. The function
+    receives three arguments: the vertex ID, the current vertex attribute, and the
+    value associated with the vertex ID in the pair RDD being outer joined to the
+    graph. In the earlier code, we return the set of adjacent vertices as the new
+    vertex attribute.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Steps two, three, and four – aggregate messages
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The next several steps are handled by one function, `g/aggregate-messages`,
+    the workhorse function of GraphX''s graph-parallel implementation. It requires
+    two arguments: a message sending function and a message combining function. In
+    the way they work together, these two functions are like map and reduce adapted
+    for the vertex-centric view of graph-parallel computation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Steps two, three, and four – aggregate messages](img/7180OS_08_360.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The send message function is responsible for sending messages along edges. The
+    function is called once for each edge, but it can send multiple messages to either
+    the source or destination vertex. The input to the function is a triplet (an edge
+    with two connected vertices) and it responds with a sequence of messages. A message
+    is a key/value pair where the key is one of `:src` or `:dst` and the value is
+    the message to be sent. In the previous example, this is implemented as a map
+    with the `:src` and `:dst` keys.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The merge message function is responsible for combining all the messages for
+    a particular vertex. In the earlier code, each message is a number and therefore
+    the merge function has a sequence of numbers to merge. We can achieve this simply
+    by passing `+` as the merge function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step five – dividing the counts
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The final step of triangle counting is to divide the counts we have calculated
+    for each vertex ID by two, since each triangle is counted twice. In the earlier
+    code, we do this while simultaneously updating the vertex attributes with the
+    triangle count using `outer-join-vertices`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running the custom triangle counting algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With all of the earlier steps in place, we can run our custom triangle counting
+    algorithm using Glittering. Let''s first run it on one of our Twitter follow graphs
+    from the beginning of the chapter to see the result we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result is a series of tuples with the vertex ID as the key and number of
+    connected triangles as the value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we want to see how many triangles were there in the entire Twitter dataset,
+    we could extract the values from the resulting graph (the values), add them up,
+    and then divide them by three. Let''s do this now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: The algorithm shouldn't take too long to run. Our custom triangle counting code
+    will be performant enough to run on the entire combined Twitter dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If `aggregate-messages` is like a single step of MapReduce programming, we'll
+    often end up performing it iteratively. Many graph algorithms will want to run
+    to convergence. In fact, GraphX provides an alternative function that we will
+    be able to use in this case called the **Pregel API**. We'll discuss it in detail
+    in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pregel API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Pregel API is GraphX's main abstraction to express custom, iterative, graph-parallel
+    computation. It's named after Google's internal system for running large-scale
+    graph processing, about which they published a paper in 2010\. You may remember
+    that it was also the river upon which the town of Königsberg was built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google's Pregel paper popularized the "think like a vertex" approach to graph
+    parallel computation. Pregel's model fundamentally uses the message passing between
+    the vertices in the graph organized into a series of steps called **supersteps**.
+    At the beginning of each superstep, Pregel runs a user-specified function on each
+    vertex, passing all the messages sent to it in the previous superstep. The vertex
+    function has the opportunity to process each of these messages and send messages
+    to other vertices in turn. Vertices can also "vote to halt" the computation and,
+    when all the vertices have voted to halt, the computation will terminate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `pregel` function implemented by Glittering implements a very similar approach
+    to graph processing. The primary difference is that the vertices don''t vote to
+    halt: the computation terminates either when there are no more messages being
+    sent or when a specified number of iterations has been exceeded.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While the aggregate-messages function introduced in the previous section makes
+    use of two symbiotic functions to express its intent, the `pregel` function makes
+    use of three related functions, applied iteratively, to implement graph algorithms.
+    The first two are the message function and the message combiner we encountered
+    before, the third is the "vertex program": a function that processes the incoming
+    messages for each vertex. The return value of this function is assigned as the
+    vertex attribute for the next superstep.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see how the `pregel` function works in practice by implementing an algorithm
+    we''ve already covered in this chapter: connected components.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connected components with the Pregel API
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Connected components can be expressed as an iterative algorithm in the following
+    way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize all vertex attributes to the vertex ID.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each edge, determine whether the source or destination vertex attribute
+    is the lowest.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Down each edge, send the lower of the two attributes to the opposite vertex.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each vertex, update attribute to be the lowest of the incoming messages.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat until the node attributes no longer change.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As before, we can visualize the process on a simple graph of four nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Connected components with the Pregel API](img/7180OS_08_370.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can see how in six steps the graph has converged to a state where all the
+    nodes have the lowest connected vertex ID as their attribute. Since the messages
+    only travel along the edges, any nodes that don''t share any edges will converge
+    to different values. All the vertices that share the same attribute once the algorithm
+    has converged will therefore be a part of the same connected component. Let''s
+    see the finished code first and we''ll walk through the code in steps immediately
+    afterwards:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the `g/pregel` function is all that's required to implement an iterative
+    connected components algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – map vertices
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Initializing all the vertex attributes to the vertex ID is handled outside of
+    the `pregel` function by the `g/map-vertices` function. We pass it a function
+    of two arguments, the vertex ID and vertex attribute, and it returns the vertex
+    ID to be assigned as the vertex attribute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Steps two and three – the message function
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Glittering''s `pregel` function expects to receive a map specifying at least
+    three functions: a message function, a combiner function, and a vertex function.
+    We''ll discuss the last of these in more detail shortly. However, the first of
+    these is responsible for steps two and three: for each edge, determining which
+    connected node has the lower attribute and sending this value to the opposing
+    node.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We introduced the message function along with the custom triangle counting
+    function earlier in the chapter. This function receives the edge as a map and
+    returns a map in return describing the messages to be sent. This time, only one
+    message is sent: the `src-attr` attribute to the destination node if the source
+    attribute is lower or the `dst-attr` attribute to the source node if the destination
+    attribute is lower.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The combiner function aggregates all the incoming messages for a vertex. The
+    combiner function for the connected components is simply the `min` function: we''re
+    only interested in the minimum value sent to each vertex.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step four – update the attributes
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In step four, each vertex updates its attribute to equal the lowest of its current
+    attribute and the value of all the received messages. If any of its incoming messages
+    is lower than its current attribute, it will update its attribute to equal the
+    lowest. This step is handled by the vertex program, the third of Pregel's three
+    symbiotic functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The vertex function for connected components is also trivial: for each vertex,
+    we want to return the lower of the current vertex attribute and the lowest incoming
+    message (as determined by the combiner function in the previous step). The return
+    value will be used as the vertex attribute for the next superstep.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step five – iterate to convergence
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Step five is something we get "for free" with the `pregel` function. We didn't
+    specify the maximum number of iterations, so the three functions just described
+    will be run repeatedly until there are no more messages to be sent. For this reason
+    (and for reasons of efficiency), it's important that our message function only
+    sends messages when it needs to. This is why our `cond` value in the earlier message
+    function ensures we don't send a message if the source and destination attributes
+    are already equal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running connected components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Having implemented the previous connected components function, we use it in
+    the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: By converting the graph back into an RDD, we can perform analysis in a data-parallel
+    way. For example, we could determine the size of all of the connected components
+    by counting the number of nodes that share the same attribute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the size of the largest connected component
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the next example, we''ll use the same connected components function, but
+    count the size of each connected component. We''ll achieve this with Sparkling''s
+    `count-by-value` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Code such as the previous example is one of the great benefits of using GraphX
+    and Glittering. We can take flat data represented as an edge list, convert it
+    into a graph structure to perform an iterative graph algorithm, and then convert
+    the results back into a flat structure to calculate aggregates: all in a single
+    pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example's response indicates that all of our vertices—81,306 of them—are
+    in one large connected component. This shows that everyone in the graph is connected
+    to everyone else, either as a friend or a follower.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While it's useful to know that there are no isolated groups of users, it would
+    be more interesting to understand how the users are organized within the connected
+    component. If certain groups of users tend to be more densely connected to each
+    other, then we could think of these users as forming a community.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detecting communities with label propagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A community can be defined informally as a group of vertices that are more strongly
+    connected to each other than they are to the vertices outside the community.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If every vertex is connected to every other vertex within the community, then
+    we would call the community a clique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Communities therefore correspond to increased density in the graph. We could
+    think of communities within the Twitter network as groups of followers who tend
+    to also follow each other's followers. Smaller communities might correspond to
+    friendship groups, while larger communities are more likely to correspond to shared
+    interest groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Community detection is a general technique and there are many algorithms that
+    are capable of identifying communities. Depending on the algorithm, communities
+    may overlap so that a user could be associated with more than one community. The
+    algorithm we'll be looking at next is called **label propagation** and it assigns
+    each user to a maximum of one community.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Label propagation can be implemented iteratively with the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize all the vertex attributes to equal the vertex ID.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each edge, send the source and destination attributes to the opposing node.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each vertex, calculate the frequency of each incoming attribute.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each vertex, update the attribute to be the most frequent of the incoming
+    attributes.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat until convergence or until maximum iteration count is reached.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The steps of the algorithm are shown next on a graph with two communities. Each
+    community is also a clique, but this is not a requirement for label propagation
+    to work in general.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Detecting communities with label propagation](img/7180OS_08_380.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The code for label propagation using the `pregel` function is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: As before, let's walk through the code step by step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – map vertices
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Step one for label propagation is identical to step one for the connected components
+    algorithm we defined earlier. We use the `g/map-vertices` function to update each
+    vertex attribute to equal the vertex ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – send the vertex attribute
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In step two, we send the opposing vertex attribute along each edge. Step three
+    will require us to count the most frequent of the incoming attributes, so each
+    message is a map of attribute to the value "1".
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step three – aggregate value
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The combiner function receives all the messages for a vertex and produces an
+    aggregate value. Since the messages are maps of attribute value to the number
+    "1", we can use Clojure's `merge-with` function to combine the messages together
+    with `+`. The result will be a map of attribute to frequency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step four – vertex function
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Step four is handled by the vertex function. Given the frequency counts of all
+    the incoming attributes, we want to pick the most frequent one. The `(apply max-key
+    val msg)` expression returns the key/value pair from the map associated with the
+    greatest value (the highest frequency). We pass this value to `key` to return
+    the attribute associated with this value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step five – set the maximum iterations count
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: As with the connected components algorithm, iteration is the default behavior
+    of the `pregel` function while there are messages to be sent. Unlike the connected
+    components algorithm, we don't have a conditional clause in the earlier `message`
+    function. In order to avoid an infinite loop, we pass `:max-iterations` of 10
+    in the map of options to `pregel`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running label propagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following example makes use of the previous code to perform label propagation
+    on the full Twitter dataset. We calculate the size of each community with Sparkling''s
+    `count-by-value` function and calculate the frequencies of the counts. The resulting
+    histogram is then visualized on a log-log scatterplot using Incanter to show the
+    distribution of community sizes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code generates the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Running label propagation](img/7180OS_08_390.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As we may have come to expect, the distribution of community sizes is also
+    a power law: small communities are much more common than larger communities. The
+    largest communities have around 10,000 members, while the smallest consist of
+    just one member. We''re beginning to tease apart the structure of the Twitter
+    graph: we have a sense of how users are distributed into groups and we can hypothesize
+    that the larger communities are likely to represent groups united by a shared
+    interest.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the final pages of this chapter, let's see whether we can establish what
+    unites the largest of these communities. There are numerous ways we could go about
+    this. If we had access to the tweets themselves, we could perform text analysis
+    of the kind we performed in [Chapter 6](ch06.xhtml "Chapter 6. Clustering"), *Clustering*
+    to see whether there were particular words—or particular languages—more frequently
+    used among these groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is about network analysis though, so let's just use the structure
+    of the graph to identify the most influential accounts in each community. The
+    list of the top ten most influential accounts might give us some indication of
+    what resonates with their followers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Measuring community influence using PageRank
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One simplistic way of measuring influence within a community is to calculate
+    how many incoming edges a particular vertex has. On Twitter, this would correspond
+    to an account with a large number of followers. Such accounts represent the most
+    "popular" within the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Counting incoming edges is a simplistic way to measure influence because it
+    treats all the incoming edges as being equal. In social graphs, this is often
+    not the case, as certain followers will themselves be popular accounts and therefore
+    their follow carries more importance than a follower who has no followers themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: PageRank was developed at Stanford University in 1996 by Larry Page and Sergey
+    Brin as part of the research project that ultimately became Google. PageRank works
+    by counting both the number and quality of links to a page to determine a rough
+    estimate of how important the website is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The importance of an account is therefore based on two things: the number of
+    followers and the importance of each of those followers. The importance of each
+    follower is calculated in the same way. PageRank therefore has a recursive definition:
+    it appears that we must calculate the importance of the followers before we can
+    calculate the importance of the account, and so on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The flow formulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Fortunately, it's possible to calculate PageRank iteratively. First, we initialize
+    all the vertices to have the same weight. This could be a weight of one; in which
+    case, the sum of all the weights equals the number of vertices *N*. Or, it could
+    be a weight of ![The flow formulation](img/7180OS_08_02.jpg); in which case, the
+    sum of all the weights will equal one. Although it doesn't change the fundamental
+    algorithm, the latter is often preferred, as it means the results of PageRank
+    can be interpreted as probabilities. We'll be implementing the former.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This initial weight is the PageRank *r* of each account at the start of the
+    algorithm. At iteration one, each account sends an equal proportion of its own
+    rank to all the pages it follows. After this step, the rank of account *j* and
+    *r*j is defined as the sum of all the incoming ranks. We can express this with
+    the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The flow formulation](img/7180OS_08_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *r*[i] is the rank of a follower and *ni* is the count of accounts they
+    follow. Account *j* receives a proportion of the rank, ![The flow formulation](img/7180OS_08_04.jpg),
+    from all of their followers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If this were all there was to PageRank, then the accounts with no followers
+    would already have zero rank and, at every iteration, the most popular pages would
+    just get more and more popular. PageRank therefore also includes a damping factor.
+    This factor ensures that even the least popular accounts retain some weight and
+    that the algorithm can converge to stable values. This can be expressed by modifying
+    the previous equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The flow formulation](img/7180OS_08_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *d* is the damping factor. A common damping factor to use is 85 percent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The effect of the damping factor for a group of eleven accounts is visualized
+    in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![The flow formulation](img/7180OS_08_400.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Without the damping factor, all the weight would eventually accrue on accounts
+    **A**, **B**, and **C**. With the damping factor, even the small accounts with
+    no follows continue to receive a small percentage of the overall weight. Even
+    though account **E** has more followers, account **C** has a higher rank, because
+    it is followed by high-ranking account.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing PageRank with Glittering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We implement PageRank with the `pregel` function in the following example code.
+    The structure of the code should be familiar to you by now, although we will be
+    making use of several new Glittering functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: We begin in the usual way, using `outer-join-vertices` to join `out-degrees`
+    of every node to itself. After this step, every node's attribute is equal to its
+    number of outgoing links. Then, we use `map-triplets` to set all the `edge` attributes
+    to be the inverse of their source vertex's attribute. The net effect is that each
+    vertex's rank is split equally among all of its outgoing edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After this initialization step, we use `map-edges` to set the attribute of
+    each node to the default value: a vector of two zeros. The vector contains the
+    current page rank and the difference between this iteration''s rank and the previous
+    iteration''s rank. Based on the size of the difference, our `message` function
+    is able to decide whether or not to keep iterating.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sort by highest influence
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Before we run PageRank on the communities identified by label propagation,
+    we''ll implement a utility function to list just the top 10 accounts in descending
+    order of their ranks. The `top-n-by-pagerank` function will allow us to only show
+    the accounts with the largest rank:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, the fact that we can easily convert between graph and table representations
+    of our data to enable this sort of data manipulation is one of the major benefits
+    of using Glittering and Sparkling together for the graph analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, it will also be useful to have a function that returns the most frequently
+    occurring node attributes appearing in the first line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: Given the output of label propagation, this function will return the community
+    IDs as a sequence in the order of descending sizes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running PageRank to determine community influencers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At last, we can bring together all the earlier code to identify the most resonant
+    interests of the communities identified by label propagation. Unlike the other
+    algorithms we''ve implemented with Glittering so far, we''re sending our messages
+    in the direction of follow rather than in the canonical direction. Therefore in
+    the next example, we''ll load the graph with `load-edgelist`, which preserves
+    the follow direction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code will take a little while to run, but will eventually return a sequence
+    of the most important nodes in each of the ten most popular community graphs as
+    shown in the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first element of each tuple is the PageRank we've calculated for the vertex
+    and the second element of each tuple is the node ID. The Twitter vertex IDs correspond
+    to Twitter's own IDs. The accounts haven't been anonymized, so we can look up
+    the Twitter accounts they correspond to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: At the time of writing, we can look up a Twitter account by ID using Twitter's
+    Intent API available at `https://twitter.com/intent/user?user_id={$USER_ID}`.
+    Substituting `{$USER_ID}` for Twitter's numeric ID will return the basic profile
+    information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The accounts with the highest PageRank in community one are American comic and
+    talk show host Conan O'Brien with Barack Obama, Felicia Day, and Neil Patrick
+    Harris. We could broadly categorize these people as American celebrities. It's
+    not entirely surprising that on Twitter, the largest community is gathered around
+    some of the largest accounts with the broadest general appeal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving down the list, the second-largest community features among its top influencers
+    the band Paramore, its members Hayley and Taylor, as well as Lady Gaga. This community
+    clearly has a very specific set of musical interests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Communities three and four both appear to have a strong gaming bias featuring
+    X-Box, PlayStation, Steam, and Markus Persson (the creator of Minecraft) as their
+    top influencers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bear in mind that we've already established that the whole graph is a part of
+    one connected component, so we're not looking at disjoint sets of users. Using
+    a combination of label propagation and PageRank, we are able to determine the
+    groups of Twitter users with related interests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we''ve learned about graphs: a useful abstraction to model
+    a huge variety of phenomena. We started the chapter using the Clojure library
+    Loom to visualize and traverse small graphs of Twitter followers. We learned about
+    two different methods of graph traversal, depth-first and breadth-first search,
+    and the effect of changing edge weights on the paths discovered by Dijkstra''s
+    algorithm and Prim''s algorithm. We also looked at the density of the whole graph
+    and plotted the degree distributions to observe the difference between random
+    and scale-free graphs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We introduced GraphX and the Clojure library Glittering as a means of processing
+    large graphs in a scalable way using Spark. In addition to providing several built-in
+    graph algorithms, Glittering also exposes GraphX''s Pregel API: a set of three
+    symbiotic functions to express graph algorithms in a vertex-centric way. We showed
+    that this alternative model of computation could be used to express triangle counting,
+    connected components, label propagation, and finally PageRank algorithms, and
+    chained our label propagation and PageRank steps together to determine the top
+    influencers for a set of Twitter communities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This was our last chapter using parallel computing techniques. In the next chapter,
+    we'll focus on local data processing, but we'll continue the thread of recursive
+    analysis. We'll cover methods to deal with time series data—ordered sequences
+    of observations in time—and demonstrate how recursive functions can be used to
+    produce forecasts.
+  prefs: []
+  type: TYPE_NORMAL

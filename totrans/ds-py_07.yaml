@@ -1,0 +1,2388 @@
+- en: 'Chapter 7. Analytics Study: NLP and Big Data with Twitter Sentiment Analysis'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"Data is the new oil."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Unknown* |'
+  prefs: []
+  type: TYPE_TB
+- en: 'In this chapter we are going to look at two important fields of AI and data
+    science: **natural language processing** (**NLP**) and big data analysis. For
+    the supporting sample application, we re-implement the *Sentiment analysis of
+    Twitter hashtags* project described in [Chapter 1](ch01.xhtml "Chapter 1. Programming
+    and Data Science – A New Toolset"), *Programming and Data Science – A New Toolset*,
+    but this time we leverage Jupyter Notebooks and PixieDust to build live dashboards
+    that analyze data from a stream of tweets related to a particular entity, such
+    as a product offered by a company, for example, to provide sentiment information
+    as well as information about other trending entities extracted from the same tweets.
+    At the end of this chapter, the reader will learn how to integrate cloud-based
+    NLP services such as *IBM Watson Natural Language Understanding* into their application
+    as well as perform data analysis at (Twitter) scale with frameworks such as Apache
+    Spark.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, we'll show how to operationalize the analytics by implementing a
+    live dashboard as a PixieApp that runs directly in the Jupyter Notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting started with Apache Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The term *big data* can rightly feel vague and imprecise. What is the cut-off
+    for considering any dataset big data? Is it 10 GB, 100 GB, 1 TB or more? One definition
+    that I like is: big data is when the data cannot fit into the memory available
+    in a single machine. For years, data scientists have been forced to sample large
+    datasets, so they could fit into a single machine, but that started to change
+    as parallel computing frameworks that are able to distribute the data into a cluster
+    of machines made it possible to work with the dataset in its entirety, provided
+    of course that the cluster had enough machines. At the same time, advances in
+    cloud technologies made it possible to provision on demand a cluster of machines
+    that are adapted to the size of the dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Today, there are multiple frameworks (most of the time available as open source)
+    that can provide robust, flexible parallel computing capabilities. Some of the
+    most popular include Apache Hadoop ([http://hadoop.apache.org](http://hadoop.apache.org)),
+    Apache Spark ([https://spark.apache.org](https://spark.apache.org)) and Dask ([https://dask.pydata.org](https://dask.pydata.org)).
+    For our *Twitter Sentiment Analysis* application, we'll use Apache Spark, which
+    provides excellent performances in the area of scalability, programmability, and
+    speed. In addition, many cloud providers offer some flavor of Spark as a Service
+    giving the ability to create on demand an appropriately sized Spark cluster in
+    minutes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some Spark as a Service cloud providers include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Microsoft Azure: [https://azure.microsoft.com/en-us/services/hdinsight/apache-spark](https://azure.microsoft.com/en-us/services/hdinsight/apache-spark)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Amazon Web Services: [https://aws.amazon.com/emr/details/spark](https://aws.amazon.com/emr/details/spark)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Google Cloud: [https://cloud.google.com/dataproc](https://cloud.google.com/dataproc)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Databricks: [https://databricks.com](https://databricks.com)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'IBM Cloud: [https://www.ibm.com/cloud/analytics-engine](https://www.ibm.com/cloud/analytics-engine)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Apache Spark can also be easily installed on a local machine for testing
+    purposes, in which case, the cluster nodes are simulated using threads.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Spark architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following diagram shows the main components of the Apache Spark framework:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Apache Spark architecture](img/B09699_07_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spark high level architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Spark SQL**: The core data structure of this component is the Spark DataFrame,
+    which enables users who know the SQL language, to effortlessly work with structured
+    data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Spark Streaming**: Module used to work with streaming data. As we''ll see
+    later on, we''ll use this module and more specifically Structured Streaming (which
+    was introduced in Spark 2.0) in our sample application.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MLlib**: Module that provides a feature-rich machine learning library that
+    works on a Spark scale.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**GraphX**: Module used for performing the graph-parallel computation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There are mainly two ways of working with a Spark cluster as illustrated in
+    the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Apache Spark architecture](img/B09699_07_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two ways to work with a Spark cluster
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**spark-submit**: Shell script used to launch Spark applications on a cluster'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Notebooks**: Interactively execute code statements against a Spark cluster'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Covering the `spark-submit` shell script is beyond the scope of this book,
+    but official documentation can be found at: [https://spark.apache.org/docs/latest/submitting-applications.html](https://spark.apache.org/docs/latest/submitting-applications.html).
+    For the rest of this chapter, we''ll focus on interacting with the Spark cluster
+    via Jupyter Notebooks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Configuring Notebooks to work with Spark
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The instructions in this section only cover installing Spark locally for development
+    and testing. Manually installing Spark in a cluster is beyond the scope of this
+    book. If a real cluster is needed, it is highly recommended to use a cloud-based
+    service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By default, local Jupyter Notebooks are installed with plain Python Kernels.
+    To work with Spark, users must use the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install Spark locally by downloading a binary distribution from [https://spark.apache.org/downloads.html](https://spark.apache.org/downloads.html).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Generate a kernel specification in a temporary directory using the following
+    command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The preceding command may generate a warning message that can be
+    safely ignored as long as the following message is stated:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`Installed kernelspec python3 in /tmp/share/jupyter/kernels/python3`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Go to `/tmp/share/jupyter/kernels/python3`, and edit the `kernel.json` file
+    to add the following key to the JSON object (replace `<<spark_root_path>>` with
+    the directory path where you installed Spark and `<<py4j_version>>` with the version
+    installed on your system):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'You may also want to customize the `display_name` key to make it unique and
+    easily recognizable from the Juptyer UI. If you need to know the list of existing
+    kernels, you can use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The preceding command will give you a list of kernel names and associated paths
+    on the local filesystem. From the path, you can open the `kernel.json` file to
+    access the `display_name` value. For example:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Install the kernel with the edited files using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Note: Depending on the environment, you may receive a "permission denied" error
+    when running the preceding command. In this case, you may want to run the command
+    with the admin privileges using `sudo` or use the `--user` switch as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`jupyter kernelspec install --user /tmp/share/jupyter/kernels/python3`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'For more information about install ation options, you can use the `-h` switch.
+    For example:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Restart the Notebook server and start using the new PySpark kernel.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fortunately, PixieDust provides an `install` script to automate the preceding
+    manual steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find detailed documentation for this script here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://pixiedust.github.io/pixiedust/install.html](https://pixiedust.github.io/pixiedust/install.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In short, using the automated PixieDust `install` script requires the following
+    command to be issued and the on-screen instructions to be followed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We'll dive deeper into the Spark programming model later in this chapter, but
+    for now, let's define in the next section, the MVP requirements for our *Twitter
+    Sentiment Analysis* application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Twitter sentiment analysis application
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As always, we start by defining the requirements for our MVP version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connect to Twitter to get a stream of real-time tweets filtered by a query string
+    provided by the user
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Enrich the tweets to add sentiment information and relevant entities extracted
+    from the text
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Display a dashboard with various statistics about the data using live charts that
+    are updated at specified intervals
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The system should be able to scale up to Twitter data size
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The following diagram shows the first version of our application architecture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Twitter sentiment analysis application](img/B09699_07_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Twitter sentiment architecture version 1
+  prefs: []
+  type: TYPE_NORMAL
+- en: For version 1, the application will be entirely implemented in a single Python
+    Notebook and will call out to an external service for the NLP part. To be able
+    to scale, we will certainly have to externalize some of the processing outside
+    of the Notebook, but for development and testing, I found that being able to contain
+    the whole application in a single Notebook significantly increases productivity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for libraries and frameworks, we'll use Tweepy ([http://www.tweepy.org](http://www.tweepy.org))
+    for connecting to Twitter, Apache Spark Structured Streaming ([https://spark.apache.org/streaming](https://spark.apache.org/streaming))
+    for processing the streaming data in a distributed cluster and the Watson Developer
+    Cloud Python SDK ([https://github.com/watson-developer-cloud/python-sdk](https://github.com/watson-developer-cloud/python-sdk))
+    to access the IBM Watson Natural Language Understanding ([https://www.ibm.com/watson/services/natural-language-understanding](https://www.ibm.com/watson/services/natural-language-understanding))
+    service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 1 – Acquiring the data with Spark Structured Streaming
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To acquire the data, we use Tweepy which provides an elegant Python client
+    library to access the Twitter APIs. The APIs covered by Tweepy are very extensive
+    and covering them in detail is beyond the scope of this book, but you can find
+    the complete API reference at the Tweepy official website: [http://tweepy.readthedocs.io/en/v3.6.0/cursor_tutorial.html](http://tweepy.readthedocs.io/en/v3.6.0/cursor_tutorial.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can install the Tweepy library directly from PyPi using the `pip install`
+    command. The following command shows how to install it from a Notebook using the
+    `!` directive:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The current Tweepy version used is 3.6.0\. Do not forget to restart
+    the kernel after installing the library.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Architecture diagram for the data pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we start diving into each component of the data pipeline, it would be
+    good to take a look at its overall architecture and understand the computation
+    flow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As shown in the following diagram, we start by creating a Tweepy stream that
+    writes raw data in CSV files. We then create a Spark Streaming DataFrame that
+    reads the CSV files and is periodically updated with new data. From the Spark
+    Streaming DataFrame, we create a Spark structured query using SQL and store its
+    results in a Parquet database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Architecture diagram for the data pipeline](img/B09699_07_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Streaming computation flow
+  prefs: []
+  type: TYPE_NORMAL
+- en: Authentication with Twitter
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before using any of the Twitter APIs, it is recommended to authenticate with
+    the system. One of the most commonly used authentication mechanism is the OAuth
+    2.0 protocol ([https://oauth.net](https://oauth.net)) which enables third-party
+    applications to access a service on the web. The first thing you need to do is
+    acquire a set of key strings that are used by the OAuth protocol to authenticate
+    you:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Consumer key**: String that uniquely identifies the client app (a.k.a. the
+    API Key).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Consumer secret**: Secret string known only to the application and the Twitter
+    OAuth server. It can be thought of like a password.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Access token**: String used to authenticate your requests. This token is
+    also used during the authorization phase to determine the level of access for
+    the application.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Access token secret**: Similar to the consumer secret, this is a secret string
+    sent with the access token to be used as a password.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To generate the preceding key strings, you need to go to [http://apps.twitter.com](http://apps.twitter.com),
+    provide authentication with your regular Twitter user ID and password and follow
+    these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new Twitter app using the **Create New App** button.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fill out the application details, agree to the Developer agreement and click
+    on **Create your Twitter application** button.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Make sure that your mobile phone number is added to your profile or
+    you''ll get an error when creating the Twitter application.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: You can provide a random URL for the mandatory **Website** input and leave the
+    **URL** input blank as this is an optional callback URL.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Click on the **Keys and Access Tokens** tab to get the consumer and access token.
+    At any time, you can regenerate these tokens using the buttons available on this
+    page. If you do so, you'll need to also update the value in your application code.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'For easier code maintenance, let''s put these tokens in their own variables
+    at the top of the Notebook and create the `tweepy.OAuthHandler` class that we''ll
+    use later on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating the Twitter stream
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For implementing our application, we only need to use the Twitter streaming
+    API that is documented here: [http://tweepy.readthedocs.io/en/v3.5.0/streaming_how_to.html](http://tweepy.readthedocs.io/en/v3.5.0/streaming_how_to.html).
+    In this step, we create a Twitter stream that stores the incoming data into CSV
+    files on the local filesystem. This is done using a custom `RawTweetsListener`
+    class that inherits from `tweepy.streaming.StreamListener`. Custom processing
+    of the incoming data is done by overriding the `on_data` method.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we want to transform the incoming data from JSON to CSV using `DictWriter`
+    from the standard Python `csv` module. Because the Spark Streaming file input
+    source triggers only when new files are created in the input directory, we can't
+    simply append the data into an existing file. Instead, we buffer the data into
+    an array and write it to disk once the buffer has reached capacity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For simplicity, the implementation doesn't include cleaning up the files once
+    they have been processed. Another minor limitation of this implementation is that
+    we currently wait until the buffer is filled to write the file which theoretically
+    could take a long time if no new tweets appear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for the `RawTweetsListener` is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode1.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode1.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A few important things to notice from the preceding code are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each tweet coming from the Twitter API contains a lot of data, and we pick which
+    field to keep using the `field_metadata` variable. We also define a global variable
+    `fieldnames` that holds the list of fields to capture from the stream, and a `transforms`
+    variable that contains a dictionary with all the field names that have a transform
+    function as a key and the transform function itself as a value:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode2.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode2.py)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'The CSV files are written in `output_dir` which is defined in its own variable.
+    At start time, we first remove the directory and its contents:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode3.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode3.py)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: The `field_metadata` contains the Spark DataType that we'll use later on to build
+    the schema when creating the Spark streaming query.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The `field_metadata` also contains an optional transform `lambda` function
+    to cleanse the value before being written to disk. For reference, a lambda function
+    in Python is an anonymous function defined inline (see [https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions](https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions)).
+    We use it for the source field that is often returned as an HTML fragment. In
+    this lambda function, we use the BeautifulSoup library (which was also used in
+    the previous chapter) to extract only the text as shown in the following snippet:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now that the `RawTweetsListener` is created, we define a `start_stream` function
+    that we''ll use later on in the PixieApp. This function takes an array of search
+    terms as input and starts a new stream using the `filter` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Notice the `async=True` parameter passed to `stream.filter`. This is needed
+    to make sure that the function doesn't block, which would prevent us from running
+    any other code in the Notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode4.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode4.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code starts the stream that will receive tweets containing the
+    word `baseball` in it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: When running the preceding code, no output is generated in the Notebook. However,
+    you can see the files (that is, `tweets0.csv`, `tweets1.csv`, and so on.) being generated
+    in the output directory (that is, `../output/raw`) from the path where the Notebook
+    is being run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To stop the stream, we simply call the `disconnect` method, as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating a Spark Streaming DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Referring to the architecture diagram, the next step is to create a Spark Streaming
+    DataFrame `tweets_sdf` that uses the `output_dir` as the source file input. We
+    can think of a Streaming DataFrame as an unbounded table where new rows are continuously
+    added as new data arrives from the stream.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Spark Structured Streaming supports multiple types of input source including
+    File, Kafka, Socket, and Rate. (Both Socket and Rate are used only for testing.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram is taken from the Spark website and does a great job explaining
+    how new data is appended to the Streaming DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating a Spark Streaming DataFrame](img/B09699_07_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Streaming DataFrame flow
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Source: [https://spark.apache.org/docs/latest/img/structured-streaming-stream-as-a-table.png](https://spark.apache.org/docs/latest/img/structured-streaming-stream-as-a-table.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Spark Streaming Python API provides an elegant way to create the Streaming
+    DataFrame using the `spark.readStream` property which creates a new `pyspark.sql.streamingreamReader`
+    object that conveniently lets you chain method calls with the added benefit of
+    creating clearer code (see [https://en.wikipedia.org/wiki/Method_chaining](https://en.wikipedia.org/wiki/Method_chaining)
+    for more details on this pattern).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, to create a CSV file stream, we call the format method with `csv`,
+    chain the applicable options and call the `load` method with the path of the directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode5.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode5.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`spark.readStream` also provides a convenient high-level `csv` method that
+    takes the path as the first argument and keyword arguments for the options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode6.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode6.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can verify that the `csv_sdf` DataFrame is indeed a Streaming DataFrame
+    by calling the `isStreaming` method which should return `true`. The following
+    code also adds a call to `printSchema` to verify that the schema follows the `field_metadata`
+    configuration as expected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Returns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Before continuing to the next step, it is important to understand how the `csv_sdf`
+    Streaming DataFrame fits in the Structured Streaming programming model and what
+    limitations it has. At its core, the Spark low-level APIs define the **Resilient
+    Distributed Dataset** (**RDD**) data structure which encapsulates all the underlying
+    complexity of managing the distributed data. Features like fault-tolerance (cluster
+    nodes that crashes for any reason are transparently restarted with no intervention
+    from the developer) are automatically handled by the framework. There are two
+    types of RDD operations: transformations and actions. **Transformations** are
+    logical operations on an existing RDD that are not immediately executed on the
+    cluster until an action is invoked (lazy execution). The output of a transformation
+    is a new RDD. Internally, Spark maintains an RDD acyclic directed graph that keeps
+    track of all the lineage resulting in the creation of the RDD, which is useful
+    when recovering from server failure. Example transformations include `map`, `flatMap`,
+    `filter`, `sample`, and `distinct`. The same goes for transformations on DataFrames
+    (which internally are backed by RDDs) that have the benefit of including SQL queries.
+    On the other hand, **actions** do not produce other RDDs, but rather perform an
+    operation on the actual distributed data to return a non-RDD value. Examples of
+    actions include `reduce`, `collect`, `count`, and `take`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned before, `csv_sdf` is a Streaming DataFrame, which means that the
+    data is continuously added to it and as such we are only able to apply transformations
+    to it, not actions. To circumvent this problem, we must first create a streaming
+    query using `csv_sdf.writeStream` which is a `pyspark.sql.streaming.DataStreamWriter`
+    object. The streaming query is responsible for sending the results to an output
+    sink. We can then run the streaming query using the `start()` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Spark Streaming supports multiple output sink types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**File**: All the classic file formats are supported, including JSON, CSV,
+    and Parquet'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Kafka**: Write directly to one or more Kafka topics'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Foreach**: Run arbitrary computations on each element in the collection'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Console**: Prints the output to the system console (used mainly for debugging)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Memory**: Output is stored in memory'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the next section, we'll create and run a structured query on `csv_sdf` with
+    an output sink that stores the output in Parquet format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating and running a structured query
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using the `tweets_sdf` Streaming DataFrame, we create a streaming query `tweet_streaming_query`
+    that writes the data into a Parquet format using the *append* output mode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Spark streaming queries support three output modes: **complete**
+    where the entire table is written at each trigger, **append** where only the delta
+    rows since the last trigger are written, and **update** where only the rows that
+    were modified are written.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Parquet is a columnar database format that provides an efficient, scalable
+    storage for distributed analytics. You can find more information about the Parquet
+    format at: [https://parquet.apache.org](https://parquet.apache.org).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code creates and starts the `tweet_streaming_query` streaming
+    query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode7.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode7.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, you can stop the streaming query by using the `stop()` method as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we use the `path` option to specify the location of the
+    Parquet files, and the `checkpointLocation` to specify the location of the recovery
+    data that would be used in case of a server failure. We also specify the trigger
+    interval for new data to be read from the stream and new rows to be added to the
+    Parquet database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For testing purpose, you can also use the `console` sink to see the new rows
+    being read every time a new raw CSV file is generated in the `output_dir` directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode8.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode8.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can see the results in the system output of the master node of your Spark
+    cluster (you will need to physically access the master node machine and look at
+    the log files, since, unfortunately, the output is not printed into the Notebook
+    itself because the operation is executed in a different process. Location of the
+    log files depends on the cluster management software; please refer to the specific
+    documentation for more information).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are sample results displayed for a particular batch (identifiers have
+    been masked):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Monitoring active streaming queries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When a streaming query is started, cluster resources are allocated by Spark.
+    Therefore, it is important to manage and monitor these queries to make sure that
+    you don''t run out of cluster resources. At any time, you can get a list of all
+    the running queries as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can then dive into the details of each query by using the following query
+    monitoring properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`id`: Returns a unique identifier for the query that persists across restarts
+    from checkpoint data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`runId`: Returns a unique ID generated for the current session'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`explain()`: Prints detailed explanations of the query'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`recentProgress`: Returns an array of the most recent progress updates'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`lastProgress:` Returns the most recent progress'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The following code prints the most recent progress for each active query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode9.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode9.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Results for the first query are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: As an exercise for the reader, it would be useful to build a PixieApp that provides
+    a live dashboard with updated details about each active streaming query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: We''ll show how to build this PixieApp in *Part 3 – Create a real-time
+    dashboard PixieApp*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a batch DataFrame from the Parquet files
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: For the rest of this chapter, we define a batch Spark DataFrame as
+    a classic Spark DataFrame, that is non-streaming.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last step of this streaming computation flow is to create one or more batch
+    DataFrames that we can use for building our analytics and data visualizations.
+    We can think of this last step as taking a snapshot of the data for deeper analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two ways to programmatically load a batch DataFrame from a Parquet
+    file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using `spark.read` (notice that we don''t use `spark.readStream` as we did earlier):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Using `spark.sql`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode10.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode10.py)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: The benefit of this method is that we can use any ANSI SQL query to load the
+    data, instead of using the equivalent low-level DataFrame APIs that we would have
+    to use in the first method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can then periodically refresh the data by rerunning the preceding code and
+    recreating the DataFrame. We are now ready to create further analysis on the data
+    by, for example, running the PixieDust `display()` method on it in order to create
+    visualizations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We select the **Bar Chart** menu and drag and drop the `source` field in the
+    **Keys** field area. Since we want to show only the top 10 tweets, we set this
+    value in the **# of Rows to Display** field. The following screenshot shows the
+    PixieDust options dialog:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating a batch DataFrame from the Parquet files](img/B09699_07_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Options dialog for showing the top 10 sources of tweets
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After clicking **OK**, we see the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating a batch DataFrame from the Parquet files](img/B09699_07_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Chart showing the number of tweets related to baseball by source
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we've seen how to use the Tweepy library to create a Twitter
+    stream, clean the raw data and store it in CSV files, create a Spark Streaming
+    DataFrame, run streaming queries on it and store the output in a Parquet database,
+    create a batch DataFrame from the Parquet file, and visualize the data using PixieDust
+    `display()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The complete notebook for *Part 1 – Acquiring the data with Spark Structured
+    Streaming* can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%201.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%201.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next part, we'll look at enriching the data with sentiment and entity
+    extraction using the IBM Watson Natural Language Understanding service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 2 – Enriching the data with sentiment and most relevant extracted entity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this part, we enrich the Twitter data with sentiment information, for example,
+    *positive*, *negative*, and *neutral*. We also want to extract the most relevant
+    entity from the tweet, for example, sport, organization, and location. This extra
+    information will be analyzed and visualized by the real-time dashboard that we'll
+    build in the next section. The algorithms used to extract sentiment and entity
+    from an unstructured text belong to a field of computer science and artificial
+    intelligence called **natural language processing** (**NLP**). There are plenty
+    of tutorials available on the web that provide algorithm examples on how to extract
+    sentiment. For example, you can find a comprehensive text analytic tutorial on
+    the scikit-learn repo at [https://github.com/scikit-learn/scikit-learn/blob/master/doc/tutorial/text_analytics/working_with_text_data.rst](https://github.com/scikit-learn/scikit-learn/blob/master/doc/tutorial/text_analytics/working_with_text_data.rst).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, for this sample application, we are not going to build our own NLP
+    algorithm. Instead, we'll choose a cloud-based service that provides text analytics
+    such as sentiment and entity extraction. This approach works very well when you
+    have generic requirements such as do not require training custom models, but even
+    then, most of the service providers now provide tooling to do so. There are major
+    advantages to use a cloud-based provider over creating your own model such as
+    saving on the development time and much better accuracy and performance. With
+    a simple REST call, we'll be able to generate the data we need and integrate it
+    into the flow of our application. Also, it would be very easy to change providers
+    if needed as the code responsible for interfacing with the service is well isolated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this sample application, we'll use the **IBM Watson Natural Language Understanding**
+    (**NLU**) service which is a part of the IBM Watson family of cognitive services,
+    and available on IBM Cloud.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting started with the IBM Watson Natural Language Understanding service
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The process of provisioning a new service is usually the same for every cloud
+    provider. After logging in, you go to a service catalog page where you can search for
+    a particular service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To log in to the IBM Cloud, just go to [https://console.bluemix.net](https://console.bluemix.net)
+    and create a free IBM account if you don''t already have one. Once in the dashboard,
+    there are multiple ways to search for the IBM Watson NLU service:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Click on the top left-hand menu, and select **Watson**, select **Browse services**,
+    and find the **Natural Language Understanding** entry in the list of services.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Click on the **Create Resource** button in the top-right corner to get to the
+    catalog. Once in the catalog, you can search for `Natural Language Understanding`
+    in the search bar as shown in the following screenshot:![Getting started with
+    the IBM Watson Natural Language Understanding service](img/B09699_07_08.jpg)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Searching for Watson NLU in the service catalog
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: You can then click on **Natural Language Understanding** to provision a new
+    instance. It is not unusual that cloud providers offer a free or trial-based plan
+    for some services and fortunately Watson NLU provides one of these, with the limitation
+    that you can train only one custom model with a maximum of 30,000 NLU items processed
+    per month (which is adequate for our sample application). After selecting the
+    **Lite** (free) plan and clicking on the **Create** button, the newly provisioned
+    instance will appear on the dashboard and is ready to accept requests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: After creating the service, you may be redirected to the NLU service *getting
+    started document*. If so, simply navigate back to the dashboard where you should
+    see the new service instance listed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is to test the service from our Notebook by making a REST call.
+    Every service provides detailed documentation on how to use it including the API
+    reference. From the Notebook, we could use the requests package to make GET, POST,
+    PUT, or DELETE calls according to the API reference, but it is highly recommended
+    to check whether the service offers SDKs with high-level programmatic access to
+    the APIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fortunately, IBM Watson provides the `watson_developer_cloud` open source library
+    which includes multiple open source SDKs supporting some of the most popular languages,
+    including Java, Python, and Node.js. For this project, we''ll use the Python SDK
+    with source code and code examples located here: [https://github.com/watson-developer-cloud/python-sdk](https://github.com/watson-developer-cloud/python-sdk).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following `pip` command installs the `watson_developer_cloud` package directly from
+    the Jupyter Notebook:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Notice the `!` in front of the command that signifies that it's a shell command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: Don''t forget to restart the kernel once installation is complete.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most cloud service providers use a common pattern to let consumers authenticate
+    with the service, which consists of generating a set of credentials from the service
+    console dashboard that will be embedded in the client application. To generate
+    the credentials, simply click on the **Service credentials** tab of your Watson
+    NLU instance and click on the **New credential** button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This will generate a new set of credentials in JSON format as shown in the
+    following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting started with the IBM Watson Natural Language Understanding service](img/B09699_07_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generating new credentials for the Watson NLU service
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we have the credentials to our service, we can create a `NaturalLanguageUnderstandingV1`
+    object that will provide programmatic access to the REST APIs, as shown in the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode11.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode11.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: In the preceding code, replace the `XXXX` text with the appropriate
+    username and password from the service credentials.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `version` argument refers to a specific version of the API. To know the
+    latest version, go to the official documentation page located here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.ibm.com/watson/developercloud/natural-language-understanding/api/v1](https://www.ibm.com/watson/developercloud/natural-language-understanding/api/v1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before continuing with building the application, let''s take a moment to understand
+    the text analytics capabilities offered by the Watson Natural Language service
+    which include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sentiment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Entities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Concepts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Categories
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Emotion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Keywords
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Relations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Semantic roles
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In our application, enriching the Twitter data happens in the `RawTweetsListener`
+    where we create an `enrich` method that will be invoked from the `on_data` handler
+    method. In this method, we call the `nlu.analyze` method with the Twitter data
+    and a feature list that includes sentiment and entities only as shown in the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The `[[RawTweetsListener]]` notation means that the following code
+    is part of a class called `RawTweetsListener` and that the user should not attempt
+    to run the code as is without the complete class. As always, you can always refer
+    to the complete notebook for reference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode12.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode12.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results are then stored in the `data` object which will be written to the
+    CSV files. We also guard against unexpected exceptions skipping the current tweet
+    and logging a warning message instead of letting the exception bubble up which
+    would stop the Twitter stream.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The most common exception happens when the tweet data is in a language
+    that is not supported by the service.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the `@Logger` decorator described in [Chapter 5](ch05.xhtml "Chapter 5. Python
+    and PixieDust Best Practices and Advanced Concepts"), *Python and PixieDust Best
+    Practices and Advanced Concepts* to log messages against the PixieDust logging
+    framework. As a reminder, you can use the `%pixiedustLog` magic from another cell
+    to view the log messages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We still need to change the schema metadata to include the new fields as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode13.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode13.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we update `on_data` handler to invoke the `enrich` method as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode14.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode14.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we restart the Twitter stream and create the Spark Streaming DataFrame,
+    we can verify that we have the correct schema using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode15.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode15.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which shows the following results as expected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, when we run the structured query with the `console` sink, data is
+    displayed in batches in the console of the Spark master node as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we run the structured query with the Parquet `output` sink, create
+    a batch DataFrame, and explore the data using the PixieDust `display()` to show,
+    for example, a count of tweets by sentiment (`positive`, `negative`, `neutral`)
+    clustered by the entity as shown in the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting started with the IBM Watson Natural Language Understanding service](img/B09699_07_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bar chart showing the number of tweets by sentiment clustered by entities
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The complete notebook for *Part 2 – Enrich the data with sentiment and most relevant
+    extracted entity* is located here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%202.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%202.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are running it, I encourage you to experiment by adding more fields to
+    the schema, run different SQL queries, and visualize the data with PixieDust `display()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we'll build a dashboard that displays multiple metrics
+    about the Twitter data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 3 – Creating a real-time dashboard PixieApp
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As always, we first need to define the requirements for the MVP version of
+    the dashboard. This time we''ll borrow a tool from the agile methodology called
+    a **user story** which describes the features we want to build from the perspective
+    of the user. The agile methodology also prescribes fully understanding the context
+    of the different users that will interact with the software by categorizing them
+    into personas. In our case, we will only use one persona: *Frank the marketing
+    director who wants to get real-time insights from what consumers are talking about
+    on social media*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The user story goes like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Frank enters a search query like for example a product name
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A dashboard is then presented that displays a set of charts showing metrics about
+    user sentiments (positive, negative, neutral)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The dashboard also contains a word cloud of all the entities being uttered in the
+    tweets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Additionally, the dashboard has an option to display the real-time progress
+    of all the Spark Streaming queries that are currently active
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The last feature is not really needed for Frank, but we show it here
+    anyway as an example implementation of the exercise given earlier.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Refactoring the analytics into their own methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we start, we need to refactor the code that starts the Twitter stream
+    and creates the Spark Streaming DataFrame into their own method that we will invoke
+    in the PixieApp.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `start_stream,` `start_streaming_dataframe`, and `start_parquet_streaming_query`
+    methods are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode16.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode16.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode17.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode17.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode18.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode18.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As part of the preparation work, we also need to manage the life cycle of the
+    different streams that will be created by the PixieApp and make sure that the
+    underlying resources are correctly stopped when the user restarts the dashboard.
+    To help with that, we create a `StreamsManager` class that encapsulates the Tweepy
+    `twitter_stream` and the CSV Streaming DataFrame. This class has a `reset` method
+    that will stop the `twitter_stream`, stop all the active streaming queries, delete
+    all the output files created from the previous queries, and start a new one with
+    a new query string. If the `reset` method is called without a query string, then
+    we don't start new streams.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also create a global `streams_manager` instance that will keep track of the
+    current state even if the dashboard is restarted. Since the user can rerun the
+    cell that contains the global `streams_manager` we need to make sure that the
+    `reset` method is automatically invoked when the current global instance is deleted.
+    For that, we override the object's `__del__` method, which is Python's way of
+    implementing a destructor and call `reset`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for `StreamsManager` is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode19.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode19.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating the PixieApp
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Like in [Chapter 6](ch06.xhtml "Chapter 6. Analytics Study: AI and Image Recognition
+    with TensorFlow"), *Analytics Study: AI and Image Recognition with TensorFlow*,
+    we''ll use the `TemplateTabbedApp` class again to create a tab layout with two
+    PixieApps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`TweetInsightApp`: Lets the user specify a query string and shows the real-time
+    dashboard associated with it'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`StreamingQueriesApp`: Monitors the progress of the active structured queries'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In the default route of the `TweetInsightApp`, we return a fragment that asks
+    the user for the query string as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode20.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode20.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the results of running the preceding code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: We''ll create the main `TwitterSentimentApp` PixieApp that has the
+    tabbed layout and includes this class later on in this section. For now, we are
+    only showing the `TweetInsightApp` child app in isolation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating the PixieApp](img/B09699_07_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Welcome screen for the Twitter Sentiment Dashboard
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the `Go` button, we invoke the `search_query` route with the query string
+    provided by the user. In this route, we first start the various streams and create
+    a batch DataFrame stored in a class variable called `parquet_df` from the output
+    directory where the Parquet database is located. We then return the HTML fragment
+    that is composed of three widgets showing the following metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bar chart for each of the three sentiments clustered by entities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Line chart subplots showing the distribution of the tweets by sentiment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A word cloud for the entities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each of the widgets is calling a specific route at a regular interval using
+    the `pd_refresh_rate` attribute documented in [Chapter 5](ch05.xhtml "Chapter 5. Python
+    and PixieDust Best Practices and Advanced Concepts"), *Python and PixieDust Best
+    Practices and Advanced Concepts*. We also make sure to reload the `parquet_df`
+    variable to pick up the new data that has arrived since the last time. This variable
+    is then referenced in the `pd_entity` attribute for displaying the chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code shows the implementation for the `search_query` route:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode21.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode21.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are multiple things to notice from the preceding code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output directory for the Parquet files may not be ready when we try to load
+    the `parquet_df` batch DataFrame, which would cause an exception. To solve this
+    timing issue, we wrap the code into a `try...except` statement and wait for 5
+    seconds using `time.sleep(5)`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We also display the current count of tweets in the header. To do this we add
+    a `<div>` element that refreshes every 5 seconds, with a `<pd_script>` that prints
+    the current count of tweets using `streams_manager.twitter_stream.listener.tweet_count`
+    which is a variable we added to the `RawTweetsListener` class. We also updated
+    the `on_data()` method to increment the `tweet_count` variable every time a new
+    tweet arrives as shown in the following code:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Also, to avoid flickering, we prevent the displaying of the *loading spinner*
+    image using `class="no_loading_msg"` in the `<div>` element.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: We invoke three different routes (`display_metric1`, `display_metric2`, and
+    `display_wc`) that are responsible for displaying the three widgets respectively.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `display_metric1` and `display_metric2` routes are very similar. They return
+    a div with `parquet_df` as the `pd_entity` and a custom `<pd_options>` child element
+    that contains the JSON configuration passed to the PixieDust `display()` layer.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'The following code shows the implementation for the `display_metric1` route:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode22.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode22.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `display_metric2` route follows a similar pattern but with a different set
+    of `pd_options` attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The last route is `display_wc` and is responsible for displaying the word cloud
+    for the entities. This route uses the `wordcloud` Python library that you can
+    install with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: As always, don''t forget to restart the kernel once installation
+    is complete.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use the `@captureOutput` decorator documented in [Chapter 5](ch05.xhtml
+    "Chapter 5. Python and PixieDust Best Practices and Advanced Concepts"), *Python
+    and PixieDust Best Practices and Advanced Concepts* as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode23.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode23.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The text passed to the `WordCloud` class is generated from collecting all the
+    entities in the `parquet_df` batch DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the dashboard after letting a Twitter stream,
+    created with the search query `baseball`, run for a little while:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating the PixieApp](img/B09699_07_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Twitter Sentiment Dashboard for the search query "baseball"
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second PixieApp is used to monitor the streaming queries that are actively
+    running. The main route returns an HTML fragment that has a `<div>` element that invokes
+    the `show_progress` route at regular intervals (5000 ms) as shown in the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode24.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode24.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the `show_progress` route we use the `query.lastProgress` monitoring API described
+    earlier in this chapter, iterate over the JSON object using Jinja2 `{%for%}` loop
+    and display the results in a table as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode25.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode25.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the streaming query monitoring PixieApp:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Creating the PixieApp](img/B09699_07_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Live monitoring of the active Spark streaming queries
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The last step is to put together the complete application using the `TemplateTabbedApp`
+    class as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode26.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode26.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 3 of our sample application is now complete; you can find the fully-built
+    Notebook here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%203.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%203.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we discuss ways to make the data pipeline of our application
+    more scalable by using Apache Kafka for event streaming and IBM Streams Designer for
+    data enrichment of the streaming data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 4 – Adding scalability with Apache Kafka and IBM Streams Designer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: This section is optional. It demonstrates how to re-implement parts
+    of the data pipeline with cloud-based streaming services to achieve greater scalability'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing the entire data pipeline in a single Notebook gave us high productivity
+    during development and testing. We can experiment with the code and test the changes
+    very rapidly with a very small footprint. Also, performances have been reasonable
+    because we have been working with a relatively small amount of data. However,
+    it is quite obvious that we wouldn't use this architecture in production and the
+    next question we need to ask ourselves is where are the bottlenecks that would
+    prevent the application from scaling as the quantity of streaming data coming
+    from Twitter increases dramatically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this section, we identify two areas for improvement:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the Tweepy stream, the incoming data is sent to the `RawTweetsListener` instance
+    for processing using the `on_data` method. We need to make sure to spend as little
+    time as possible in this method otherwise the system will fall behind as the amount
+    of incoming data increases. In the current implementation, the data is enriched
+    synchronously by making an external call to the Watson NLU service; it is then
+    buffered and eventually written to disk. To fix this issue, we send the data to
+    a Kafka service, which is a highly scalable, fault tolerant streaming platform
+    using a publish/subscribe pattern for processing a high volume of data. We also
+    use the Streaming Analytics service, which will consume data from Kafka and enrich
+    it by invoking the Watson NLU service. Both services are available on the IBM
+    Cloud.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: There are alternative open source frameworks that we could have used
+    for processing the streaming data, such as, for example, Apache Flink ([https://flink.apache.org](https://flink.apache.org))
+    or Apache Storm ([http://storm.apache.org](http://storm.apache.org)).'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: In the current implementation, the data is stored as CSV files, and we create a
+    Spark Streaming DataFrame with the output directory as the source. This step consumes
+    time and resources on the Notebook and the local environment. Instead, we can
+    have the Streaming Analytics write back the enriched events in a different topic
+    and create a Spark Streaming DataFrame with the Message Hub service as the Kafka
+    input source.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The following diagram shows the updated architecture for our sample application:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 4 – Adding scalability with Apache Kafka and IBM Streams Designer](img/B09699_07_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaling the architecture with Kafka and Streams Designer
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next few sections, we will implement the updated architecture, starting
+    with streaming the tweets to Kafka.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streaming the raw tweets to Kafka
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Provisioning a Kafka / Message Hub service instance on IBM Cloud follows the
+    same pattern as the steps we used to provision the Watson NLU service. We first
+    locate and select the service in the catalog, pick a pricing plan and click **Create**.
+    We then open the service dashboard and select the **Service credentials** tab
+    to create new credentials as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Streaming the raw tweets to Kafka](img/B09699_07_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating new credentials for the Message Hub service
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As is the case for all the services available on IBM Cloud, the credentials
+    come in the form of a JSON object that we''ll need to store in its own variable
+    in the Notebook as shown in the following code (again, don''t forget to replace
+    the `XXXX` text with your username and password from the service credentials):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode27.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode27.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for interfacing with Kafka, we have a choice between multiple good client
+    libraries. I have tried many of them, but the one I ended up using most often
+    is `kafka-python` ([https://github.com/dpkp/kafka-python](https://github.com/dpkp/kafka-python))
+    which has the advantage of being a pure Python implementation and is thereby easier
+    to install.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To install it from the Notebook, use the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: As always, do not forget to restart the kernel after installing any
+    libraries.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `kafka-python` library provides a `KafkaProducer` class for writing the
+    data as messages into the service, which we'll need to configure with the credentials
+    we created earlier. There are multiple Kafka configuration options available and
+    going over all of them is beyond the scope of this book. The required options
+    are related to authentication, host servers, and API version.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code is implemented in the `__init__` constructor of `RawTweetsListener`
+    class. It creates a `KafkaProducer` instance and stores it as a class variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode28.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode28.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We configure a lambda function for the `value_serializer` key that serializes
+    JSON objects which is the format we'll be using for our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: We need to specify the `api_version` key because otherwise, the library
+    would try to autodiscover its value which would cause a `NoBrokerAvailable` exception
+    to be raised due to a bug in the `kafka-python` library reproducible only on Macs.
+    A fix for this bug has not yet been provided at the time of writing this book.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We now need to update the `on_data` method to send the tweets data to Kafka
+    using the `tweets` topic. A Kafka topic is like a channel that applications can
+    publish or subscribe to. It is important to have the topic already created before
+    attempting to write into it otherwise an exception will be raised. This is done
+    in the following `ensure_topic_exists` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode29.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode29.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the preceding code, we make a POST request into the path `/admin/topic` with
+    a JSON payload that contains the name of the topic we want to create. The request
+    must be authenticated using the API key provided in the credentials and the `X-Auth-Token`
+    header. We also make sure to ignore HTTP error codes 422 and 403 which indicate
+    that the topic already exists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for the `on_data` method now looks much simpler as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode30.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode30.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, with this new code, we're spending as little time as possible
+    in the `on_data` method, which is the goal we wanted to achieve. The tweet data
+    is now flowing into the Kafka `tweets` topic, ready to be enriched by the Streaming
+    Analytics service which we'll discuss in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enriching the tweets data with the Streaming Analytics service
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this step, we'll need to use Watson Studio which is an integrated cloud-based
+    IDE that provides various tools for working with data, including machine learning
+    / deep learning models, Jupyter Notebooks, stream flows, and more. Watson Studio
+    is a companion tool to IBM Cloud accessible at [https://datascience.ibm.com](https://datascience.ibm.com),
+    and therefore no extra sign up is required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once logged in to Watson Studio, we create a new project which we'll call `Thoughtful
+    Data Science`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: It is OK to select the default options when creating a project.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then go to the **Settings** tab to create a Streaming Analytics service,
+    which will be the engine that powers our enrichment process and associate it with
+    the project. Note that we could also have created the service in the IBM Cloud
+    catalog as we did for the other services used in this chapter, but since we still
+    have to associate it with the project, we might as well do the creation in Watson
+    Studio too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the **Settings** tab, we scroll to the **Associated services** section and
+    click on the **Add service** drop-down to select **Streaming Analytics**. In the
+    next page, you have the choice between **Existing** and **New**. Select **New**
+    and follow the steps to create the service. Once done, the newly created service
+    should be associated with the project as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: If there are multiple free options, it is OK to pick any one of them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Enriching the tweets data with the Streaming Analytics service](img/B09699_07_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Associating the Streaming Analytics service with the project
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are now ready to create the stream flow that defines the enrichment processing
+    of our tweet data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We go to the **Assets** tab, scroll down to the **Streams flows** section and
+    click on the **New streams flow** button. In the next page, we give a name, select
+    the Streaming Analytics service, select **Manually** and click on the **Create**
+    button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are now in the Streams Designer which is composed of a palette of operators
+    on the left and a canvas where we can graphically build our stream flow. For our
+    sample application, we''ll need to pick three operators from the palette and drag
+    and drop them into the canvas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Message Hub from the Sources section of the palette**: Input source for our
+    data. Once in the canvas, we rename it `Source Message Hub` (by double- clicking
+    on it to enter edit mode).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Code from the Processing and analytics section**: It will contain the data
+    enrichment Python code that invokes the Watson NLU service. We rename the operator
+    to `Enrichment`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Message Hub from the Targets section of the palette**: Output source for the enriched
+    data. We rename it to `Target Message Hub`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next, we create a connection between the **Source Message Hub** and **Enrichment**
+    and between **Enrichment** and the **Target Message Hub**. To create a connection
+    between two operators, simply grab the output port at the end of the first operator
+    and drag it to the input port of the other operator. Notice that a source operator
+    has only one output port on the right of the box to denote that it only supports
+    outgoing connections, while a target operator has only one input port on the left
+    to denote that it only supports incoming connections. Any operator from the **PROCESSING
+    AND ANALYTICS** section has two ports on the left and right as they accept both
+    incoming and outgoing connections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the fully completed canvas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Enriching the tweets data with the Streaming Analytics service](img/B09699_07_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tweet enrichment stream flow
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's now look at the configuration of each of these three operators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: To complete this section, make sure to run the code that generates
+    topics to the Message Hub instance that we discussed in the previous section.
+    Otherwise, the Message Hub instance will be empty, and no schema will be detected.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Click on the source Message Hub. An animated pane on the right appears with
+    the options to select the Message Hub instance that contains the tweets. The first
+    time, you''ll need to create a connection to the Message Hub instance. Select
+    `tweets` as the topic. Click on the **Edit Output Schema** and then **Detect Schema**
+    to have the schema autopopulated from the data. You can also preview the live
+    streaming data using the **Show Preview** button as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Enriching the tweets data with the Streaming Analytics service](img/B09699_07_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Setting the schema and previewing the live streaming data
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now select the **Code** operator to implement the code that invokes the Watson
+    NLU. The animated contextual right-hand pane contains a Python code editor with
+    boilerplate code that includes the required functions to implement, namely `init(state)`
+    and `process(event, state)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the `init` method, we instantiate the `NaturalLanguageUnderstandingV1` instance
+    as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode31.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode31.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: We need to install the `Watson_developer_cloud` library via the **Python
+    packages** link located above the Python editor window in the right-hand contextual
+    pane as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Enriching the tweets data with the Streaming Analytics service](img/B09699_07_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adding the watson_cloud_developer package to the stream flow
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The process method is invoked on every event data. We use it to invoke the
+    Watson NLU and add the extra information to the event object as shown in the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode32.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode32.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: We must also declare all output variables by using the **Edit Output Schema**
+    link as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Enriching the tweets data with the Streaming Analytics service](img/B09699_07_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Declaring all output variables for the Code operator
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we configure the target Message Hub to use the `enriched_tweets` topic.
+    Note that you'll need to manually create the topic the first time by going into
+    the dashboard of the Message Hub instance on the IBM Cloud and clicking on the
+    **Add Topic** button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then save the stream flow using the **Save** button in the main toolbar.
+    Any errors in the flow, whether it be a compile error in the code, a service configuration
+    error or any other errors, will be shown in the notification pane. After we make
+    sure that there is no error, we can run the flow using the **Run** button which
+    takes us to the streams flow live monitoring screen. This screen is composed of
+    multiple panes. The main pane shows the different operators with the data represented
+    as little balls flowing in a virtual pipe between operators. We can click on a
+    pipe to show the events payload in a pane on the right. This is really useful
+    for debugging as we can visualize how the data is transformed through each operator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Streams Designer also supports adding Python logging messages in the
+    code operator which can then be downloaded on your local machine for analysis.
+    You can learn more about this functionality here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://dataplatform.cloud.ibm.com/docs/content/streaming-pipelines/downloading_logs.html](https://dataplatform.cloud.ibm.com/docs/content/streaming-pipelines/downloading_logs.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the stream flow live monitoring screen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Enriching the tweets data with the Streaming Analytics service](img/B09699_07_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Live monitoring screen for the Twitter Sentiment Analysis stream flow
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have our enriched tweets flowing in the Message Hub instance using the
+    `enriched_tweets` topic. In the next section, we show how to create a Spark Streaming
+    DataFrame using the Message Hub instance as the input source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a Spark Streaming DataFrame with a Kafka input source
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this final step, we create a Spark Streaming DataFrame that consumes the
+    enriched tweets from the `enriched_tweets` Kafka topic of the Message Hub service.
+    For this, we use the built-in Spark Kafka connector specifying the topic we want
+    to subscribe to in the `subscribe` option. We also need to specify the list of
+    Kafka servers in the `kafka.bootstrap.servers` option, by reading it from the
+    global `message_hub_creds` variable that we created earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: You have probably noticed that different systems use different names
+    for this option making it more error prone. Fortunately, in case of a misspelling,
+    an exception with an explicit root cause message will be displayed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The preceding options are for Spark Streaming, and we still need to configure
+    the Kafka credentials so that the lower level Kafka consumer can be properly authenticated
+    with the Message Hub service. To properly pass these consumer properties to Kafka,
+    we do not use the `.option` method, but rather we create a `kafka_options` dictionary
+    that we pass to the load method as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode33.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode33.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You would think that we're done with the code at this point since the rest of
+    the Notebook should work unchanged from *Part 3 – Create a real-time dashboard
+    PixieApp*. This would be correct until we run the Notebook and start seeing exceptions
+    with Spark complaining that the Kafka connector cannot be found. This is because
+    the Kafka connector is not included in the core distribution of Spark and must
+    be installed separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, these types of problems which are infrastructural in nature
+    and are not directly related to the task at hand, happen all the time and we end
+    up spending a lot of time trying to fix them. Searching on Stack Overflow or any
+    other technical site usually yields a solution rapidly, but in some cases, the
+    answer is not obvious. In this case, because we are running in a Notebook and
+    not in a `spark-submit` script, there isn''t much help available, and we have
+    to experiment ourselves until we find the solution. To install the `spark-sql-kafka`,
+    we need to edit the `kernel.json` file discussed earlier in this chapter, and
+    add the following option to the `"PYSPARK_SUBMIT_ARGS"` entry:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: When the kernel restarts, this configuration will automatically download the
+    dependencies and cache them locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should all work now right? Well, not yet. We still have to configure Kafka
+    security to use the credentials to our Message Hub service which uses SASL as
+    the security protocol. For that, we need to provide a **JAAS** (short for, **Java
+    Authentication and Authorization Service**) configuration file that will contain
+    the username and password for the service. The latest version of Kafka provides
+    a flexible mechanism to programmatically configure the security using a consumer
+    property called `sasl.jaas.config`. Unfortunately, the latest version of Spark
+    (2.3.0 as of the time of writing) has not yet updated to the latest version of
+    Kafka. So, we have to fall back to the other way of configuring JAAS which is
+    to set a JVM system property called `java.security.auth.login.config` with the
+    path to a `jaas.conf` configuration file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We first create the `jaas.conf` in a directory of our choice and add the following
+    content to it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding content, replace the `XXXX` text with the username and password
+    taken from the Message Hub service credentials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then add the following configuration to the `"PYSPARK_SUBMIT_ARGS"` entry
+    of `kernel.json`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For reference, here is a sample `kernel.json` that contains these configurations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode34.json](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/sampleCode34.json)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: We should always restart the Notebook server when modifying `kernel.json`
+    to make sure that all new configurations are properly reloaded.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rest of the Notebook code doesn't change, and the PixieApp dashboard should
+    work the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We have now completed Part 4 of our sample application; you can find the complete
+    notebook here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%204.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%204.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The extra code we had to write at the end of this section reminds us that the
+    journey of working with data is never a straight line. We have to be prepared
+    to deal with obstacles that can be different in nature: a bug in a dependency
+    library or a limitation in an external service. Surmounting these obstacles doesn''t
+    have to stop the project for a long time. Since we''re using mostly open-source
+    components, we can leverage a large community of like-minded developers on social
+    sites such as Stack Overflow, get new ideas and code samples, and experiment quickly
+    on a Jupyter Notebook.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we've built a data pipeline that analyzes large quantities
+    of streaming data containing unstructured text and applies NLP algorithms coming
+    from external cloud services to extract sentiment and other important entities
+    found in the text. We also built a PixieApp dashboard that displays live metrics
+    with insights extracted from the tweets. We've also discussed various techniques
+    for analyzing data at scale, including Apache Spark Structured Streaming, Apache
+    Kafka, and IBM Streaming Analytics. As always, the goal of these sample applications
+    is to show the art of the possible in building data pipelines with a special focus
+    on leveraging existing frameworks, libraries, and cloud services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we'll discuss time series analysis, which is another great
+    data science topic with a lot of industry applications, which we'll illustrate
+    by building a *Financial Portfolio* analysis application.
+  prefs: []
+  type: TYPE_NORMAL

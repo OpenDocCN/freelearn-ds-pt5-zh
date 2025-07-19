@@ -1,0 +1,1946 @@
+- en: 'Chapter 6. Analytics Study: AI and Image Recognition with TensorFlow'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '|   | *"Artificial Intelligence, deep learning, machine learning — whatever
+    you''re doing if you don''t understand it — learn it. Because otherwise, you''re
+    going to be a dinosaur within 3 years."* |   |'
+  prefs: []
+  type: TYPE_TB
+- en: '|   | --*Mark Cuban* |'
+  prefs: []
+  type: TYPE_TB
+- en: This is the first chapter of a series of sample applications covering popular
+    industry use cases, and it is no coincidence that I start with a use case related
+    to machine learning and, more specifically, deep learning through a image recognition
+    sample application. We're seeing accelerated growth in the field of **Artificial
+    Intelligence** (**AI**) over the last few years, to the point where many practical applications
+    are becoming a reality, such as self-driving cars, and chatbots with advanced
+    automated speech recognition that, for some tasks, are perfectly able to replace
+    human operators, while more and more people, from academia to industry, are starting
+    to get involved. However, there is a perception that the cost of entry is very
+    high and that mastering the underlying mathematical concepts of machine learning
+    is a prerequisite. In this chapter, we try to demonstrate, through the use of
+    examples, that this is not the case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will start this chapter with a quick introduction to machine learning, and
+    a subset of it called deep learning. We will then introduce a very popular deep
+    learning framework called TensorFlow that we'll use to build an image recognition
+    model. In the second part of this chapter, we'll show how to operationalize the
+    model we've built by implementing a sample PixieApp that lets the user enter a
+    link to a website, have all the images scraped, and use as input to the model
+    to categorize them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the end of this chapter, you should be convinced that it is possible to build
+    meaningful applications and operationalize them without a Ph.D. in machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is machine learning?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One definition that I think captures very well the intuition behind machine
+    learning comes from Andrew Ng, adjunct professor at Stanford University, in his *Machine
+    Learning* class on Coursera ([https://www.coursera.org/learn/machine-learning](https://www.coursera.org/learn/machine-learning)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine learning is the science of getting computers to learn, without being
+    explicitly programmed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The key word from the preceding definition is *learn,* which, in this context,
+    has a meaning that is very similar to how, we, humans learn. To continue with
+    this parallel, from a young age, we were taught how to accomplish a task either
+    by example, or on our own by trial and error. Broadly speaking, machine learning
+    algorithms can be categorized into two types that correspond to the two ways in which
+    humans learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Supervised**: The algorithm learns from example data that has been properly
+    labeled. This data is also called training data, or sometimes referred to as *ground
+    truth*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Unsupervised**: The algorithm is able to learn on its own from data that
+    has not been labeled.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For each of the two categories described here, the following table gives a
+    high-level overview of the most commonly used machine learning algorithms and
+    the type of problem they solve:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is machine learning?](img/B09699_06_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: List of machine learning algorithms
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of these algorithms is called a **model** and is used to make predictions
+    on new input data that has not been seen before. The overall end-to-end process
+    for building and deploying these models is very consistent across the different
+    types of algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram shows a high-level workflow of this process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is machine learning?](img/B09699_06_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Machine learning model workflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the workflow starts with data. In the case of supervised learning,
+    the data will be used as an example and therefore must be correctly labeled with
+    the correct answers. The input data is then processed to extract intrinsic properties
+    called **features,** which we can think of as numerical values representing the
+    input data. Subsequently, these features are fed into a machine learning algorithm
+    that builds a model. In typical settings, the original data is split between training,
+    test, and blind data. The test and blind data are used during the model building
+    phase to validate and optimize the model to make sure that it doesn't overfit
+    the training data. Overfitting happens when the model parameters are such that
+    they follow too closely the training data, leading to errors when unseen data
+    is used. When the model produces the desired accuracy level, it is then deployed
+    in production and used against new data as needed by the host application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we will provide a very high-level introduction to machine learning
+    with a simplified data pipeline workflow, just enough to give the intuition of
+    how a model is built and deployed. Once again, if you are a beginner, I highly
+    recommend Andrew Ng's *Machine Learning* class on Coursera (which I still revisit
+    from time to time). In the next section, we will introduce a branch of machine
+    learning called deep learning, which we'll use to build the image recognition
+    sample application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is deep learning?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Getting computers to learn, reason, and think (make decisions) is a science
+    that is commonly called **cognitive computing,** of which machine learning and
+    deep learning are a big part. The following Venn diagram shows how these fields
+    are related to the overarching field of AI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is deep learning?](img/B09699_06_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How deep learning fits in to AI
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the diagram suggests, deep learning is one type of machine learning algorithm.
+    What is perhaps not widely known is that the field of deep learning has existed
+    for quite some time, but hasn't really been widely used until very recently. The
+    rekindling in interest is due to the extraordinary advances in computer, cloud,
+    and storage technologies observed in the last few years that have fuelled exponential
+    growth in AI with the development of many new deep learning algorithms, each best suited
+    to solve a particular problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we'll discuss later in this chapter, deep learning algorithms are especially
+    good at learning complex non-linear hypotheses. Their design is actually inspired
+    by how the human brain works, for example, the input data flows through multiple
+    layers of computation units in order to decompose complex model representations
+    (such as an image, for example) into simpler ones, before passing the results
+    to the next layer, and so on and so forth, until reaching the final layer that
+    is responsible for outputting the results. The assembly of these layers is also
+    referred to as **neural networks**, and the computation units that compose a layer
+    are called **neurons**. In essence, a neuron is responsible for taking multiple
+    inputs and transforming them into a single output that can then be fed into other
+    neurons in the next layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following diagram represents a multilayer neural network for image classification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is deep learning?](img/B09699_06_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: High-level representation of a neural network for image classification
+  prefs: []
+  type: TYPE_NORMAL
+- en: The preceding neural network is also called **feed-forward** because the output
+    of each computation unit is used as input to the next layer, starting with the
+    input layer. The intermediary layers are called the **hidden layers** and contain
+    intermediary features that are automatically learned by the network. In our image
+    example, certain neurons could be responsible for detecting corners, while certain
+    others might focus on edges, and so on. The final output layer is responsible
+    for assigning a confidence level (score) to each of the output classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One important question is how does the neuron output get generated from its
+    input? Without diving too deeply in to the mathematics involved, each artificial
+    neuron applies an activation function ![What is deep learning?](img/B09699_06_26.jpg)
+    on the weighted sum of its inputs to decide whether it should *fire* or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following formula calculates the weighted sum:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is deep learning?](img/B09699_06_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where ![What is deep learning?](img/B09699_06_28.jpg) is the matrix of weights
+    between the layer *i* and *i + 1*. These weights are computed during the training
+    phase that we will discuss briefly a little later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The bias in the preceding formula represents the weight of the bias
+    neuron, which is an extra neuron added to each layer with an x value of +1\. The
+    bias neuron is special because it contributes to the input for the next layer,
+    but it is not connected to the previous one. Its weight, however, is still normally
+    learned like any other neuron. The intuition behind the bias neuron is that it
+    provides the constant term b in the linear regression equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is deep learning?](img/B09699_06_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Of course, applying the neuron activation function ![What is deep learning?](img/B09699_06_30.jpg)
+    on *A* cannot simply produce a binary (0 or 1) value, because we wouldn't be able
+    to correctly rank the final candidate answers if multiple classes are given the
+    score of 1\. Instead, we use activation functions that provide a non-discrete
+    score between 0 and 1 and set a threshold value (for example, 0.5) to decide whether
+    to activate the neuron or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of the most popular activation functions is the sigmoid function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is deep learning?](img/B09699_06_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The following diagram shows how a neuron output is calculated from its input
+    and its weight using a sigmoid activation function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![What is deep learning?](img/B09699_06_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Neuron output calculation using the sigmoid function
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Other popular activation functions include the hyperbolic tangent ![What is
+    deep learning?](img/B09699_06_32.jpg) and the **Rectified Linear Unit** (**ReLu**):
+    ![What is deep learning?](img/B09699_06_33.jpg). ReLu works better when there
+    are a lot of layers because it provides sparsity of *firing* neurons, thereby
+    reducing noise and resulting in faster learning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feed-forward propagation is used during scoring of the model, but when it comes
+    to training the weight matrix of the neural network, a popular method used is
+    called **backpropagation** ([https://en.wikipedia.org/wiki/Backpropagation](https://en.wikipedia.org/wiki/Backpropagation)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following high-level steps describe how the training works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Randomly initialize the weight matrix (preferably using small values, for example,
+    ![What is deep learning?](img/B09699_06_34.jpg).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the forward propagation described earlier on all the training examples to
+    compute the outputs of each neuron using the activation function of your choice.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Implement a cost function for your neural network. A **cost function** quantifies
+    the error with respect to the training examples. There are multiple cost functions
+    that can be used with the backpropagation algorithm, such as a mean-square error
+    ([https://en.wikipedia.org/wiki/Mean_squared_error](https://en.wikipedia.org/wiki/Mean_squared_error))
+    and cross-entropy ([https://en.wikipedia.org/wiki/Cross_entropy](https://en.wikipedia.org/wiki/Cross_entropy)).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use backpropagation to minimize your cost function and compute the weight matrix.
+    The idea behind backpropagation is to start with the activation values of the
+    output layer, compute the error with respect to the training data, and pass their
+    errors backward to the hidden layers. These errors are then adjusted to minimize
+    the cost function implemented in step 3.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Explaining in detail these cost functions and how they are being optimized
+    is beyond the scope of this book. For a deeper dive, I highly recommend looking
+    at the *Deep Learning* book from MIT press (Ian Goodfellow, Yoshua Bengio, and
+    Aaron Courville)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we've discussed at a high level how neural networks work and
+    how they are trained. Of course, we've only touched the surface of this exciting
+    technology, but you hopefully should have an idea as to how they work. In the
+    next section, we start looking at TensorFlow, which is a programming framework
+    that helps abstract the underlying complexity of implementing a neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting started with TensorFlow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are multiple open source deep learning frameworks besides TensorFlow ([https://www.tensorflow.org](https://www.tensorflow.org))
+    that I could have chosen for this sample application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some of the most popular frameworks are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyTorch ([http://pytorch.org](http://pytorch.org))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Caffee2 ([https://caffe2.ai](https://caffe2.ai))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MXNet ([https://mxnet.apache.org](https://mxnet.apache.org))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Keras ([https://keras.io](https://keras.io)): A high-level neural network abstraction
+    API capable of running other deep learning frameworks such as TensorFlow, CNTK
+    ([https://github.com/Microsoft/cntk](https://github.com/Microsoft/cntk)), and
+    Theano ([https://github.com/Theano/Theano](https://github.com/Theano/Theano))'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'TensorFlow APIs are available in multiple languages: Python, C++, Java, Go,
+    and, more recently, JavaScript. We can distinguish two categories of APIs: high
+    level and low level, represented by this diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting started with TensorFlow](img/B09699_06_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: TensorFlow high-level API architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get started with the TensorFlow API, let's build a simple neural network
+    that will learn the XOR transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a reminder, the XOR operator has only four training examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **X** | **Y** | **Result** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 0 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 1 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'It''s interesting to note that linear classifiers ([https://en.wikipedia.org/wiki/Linear_classifier](https://en.wikipedia.org/wiki/Linear_classifier))
+    are not able to learn the XOR transformation. However, we can solve this problem
+    with a simple neural network with two neurons in the input layer, one hidden layer
+    with two neurons, and an output layer with one neuron (binary classification),
+    demonstrated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting started with TensorFlow](img/B09699_06_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: XOR neural network
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: You can install TensorFlow directly from the Notebook by using the following
+    command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: As always, don't forget to restart the kernel after any successful install.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To create the input and output layer tensors, we use the `tf.placeholder` API,
+    as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we use the `tf.Variable` API ([https://www.tensorflow.org/programmers_guide/variables](https://www.tensorflow.org/programmers_guide/variables))
+    to initialize the random value for the matrices ![Getting started with TensorFlow](img/B09699_new_01.jpg),
+    and ![Getting started with TensorFlow](img/B09699_new_02.jpg) corresponding to
+    the hidden layer and the output layer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the activation function, we use the sigmoid function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: For simplicity, we omit to introduce the bias.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the cost function, we use the **MSE** (short for, **mean square error**):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With all the tensors in place in the graph, we can now proceed with the training
+    by using the `tf.train.GradientDescentOptimizer` with a learning rate of `0.05` to minimize
+    our cost function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode1.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode1.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The preceding code introduces the concept of a TensorFlow `Session` for the
+    first time, which is a foundational part of the framework. In essence, any TensorFlow
+    operation must be executed within the context of `Session` by using its `run`
+    method. Sessions also maintain resources that need to be explicitly released using
+    the `close` method. For convenience, the `Session` class supports the context
+    management protocol by providing an `__enter__` and `__exit__` method. This allows
+    the caller to call TensorFlow operations using the `with` statement ([https://docs.python.org/3/whatsnew/2.6.html#pep-343-the-with-statement](https://docs.python.org/3/whatsnew/2.6.html#pep-343-the-with-statement))
+    and have the resources automatically freed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following pseudo-code shows a typical structure of a TensorFlow execution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this section, we quickly explored the low-level TensorFlow APIs to build
+    a simple neural network that learned the XOR transformation. In the next section,
+    we'll explore the higher level estimator APIs that provide an abstraction layer
+    on top of the low-level API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simple classification with DNNClassifier
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: This section discusses the source code for a sample PixieApp. If you
+    want to follow along, it might be easier to download the complete Notebook at
+    this location:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/TensorFlow%20classification.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/TensorFlow%20classification.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we look at using Tensors, Graphs, and Sessions from the low-level TensorFlow
+    APIs, it would be good to get familiar with the high-level API provided in the
+    `Estimators` package. In this section, we build a simple PixieApp that takes a
+    pandas DataFrame as input and trains a classification model with the categorical
+    output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: There are essentially two types of classification output: categorical
+    and continuous. In a categorical classifier model, the output can only be chosen
+    from a list of finite predefined values with or without a logical order. We commonly
+    call binary classification a classification model with only two classes. On the
+    other hand, the continuous output can have any numerical values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The user is first asked to choose a numerical column to predict on, and a classification
+    model is trained on all the other numerical columns present in the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Some of the code of this sample app is adapted from [https://github.com/tensorflow/models/tree/master/samples/core/get_started](https://github.com/tensorflow/models/tree/master/samples/core/get_started).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this example, we''ll use built-in sample dataset #7: Boston Crime data,
+    two-week sample, but you could use any other dataset as long it has sufficient
+    data and numerical columns.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a reminder, you can browse the PixieDust built-in datasets using the following
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![Simple classification with DNNClassifier](img/B09699_06_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: List of built-in datasets in PixieDust
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code loads the *Boston Crime* dataset using the `sampleData()`
+    API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As always, we first start by exploring the data using the `display()` command.
+    The goal here is to look for a suitable column to predict on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![Simple classification with DNNClassifier](img/B09699_06_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table view of the crime dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It looks like `nonviolent` is a good candidate for binary classification. Let''s
+    now bring up a bar chart to make sure we have a good data distribution in this
+    column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Simple classification with DNNClassifier](img/B09699_06_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Select the nonviolent column in the option dialog
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clicking **OK** produces the following chart:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Simple classification with DNNClassifier](img/B09699_06_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of nonviolent crimes
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, the data is skewed toward nonviolent crimes, but we have close
+    to 2,000 data points for violent crimes, which, for the purpose of this sample
+    application, should be OK.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are now ready to create the `do_training` method that will use a `tf.estimator.DNNClassifier`
+    to create a classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: You can find more information on `DNNClassifier` and other high-level
+    TensorFlow estimators here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.tensorflow.org/api_docs/python/tf/estimator](https://www.tensorflow.org/api_docs/python/tf/estimator)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `DNNClassifier` constructor takes a lot of optional parameters. In our
+    sample application, we''ll only use three of them, but I encourage you to take
+    a look at the other parameters in the documentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`feature_columns`: An iterable of `feature_column._FeatureColumn` model inputs.
+    In our case, we can just create an array from the numerical columns of the pandas
+    DataFrame using Python comprehension.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`hidden_units`: An iterable of a number of hidden layers per unit. Here, we''ll use only
+    two layers with 10 nodes each.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`n_classes`: The number of label classes. We''ll infer this number by grouping
+    the DataFrame on the predictor columns and count the rows.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here''s the code for the `do_training` method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode2.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode2.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `classifier.train` method uses a `train_input_fn` method that is responsible
+    for providing training input data (a.k.a ground truth) as minibatches, returning
+    either a `tf.data.Dataset` or a tuple of `(features, labels)`. Our code is also
+    performing a model evaluation using `classifier.evaluate` to validate the accuracy
+    by scoring the model against the test dataset and comparing the results in the
+    given label. The results are then returned as part of the function output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This method requires an `eval_input_fn` method that is similar to the `train_input_fn`,
+    with the exception that we do not make the dataset repeatable during evaluation.
+    Since the two methods share most of the same code, we use a helper method called
+    `input_fn` that is called by both methods with the appropriate flag:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode3.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode3.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is to build the PixieApp that will create the classifier from
+    a pandas DataFrame passed as input to the `run` method. The main screen builds
+    a list of all the numerical columns into a drop-down control and asks the user
+    to select a column that will be used as the classifier output. This is done in
+    the following code using a Jinja2 `{%for ...%}` loop iterating over the DataFrame
+    passed as input that is referenced using the `pixieapp_entity` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The following code uses the `[[SimpleClassificationDNN]]` notation
+    to denote that it is incomplete code from the specified class. Do not try to run
+    this code yet until the full implementation is provided.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode4.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode4.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the `crimes` dataset, we run the PixieApp with the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The PixieApp code is incomplete at this time, but we can still see
+    the results of the welcome page, as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Simple classification with DNNClassifier](img/B09699_06_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The main screen showing the list of columns in the input pandas DataFrame
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When the user selects the prediction column (for example, `nonviolent`), a
+    new `prepare_training` route is triggered by the attribute: `pd_options="predictor=$val(cols{{prefix}})"`.
+    This route will show two bar charts showing the output class distribution for
+    both the training and test sets that are randomly selected using an 80/20 split
+    from the original dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: We use an 80/20 split between training and test sets, which, from
+    my experience, is quite common. Of course, this is not an absolute rule and could
+    be adjusted depending on the use case'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The screen fragment also includes a button to start training the classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for the `prepare_training` route is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode5.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode5.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: `@templateArgs` is used due to the fact that we compute the `bar_chart_options`
+    variable once and then use it in the Jinja2 template.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Selecting the `nonviolent` prediction column gives us the following screenshot
+    result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Simple classification with DNNClassifier](img/B09699_06_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pretraining screen
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **Start Training** button invokes the `do_training` route using the attribute
+    `pd_options="do_training=true",` which invokes the `do_training` method we created
+    earlier. Note that we use the `@captureOutput` decorator because, since we set
+    the TensorFlow log level to `INFO`, we want to capture the log messages and display
+    them to the user. These log messages are sent back to the browser using the *stream*
+    mode, and PixieDust will automatically display them as a specially created `<div>`
+    element that will append the data to it as it arrives. When the training is done,
+    the route returns an HTML fragment that generates a table with the evaluation metrics
+    returned by the `do_training` method, as shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode6.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode6.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the results after the model has been successfully
+    created and includes the evaluation metrics table for the classification model
+    with an accuracy of 87%:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Simple classification with DNNClassifier](img/B09699_06_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Final screen showing the result of successful training
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This PixieApp was run using the `crimes` dataset as an argument, as shown in
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the model is successfully trained, you can access it to classify new data
+    by calling the `predict` method on the `app.classifier` variable. Similar to the
+    `train` and `evaluate` method, `predict` also takes an `input_fn` that constructs
+    the input features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: More details on the `predict` method are provided here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.tensorflow.org/api_docs/python/tf/estimator/DNNClassifier#predict](https://www.tensorflow.org/api_docs/python/tf/estimator/DNNClassifier#predict)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This sample application provides a good starting point for getting familiar
+    with the TensorFlow framework by using the high-level estimator APIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The complete Notebook for this sample application can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/TensorFlow%20classification.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/TensorFlow%20classification.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we'll start building our image recognition sample application
+    using the low-level TensorFlow APIs, including Tensors, Graphs, and Sessions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image recognition sample application
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When it comes to building an open-ended application, you want to start by defining
+    the requirements for an **MVP** (short for, **Minimum Viable Product**) version
+    that contains just enough functionalities to make it usable and valuable to your
+    users. When it comes to making technical decisions for your implementation, making
+    sure that you get a working end-to-end implementation as quickly as possible,
+    without investing too much time, is a very important criteria. The idea is that
+    you want to start small so that you can quickly iterate and improve your application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the MVP of our image recognition sample application, we''ll use the following
+    requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Don''t build a model from scratch; instead, reuse one of the pretrained generic
+    **convolutional neural network** (**CNN**: [https://en.wikipedia.org/wiki/Convolutional_neural_network](https://en.wikipedia.org/wiki/Convolutional_neural_network))
+    models that are publicly available, such as MobileNet. We can always retrain these
+    models later with custom training images using transfer learning ([https://en.wikipedia.org/wiki/Transfer_learning](https://en.wikipedia.org/wiki/Transfer_learning)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For MVP, while we are focusing on scoring only and not training, we should still
+    make it interesting for the users. So let's build a PixieApp that allows the user
+    to input the URL of a web page and display all the images scraped from the page,
+    including the classification output inferred by our model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since we are learning about deep learning neural networks and TensorFlow, it
+    would be great if we could display the TensorBoard Graph Visualization ([https://www.tensorflow.org/programmers_guide/graph_viz](https://www.tensorflow.org/programmers_guide/graph_viz))
+    in the Jupyter Notebook directly without forcing the user to use another tool.
+    This will provide a better user experience and increase their engagement with
+    the application.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The implementation of the application in this section is adapted
+    from the tutorial:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://codelabs.developers.google.com/codelabs/tensorflow-for-poets](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 1 – Load the pretrained MobileNet model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: You can download the completed Notebook to follow this section discussion
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%201.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%201.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are plenty of publicly available image classification models, using CNNs,
+    that are pretrained on large image databases such as ImageNet ([http://www.image-net.org](http://www.image-net.org)).
+    ImageNet has started multiple public challenges, such as the **ImageNet Large
+    Scale Visual Recognition Challenge** (**ILSVRC**) or the *ImageNet Object Localization
+    Challenge* on Kaggle ([https://www.kaggle.com/c/imagenet-object-localization-challenge](https://www.kaggle.com/c/imagenet-object-localization-challenge)),
+    with very interesting results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These challenges have produced multiple models, such as ResNet, Inception, SqueezeNet,
+    VGGNet, or Xception, each using a different neural network architecture. Going
+    over each of these architectures is beyond the scope of this book, but even if
+    you are not yet an expert in machine learning (which I am definitely not), I encourage
+    you to read about them online. The model I've selected for this sample application
+    is MobileNet because it is small, fast, and very accurate. It provides an image
+    classification model for 1,000 categories of images, which is sufficient for this
+    sample application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To ensure the stability of the code, I''ve made a copy of the model in the
+    GitHub repo: [https://github.com/DTAIEB/Thoughtful-Data-Science/tree/master/chapter%206/Visual%20Recognition/mobilenet_v1_0.50_224](https://github.com/DTAIEB/Thoughtful-Data-Science/tree/master/chapter%206/Visual%20Recognition/mobilenet_v1_0.50_224).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this directory, you can find the following files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`frozen_graph.pb`: A serialized binary version of the TensorFlow graph'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`labels.txt`: A text file that includes a description of the 1,000 image categories
+    and their index'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`quantized_graph.pb`: A compressed form of the model graph that used an 8-bit
+    fixed point representation'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Loading the model consists of building a `tf.graph` object and associated labels.
+    Since we may want to load multiple models in the future, we first define a dictionary
+    that provides metadata about the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode7.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode7.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each key in the preceding `models` dictionary represents the metadata of a
+    particular model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`base_url`: Points to the URL where the files are stored'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`model_file_url`: The name of the model file that is assumed to be relative
+    to `base_url`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`label_file`: The name of the labels that are assumed to be relative to `base_url`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`output_layer`: The name of the output layer that provides final scoring for
+    each category'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We implement a `get_model_attribute` helper method to facilitate reading from
+    the `model` metadata, which will be very useful throughout our application:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode8.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode8.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To load the graph, we download the binary file, load it into a `tf.GraphDef`
+    object using the `ParseFromString` method, and we then invoke the `tf.import_graph_def`
+    method using the graph as the current content manager:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode9.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode9.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The method that loads the labels returns either a JSON object or an array (we''ll
+    see later that both are needed). The following code uses a Python list comprehension
+    to iterate over the lines returned by the `requests.get` call. It then uses the
+    `as_json` flag to format the data as appropriate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode10.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode10.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next step is to invoke the model to classify images. To make it simpler
+    and perhaps more valuable, we ask the user to provide a URL to an HTML page that
+    contains the images to be classified. We''ll use the BeautifulSoup4 library to
+    help parsing the page. To install BeautifulSoup4, simply run the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: As always, don''t forget to restart the kernel once installation
+    is complete.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following `get_image_urls` method takes a URL as an input, downloads the
+    HTML, instantiates a BeautifulSoup parser and extracts all the images found in
+    any `<img>` elements and `background-image` styles. BeautifulSoup has a very elegant
+    and easy-to-use API for parsing HTML. Here, we simply use the `find_all` method
+    to find all `<img>` elements and the `select` method to select all elements with
+    an inline style. The reader will be quick to notice that there are many other
+    ways to create images using HTML that we are not discovering, such as, for example,
+    images declared as CSS classes. As always, if you have the interest and time to
+    improve it, I strongly welcome pull requests in the GitHub repo (see here for
+    instructions on how to create a pull request: [https://help.github.com/articles/creating-a-pull-request](https://help.github.com/articles/creating-a-pull-request)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for `get_image_urls` looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode11.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode11.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each of the images discovered, we'll also need a helper function to download
+    the images that will be passed as input to the model for classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following `download_image` method downloads the image into a temporary
+    file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode12.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode12.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given a local path to an image, we now need to decode it into a tensor by calling
+    the right decode method from the `tf.image` package, that is, the `decode_png`
+    for `.png` files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: In mathematics, a tensor is a generalization of a vector, which is
+    defined by a direction and a size, to support higher dimensionality. Vectors are
+    tensors of order 1, similarly, scalars are tensors of order 0\. Intuitively, we
+    can think of order 2 tensors as a two-dimensional array with values defined as
+    a result of multiplying two vectors. In TensorFlow, tensors are arrays of n-dimensions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After a few transformations on the image reader tensor (casting to the right
+    decimal representation, resizing, and normalization), we call `tf.Session.run`
+    on the normalizer tensor to execute the steps defined earlier, as shown in the
+    following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode13.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode13.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With all the pieces in place, we are now ready to implement the `score_image`
+    method that takes a `tf.graph`, a model metadata, and a URL to an image as input parameters,
+    and returns the top five candidate classifications based on their confidence score,
+    including their labels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode14.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode14.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now test the code using the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pick the `mobilenet` model and load the corresponding graph
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Get a list of image URLs scraped from the Flickr website
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Call the `score_image` method for each image URL and print the result
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The code is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode15.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode15.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results are pretty accurate (except for the first image that is a blank
+    image) as shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 1 – Load the pretrained MobileNet model](img/B09699_06_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Classification of the images found on a Flickr page related to cats
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 1 of our image recognition sample application is now complete; you can
+    find the full Notebook at the following location: [https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%201.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%201.ipynb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we will build a more user-friendly experience by building
+    a user interface with a PixieApp.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 2 – Create a PixieApp for our image recognition sample application
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: You can download the completed Notebook to follow this section discussion
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%202.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%202.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a reminder, the `setup` method of a PixieApp, if defined, is executed before
+    the app starts running. We use it to select our model and initialize the graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode16.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode16.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the main screen of the PixieApp, we use an input box to let the user enter
+    the URL to the web page, as shown in the following code snippet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode17.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode17.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For convenience, we initialize the input text with a default value of `https://www.flickr.com/search/?text=cats`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can already run the code to test the main screen by using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The main screen looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 2 – Create a PixieApp for our image recognition sample application](img/B09699_06_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The main screen for the image recognition PixieApp
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: This is good for testing, but we should keep in mind that the `do_process_url`
+    route has not yet been implemented and, therefore, clicking on the **Go** button
+    will fall back to the default route again.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's now implement the `do_process_url` route, which is triggered when the
+    user clicks on the **Go** button. This route first calls the `get_image_urls`
+    method to get the list of image URLs. Using Jinja2, we then build an HTML fragment
+    that displays all the images. For each image, we asynchronously invoke the `do_score_url`
+    route that runs the model and displays the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code shows the implementation of the `do_process_url` route:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode18.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode18.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice the use of the `@templateArgs` decorator, which allows the Jinja2 fragment
+    to reference the local `image_urls` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, in the `do_score_url` route, we call the `score_image` and display
+    the results as a list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode19.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode19.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the results for the Flickr page that contains
+    images of cats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 2 – Create a PixieApp for our image recognition sample application](img/B09699_06_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of the image classification for cats
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'As a reminder, you can find the complete Notebook at this location:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%202.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%202.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our MVP application is almost complete. In the next section, we will integrate
+    the TensorBoard graph visualization directly in the Notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 3 – Integrate the TensorBoard graph visualization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: Part of the code described in this section is adapted from the `deepdream`
+    notebook located here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/tutorials/deepdream/deepdream.ipynb](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/tutorials/deepdream/deepdream.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can download the completed Notebook to follow this section discussion here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%203.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%203.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'TensorFlow comes with a very powerful suite of visualizations that help with
+    debugging and performance optimization of your application. Please take a moment to
+    explore the TensorBoard capabilities here: [https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One issue here is that configuring the TensorBoard server to work with your
+    Notebook could be difficult, especially if your Notebooks are hosted on the cloud,
+    and you have little to no access to the underlying operating systems. In this
+    case, configuring and starting the TensorBoard server could prove to be an impossible
+    task. In this section, we show how to work around this problem by integrating
+    the model graph visualization directly in your Notebook with zero configuration
+    required. To provide a better user experience, we want to add the TensorBoard
+    visualization to our PixieApp. We do that by changing the main layout to a tab
+    layout and assign the TensorBoard visualization to its own tab. Conveniently,
+    PixieDust provides a base PixieApp called `TemplateTabbedApp` that takes care
+    of building a tabbed layout. When using `TemplateTabbedApp` as the base class,
+    we need to configure the tab in the `setup` method as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode20.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode20.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should be noted that in the preceding code, we have added the `LabelsApp`
+    child PixieApp to the list of tabs even though it hasn't yet been implemented.
+    Therefore, as expected, if you run the code as is, the `Labels` tab will fail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`self.apps` contains an array of objects that define the tabs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`title`: Tab title'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`app_class`: PixieApp to run when the tab is selected'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In `ImageRecoApp`, we configure three tabs associated with three child PixieApps:
+    the `ScoreImageApp` that we''ve already created in *Part 2 – Create a PixieApp
+    for our image recognition sample application*, the `TensorGraphApp` for displaying
+    the model graph, and the `LabelsApp` to display a table of all the labeled categories
+    used in the model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results are shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 3 – Integrate the TensorBoard graph visualization](img/B09699_06_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tabbed layout that includes Score, Model, and Labels
+  prefs: []
+  type: TYPE_NORMAL
+- en: What's also nice about using `TemplateTabbedApp` superclass is that the sub-PixieApps
+    are defined separately, which makes the code more maintainable and reusable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's first look at the `TensorGraphApp` PixieApp. Its main route returns an
+    HTML fragment that loads the `tf-graph-basic.build.html` into an Iframe from `https://tensorboard.appspot.com,`
+    and using a JavaScript load listener applies the serialized graph definition that
+    was computed using the `tf.Graph.as_graph_def` method. To make sure the graph
+    definition remains at a reasonable size, and to avoid unnecessary performance
+    degradation on the browser client, we call the `strip_consts` method to remove
+    tensors with constant values that have a large size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for `TensorGraphApp` is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode21.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode21.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: Child PixieApps have access to their parent PixieApp through the
+    `self.parent_pixieapp` variables.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The resulting screen for the `TensorGraphApp` child PixieApp is shown in the
+    following screenshot. It provides an interactive visualization of the TensorFlow
+    graph for the selected model, allowing the user to navigate through the different
+    nodes and to drill down deeper into the model. However, it is important to note
+    that the visualization runs entirely within the browser, without the TensorBoard
+    server. Therefore, some of the functions available in the full TensorBoard, such
+    as runtime statistics, are disabled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 3 – Integrate the TensorBoard graph visualization](img/B09699_06_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Displaying the model graph for MobileNet V1
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the `LabelsApp` PixieApp, we simply load the labels as JSON format, and display it in
+    a PixieDust table, using the `handlerId=tableView` option:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode22.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode22.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: We configure the table to not show the schema by setting `table_noschema`
+    to `true`, but we keep the search bar for convenience.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results are shown in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 3 – Integrate the TensorBoard graph visualization](img/B09699_06_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Searchable table for the model categories
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our MVP image recognition sample application is now complete; you can find
+    the full Notebook here: [https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%203.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%203.ipynb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we will improve the application by allowing the user to
+    retrain the model using custom images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 4 – Retrain the model with custom training data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: You can download the completed Notebook to follow this section discussion
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%204.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%204.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code in this section is quite extensive, and some helper functions that are
+    not directly related to the topic will be omitted. However, as always, refer to
+    the complete Notebook on GitHub for more information on the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we want to retrain the MobileNet model with custom training
+    data and use it to classify images that would have had a low score on the generic
+    model otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The code in this section is adapted from the *TensorFlow for poets*
+    tutorial:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/googlecodelabs/tensorflow-for-poets-2/blob/master/scripts/retrain.py](https://github.com/googlecodelabs/tensorflow-for-poets-2/blob/master/scripts/retrain.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As is the case most of the time, getting quality training data can be one of
+    the most daunting and time-consuming tasks. In our example, we need images in
+    large quantities for each of the classes we want to train. For the sake of simplicity
+    and reproducibility, we are using the ImageNet databases that conveniently provide APIs
+    for getting URLs and associated labels. We also limit the downloaded files to `.jpg`
+    files. Of course, feel free to acquire your own training data if needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We first download the list of all the image URLs from the Fall 2011 release
+    that is available here: [http://image-net.org/imagenet_data/urls/imagenet_fall11_urls.tgz](http://image-net.org/imagenet_data/urls/imagenet_fall11_urls.tgz),
+    and unpack the file into a local directory of your choice (for example, I chose
+    `/Users/dtaieb/Downloads/fall11_urls.txt`).We also need to download the mapping
+    between WordNet ID and words for all `synsets` available at [http://image-net.org/archive/words.txt](http://image-net.org/archive/words.txt),
+    which we''ll use to find the WordNet IDs containing the URLs that we need to download.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code will load both files into a pandas DataFrame respectively:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode23.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode23.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that we needed to clean the `wnid` column in the `wnid_to_urls` dataset
+    because it contains a suffix corresponding to the index of the image in the category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can then define a method `get_url_for_keywords` that returns a dictionary
+    containing the categories as keys and an array of URLs as values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode24.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode24.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can easily glance at the data distribution by using PixieDust `display`.
+    As always, feel free to do more exploration on your own:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 4 – Retrain the model with custom training data](img/B09699_06_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of images by categories
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now build the code that will download the images corresponding to a
+    list of categories of our choice. In our case, we chose fruits: `["apple", "orange",
+    "pear", "banana"]`. The images will be downloaded in a subdirectory of the PixieDust
+    home directory (using the PixieDust `Environment` helper class from the `pixiedust.utils`
+    package), limiting the number of images to `500` for speed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: The following code uses methods and imports defined earlier in the
+    Notebook. Make sure to run the corresponding cell before attempting to run the
+    following code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode25.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode25.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next part of the code processes each of the images in the training set
+    using the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Note**: As mentioned before, the code is quite extensive, and part of it
+    is omitted; only the important parts are explained here. Please do not attempt
+    to run the following code as is and refer to the complete Notebook for full implementation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Decode the `.jpeg` file using the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode26.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode26.py)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Create the bottleneck values (caching them as appropriate) that normalize the
+    image by resizing and rescaling it. This is done in the following code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode27.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode27.py)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Add the final training operations using the `add_final_training_ops` method,
+    under a common namespace, so that it''s easier to manipulate when visualizing
+    the graph. The training steps are as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Generate random weight with the `tf.truncated_normal` API:'
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Add the biases, initialized to zero:'
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compute the weighted sum:'
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Add the `cross_entropy` cost function:'
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Minimize the cost function:'
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'To visualize the retrained graph, we first need to update the `TensorGraphApp`
+    PixieApp to let the user select which model to visualize: generic MobileNet or
+    custom. This is done by adding a `<select>` drop-down in the main route and attaching a
+    `pd_script` element to update the state:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode28.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode28.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rerunning our `ImageReco` PixieApp produces the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 4 – Retrain the model with custom training data](img/B09699_06_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualization of the retrained graph
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clicking on the train node will reveal the nested operations that run the backpropagation
+    algorithms to minimize the `cross_entropy_mean` cost functions specified in the
+    preceding `add_final_training_ops`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode29.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode29.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the details of the **train** namespace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 4 – Retrain the model with custom training data](img/B09699_06_23.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation during training
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, we can add the drop-down toggle in the `LabelsApp` to switch the visualization
+    between the generic MobileNet and custom model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode30.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode30.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results are displayed in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 4 – Retrain the model with custom training data](img/B09699_06_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Display labels information for each model
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last step for our Part 4 MVP is to update the `score_image` method to classify
+    the image with both models and add the results in a dictionary with an entry for
+    each model. We define a local method `do_score_image` that returns the top 5 candidates
+    answers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This method is called for each model, and the results populate a dictionary
+    with the model name as the key:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode31.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode31.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since we modified the returned values for the `score_image` method, we need
+    to adjust the HTML fragment returned in `ScoreImageApp` to loop over all the model
+    entries of the `results` dictionary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can find the code file here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode32.py](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/sampleCode32.py)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With these changes in place, the PixieApp will automatically invoke the custom
+    models if available and, if that's the case, display the results for both models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following screenshot shows the results for images related to *banana*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Part 4 – Retrain the model with custom training data](img/B09699_06_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Score with generic MobileNet and custom-trained model
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reader will notice that the scores for the custom models are pretty low.
+    One possible explanation is that the training data acquisition is fully automated
+    and used without human curation. One possible enhancement to this sample application
+    would be to move the training data acquisition and retraining steps into its own
+    tab PixieApp. We should also give the user the opportunity to validate the images
+    and reject the one that is of poor quality. It would also be great to let the
+    user relabel the images that have been wrongly categorized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The completed Notebook for Part 4 can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%204.ipynb](https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%206/Tensorflow%20VR%20Part%204.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this section, we''ve discussed the incremental approach of building an image
+    recognition sample application in a Jupyter Notebook using TensorFlow, with a special
+    focus on operationalizating the algorithms using PixieApps. We started with building
+    a simple classification model from a pandas DataFrame using the TensorFlow `DNNClassifier`
+    estimator. We then built an MVP version of the image recognition sample application
+    in four parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We loaded the pretrained MobileNet model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We created a PixieApp for our image recognition sample application
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We integrated the TensorBoard graph visualization into the PixieApp
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We enabled users to retrain the model with custom training data from ImageNet
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Machine learning is a vast topic that enjoys tremendous growth, both in research
+    and development. In this chapter, we've explored only a tiny fraction of the state
+    of the art in connection with machine learning algorithms, namely, using a deep
+    learning neural network to perform image recognition. For some readers who are
+    just beginning to get familiar with machine learning, the sample PixieApps and
+    associated algorithms code may be too deep to digest at one time. However, the
+    underlying aim was to demonstrate how to iteratively build an application that
+    leverages a machine learning model. We happened to use a convolutional neural
+    network model for image recognition, but any other model would do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hopefully, you got a good idea of how PixieDust and the PixieApp programming
+    model can help you with your own project, and I strongly encourage you to use
+    this sample application as a starting point to build your own custom application
+    using the machine learning of your choice. I also recommend deploying your PixieApp
+    as a web application with the PixieGateway microservice and exploring whether
+    it's a viable solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will cover another important industry use case related
+    to big data and natural language processing. We'll build a sample application
+    that analyzes social media trends using a natural language understanding service.
+  prefs: []
+  type: TYPE_NORMAL

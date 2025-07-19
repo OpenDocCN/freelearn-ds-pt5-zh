@@ -1,0 +1,906 @@
+- en: Chapter 9. Stack Overflow Project
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is the first of two full, chapter-length projects where we will put everything
+    we have learned about data cleaning into practice. We can think of each project
+    as a dinner party where we show off our best skills from our data science kitchen.
+    To host a successful dinner party, we should of course have our menu and guest
+    list planned in advance. However, the mark of a true expert is how we react when
+    things do not go exactly according to plan. We have all had that moment when we
+    forget to buy an important ingredient, despite our carefully prepared recipes
+    and shopping lists. Will we be able to adjust our plan to meet the new challenges
+    we meet along the way?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we will tackle some data cleaning using the publicly-released
+    Stack Overflow database dump. Stack Overflow is part of the Stack Exchange family
+    of question-and-answer websites. On these sites, writing good questions and answers
+    can earn a user points and badges that accumulate over time. To practice our data
+    cleaning skills, we will use the same six-step method we introduced back in [Chapter
+    1](part0014.xhtml#aid-DB7S1 "Chapter 1. Why Do You Need Clean Data?"), *Why Do
+    You Need Clean Data?*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decide what kind of problem we are trying to solve — why are we looking at this
+    data?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Collect and store our data, which consists of downloading and extracting the
+    data dump provided by Stack Overflow, creating a MySQL database to hold the data,
+    and writing scripts to import the data into the MySQL database. Because the Stack
+    Overflow dataset is so massive, we will also create some smaller test tables,
+    filled with randomly selected rows.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Perform some trial cleaning tasks on the test tables before attempting to clean
+    the entire dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Analyze the data. Do we need to perform any calculations? Should we write some
+    aggregate functions to count or sum the data? Do we need to transform the data
+    in some way?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provide visualizations of the data, if possible.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Resolve the problem we set out to investigate. Did our process work? Were we
+    successful?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: That is a lot of work, but the more we prepare in advance and the earlier we
+    start, the more likely we will be able to call our data science dinner party a
+    success.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step one – posing a question about Stack Overflow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To start our project, we need to pose a reasonably interesting question that
+    requires some simple data analysis to answer. Where should we begin? First, let's
+    review what we know about Stack Overflow. We know that it is a question-and-answer
+    website for programmers, and we can assume that programmers probably use a lot
+    of source code, error logs, and configuration files in the questions they are
+    asking and answering. Furthermore, we know that sometimes posting these kinds
+    of long text dumps on a web-based platform like Stack Overflow can be awkward
+    because of line lengths, formatting, and other readability issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seeing so many questions and answers with frustratingly large amounts of text
+    made me wonder whether programmers on Stack Overflow ever link to their code or
+    log files through an external **paste site** such as Pastebin or JSFiddle, for
+    example [http://www.Pastebin.com](http://www.Pastebin.com) is a website where
+    you can paste in large amounts of text, such as source code or a log file, and
+    the site gives you back a short URL that you can share with others. Most paste
+    sites also allow for source code syntax highlighting, which Stack Overflow does
+    not do by default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using paste sites is very common on IRC and e-mail, but what about on Stack
+    Overflow? On one hand, just like in IRC or e-mail, providing a link could make
+    a question or an answer shorter, and therefore the rest of the question is much
+    easier to read. But on the other hand, depending on the paste site being used,
+    the URL is not guaranteed to be functional forever. This means that a question
+    or an answer could lose its value over time due to **link rot**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tools like JSFiddle complicate this issue in one additional way. On an **interactive
+    paste** site like JSFiddle, not only can you paste in your source code and get
+    a URL for it, but you can also allow others to edit and run the code right in
+    the browser. This could be extremely helpful in a question-and-answer scenario
+    on Stack Overflow, especially in a browser-based language like JavaScript. However,
+    the issue of link rot still exists. Additionally, JSFiddle is a little trickier
+    to use for beginners than a simple code dump site like Pastebin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step one – posing a question about Stack Overflow](img/image00300.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: JSFiddle has four windows, one each for HTML, CSS, JavaScript, and the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In the community discussion area for Stack Overflow, there has been quite a
+    bit of debate about whether paste sites should be used at all, and what the policy
+    should be for questions or answers that include paste site links and no actual
+    code. In general, even though people tend to agree that a paste site can be useful,
+    they also recognize that it is important to protect the longevity and utility
+    of Stack Overflow itself. The community has decided that posting questions or
+    answers with only links and no code should be avoided. A good place to start if
+    you want to recap that discussion is this link: [http://meta.stackexchange.com/questions/149890/](http://meta.stackexchange.com/questions/149890/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our purposes here, we do not need to choose sides in this debate. Instead,
+    we can just ask some simple data-driven questions like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How frequently do people use tools like Pastebin and JSFiddle (and other similar
+    paste sites) on Stack Overflow?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Do they use paste sites more in questions or in answers?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Do posts that reference a paste site URL tend to also include source code; if
+    so, how much?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can use these questions for our motivation as we collect, store, and clean
+    our Stack Overflow data. Even if it turns out that some of these questions are
+    too hard or impossible to answer, remembering what our overall purpose is will
+    help direct the type of cleaning we need to do. Keeping our questions in the forefront
+    of our minds will stop us from getting too far off track or performing tasks that
+    will turn out to be pointless or a waste of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step two – collecting and storing the Stack Overflow data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At the time of writing, Stack Exchange provides the data for their entire family
+    of websites—including Stack Overflow—as XML files free for anyone to download.
+    In this section, we will download the Stack Overflow files, and import the data
+    into a database on our MySQL server. Finally, we will create a few smaller versions
+    of these tables for testing purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading the Stack Overflow data dump
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'All the data available from Stack Exchange can be downloaded at the Internet
+    Archive. The September 2014 dump is the latest one available at the time of writing.
+    Each Stack Exchange site has one or more files for it, each of which is linked
+    to this details page: [https://archive.org/details/stackexchange](https://archive.org/details/stackexchange).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are only interested in the eight Stack Overflow files that appear alphabetically
+    as shown in the following list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Downloading the Stack Overflow data dump](img/image00301.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Archive.org listing showing the eight Stack Overflow files we are interested
+    in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each file in the list, right-click the link and direct your browser to save
+    the file to disk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unarchiving the files
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Notice that each file has a `.7z` extension. This is a compressed archive format.
+    It can be uncompressed and unarchived using the matching 7-Zip software, or another
+    compatible software package. 7-Zip was not one of the more common file archivers
+    that we discussed in [Chapter 2](part0020.xhtml#aid-J2B82 "Chapter 2. Fundamentals
+    – Formats, Types, and Encodings"), *Fundamentals – Formats, Types, and Encodings*
+    and you may not already have a compatible unarchiver installed on your computer,
+    so we can consider this our first small wrinkle that we need to work around. Try
+    double-clicking on the file to open it, but if you have no installed software
+    associated with the `.7z` extension, you will need to install an appropriate 7-Zip
+    unarchiver.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For Windows, you can download the 7-Zip software from their website: [http://www.7-zip.org](http://www.7-zip.org)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For Mac OS X, you can download and install The Unarchiver, a no-cost utility
+    available at [http://unarchiver.c3.cx](http://unarchiver.c3.cx)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once you have the software installed, unpack each file in turn. The uncompressed
+    files are quite large, so make sure you have disk space that is large enough to
+    hold them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: On my system right now, comparing the compressed to uncompressed file sizes
+    shows that the uncompressed versions are about ten times larger than the compressed
+    versions. These files also take several minutes each to unarchive, depending on
+    the specifications of the system you are working on, so set aside time for this
+    step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating MySQL tables and loading data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We now have eight `.xml` files, each of which will map to one table in the database
+    we are about to build. To create the database and tables, we could either point
+    and click our way through it using phpMyAdmin or some other graphical tool, or
+    we can run the following simple SQL written by Georgios Gousios and available
+    at [https://gist.github.com/gousiosg/7600626](https://gist.github.com/gousiosg/7600626).
+    This code includes `CREATE` and `LOAD INFILE` statements for the first six tables,
+    but since this script was written, the database dump has had two additional tables
+    added to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To build the new table structure, we can run the `head` command in our Terminal
+    window or shell in order to inspect the first few lines of this file. From Terminal,
+    run it on the smallest of the XML files, `PostLinks.xml`, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first four lines from the results are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Each row in our new database table should correspond to one of the XML `<row>`
+    lines, and each attribute shown in the row line represents one column in the database
+    table. We can perform the same `head` command on the `Tags.xml` file to see what
+    its columns should be. The following SQL code will handle the `CREATE` statements
+    and the `LOAD` statements for the two additional tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Note that the `LOAD XML` syntax is slightly changed, so that we can keep our
+    files locally. If your `.xml` files are on your local machine rather than on the
+    database server itself, simply add the word `LOCAL` to the `LOAD XML` statements,
+    as shown in the preceding code, and you can reference the full path to your file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More information about the MySQL `LOAD XML` syntax is described in the MySQL
+    documentation here: [http://dev.mysql.com/doc/refman/5.5/en/load-xml.html](http://dev.mysql.com/doc/refman/5.5/en/load-xml.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, we have a fully functional MySQL database comprised of eight
+    tables, each of which is filled with data. However, these tables are very large.
+    There are over 190 million rows in only eight tables. One thing we will notice
+    as we start to clean the data and prepare it for analysis, is that if we make
+    a mistake on a very large table like `posts`, `comments`, `votes`, or `post_history`,
+    rebuilding the table will take a long time. In the next step, we learn how to
+    create test tables, so that we contain the damage if one of our programs or queries
+    goes awry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building test tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, we will build eight smaller versions of our original tables,
+    each randomly populated with data from the original tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our first step is to re-run the `CREATE` statements, but this time prefix each
+    table name with `test_`, as shown with one table here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Other than the addition of `test_` to the front of the table name, these eight
+    test tables will be identical to the others we made earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we need to populate our new test tables with data. We could simply select
+    the first 1,000 rows from each table and load those into our test tables. However,
+    the downside of doing that is that the rows are in order based on when they were
+    inserted into the Stack Overflow database, so we will not have a good sample of
+    rows from different dates and time in our subset if we just ask for the first
+    1,000 rows. We would like the rows we select to be of a fairly random distribution.
+    How can we select a set of rows randomly? We have not had to tackle this question
+    before in this book, so here is another case where we have to be ready to try
+    new things in order to have our data science dinner party go off without a hitch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a few possibilities for selecting random rows, some of which are more
+    efficient than others. Efficiency will be important to us in this project, since
+    the tables we are working with are quite large. One thing that makes our random
+    row selection a little trickier than expected, is that while our tables do have
+    a numeric primary key as the `Id` column, these `Id` numbers are not sequential.
+    There are many holes, for example, in the `post_links` table, the first few values
+    in the `Id` column are 19, 37, 42, and 48.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Holes in the data are problematic because a simple randomizer operates like
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Construct a PHP script that asks for the lowest and highest `Id` values in
+    the table, like this:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Then, still in the script, generate some random number between the `min` and
+    the `max` value, and request the row with that random value:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Repeat step 2 for as many rows as you need.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Unfortunately, doing this in the Stack Overflow database tables, for example,
+    on our `post_links` table, will result in many failed queries, since our data
+    has so many holes in the `Id` column, for example, what if step 2 in the preceding
+    example generated the number 38? There is no `Id` of 38 in our `post_links` table.
+    This means we will need to detect this error and try again with a new random value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: At this point, someone who knows a little SQL — but not a lot — will usually
+    suggest that we just ask MySQL to `ORDER BY rand()` on the column with the `Id`
+    in it, and then perform a `LIMIT` command to skim off the number of records we
+    want. The problem with this idea is that even if the column we are ordering is
+    an indexed column, `ORDER BY rand()` has to read every row in order to assign
+    a new random number to it. So, on a very large table, like the tables we have
+    in the Stack Overflow database, this does not scale at all. We will be waiting
+    way too long for an `ORDER BY rand()` query to finish. `ORDER BY rand()` is a
+    tolerable solution for small tables, but not for the sizes we are working with
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following PHP script shows how our final random row selection process will
+    work to build eight test tables, each with exactly 1,000 rows. Each table will
+    be populated by row values that are selected as randomly as possible with as little
+    effort as possible, and without us over-engineering this simple problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: After running that code, we can see we have a nice selection of eight test tables
+    to work with if we need them. Testing with these smaller tables ensures that our
+    cleaning exercises will go more smoothly and mistakes can be contained. If we
+    find that we need more rows in our random tables, we can simply raise the `$table_target_size`
+    command and run this again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building test tables is a great habit to get into, once you know how easy it
+    is to create them in a simple and useful way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step three – cleaning the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Remembering that our goal is to begin analyzing how frequently certain URLs
+    are referenced in questions, answers, and comments, it makes sense to begin in
+    the text of the Stack Overflow `posts` and `comments` tables. However, since those
+    tables are so large, we will use the `test_posts` and `test_comments` tables that
+    we just created instead. Then, once we are confident that the queries work perfectly,
+    we can re-run them on the larger tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This cleaning task is very similar to the way we stored the URLs extracted
+    from tweets in [Chapter 7](part0045.xhtml#aid-1AT9A1 "Chapter 7. RDBMS Cleaning
+    Techniques"), *RDBMS Cleaning Techniques*. However, this project has its own set
+    of specific rules:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since posts and comments are different entities to begin with, we should make
+    separate tables for the URLs that come from posts (including questions and answers)
+    and the URLs that come from comments.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each question, answer, or comment can have multiple URLs inside it. We should
+    store all of the URLs, and we should also track the unique identifier for which
+    post or comment that URL came from.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each question and answer can also have formatted source code in it. The `<code>`
+    tag is used to delimit source code in the Stack Overflow posts. Separating code
+    from posts will help us answer questions about the co-existence of paste site
+    URLs and source code. How much code will typically accompany such a link, if any?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Technically, posts *can* be created without the `<code>` tags, but usually someone
+    will quickly edit the errant post to include these useful tags, and will get the
+    Stack Overflow points for doing so. For brevity's sake, in this project, we will
+    assume that code is included in the `<code>` tags.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: According to the Stack Overflow database dump documentation (available at [http://meta.stackexchange.com/questions/2677/](http://meta.stackexchange.com/questions/2677/)),
+    there are actually eight types of posts, of which questions and answers are just
+    two types. So, we will need to limit our queries to posts that have `postTypeId=1`
+    for questions and `postTypeId=2` for answers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To ensure that we are only extracting URLs from comments made to questions or
+    answers, and not other types of posts, we will need to do a join back to the posts
+    table and limit our results to `postTypeId=1` or `postTypeId=2`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating the new tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The SQL query to create the database tables we need to store these URLs is
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We also need to create a table that can hold the code we stripped out of the
+    posts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: At this point, we have three new tables that will store our cleaned URLs and
+    cleaned source code. In the next section, we will extract URLs and code and fill
+    up these new tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting URLs and populating the new tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can modify the scripts we wrote earlier in [Chapter 7](part0045.xhtml#aid-1AT9A1
+    "Chapter 7. RDBMS Cleaning Techniques"), *RDBMS Cleaning Techniques*, to extract
+    URLs in this new Stack Overflow environment as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have fully populated `clean_post_urls` and `clean_comment_urls` tables.
+    For my randomly filled test tables, running this script only yields around 100
+    comment URLs and 700 post URLs. Still, that is enough to test out our ideas before
+    running them on the full dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting code and populating new tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To extract the text embedded in `<code>` tags and populate our new `clean_posts_code`
+    table, we can run the following script. It is similar to the URL extractor, except
+    that it does not need to search comments, because those do not have code delimited
+    with a `<code>` tag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my version of the randomly selected test table, the initial `SELECT` yields
+    about 800 rows out of 1,000 total rows in the `test_post` table. However, each
+    post can have multiple code snippets in it, so the final table ends up having
+    over 2,000 rows in it. The following PHP code extracts the text embedded in the
+    `<code>` tag:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have a list of all the code that has been printed in each post, and we
+    have stored that in the `clean_post_code` table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step four – analyzing the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section, we write some code to answer our three questions from the
+    beginning of this chapter. We were interested in finding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The counts of different paste sites mentioned by URLs in posts and comments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The counts of paste site URLs in questions compared to answers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Statistics about `<code>` prevalence in posts with a paste site URL
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Which paste sites are most popular?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To answer this first question, we will generate a JSON representation of the
+    paste site URLs and counts using the `clean_posts_urls` and `clean_comments_urls`
+    tables. This simple analysis will help us find out which pastebin websites are
+    popular in this Stack Overflow data dump. The following PHP queries the database
+    for the paste sites we have prelisted in the `$pastebins` array and then performs
+    a count of the matching URLs from the posts and comments. It uses the test tables,
+    so the numbers are much smaller than they would be if we used the real tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can view the JSON output from this script when run against the test tables
+    by looking at the output of the script. My random rows produced the following
+    counts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Remember that your values may be different since you have a different set of
+    randomly selected URLs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we move to the *Step 5 – visualizing the data* section of this chapter,
+    we will use this JSON code to build a bar graph. But first, let's answer the other
+    two questions we posed earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which paste sites are popular in questions and which are popular in answers?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our second question was whether the pastebin URLs are more prevalent in question
+    posts or answer posts. To start to develop this answer, we will run a series of
+    SQL queries. The first query simply asks how many posts are in the `clean_posts_urls`
+    table of each type, both questions and answers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results show that in my randomly selected test set, I have 237 questions
+    and 440 answers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Which paste sites are popular in questions and which are popular in answers?](img/image00302.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: phpMyAdmin shows the count of question URLs and answer URLs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we would want to know the answer to this question: of those 677 URLs,
+    divided by questions and answers, how many reference specifically one of the six
+    pastebin URLs? We can run the following SQL code to find out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results look like the following table. A total of 18 questions reference
+    one of the paste sites, whereas 24 answers reference one of the paste sites.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Which paste sites are popular in questions and which are popular in answers?](img/image00303.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: phpMyAdmin shows the count of question and answer URLs referencing a pastebin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One thing to keep in mind about these queries is that they count individual
+    URLs. So, if a particular `postId` referenced five URLs, those get counted five
+    times. If I am interested in how many posts used a paste site URL once or more,
+    I need to modify the first line of both queries as follows. This query counts
+    distinct postings in the URLs table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following screenshot shows how many questions and answers include a URL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Which paste sites are popular in questions and which are popular in answers?](img/image00304.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: phpMyAdmin shows how many questions and answers include any URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This query counts the particular posts in the URLs table that mention a paste
+    site:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results for this paste site query are as follows, and, as expected, the
+    numbers are smaller. In our test set, **11** questions used at least one pastebin
+    URL, and so did **16** answers. Combined, 37 posts reference a pastebin URL at
+    least once.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Which paste sites are popular in questions and which are popular in answers?](img/image00305.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: PhpMyAdmin shows how many questions and answers include any paste site URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Even though these results seem to show that people reference paste site URLs
+    more in answers than questions, we need to compare them in terms of the overall
+    number of questions and answers. We should report our result values as a percentage
+    of the total for that post type, question or answer. Taking the totals into account,
+    we can now say something like this: "Considering only the questions and answers
+    that used any kind of URL at least once, 11 questions out of 81 used at least
+    one paste site URL (13.6 percent), and 16 answers out of 222 used at least one
+    paste site URL (7.2 percent)." With that in mind, it appears that the questions
+    actually outstripped answers in referencing a paste site, almost two to one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this point in any data analysis project, you must have a flood of questions,
+    like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How has the usage of paste site URLs in questions and answers changed over time?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How do questions with paste site URLs fare on voting and favorites?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What are the characteristics of users who post questions with paste site URLs?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But since this is a book about data cleaning, and since we still have not even
+    visualized this data, I will restrain myself and not answer these for the time
+    being. We still have one of our original three questions to answer, and then we
+    will move on to visualizing some of our results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do posts contain both URLs to paste sites and source code?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Answering our third question requires us to compare the amount of code in the
+    Stack Overflow questions to the amount in the Stack Overflow answers, paying particular
+    attention to the posts that include some sort of source code, delimited by the
+    `<code>` tags. In the *Step three – cleaning the data* section, we extracted all
+    code from the posts in our test tables, and created a new table to hold these
+    code snippets. Now, a simple query to figure out how many code-containing posts
+    there are is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In my sample set, this yields 664 code-containing posts, out of the total 1,000
+    test posts. Another way to put this is: 664 out of 1,000 posts contain at least
+    one <code> tag.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To figure out how many of these code-containing posts also contained any URL,
+    we can run the following SQL query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: My sample set yields 175 rows for this. We can interpret that by saying that
+    17.5 percent of the original test set of 1,000 posts contains code and a URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, to figure out how many of the code-containing posts also contained a paste
+    site URL, we will narrow down the SQL query even further:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: From these results, we can see that only a tiny set of 25 posts contained both
+    source code and a paste site URL. From the second question, we know that 37 distinct
+    posts (both questions and answers) used some sort of paste site URL at least once.
+    So, 25 out of 37 is about 68 percent. It will be interesting to run these queries
+    on the larger dataset to see how those values come out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the meantime, we will carry out some simple visualizations of at least one
+    of our questions so that we can close the loop on one complete round of the data
+    science six-step process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step five – visualizing the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The visualization step is sort of like the dessert course in our dinner party.
+    Everyone loves a rich graphic and they look so nice. However, since our focus
+    in this book is on cleaning rather than analysis and visualization, our graphics
+    here will be very simple. In the code that follows, we will use the JavaScript
+    D3 visualization libraries to display the results of the first question graphically.
+    This visualization will be much simpler than the D3 visualization we did in [Chapter
+    4](part0028.xhtml#aid-QMFO2 "Chapter 4. Speaking the Lingua Franca – Data Conversions"),
+    *Speaking the Lingua Franca – Data Conversions*. In that chapter, you will recall
+    that we built a fairly complicated network diagram, but here, a simple bar graph
+    will suffice since all we have to display is just a few labels and counts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The HTML and JavaScript/D3 code is as follows. This code extends the *Let''s
+    Build a Bar Graph* tutorial by Mike Bostock, available at [http://bl.ocks.org/mbostock/3885304](http://bl.ocks.org/mbostock/3885304).
+    One of the ways that I extended this code was to make it read the JSON file we
+    generated earlier in our `q1.php` script. Our JSON file printed really nicely,
+    and was already sorted high to low, so building a little bar graph from that will
+    be easy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can save this as `q1chart.html`, and view it in the browser. The code calls
+    our `q1.php` script, which generates the JSON file that D3 then uses to build
+    this chart, the left-hand-side of which is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Step five – visualizing the data](img/image00306.jpeg)'
+  prefs: []
+  type: TYPE_IMG
+- en: D3 visualization of the JSON produced from a count of three URLs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The bar graph shows that the URLs pointing to JSFiddle seem to be the most common,
+    at least in my version of the randomly selected test dataset. We knew that just
+    from looking at the JSON output from `q1.php`, but it is nice to see it graphically
+    as well. In the next section, we will summarize the results and our procedure,
+    and talk about where to go next with this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step six – problem resolution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From the queries and visualizations we developed in the *Step four – analyzing
+    the data* and *Step five – visualizing the data* sections, we can now attempt
+    to answer each of the three questions that prompted this project in the first
+    place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With our first question, we wanted to find counts of the different paste sites
+    mentioned by URL in posts and comments. The `q1.php` script and bar graph we made
+    to visualize the data show that, at least in the test data, JSFiddle was the most
+    commonly referenced of the six paste site URLs we looked at.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second question was about whether paste site URLs were more prevalent in
+    questions or answers. Our queries show that paste site URLs were about twice as
+    likely to occur in questions as opposed to answers, but the numbers for both were
+    very small, at least in our test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the third question, we wanted to look for whether people were actually heeding
+    the advice of Stack Overflow and posting code in addition to a paste site URL.
+    In our test set, the queries show that 25 postings (out of 37) include both a
+    paste site URL and the recommended accompanying source code. This is a rate of
+    about 68 percent compliance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many additional questions we could ask and answer at this point, and
+    many exciting ways we could extend this simple study into something that could
+    be even more interesting. For now though, we will focus on the storage and cleaning
+    procedures needed to extend this project to use the full dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving from test tables to full tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At the beginning of this project, we made a set of test tables so that we could
+    develop our project in a stress-free environment using tables with only 1,000
+    rows each. Using small tables with manageable numbers of rows is important in
+    cases where we are not sure that our queries will work as we want them to, or
+    where we want to experiment with tricky joins, subqueries, weird regular expressions,
+    and so on. At this point, though, if we feel good about the queries and scripts
+    we have written, it is time to rewrite our procedures to use the full-size tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the steps we will follow to move the project over to full-size tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`DROP` the test tables:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Empty the `cleaned_posts_code`, `cleaned_posts_urls`, and `cleaned_comments_urls`
+    tables as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Edit the `urlExtractor.php` and `codeExtractor.php` scripts to `SELECT` from
+    the `posts` table rather than the `test_posts` table. These queries can be edited
+    as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Re-run the `urlExtractor.php` and `codeExtractor.php` scripts so that they will
+    repopulate the clean code and URL tables we emptied (truncated) earlier.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: At this point, we have the cleaned code and URL tables ready to be analyzed
+    and visualized. Take your time when performing these steps, and know that many
+    of these queries and scripts will likely take a long time to finish. The posts
+    table is quite large and many of the queries we are writing are selected against
+    a text column using wildcards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this project, we posed a few questions about the prevalence of URLs on Stack
+    Overflow, specifically those related to paste sites like [http://www.Pastebin.com](http://www.Pastebin.com)
+    and [http://www.JSFiddle.net](http://www.JSFiddle.net). To get started answering
+    these questions, we downloaded data from the Stack Overflow postings (and other
+    Stack Overflow data as well) from the Stack Exchange public file release. We built
+    a MySQL database and eight tables to hold this data. We then created smaller 1,000-row
+    versions of each of those tables for testing purposes, populated with a randomly
+    selected sample of the data. From these test tables, we extracted the URLs mentioned
+    in each question, answer, and comment, and saved them to a new clean table. We
+    also extracted the source code found in the questions and answers, and saved those
+    snippets to a new table as well. Finally, we were able to build some simple queries
+    and visualizations to help us answer the questions we posed at the beginning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite its modest results, from a data cleaning perspective, our dinner party
+    was a success. We were able to make a coherent plan, and take methodical steps
+    to put the plan into action and alter it when needed. We are now ready for our
+    final project, and a completely different dinner party menu.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will collect and clean our own version of a famous Twitter
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1009 @@
+- en: Healthcare Predictive Models – A Review
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter is intended for all audiences and marries the traditional risk
+    score model commonly used in healthcare with the theory and features underlying
+    machine learning models similar to those developed in [Chapter 7](d029d858-9c6e-4bf0-b793-87cdc4395e86.xhtml),
+    *Making Predictive Models in Healthcare*. If you come from a data science background,
+    this chapter will be a good introduction to some of the widely used clinical risk
+    scores and will indicate which features should be included in your models, whether
+    general or disease-specific. If you come from a healthcare background, this chapter
+    will be a review of some of the clinical risk scores and will explain how machine
+    learning algorithms can enhance traditional risk assessment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predictive healthcare analytics – state of the art
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we touched upon in [Chapter 3](46c83498-cb6e-45b4-ac39-6875a8d32400.xhtml), *Machine
+    Learning Foundations*, healthcare is no stranger to complex risk factor assessments.
+    For almost every major disease, one can find several risk-scoring models that
+    are used widely by physicians to assess the risk of having a disease or suffering
+    morbidity/mortality from that disease. When we use the term "risk score," we are
+    largely referring to criterion tables, in which risk factors are allotted point
+    values, and the points for all of the risk factors are summed to give an overall
+    risk based on the total. These scoring systems are used widely in medicine; interestingly,
+    many of them are based on research involving logistic regression models (similar
+    to the one developed in [Chapter 7](d029d858-9c6e-4bf0-b793-87cdc4395e86.xhtml),
+    *Making Predictive Models in Healthcare*). The crucial question of the last several
+    decades is whether machine learning can improve our ability to predict whether
+    an individual has or will have a disease, how much care that disease will require,
+    and whether the patient will die from the disease in a certain time period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That question is addressed in this chapter. We organize this chapter by having
+    sections on several leading causes of morbidity and mortality in developed countries
+    for which risk scores have been developed. The covered entities include overall
+    cardiovascular risk, congestive heart failure, cancer, and all-cause readmission.
+    The first three entities are leading causes of mortality, and the fourth entity
+    is a common way to measure quality in healthcare. We then explore the subsequent
+    machine learning literature to see whether machine learning has improved the traditional
+    risk assessment used for that disease. By the end of this chapter, you should
+    have a thorough understanding of how machine learning can be used to improve disease
+    prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall cardiovascular risk
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We start with overall cardiovascular risk assessment since it is one of the
+    most important areas in personal health and the exploration of cardiovascular
+    risk factors has such a long and storied history.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cardiovascular risk refers to the risk of developing a subset of the cardiac
+    disease known as cardiovascular disease. **Cardiovascular disease** (**CVD**)
+    refers to dysfunction of the circulatory system caused by a narrowing and/or clogging
+    of the arteries that supply blood to tissues, a process known as atherosclerosis.
+    It encompasses a broad set of cardiac diseases, which include the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Coronary artery disease** (**CAD**): This occurs when the blood vessels that
+    supply blood to the heart become narrowed due to atherosclerosis. CAD is deadly
+    because it can lead to sudden occlusion of the coronary arteries, which is known
+    as a myocardial infarction (or a heart attack).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Congestive heart failure** (**CHF**): This is the failure of the heart to
+    pump blood to the rest of the body. It is caused by the long-term effects of CAD
+    on the heart. It has an onset that is more gradual than myocardial infarction,
+    however, its course is often characterized by sudden exacerbations and hospitalizations
+    before ultimately leading to death.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Peripheral vascular disease** (**PVD**): This is when arteries that supply
+    blood to the arms or legs become narrowed and occluded, which can lead to problematic
+    symptoms such as pain (known as **claudication**) and may result in amputations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Cerebrovascular disease**, or atherosclerosis of the vessels supplying the
+    brain: This puts individuals at higher risk for ischemic and hemorrhagic stroke.
+    Stroke is when the blood supply to the brain is cut off, which can lead to death
+    and also can lead to devastating sequelae.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now that you know what CVD is, you should also know its devastating effects
+    on humans. Globally, it is the leading cause of morbidity and mortality (Weng
+    et al., 2017). CHF alone is related to 3-5% of hospital admissions and is the
+    leading cause of hospital admissions for healthcare professionals and accounts
+    for up to 2% of total healthcare expenditures in developed countries (Tripoliti
+    et al., 2016).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although CVD had been a prominent cause of disability and death in the United
+    States since the beginning of the twentieth century, in the 1940s, people still
+    had no idea what caused it. In fact, during that time, little was understood about
+    the risk and prevention of CVDs (and disease in general). At the time, it was
+    believed that CVD was the destiny of whomever it affected, independent of lifestyle
+    decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Framingham Risk Score
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In 1948, the National Heart Institute embarked on an ambitious project in conjunction
+    with Boston University, called the Framingham Heart Study. Its goal: to find which
+    factors cause CVD. In 1948, 5,209 men and women were recruited from the town of
+    Framingham, Massachusetts that had not yet been affected visibly by CVD (Framingham
+    Heart Study, 2018a). Every 2 years, these individuals underwent a detailed medical
+    history, physical examination, and laboratory testing. Over the years, new generations
+    of patients were recruited and subjects have continued to return every 2 years
+    for assessment, until today.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It was through this long-term, prospective study that the risk factors for
+    CVD were first identified. The link between smoking and CVD was first reported
+    in 1960 (Framingham Heart Study, 2018b). After that, cholesterol, high blood pressure,
+    and diabetes were eventually linked to CVD as well. Starting in the 1990s, risk
+    scores for developing specific types of CVD (for example, myocardial infarction,
+    PVD, CHF) began being published. In 2008, the general Framingham Risk Score was
+    published. The Framingham Risk Score assigns individuals a risk score for experiencing
+    CVD events within a 10-year period based on five major CVD risk factors: age,
+    high blood pressure, cholesterol levels, smoking status, and diabetes. The following
+    is a summary of the general cardiovascular risk-scoring criteria for women (D''Agostino
+    et al., 2008).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Men have similar criteria with slightly different point values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Points** | **Age (y)** | **HDL cholesterol** | **Total cholesterol** |
+    **SBP not treated** | **SBP treated** | **Smoker** | **Diabetic** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| -3 |  |  |  | <120 |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| -2 |  | 60+ |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| -1 |  | 50-59 |  |  | <120 |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 30-34 | 45-49 | <160 | 120-129 |  | No | No |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 |  | 35-44 | 160-190 | 130-139 |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 35-39 | <35 |  | 140-149 | 120-129 |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 |  |  | 200-239 |  | 130-139 | Yes |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 40-44 |  | 240-279 | 150-159 |  |  | Yes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 45-49 |  | 280+ | 160+ | 140-149 |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 |  |  |  |  | 150-159 |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 50-54 |  |  |  | 160+ |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 55-59 |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 60-64 |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 65-69 |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 70-74 |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 75+ |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: Today, these same five risk factors (four of them being preventable) are continuously
+    expounded by our doctors when we visit their offices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the total score, the values for each of the six risk factors (age,
+    HDL level, total cholesterol, SBP not treated, SBP treated, smoker, diabetic)
+    are added. The following table shows how point values correspond to 10-year risk
+    scores (D''Agostino et al., 2008):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Points | Risk (%) | Points | Risk (%) | Points | Risk (%) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| <-2 | <1 | 6 | 3.3 | 14 | 11.7 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| -1 | 1.0 | 7 | 3.9 | 15 | 13.7 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.2 | 8 | 4.5 | 16 | 15.9 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 1.5 | 9 | 5.3 | 17 | 18.5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.7 | 10 | 6.3 | 18 | 21.5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 2.0 | 11 | 7.3 | 19 | 24.8 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 2.4 | 12 | 8.6 | 20 | 28.5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 2.8 | 13 | 10.0 | 21 + | > 30 |'
+  prefs: []
+  type: TYPE_TB
+- en: You may be wondering, "What is the method behind the madness?" To develop these
+    scores, the study's authors used the Cox proportional hazards regression, which
+    is similar to logistic regression, except that instead of determining how variables
+    are associated with a binary outcome, it determines how variables are related
+    to the quantity of time before an event occurs. They even calculated the *C*-statistic
+    of their risk score (analogous to the area under the curve, discussed in [Chapter
+    3](46c83498-cb6e-45b4-ac39-6875a8d32400.xhtml), *Machine Learning Foundations*)
+    which was 0.76 to 0.79\. This is a very good score that can be obtained just from
+    a patient history, physical examination, and some simple blood tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cardiovascular risk and machine learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As you know, scientific progress is never complacent. When a result is obtained,
+    it is only a matter of time before people begin wondering how to improve upon
+    it. The same is the case with cardiovascular risk assessment. Key questions that
+    were asked include the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are some other risk factors that are as (or even more) important than the
+    five risk factors in the Framingham Risk Score?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can the newer machine learning algorithms outperform statistical models, such
+    as regression, to yield higher discriminability and performance?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One study, by the University of Nottingham in England, addressed those questions
+    (Weng et al., 2017). It was a prospective study that monitored the electronic
+    medical records of 378,256 patients from the year 2005 to 2015\. For each patient,
+    they used data on the 8 risk factors included in the Framingham Risk Score, as
+    well as 22 additional variables that were thought to be correlated with cardiovascular
+    risk from previous literature and consultation with physicians. The 22 additional
+    variables encompassed information such as socioeconomic status; history of other
+    illnesses including kidney disease, arthritis, and atrial fibrillation; newer
+    lab tests such as C-reactive protein and gamma-glutamyl transferase; and ethnicity.
+    They trained four types of machine learning algorithms on the patient data – logistic
+    regression, random forest, neural networks, and gradient-boosting machines. All
+    four of the algorithms improved performance over the baseline risk prediction
+    algorithm; in fact, the neural network algorithm predicted 355 more correct cases
+    of cardiovascular events than the established algorithm. As they looked at the
+    variables of top importance, while many resembled the Framingham criteria, many
+    were new. Ethnicity appeared in the top three variables in all of the algorithms.
+    Socioeconomic status (Townsend Deprivation Index) appeared in the top ten for
+    all four algorithms. Chronic kidney disease was also found to be linked to cardiovascular
+    risk. For cardiovascular risk, it is clear that machine learning has enriched
+    our knowledge of predicting cardiac events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Congestive heart failure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Of all the cardiac events mentioned in the *Overall cardiovascular risk* section,
+    CHF deserves a special section of its own. That is for three main reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CHF is the most common cause of hospital admission in developed countries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Its cost of management is very high, accounting for up to 2% of total healthcare
+    expenditures
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Its cost of diagnosis is also very high, requiring expensive echocardiograms
+    to be performed, read, and interpreted by specialized personnel and physicians
+    (Tripoliti et al., 2016)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Diagnosing CHF
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'While CHF can be deemed probable in patients with particular symptoms, risk
+    factors, electrocardiogram findings, and laboratory results, a definitive diagnosis
+    can only be made through echocardiography or a cardiac MRI. Echocardiography requires
+    skilled personnel to administer the test, and then a specialist physician (usually
+    a cardiologist or radiologist) must read the study and visually assess how well
+    the heart is pumping. This is usually done by estimating the **ejection fraction**
+    (**EF**), which is the fraction of blood the left ventricle ejects during its
+    contraction. An EF of 65% is considered normal, 40% indicates heart failure, and
+    10-15% is seen in advanced stages of CHF. The following diagram was taken from
+    an echocardiogram, which shows the four chambers of the heart. You can imagine
+    that it may be unreliable to quantify heart function using the fuzzy images produced
+    by sound waves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/295c63bb-f4ac-471a-8b9a-ae6c7a83bf7e.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'A cardiac MRI, while more expensive, is more accurate in measuring EF and is
+    considered the gold standard for CHF diagnosis; however, it requires a cardiologist
+    to spend up to 20 minutes reading an individual scan. In the following diagram,
+    we see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A*) An illustration of the heart with the imaging plane used for cardiac MRI
+    also shown.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*B*) A 3-D angiogram of the heart (an angiogram is a study in which dye is
+    injected into the bloodstream while images are taken to better visualize the blood
+    vessels).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'C), D), and E) images of normal, damaged, and ischemic left ventricles, respectively,
+    obtained from cardiac MRIs:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](img/ecb4b9c9-ea1c-47ba-9400-d5e9f6ef21b6.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Given the nontrivial nature of CHF diagnosis, again we ask the same questions
+    we asked previously: Can new risk factors be discovered and better performance
+    be achieved with respect to CHF diagnosis by using machine learning algorithms?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CHF detection with machine learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One approach to improve CHF detection with machine learning is to sidestep the
+    use of expensive and time-consuming imaging studies. A recent study from Keimyung
+    University in South Korea used rough sets, decision trees, and logistic regression
+    algorithms, and compared their performance to a physician's diagnosis of heart
+    disease, which was used as the gold standard (Son et al., 2012).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rough sets are similar to best subset logistic regression (for example, subsets
+    of variables are tested for their informativeness, and the most informative subsets
+    are chosen for the final decision rules). The algorithms were trained on demographic
+    characteristics and lab findings only. The models achieved over 97% sensitivity
+    and 97% specificity in differentiating CHF from non-CHF-related shortness of breath.
+    That's astonishingly close to the human performance, with much less data, time,
+    and resources used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A second approach we should mention is the use of automated algorithms to read
+    the echocardiography and cardiac MRI scans used to diagnose CHF. This problem
+    was the subject of the 2015 Data Science Bowl, sponsored by the data science competition
+    website Kaggle and Booz Allen Hamilton, the consulting company. For more on this
+    competition, you can visit the Kaggle competition website: [https://www.kaggle.com/c/second-annual-data-science-bowl](https://www.kaggle.com/c/second-annual-data-science-bowl).
+    It goes to show the interest that machine learning in healthcare has garnered.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other applications of machine learning in CHF
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While the detection and diagnosis of disease in humans is always a problem,
+    there are other applications of ML in CHF management. These applications are well-documented
+    in a review paper by the University of Ioannina in Greece (Tripoliti et al., 2017).
+    In addition to CHF detection, discussed problems in that paper relevant to CHF
+    management include severity estimation, CHF subtype classification, exacerbation
+    and hospital readmission prediction, and mortality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cancer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In [Chapter 2](71c31b0a-fa9e-4b31-8b58-f563a815e338.xhtml), *Healthcare Foundations*,
+    we cited several reasons why fighting cancer via ML is an important endeavor,
+    its significant global morbidity, mortality, and emotional consequences notwithstanding.
+    In this section, let's take a closer look at some important concepts and background
+    about cancer, potential machine learning applications for fighting cancer, important
+    features for cancer risk and survivability modeling, and some of the work that
+    has already been done in the area of breast cancer as an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is cancer?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Cancer can be described as the growth and proliferation of abnormal cells. These
+    cells differ from normal cells in their aggressive reproductive capabilities and
+    their ability to starve normal cells from important resources such as blood and
+    nutrients. Cancer is usually either benign, meaning that it is self-contained
+    to a local area of the body, or malignant, meaning that it has the ability to
+    spread to other bodily tissues. Malignant cancers almost always result in death
+    if untreated, and many even when treated. The progression toward death depends
+    on a number of factors, including the type of cancer, clinical stage of the cancer
+    when detected, pathologic grade of the tumor, and clinical risk factors. Benign
+    cancers aren't as problematic as malignant cancers, although they may cause symptoms
+    and can still result in death (for example, a benign acoustic neuroma that causes
+    high pressure in the brain). Treatment involves some combination of chemotherapy,
+    radiotherapy, biological agents, and/or surgical resection of the tumor and possibly
+    the surrounding tissue and organs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you know, cancer is usually classified by the bodily area in which it first
+    appears. The four most deadly types of cancer in the US are lung cancer, breast
+    cancer, prostate cancer, and colon cancer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ML applications for cancer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Two comprehensive review papers thoroughly document and summarize the ML research
+    that has been performed for cancer in the last three decades. The first review
+    paper is by the University of Alberta in Canada and provides a thorough review
+    of the studies undertaken prior to it writing in 2006 (*Cruz and Wishart*, 2006).
+    The second paper is a more recent one and comes from the University of Ioannina
+    in Greece (Kourou et al., 2015). Both papers have broken down the types of subproblems
+    in the area of cancer ML quite well and match well with some of the subproblems
+    that were discussed in [Chapter 2](71c31b0a-fa9e-4b31-8b58-f563a815e338.xhtml),
+    *Healthcare Foundations*. These problems include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Early detection/screening of cancer**: Can machine learning models be trained
+    to identify individuals with a high risk of developing cancer before symptoms
+    appear?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Diagnosis of cancer**: How can machine learning aid oncologists/radiologists
+    in making definitive diagnoses of cancer and classifying the cancer stage and
+    grade?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Cancer recurrence**: In an individual who has been treated successfully with
+    initial cancer, how likely is that cancer to recur?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Life expectancy and survivability**: In which patients will cancer likely
+    cause mortality? Which patients are likely to be alive in 5 years? In 10 years?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Tumor drug sensitivity**: Which tumors are likely to respond to specific
+    treatments for cancer (for example, chemotherapy, radiotherapy, biological agents,
+    or surgery).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Important features of cancer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A number of variables are particularly important for machine learning with cancer
+    use cases. Let's take a look at those now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Routine clinical data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Clinical data that is routinely available in electronic medical records of
+    all patients is particularly valuable, since it is inexpensive and can be easily
+    included in retroactive modeling studies. Such clinical data is summarized in
+    the following table. It should be noted that there are many exceptions to these
+    rules; for example, while elderly age is an important risk factor for most cancers,
+    bone cancers and some leukemias tend to occur most commonly in children (National
+    Cancer Institute, 2015). The National Cancer Institute is an excellent resource
+    for a more detailed breakdown of clinical risk factors for cancer ([www.cancer.gov](http://www.cancer.gov)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Risk factor** | **Increases cancer risk** | **Decreases cancer risk** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Elderly age | × |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Positive family history | × |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| High-fat diet | × |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| High-fiber diet |  | × |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Diets high in fruits and vegetables |  | × |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Obesity | × |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Tobacco use | × |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Alcohol use | × |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Sun exposure | × |  |'
+  prefs: []
+  type: TYPE_TB
+- en: Cancer-specific clinical data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'After the primary site of the tumor has been identified, almost every tumor
+    can be further classified into subtypes, both clinically and pathologically. The
+    clinical stage of the tumor classifies the extent of the neoplasm. The TNM staging
+    system is the most common; under this system, staging is determined from three
+    factors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The size of the tumor (*T*)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The involvement of nearby lymph nodes (*N*)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The metastasis of the tumor to other bodily sites (*M*)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Usually, survival rates are given depending on the clinical stage, which in
+    turn is determined by the TNM staging criteria, which differs for each tumor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The pathologic grade of the tumor concerns the cellular characteristics of its
+    cells. Things that pathologists look for when setting a tumor grade include the
+    similarity of tumor cell appearance to normal cell appearance (differentiation)
+    and the existence of normal cell organelles (National Cancer Institute, 2015).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imaging data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Radiographic findings from x-rays, CT scans, and MRIs can also be used in models
+    that are related to cancer severity and prognosis. Later in this section, we will
+    look at a breast cancer study that trained a neural network on mammogram features,
+    such as the presence and shape of breast tumor microcalcifications and surrounding
+    skin characteristics (Ayer et al., 2010).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Genomic data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although gene results are not always easy to obtain in prospective studies,
+    nor are they available in retrospective studies, they are important predictors
+    when available. Specific features include the presence of single nucleotide polymorphisms
+    (SNPs; point mutations) in the patient's DNA and the presence of certain genes
+    (such as BRCA1 in hereditary breast cancer) (Morin et al. Harrison's, 2005).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Proteomic data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The presence of specific proteins associated with the tumor also influences
+    risk. Examples of significant proteins include tumor-associated biomarkers (for
+    example, CA 19-9 in pancreatic cancer) and hormones (for example, HER-2/neu in
+    breast cancer) (Longo et al., 2005).
+  prefs: []
+  type: TYPE_NORMAL
+- en: An example – breast cancer prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's take a look at how machine learning has enhanced the screening and diagnosis
+    of breast cancer, one of the most common cancers worldwide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditional screening of breast cancer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Screening of breast cancer is a complex problem. Risk scores generally perform
+    poorly; a systematic review of the literature for the performance of the Gail
+    model for predicting breast cancer risk found AUCs that were typically between
+    0.55 and 0.65 (a random classifier would have an AUC of 0.5) (Wang et al., 2018).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next least invasive test for breast cancer screening is a clinical breast
+    exam or self-breast exam. The sensitivity and specificity for breast exams vary
+    widely according to age, breast density, and research setting; one study found
+    that sensitivity can be as low as 57%, although the same study found the specificity
+    to be 88% (Baines et al., 1989). Because a good screening test has a high sensitivity,
+    there is a consensus that physical breast examination alone is not adequate for
+    breast cancer screening.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imaging is the next least invasive screening test for breast cancer. Imaging
+    modalities used for breast cancer screening include mammography, MRI, and ultrasound.
+    In 2016, the **US Preventive Services Task Force** (**USPSTF**) recommended biennial
+    mammograms (see the following diagram showing a mammogram of the breast with a
+    whitish area diagnosed as colloid carcinoma; National Cancer Institute, 1990)
+    for women aged 50 and older, due to the high sensitivity (77% to 95%) and high
+    specificity (94% to 97%) of mammograms in this age group combined with their low
+    potential for causing patient harm (US Preventive Services Task Force, 2016).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Biopsies are the most invasive options for breast cancer detection, and in fact,
+    are used for definitive diagnosis when screening tests are positive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Breast cancer screening and machine learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The machine learning literature in breast cancer research is vast (Cruz and
+    Wishart, 2006; Kourou et al., 2015). Here we summarize one study that highlights
+    the potential for machine learning to aid in breast cancer diagnosis, when used
+    in conjunction with mammography and EMRs. The study is from the University of
+    Wisconsin, Madison and consisted of 48,744 mammograms (Ayer et al., 2010).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For each mammogram, information about 36 categorical variables was collected,
+    including clinical data (age, past medical history, family history) and mammographic
+    findings, such as tumor mass characteristics, surrounding skin and nipple characteristics,
+    lymph node examination, and calcification characteristics. An artificial neural
+    network consisting of 1,000 hidden layers was trained and the generated labels
+    were compared to the true label of benign versus malignant. Eight radiologists
+    also reviewed varying numbers of mammograms and classified the scan as benign
+    versus malignant. The total AUC of the neural network was 0.965, while that of
+    the radiologists was 0.939\. This study, combined with other studies we will read
+    about in the final chapter, demonstrate how ML can be used as an effective tool
+    in the fight against cancer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b556d3bc-85ac-4a31-a6ed-060da3b23170.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Readmission prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Predicting the likelihood of all-cause patient readmissions is outside the scope
+    of a typical clinician's knowledge base, since it is not tied to a specific organ
+    system or disease. However, it is becoming a problem of increasing importance
+    in the healthcare world, since preventable hospital readmissions are a major cause
+    of elevated healthcare expenditures in the United States and other countries.
+    We discussed the incentive and rationale for predicting hospital readmissions
+    and the US government's **Hospital Readmission Reduction Program** (**HRRP**)
+    in [Chapter 6](023c1d7e-f3f0-42e6-a2be-64bd5ba4ab80.xhtml), *Measuring Healthcare
+    Quality*. Let's now review how machine learning algorithms can be used to augment
+    simpler readmission risk scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LACE and HOSPITAL scores
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The most well-known readmission risk score is the LACE score, which was developed
+    in 2010 by Canadian researchers (van Walraven et al., 2010). "LACE" stands for
+    the four predictors used to calculate the score, and the full score calculation
+    ranges from 0-19 and is shown in the following table. The Charlson comorbidity
+    index is a score that assigns scores to patients based on the presence of certain
+    illnesses in their past medical history, including myocardial infarction, cancer,
+    CHF, and HIV infection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Component** | **Attribute** | **Value** | **Points** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| L | Length of stay (days) | <1 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 1 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 2 | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 3 | 3 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 4-6 | 4 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 7-13 | 5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | >13 | 7 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| A | Acuity (emergence of admission) | Yes | 3 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| C | Comorbidity (Charlson comorbidity index) | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 1 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 2 | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 3 | 3 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | >3 | 5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| E | ED visits during last 6 months | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 1 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 2 | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 3 | 3 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | <3 | 4 |'
+  prefs: []
+  type: TYPE_TB
+- en: To derive this index, the study authors entered over a dozen variables thought
+    to be related to readmission risk for 2,393 patients into a multivariable logistic
+    regression model, and were left with these four variables as the significant predictors
+    in the model. They then developed the scoring system and externally validated
+    it using 1,000,000 records from a Canadian patient database. Their own reported
+    *C*-statistic for predicting early death or urgent readmission within 30 days
+    was 0.684.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another example of a hospital readmission risk score is the more recently developed
+    HOSPITAL score (Donze et al., 2013; Donze et al., 2016). Again "HOSPITAL" stands
+    for the seven predictors used in the score as listed in the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Component** | **Attribute** | **Value** | **Points** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| H | Hemoglobin < 12 g/dL at discharge | Yes | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| O | Oncology service discharge | Yes | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| S | Sodium < 135 mmol/L at discharge | Yes | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| P | Procedure during hospital stay | Yes | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| IT | Index admission type: urgent | Yes | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| A | Admission count during the previous year | 0-1 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | 2-5 | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |  | >5 | 5 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| L | Length of stay > 5 days | Yes | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: The HOSPITAL score ranges from 0-13 points. The score was derived using the
+    seven factors independently related to hospital readmission, also using a multivariable
+    logistic regression model (Donze et al., 2013). The score was externally validated
+    using 117,065 discharges from four countries and the authors reported a C-statistic
+    of 0.72 (Donze et al., 2016).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Readmission modeling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's look at two recent studies that have applied machine learning to the readmission
+    risk identification problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first study comes by Duke University (Futoma et al., 2014). In this study,
+    3.3 million hospital admissions from New Zealand were studied. For each admission,
+    demographic information, background information, **diagnosis-related group** (**DRG**)
+    codes, and **International Classification of Diseases** (**ICD**) diagnosis and
+    procedure codes were used. The matrix was then fed into six different machine
+    learning algorithms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logistic regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Logistic regression with the multistep variable selection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Penalized logistic regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random forest
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Support vector machine
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deep learning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Of the first five methods, the random forest had the best performance, achieving
+    an AUC of 0.684\. The deep learning models were used to predict readmissions on
+    five patient cohorts: pneumonia, **chronic obstructive pulmonary disease** (**COPD**),
+    CHF, MI, and total hip/knee arthroplasty. The highest performance was achieved
+    for pneumonia, with an AUC of 0.734\. It should be noted that no direct comparison
+    to LACE or HOSPITAL risk scores was performed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second study comes from the Advocate Health Care hospital system (Tong
+    et al., 2016). The study consisted of 162,466 index (for example, initial) hospital
+    admissions. For each index admission, 19 data elements were collected including
+    the four LACE score components and 15 other EMR variables, such as past medical
+    history, previous clinical encounters, employment status, and lab results. They
+    trained three different machine learning models on this data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logistic regression with the stepwise forward-backward variable selection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Logistic regression with lasso regularization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Boosting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: They found that when they used 80,000 index admissions for the training/validation
+    sets, the LACE model had an AUC of ~0.65, while the three machine learning models
+    all had AUCs of ~0.73\. The results suggest the significance of additional variables
+    outside of the four variables used for the LACE score, and they further reinforce
+    the use of machine learning for healthcare.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other conditions and events
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many other conditions for which machine learning algorithms have been
+    used to improve risk assessment and prediction over traditional risk scores. COPD,
+    pneumonia, sepsis, stroke, and dementia are just a few examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have reviewed different types of healthcare models and the
+    features they use to achieve efficacy. We have omitted some emerging trends in
+    healthcare from our discussion, however; these include the use of newer technologies
+    such as social media, the Internet of Things, and deep learning algorithms to
+    push the healthcare prediction envelope even further. We'll examine these trends
+    in the next chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References and further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Ayer T, Alagoz O, Chhatwal J, Shavlik JW, Kahn Jr. CE, Burnside ES (2010).
+    Breast Cancer Risk Estimation with Artificial Neural Networks Revisited: Discrimination
+    and Calibration. *Cancer* 116 (14): 3310-3321.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Baines CJ (1989). Breast self-examination. *Cancer* 64(12 Suppl): 2661-2663.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cruz JA, Wishart DS (2006). Applications of Machine Learning in Cancer Prediction
+    and Prognosis. *Cancer Informatics* 2: 59-77.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'D''Agostino RB, Vasan RS, Pencina MJ, Wolf PA, Cobain M, Massaro JM, Kannel
+    WB (2008). *General Cardiovascular Risk Profile for Use in Primary Care: The Framingham
+    Heart Study. Circulation* 117 (6): 743-753.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Donze J, Aujesky D, Williams D, Schnipper JL (2013). Potentially avoidable
+    30-day hospital readmissions in medical patients: derivation and validation of
+    a prediction model. *JAMA Intern Med* 173(8): 632-638.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Donze JD, Williams MV, Robinson EJ et al. (2016). International Validity of
+    the "HOSPITAL" Score to Predict 30-day Potentially Avoidable Readmissions in Medical
+    Patients. *JAMA Intern Me*d 176(4): 496-502.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Framingham Heart Study (2018a). *History of the Framingham Heart Study*. [https://www.framinghamheartstudy.org/fhs-about/history/](https://www.framinghamheartstudy.org/fhs-about/history/).
+    Accessed June 16, 2018.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Framingham Heart Study (2018b). *Research Milestones*. [https://www.framinghamheartstudy.org/fhs-about/research-milestones/](https://www.framinghamheartstudy.org/fhs-about/research-milestones/).
+    Accessed June 16, 2018.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Futoma J, Morris J, Lucas J (2015). A comparison of models for predicting early
+    hospital readmissions. *Journal of Biomedical Informatics* 56: 229-238.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kourou K, Exarchos TP, Exarchos KP, Karamouzis MV, Fotiadis DI (2015). Machine
+    learning applications in cancer prognosis and prediction. *Computational and Structural
+    Biotechnology Journal* 13: 8-17.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lenes K (2005). *File: Echocardiogram 4chambers.jpg*. [https://commons.wikimedia.org/wiki/File:Echocardiogram_4chambers.jpg](https://commons.wikimedia.org/wiki/File:Echocardiogram_4chambers.jpg).
+    Accessed June 23, 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Longo DL (2005). "*Approach to the Patient with Cancer*." In Kasper DL, Braunwald
+    E, Fauci AS, Hauser SL, Longo DL, Jameson JL. eds. *Harrison''s Principles of
+    Internal Medicine*, 16e. New York, NY: McGraw-Hill.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Morin PJ, Trent JM, Collins FS, Vogelstein B (2005). "Cancer Genetics." In
+    Kasper DL, Braunwald E, Fauci AS, Hauser SL, Longo DL, Jameson JL. eds. *Harrison''s
+    Principles of Internal Medicine*, 16e. New York, NY: McGraw-Hill.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: National Cancer Institute (1990). Mammogram Showing Cancer. Unknown Photographer,
+    American College of Radiology. [https://commons.wikimedia.org/wiki/File:Mammogram_showing_cancer.jpg](https://commons.wikimedia.org/wiki/File:Mammogram_showing_cancer.jpg).
+    Accessed June 23, 2018.
+  prefs: []
+  type: TYPE_NORMAL
+- en: National Cancer Institute (2015a). *Breast Cancer Screening (PDQ®)-Health Professional
+    Version*. [https://www.cancer.gov/types/breast/hp/breast-screening-pdq#section/all](https://www.cancer.gov/types/breast/hp/breast-screening-pdq#section/all).
+    Accessed June 23, 2018.
+  prefs: []
+  type: TYPE_NORMAL
+- en: National Cancer Institute (2015b). *Risk Factors for Cancer*. [https://www.cancer.gov/about-cancer/causes-prevention/risk](https://www.cancer.gov/about-cancer/causes-prevention/risk).
+    Accessed June 23, 2018.
+  prefs: []
+  type: TYPE_NORMAL
+- en: National Heart Lung and Blood Institute (2013). File:Cardiac_Mri.jpg. [https://commons.wikimedia.org/wiki/File:Cardiac_mri.jpg](https://commons.wikimedia.org/wiki/File:Cardiac_mri.jpg).
+    Accessed June 23, 2018.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Son C, Kim Y, Kim H, Park H, Kim M (2012). Decision-making model for early
+    diagnosis of congestive heart failure using rough set and decision tree approaches.
+    *Journal of Biomedical Informatics* 45: 999-1008.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tong L, Erdmann C, Daldalian M, Li J, Esposito T (2016). Comparison of predictive
+    modeling approaches for 30-day all-cause non-elective readmission risk. *BMC Medical
+    Research Methodology* 2016(16): 26.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tripoliti EE, Papadopoulos TG, Karanasiou GS, Naka KK, Fotiadis DI (2017).
+    Heart Failure: Diagnosis, Severity Estimation and Prediction of Adverse Events
+    Through Machine Learning Techniques. *Computational and Structural Biotechnology
+    Journal* 15: 26-47.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'US Preventive Services Task Force (2016). *Final Recommendation Statement:
+    Breast Cancer: Screening*. [https://www.uspreventiveservicestaskforce.org/Page/Document/RecommendationStatementFinal/breast-cancer-screening1](https://www.uspreventiveservicestaskforce.org/Page/Document/RecommendationStatementFinal/breast-cancer-screening1).
+    Accessed June 23, 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'van Walraven C, Dhalla IA, Bell C, Etchells E, Stiell IG, Zarnke K, Austin
+    PC, Forster AJ (2010). Derivation and validation of an index to predict early
+    death or unplanned readmission after discharge from hospital to the community.
+    *Canadian Medical Association Journal* 182(6): 551-557.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Wang X, Huang Y, Li L, Dai H, Song F, Chen K (2018). Assessment of performance
+    of the Gail model for predicting breast cancer risk: a systematic review and meta-analysis
+    with trial sequential analysis. *Breast Cancer Research* 20: 18.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Weng SF, Reps J, Kai J, Garibaldi JM, Qureshi N (2017). *Can machine-learning
+    improve cardiovascular risk prediction using routine clinical data?* *PLOS One*
+    12(4): e0174944\. [https://doi.org/10.1371/journal.pone.0174944](https://doi.org/10.1371/journal.pone.0174944)'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,582 @@
+- en: Data Mining and SQL Queries
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: PySpark exposes the Spark programming model to Python. Spark is a fast, general
+    engine for large-scale data processing. We can use Python under Jupyter. So, we
+    can use Spark in Jupyter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Installing Spark requires the following components to be installed on your
+    machine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Java JDK.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Scala from [http://www.scala-lang.org/download/](http://www.scala-lang.org/download/).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Python recommend downloading Anaconda with Python (from [http://continuum.io](http://continuum.io)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spark from [https://spark.apache.org/downloads.html](https://spark.apache.org/downloads.html).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`winutils`: This is a command-line utility that exposes Linux commands to Windows.
+    There are 32-bit and 64-bit versions available at:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 32-bit `winutils.exe` at [https://code.google.com/p/rrd-hadoop-win32/source/checkout](https://code.google.com/p/rrd-hadoop-win32/source/checkout)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 64-bit `winutils.exe` at [https://github.com/steveloughran/winutils/tree/master/hadoop-2.6.0/bin](https://github.com/steveloughran/winutils/tree/master/hadoop-2.6.0/bin)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Then set environment variables that show the position of the preceding components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`JAVA_HOME`: The bin directory where you installed JDK'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`PYTHONPATH`: Directory where Python was installed'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`HADOOP_HOME`: Directory where `winutils` resides'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`SPARK_HOME`: Where Spark is installed'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These components are readily available over the internet for a variety of operating
+    systems. I have successfully installed these previous components in a Windows
+    environment and a Mac environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have these installed you should be able to run the command, `pyspark`,
+    from a command line window and a Jupyter Notebook with Python (with access to
+    Spark) can be used. In my installation I used the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: As I had installed Spark in the root with the `\spark` directory. Yes, `pyspark`
+    is a built-in tool for use by Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Special note for Windows installation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Spark (really Hadoop) needs a temporary storage location for its working set
+    of data. Under Windows this defaults to the `\tmp\hive` location. If the directory
+    does not exist when Spark/Hadoop starts it will create it. Unfortunately, under
+    Windows, the installation does not have the correct tools built-in to set the
+    access privileges to the directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should be able to run `chmod` under `winutils` to set the access privileges
+    for the `hive` directory. However, I have found that the `chmod` function does
+    not work correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A better idea has been to create the `tmp\hive` directory yourself in admin
+    mode. And then grant full privileges to the hive directory to all users, again
+    in admin mode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without this change, Hadoop fails right away. When you start `pyspark`, the
+    output (including any errors) are displayed in the command line window. One of
+    the errors will be insufficient access to this directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Spark to analyze data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first thing to do in order to access Spark is to create a `SparkContext`.
+    The `SparkContext` initializes all of Spark and sets up any access that may be
+    needed to Hadoop, if you are using that as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The initial object used to be a `SQLContext`, but that has been deprecated recently
+    in favor of `SparkContext`, which is more open-ended.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could use a simple example to just read through a text file as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We obtain a `SparkContext`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With the context, read in a file (the Jupyter file for this example)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We use a Hadoop `map` function to split up the text file into different lines
+    and gather the lengths
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We use a Hadoop `reduce` function to calculate the length of all the lines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We display our results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Under Jupyter this looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bbaf558a-ad63-46c7-ae00-83fe90b04571.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Another MapReduce example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can use MapReduce in another example where we get the word counts from a
+    file. A standard problem, but we use MapReduce to do most of the heavy lifting.
+    We can use the source code for this example. We can use a script similar to this
+    to count the word occurrences in a file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have the same preamble to the coding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we load the text file into memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`text_file` is a Spark **RDD** (**Resilient Distributed Dataset**), not a data
+    frame.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is assumed to be massive and the contents distributed over many handlers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the file is loaded we split each line into words, and then use a `lambda`
+    function to tick off each occurrence of a word. The code is truly creating a new
+    record for each word occurrence, such as *at appears 1*, *at appears 1*. For example,
+    if the word *at* appears twice each occurrence would have a record added like
+    *at* *appears 1*. The idea is to not aggregate results yet, just record the appearances
+    that we see. The idea is that this process could be split over multiple processors
+    where each processor generates these low-level information bits. We are not concerned
+    with optimizing this process at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once we have all of these records we reduce/summarize the record set according
+    to the word occurrences mentioned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `counts` object is also RDD in Spark. The last `for` loop runs a `collect()`
+    against the RDD. As mentioned, this RDD could be distributed among many nodes.
+    The `collect()` function pulls in all copies of the RDD into one location. Then
+    we loop through each record.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we run this in Jupyter we see something akin to this display:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f0c88072-d9fa-4076-a14c-502f89c2dca1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The listing is abbreviated as the list of words continues for some time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The previous example doesn't work well with Python 3\. There is a workaround
+    when coding directly in Python, but not for Jupyter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using SparkSession and SQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Spark exposes many SQL-like actions that can be taken upon a data frame. For
+    example, we could load a data frame with product sales information in a CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Starts a `SparkSession` (needed for most data access)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Uses the session to read a CSV formatted file, that contains a header record
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Displays initial rows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](img/3b841e8d-1388-4d3e-b9e1-295886ea97fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have a few interesting columns in the sales data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actual sales for the products by division
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Predicted sales for the products by division
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If this were a bigger file, we could use SQL to determine the extent of the
+    product list. Then the following is the Spark SQL to determine the product list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The data frame `groupBy` function works very similar to the SQL `Group By` clause.
+    `Group By` collects the items in the dataset according to the values in the column
+    specified. In this case the `PRODUCT` column. The `Group By` results in a dataset
+    being established with the results. As a dataset, we can query how many rows are
+    in each with the `count()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, the result of the `groupBy` is a count of the number of items that correspond
+    to the grouping element. For example, we grouped the items by `CHAIR` and found
+    288 of them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3da579b9-b3d4-4abd-b655-a021a33f727a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, we obviously do not have real product data. It is unlikely that any company
+    has the exact same number of products in each line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can look into the dataset to determine how the different divisions performed
+    in actual versus predicted sales using the `filter()` command in this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We pass a logical test to the `filter` command that will be operated against
+    every row in the dataset. If the data in that row passes the test then the row
+    is returned. Otherwise, the row is dropped from the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our test is only interested in sales where the actual sales figure exceeds the
+    predicted values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Under Jupyter this looks as like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/9ffb9eb1-9a13-497c-992c-63465c614db1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, we get a reduced result set. Again, this was produced by the `filter` function
+    as a data frame and can then be called upon to `show` as any other data frame.
+    Notice the third record from the previous display is not present as its actual
+    sales were less than predicted. It is always a good idea to use a quick survey
+    to make sure you have the correct results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if we wanted to pursue this further and determine which were the best performing
+    areas within the company?
+  prefs: []
+  type: TYPE_NORMAL
+- en: If this were a database table we could create another column that stored the
+    difference between actual and predicted sales and then sort our display on that
+    column. We can perform very similar steps in Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using a data frame we could use coding like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first statement is creating a view/data frame within the context for further
+    manipulation. This view is lazy evaluated, will not persist unless specific steps
+    are taken, and most importantly can be accessed as a hive view. The view is available
+    directly from the `SparkContext`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then create a new data frame with the computed new column using the new
+    sales view that we created. Under Jupyter this looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/17685618-ddb1-4d13-8423-b1176f2f9b41.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, I don't think we have realistic values as the differences are very far
+    off from predicted values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data frames created are immutable, unlike database tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combining datasets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So, we have seen moving a data frame into Spark for analysis. This appears to
+    be very close to SQL tables. Under SQL it is standard practice not to reproduce
+    items in different tables. For example, a product table might have the price and
+    an order table would just reference the product table by product identifier, so
+    as not to duplicate data. So, then another SQL practice is to join or combine
+    the tables to come up with the full set of information needed. Keeping with the
+    order analogy, we combine all of the tables involved as each table has pieces
+    of data that are needed for the order to be complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How difficult would it be to create a set of tables and join them using Spark?
+    We will use example tables of `Product`, `Order`, and `ProductOrder`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Table** | **Columns** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Product | Product ID,Description,Price |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Order | Order ID,Order Date |'
+  prefs: []
+  type: TYPE_TB
+- en: '| ProductOrder | Order ID,Product ID,Quantity |'
+  prefs: []
+  type: TYPE_TB
+- en: So, an `Order` has a list of `Product`/`Quantity` values associated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can populate the data frames and move them into Spark:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can attempt to perform an SQL-like `JOIN` operation among them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Doing all of this in Jupyter results in the display as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b653416b-1c6d-42df-9606-7d9883e10a3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our standard imports obtain a `SparkContext` and initialize a `SparkSession`.
+    Note, the `getOrCreate` of the `SparkContext`. If you were to run this code outside
+    of Jupyter there would be no context and a new one would be created. Under Jupyter,
+    the startup for Spark in Jupyter initializes a context for all scripts. We can
+    use that context at will with any Spark script, rather than have to create one
+    ourselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load our `product` table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f2e2fb89-1932-4714-9c4b-104974f5b136.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Load the `order` table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d26f6dd2-656c-4fa2-b545-904e59e648d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Load the `orderproduct` table. Note that at least one of the orders has multiple
+    products:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3909e3fb-6f95-4072-9f1e-c63225e75526.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have the `orderid` column from `order` and `orderproduct` in the result
+    set. We could be more selective in our query and specify the exact columns we
+    want to be returned:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7253a504-d37c-47f7-85e8-3c10b30a2ba3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I had tried to use the Spark `join()` command with no luck.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The documentation and examples I found on the internet are old, sparse, and
+    incorrect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the command also presented the persistent error of a task not returning
+    results in time. From the underlying Hadoop, I expect that processing tasks are
+    normally broken up into separate tasks. I assume that Spark is breaking up functions
+    into separate threads for completion similarly. It is not clear why such minor
+    tasks are not completing as I was not asking it to perform anything extraordinary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading JSON into Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Spark can also access JSON data for manipulation. Here we have an example that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loads a JSON file into a Spark data frame
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Examines the contents of the data frame and displays the apparent schema
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Like the other preceding data frames, moves the data frame into the context
+    for direct access by the Spark session
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shows an example of accessing the data frame in the Spark context
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The listing is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our standard includes for Spark:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Read in the JSON and display what we found:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/3248ff85-7185-4ba5-8b38-1facfcdc429b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I had a difficult time getting a standard JSON to load into Spark. Spark appears
+    to expect one record of data per list of the JSON file versus most JSON I have
+    seen pretty much formats the record layouts with indentation and the like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice the use of null values where an attribute was not specified in an instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Display the interpreted schema for the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/78bf59a2-f9ee-4ccd-89f1-2a5455b9355e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The default for all columns is `nullable`. You can change an attribute of a
+    column, but you cannot change the value of a column as the data values are immutable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Move the data frame into the context and access it from there:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/269c578a-deec-424a-bd72-3a7f60ab54be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: At this point, the `people` table works like any other temporary SQL table in
+    Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Spark pivot
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The `pivot()` function allows you to translate rows into columns while performing
+    aggregation on some of the columns. If you think about it you are physically adjusting
+    the axes of a table about a pivot point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I thought of an easy example to show how this all works. I think it is one of
+    those features that once you see it in action you realize the number of areas
+    that you could apply it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our example, we have some raw price points for stocks and we want to convert
+    that table about a pivot to produce average prices per year per stock.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code in our example is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This looks as follows in Jupyter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/592144ef-0026-42d2-9cdd-11e153424779.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'All the standard includes what we need for Spark to initialize the `SparkContext`
+    and the `SparkSession`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7f5525e2-f9d0-415e-b807-073728a1eb17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We load the stock price information from a CSV file. It is important that at
+    least one of the stocks have more than one price for the same year:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/fd3422fc-e60a-4d88-8a36-3ec0c706b61e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We are grouping the information by stock symbol. The pivot is on the year that
+    has two values, 2012 and 2013, in our dataset. We are computing an average price
+    for each year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we got familiar with obtaining a `SparkContext`. We saw examples
+    of using Hadoop MapReduce. We used SQL with Spark data. We combined data frames
+    and operated on the resulting set. We imported JSON data and manipulated it with
+    Spark. Lastly, we looked at using a pivot to gather information about a data frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will look at using R programming under Jupyter.
+  prefs: []
+  type: TYPE_NORMAL

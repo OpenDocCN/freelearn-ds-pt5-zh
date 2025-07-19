@@ -1,0 +1,1286 @@
+- en: Measuring Healthcare Quality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This chapter is intended for all audiences and will show you how healthcare
+    providers are evaluated and rewarded/penalized under current value-based programs
+    in the US. We will look at examples of actual provider data that's been downloaded
+    from the web and wrangle it all using Python to extract the information we need.
+    By the end of this chapter, you will be able to locate provider-based data on
+    a given program of interest and manipulate it in `pandas` to identify those providers
+    who are high-performing and those who could benefit from an analytic solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to healthcare measures
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A **healthcare measure** is a calculation made on the care activities of a provider
+    that indicates the level of quality provided by the caregiver. As providers are
+    increasingly being rewarded based on the quality rather than the quantity of services
+    they provide, healthcare measures are playing a more important role in determining
+    which care providers are rewarded or penalized. The **Centers for Medicare and
+    Medicaid Services** (**CMS**) is just one of the federal-level agencies in the
+    United States that publishes standardized measures; in addition, states publish
+    measures as well. Providers calculate the measures using the data of their own
+    patients and then submit their calculations to be audited by the issuing agency.
+    The results partially determine how the providers are reimbursed by the agency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A typical measure in healthcare is usually a ratio or percentage that correlates
+    with care quality. There are typically two parts that make up a measure: a **numerator**
+    and a **denominator**. The denominator is some quantification of the eligible
+    population or number of encounters that were seen by the provider during a specific
+    time range. Determining the denominator usually involves applying **inclusion
+    criteria** and/or **exclusion criteria** to the overall provider population to
+    reach the desired measurement population or encounter pool. Once the denominator
+    is determined, the numerator is calculated based on the number of items in the
+    denominator that received a certain positive or negative outcome or event.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This outcome or event is usually suggested by basic and/or clinical research
+    as being a recommended part of patient care (or a marker for adverse care). Finally,
+    dividing the numerator by the denominator yields the final percentage. This percentage
+    may be used on a standalone basis or may be integrated into more complex formulas
+    and weighting schemes with other measures to determine an overall quality score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, an agency that wishes to measure the quality of diabetes care
+    provided by outpatient facilities in a state could start composing a measure by
+    surveying the literature for diabetes care recommendations. Among other things,
+    diabetes patients are supposed to receive multiple foot examinations (to check
+    for ulcers and nerve damage) and hemoglobin-A1c tests (to check for elevated blood
+    glucose) during each year. To calculate the denominator, the inclusion criteria
+    are that the patient has received an ICD code diagnosis of diabetes mellitus at
+    least once in the past year. The agency only wants to consider the standard adult
+    population; therefore, children less than 18 years of age and elderly adults greater
+    than 65 years of age will be excluded. One clinic may have 4,000 patients overall,
+    of which 500 meet these criteria; 500 is then the denominator for this measure.
+    There are then two numerators to calculate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of these patients who received at least three foot exams in the past
+    year
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The number of these patients who received at least two HgbA1c tests during the
+    past year
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, let's say that the numbers for our clinic are 350 and 400, respectively.
+    The final measures are 350/500 = 0.70 for diabetic foot exam performance and 400/500
+    = 0.80 for diabetic blood work measurement. These can then be averaged together
+    to give an overall rating of 0.75 for diabetes care at this clinic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Measures have their share of problems; no measure is above loopholes that allow
+    providers to manipulate their measurement scores without really improving care.
+    Also, many measures may unfairly penalize providers who may have had patients
+    act against medical advice or refuse proper treatment. However, if care quality
+    is to be rewarded, then there must be a way to quantify care quality, and measures
+    in healthcare are an important means of achieving that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: US Medicare value-based programs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In [Chapter 2](71c31b0a-fa9e-4b31-8b58-f563a815e338.xhtml), *Healthcare Foundations*,
+    we discussed that a **fee-for-service** (**FFS**) reimbursement model has been
+    used in medicine, in which physicians are reimbursed by the volume of care they
+    provided rather than the value of that care. More recently, there has been a push
+    toward rewarding providers based on the quality of care rather than the quantity
+    of care given.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to facilitate the movement from FFS reimbursement to value-based reimbursement,
+    the CMS has implemented value-based programs. These programs reward or penalize
+    providers for the quality of care that they provide to Medicare patients. In 2018,
+    there are a total of eight such programs. They are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Hospital Value-Based Purchasing (HVBP) program**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Hospital Readmission Reduction (HRR) program**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Hospital Acquired Conditions (HAC) program**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The End-Stage Renal Disease (ESRD) quality initiative  program**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Skilled Nursing Facility Value-Based Program** (**SNFVBP**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Home Health** **Value-Based Program** (**HHVBP**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Alternative Payment Models** (**APMs**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Merit-Based Incentive Payment System** (**MIPS**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the following sections, we will take a detailed look at these programs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Hospital Value-Based Purchasing (HVBP) program
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The HVBP program rewards hospitals with incentive payments for the quality of
+    care they give to Medicare patients. The HVBP program was enacted through the
+    Affordable Care Act in 2010 and began in 2012.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Domains and measures
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In 2018, there are approximately 20 measures in the HVBP program that span four
+    different domains of hospital care quality. The list is ever expanding and will
+    include approximately 25 measures by 2023\. Let's take a look at each domain and
+    measure here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The clinical care domain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The clinical care domain measures clinical care quality predominantly by using
+    mortality measures. The **mortality rate** refers to the patient death rate for
+    a specific disease. There are five mortality measures used in this domain (listed
+    here). The sixth measure is the complications rate for the total hip/knee arthroplasty
+    (a.k.a. replacement) procedure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MORT-30-AMI**: 30-day mortality for patients that have an acute myocardial
+    infarction'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MORT-30-HF**: 30-day mortality for patients that have heart failure'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MORT-30-PN**: 30-day mortality for patients that have pneumonia'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**THA/TKA**: The number of THA/TKA procedures with complications'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MORT-30-COPD**: 30-day mortality for patients that have COPD'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MORT-30-CABG**: 30-day mortality for patients that undergo coronary artery
+    bypass grafting'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The patient- and caregiver-centered experience of care domain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The measures in the patient- and caregiver-centered experience of care domain
+    are determined using information from the **Hospital Consumer Assessment of Healthcare
+    Providers and Systems** (**HCAHPS**) survey. The HCAHPS survey is administered
+    to a random sample of Medicare patients shortly after they are discharged from
+    the hospital. More than a dozen questions focus on the eight measures listed here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Communication with nurses
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Communication with doctors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Responsiveness of hospital staff
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Communication about medicines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cleanliness and quietness of the hospital environment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Discharge information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Overall rating of hospital
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Three-item care transition
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Safety domain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The measures in this domain evaluate the safeness of hospitals for incidents
+    such as adverse events and nosocomial infections. All of the measures in this
+    domain are described in the later section on the HAC program (except for the PC-01
+    measure, which is described as follows):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**AHRQ Composite (PSI-90)**: Please see the section on the HAC program for
+    a detailed description.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Catheter-associated urinary tract infection (CAUTI)**: Please see the section
+    on the HAC program for a detailed description.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Central line-associated bloodstream infection (CLABSI)**: Please see the
+    section on the HAC program for a detailed description.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Clostridium difficile infecti**o**n (CDI)**: Please see the section on the
+    HAC program for a detailed description.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Methicillin-resistant Staphylococcus aureus infection (MRSA)**: Please see
+    the section on the HAC program for a detailed description.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Surgical site infection (SSI)**: Please see the section on the HAC program
+    for a detailed description.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PC-01 – Elective delivery prior to 39 weeks completed gestation**: Guidelines
+    recommend that pregnancies are delivered as close as possible to 40 weeks.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Efficiency and cost reduction domain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The four measures in this domain examine the cost of care associated with each
+    hospital. One measure (MSPB) relates to overall spending per patient; the three
+    remaining measures pertain to spending for three specific conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Medicare spending per beneficiary** (**MSPB**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Acute myocardial infarction** (**AMI**) payment'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Heart failure** (**HF**) payment'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Pneumonia** (**PN**) payment'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Hospital Readmission Reduction (HRR) program
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'An alternative way to measure inpatient care quality is by using the readmission
+    rate of hospitals for patients diagnosed with specific conditions during their
+    initial (index) visits. It is expected that if patients are receiving proper care
+    at the facility for those specific conditions, the readmission rate will be at
+    or below an acceptable rate. Rates higher than a baseline rate are subject to
+    lower reimbursements. Accordingly, the HRR program started in 2012\. It is a program
+    that provides incentive payments (up to 3% of their prospective inpatient payments
+    from Medicare) to hospitals that reduce their inpatient 30-day readmission rates
+    for the following conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Acute myocardial infarction** (**AMI**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Heart failure** (**HF**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Pneumonia** (**PN**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Chronic obstructive pulmonary disease** (**COPD**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Total hip**/**knee arthoplasty** (replacement) (**THA**/**TKA**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Coronary artery bypass graft surgery** (**CABG**)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Hospital-Acquired Conditions (HAC) program
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Yet another method for measuring inpatient care quality is to consider the number
+    of nosocomial or iatrogenic illnesses at that facility. An **iatrogenic** condition
+    is one that is caused by medical examination or treatment, while a **nosocomial**
+    illness refers to an illness (usually an infection) originating at a hospital.
+    Often, nosocomial infections are resistant to multiple antibiotics and are quite
+    difficult to treat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under the HACRP, which started in 2014, hospitals are penalized 1% of their
+    total Medicare payments if their patients are at a high risk of getting hospital-acquired
+    infections. More specifically, hospitals that meet a certain score threshold based
+    on how often their patients get five common healthcare-acquired infections and
+    their AHRQ **Patient Safety Indicator** (**PSI**) 90 composite measure performance
+    are eligible for a 1% reduction in Medicare reimbursement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are six measures comprising the HAC program that span two domains of care.
+    Five of the six measures relate to infection rates for patients at hospitals.
+    The sixth measure is a composite measure that looks at a variety of adverse patient
+    safety events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will now take a more detailed look at the domains and measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The healthcare-acquired infections domain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The five healthcare-acquired infections are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Catheter-associated urinary tract infection (CAUTI)**: A CAUTI occurs when
+    a urinary catheter is inserted into the urethra using the improper (aseptic) technique,
+    causing germs to colonize the urinary tract.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Central line-associated bloodstream infection (CLABSI)**: Similarly, a CLABSI
+    occurs when a central line is improperly inserted into the body, causing germs
+    to colonize the blood (**sepsis**).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Clostridium difficile infection (CDI)**: Sick patients who are being treated
+    at hospitals for infections are highly susceptible to the clostridium difficile
+    bacterium, which colonizes the GI tract after antibiotic therapy wipes out the
+    native GI flora. Poor sanitary conditions and improper washing of hands among
+    medical personnel are additional risk factors for C. difficile infection.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Methicillin-resistant *Staphylococcus aureus* (MRSA) infection**: MRSA is
+    a common, particularly virulent strain of the S. aureus bacterium that commonly
+    infects the skin and blood and is resistant to multiple antibiotics. It is commonly
+    contracted in hospitals and can be avoided by rapid treatment and care to avoid
+    transmission.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Surgical site infection (SSI)**: This results from improper sterilization
+    techniques during or after surgeries, resulting in infection of the wound or surgical
+    site.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The patient safety domain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The PSI 90 is a patient safety/complication measure produced by the **Agency
+    for** **Healthcare Research and Quality** (**AHRQ**). In 2017, it measured the
+    patient safety and complication rates at hospitals using 10 measures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**PSI 03: Pressure Ulcer Rate**: Pressure ulcers are skin lesions that form
+    when the patient has been in a bed in the same position for too long. It is commonly
+    used as a measure of hospital care quality/neglect.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 06: Iatrogenic Pneumothorax Rate**: A pneumothorax is a tear in the lung
+    wall that causes air to fill up in the cavity surrounding the lung, preventing
+    the patient from breathing properly. Some pneumothoraces are caused by hospital
+    procedures and these are known as iatrogenic pneumothoraces.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 08: In-Hospital Fall with Hip Fracture Rate**: Falls are common in elderly
+    patients in hospitals, especially following an operation or procedure. There are
+    certain precautions that can be taken to prevent falls in such patients, and hospitals
+    that fail to do so are often labeled as providing poor quality of care.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 09: Perioperative Hemorrhage or Hematoma Rate**: This measure gauges
+    the amount of excessive bleeding that occurs when patients undergo procedures
+    at the hospital.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 10: Postoperative Acute Kidney Injury Rate**: Following procedures or
+    operations, patients are at risk for injury to their kidneys due to decreased
+    blood flow or harmful contrast agents for x-rays.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 11: Postoperative Respiratory Failure Rate**: Following an operation,
+    complications also include respiratory failure, which is a life-threatening condition
+    that requires placing the patient on a ventilator under anesthesia and constant
+    supervision in an **intensive care unit** (**ICU**). Respiratory failure incidents
+    can be reduced by coaching patients to perform proper breathing exercises.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 12: Perioperative Pulmonary Embolism (PE) or Deep Vein Thrombosis (DVT)
+    Rate**: DVT is a blood clot that forms in the veins of the lower leg muscles.
+    Pulmonary embolism is when the clot travels via the bloodstream to the lung and
+    is a life-threatening complication. Many DVTs can be prevented by administering
+    heparin and other treatments during the hospital stay and encouraging the patient
+    to be active.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 13: Postoperative Sepsis Rate**: This measure gauges how often patients
+    that undergo operations at the hospital get infected after the operation. Sepsis
+    is a life-threatening condition in which bacteria have colonized the bloodstream
+    and are affecting organ function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PSI 14: Postoperative Wound Dehiscence Rate**: Wound dehiscence is the failure
+    of the operative site to close or heal correctly following the surgery. It is
+    a sign of poor surgical procedure and/or poor nutrition following the surgery.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'P**SI 15: Unrecognized Abdominopelvic Accidental Puncture/Laceration Rate**:
+    This measure gauges the frequency with which accidental punctures/lacerations
+    occur during abdominal or pelvic surgery.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More information can be found at [https://www.qualityindicators.ahrq.gov/News/PSI90_Factsheet_FAQ.pdf](https://www.qualityindicators.ahrq.gov/News/PSI90_Factsheet_FAQ.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The End-Stage Renal Disease (ESRD) quality incentive program
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The ESRD quality incentive program measures the quality of care received at
+    dialysis centers by Medicare ESRD patients. There are a total of 16 measures:
+    11 clinical and 5 reporting, and they are detailed here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**NHSN bloodstream infection in hemodialysis outpatients**: Infections may
+    occur from hemodialysis when the improper sterilization technique is used. This
+    measure examines the number of infections that occur (the numerator) and compares
+    it to the expected amount (the denominator).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**ICH CAHPS**: This measure examines the quality of care received at the dialysis
+    center through assessment of patient survey responses.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Standardized readmission ratio**: The standardized readmission ratio is the
+    number of actual unplanned 30-day readmissions divided by the expected unplanned
+    30-day readmissions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Kt/V dialysis adequacy measure – hemodialysis**: Kt/V is a formula that quantifies
+    the dialysis treatment adequacy. The four Kt/V measures examine how many treatment
+    sessions met a certain Kt/V threshold for different dialysis patient populations:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Kt/V dialysis adequacy measure – Peritoneal dialysis**'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Kt/V dialysis adequacy measure – Pediatric hemodialysis**'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Kt/V dialysis adequacy measure – Pediatric peritoneal dialysis**'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Standardized transfusion ratio**: This measure compares the number of actual
+    versus expected red blood cell transfusions in dialysis patients (blood transfusions
+    are undesirable consequences of dialysis).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Vascular access – Fistula**: The vascular access measures quantify whether
+    or not proper access was provided to the patient''s bloodstream. The Fistula measure
+    evaluates how many arteriovenous fistula sites used two needles for access.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Vascular access – Catheter** - The Catheter measure determines how many of
+    the catheters have been present in the patient for more than 90 days, which is
+    an infection risk.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Hypercalcemia**: This measure looks at how many months for which patients
+    experienced hypercalcemia, an adverse effect of dialysis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Mineral metabolism reporting**: The five reporting measures examine how well
+    various aspects of the dialysis patient''s care were reported by each facility.
+    The measures examine mineral metabolism reporting, anemia management reporting,
+    pain assessment, depression screening, and flu vaccine for personnel reporting:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Anemia management reporting
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pain assessment and follow-up reporting
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clinical depression screening and follow-up reporting
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Flu vaccine for personnel reporting
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Skilled Nursing Facility Value-Based Program (SNFVBP)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The SNFVBP is scheduled to start in 2019\. It will base Medicare reimbursement
+    from the government to SNFs partially on two outcome-related measures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 30-day all-cause readmission rate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The 30-day potentially preventable readmission rate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The rates apply to residents of SNFs who are admitted to other hospitals. When
+    this program begins SNFs could benefit from collaborating with machine learning
+    practitioners who predict which patients are at risk for readmission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More information about the SNFVBP can be found at the following link: [https://www.cms.gov/Medicare/Quality-Initiatives-Patient-Assessment-Instruments/Value-Based-Programs/Other-VBPs/SNF-VBP.html](https://www.cms.gov/Medicare/Quality-Initiatives-Patient-Assessment-Instruments/Value-Based-Programs/Other-VBPs/SNF-VBP.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Home Health Value-Based Program (HHVBP)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The HHVBP was started in January 2016 in nine of the 50 US states. It provides
+    payment adjustments to Medicare-certified **Home Health Agencies** (**HHAs**)
+    based on the quality of their care. The program will use 22 measures to gauge
+    the quality of care provided by the HHAs. These measures include survey, process,
+    and outcome measures, and include those for ED utilization and unplanned hospitalizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Merit-Based Incentive Payment System (MIPS)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'MIPS is a value-based program for individual and group outpatient physician
+    practices. It is a program that started in 2017, and it was enacted by the MACRA
+    Act of 2015\. Together with the APMs program, MIPS comprises Medicare''s **Quality
+    Payment Program** (**QPP**). It replaces and consolidates previous value-based
+    programs, such as the **Physician Quality Reporting System** (**PQRS**) and the
+    **Value Modifier (VM) **program. Provider groups are required to participate in
+    MIPS if they bill a certain amount from or have a certain amount of Medicare patients.
+    In MIPS, providers are evaluated based on four categories:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Advancing care information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Improvement activities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cost
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The breakdown for determining a practice''s final MIPS score for 2017 is the
+    following: 60% quality, 25% advancing care information, and 15% improvement activities.
+    Beginning in 2018, the cost will also determine the final MIPS score.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's take a detailed look at the four performance categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For the quality category, providers choose six measures from a list that includes
+    271 measures as of 2018\. Examples of measures include *Acute Otitis Externa (ear
+    infection): Topical Therapy* and *Varicose Vein Treatment with Saphenous Ablation:
+    Outcome Survey*. All medical specialties are represented so that providers can
+    choose the measures most suitable for them. The providers then collect and submit
+    the data corresponding to the specifications of the measure.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advancing care information
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This category includes measures that are related to advancing health information
+    technology. There are 15 measures in this category. Examples of measures include
+    reconciling patient information, reporting clinical data to a data registry, and
+    prescribing medication electronically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improvement activities
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this category, providers must demonstrate that they have taken steps to
+    improve their practices in the areas of care coordination, patient engagement,
+    and patient safety. Providers must demonstrate that they have completed up to
+    four measures for 3 months.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cost
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For the final category, the cost of care will be determined from claims data,
+    and providers who provide the most efficient care will be rewarded. The inclusion
+    of this category into the MIPS final score will begin in 2018.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other value-based programs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Aside from the value-based programs discussed above that are administered by
+    the CMS, there are also additional programs that are administered by other agencies.
+    Let's take a look at those here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Healthcare Effectiveness Data and Information Set (HEDIS)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The HEDIS is used to measure the quality of health insurance plans. It is administered
+    by the **National Committee for Quality Assurance** (**NCQA**). The HEDIS includes
+    approximately 90 measures that cover virtually every medical specialty. Many of
+    the measures share features with those already discussed previously, or with the
+    271 measures found in the clinical care category of MIPS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: State measures
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In 2018, almost every state has some form of value-based programs and incentives.
+    Often, these programs apply to Medicaid patients, since Medicaid is often administered
+    at the state level. Many states also adopt federally published measures and tweak
+    them for their own use. For example, the State of Georgia funds the Georgia Families
+    program ([https://dch.georgia.gov/georgia-families](https://dch.georgia.gov/georgia-families)),
+    which allows Georgia Medicaid patients to choose health insurance plans. It sets
+    goals and measures effectiveness by using HEDIS measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing dialysis facilities using Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous section, we outlined the value-based incentive programs implemented
+    by the CMS. One of those programs was the ESRDquality incentive program, which
+    financially rewards dialysis facilities based on the quality of care that they
+    provide to Medicare patients with ESRD. We described 16 measures by which each
+    ESRD case is evaluated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, we will download the data published by the CMS on dialysis
+    center performance across the US. We will use Python commands to wrangle this
+    data to extract the information we can use to find out which centers are performing
+    well and which ones may benefit from an analytic solution. Proper targeting of
+    marketing and sales efforts will increase the efficiency of analytic solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To download the dialysis facility comparison data, complete the following steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Navigate to the following URL: [https://data.medicare.gov/data/dialysis-facility-compare](https://data.medicare.gov/).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Locate the blue button on the page that is labeled DOWNLOAD CSV FLAT FILES (REVISED)
+    NOW. (To get the right year, you may have to select the GET ARCHIVED DATA button
+    instead). Click the button. A `.zip` file will begin to download.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Extract the `.zip` file using the appropriate Windows/Mac program or Linux command.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Take note of the directory and path for the file named `ESRD QIP - Complete
+    QIP Data - Payment Year 2018.csv`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Importing the data into your Jupyter Notebook session
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To import the `.csv` file into a Jupyter Notebook session, open the Jupyter
+    Notebook program as we did in [Chapter 1](b15b2b73-d2bb-410f-ab55-5f0f1e91730e.xhtml),
+    *Introduction to Healthcare Analytics*. Open a new notebook. Then, in the first
+    cell, type the following (substituting in your file path for that which is shown
+    here) and hit the Play button:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code uses the `read_csv()` function of the `pandas` library to
+    import the `.csv` file as a DataFrame. The `header` parameter tells the notebook
+    that the first line contains column names.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the backslashes appear in groups of two. That is because `\` is
+    an escape character in Python. Also, notice that the filename was too long to
+    fit in one line. In Python, statements can encompass multiple lines without special
+    treatment as long as the break is enclosed by parentheses and certain other punctuation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring the data rows and columns
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s explore the data. In the next cell, type the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the 2018 file, there should be 6,825 rows and 153 columns. Each row corresponds
+    to a dialysis facility in the United States. Here we used the `shape` attribute
+    of DataFrames, which returns a tuple containing the number of rows and number
+    of columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also get a visualization of what the DataFrame looks like by using the
+    `head()` function. The `head()` function takes a parameter, `n`, that tells it
+    how many rows of the DataFrame to print. In the next cell, type the following
+    and press Play:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: You should see some of the columns for the first five rows, such as facility
+    name, address, and measure scores. The `head()` function prints an abbreviated
+    list of columns, selecting some from the beginning of the `.csv` file and some
+    from the end, separated by an ellipsis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s get a complete list of all `153` columns. Type the following and press
+    *Enter*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, we use the `columns` attribute of a DataFrame, which gives us access
+    to the column names of the DataFrame as a list. Unfortunately, again, `pandas`
+    abbreviates the output so we can''t see all `153` columns. To do so, we need to
+    be more explicit and print each column using a `for` loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now you'll see all `153` column names. Use the scrollbar to skim through all
+    of them. You'll notice that each of the 16 measures has several columns associated
+    with it, and there are also additional columns like demographic data and total
+    performance scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have gained a rough overview of our dataset, we can move on to more
+    in-depth analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring the data geographically
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For the remainder of this section, we will be using a lot of SQL-like operations
+    in `pandas` to manipulate the data. Here is a conversion table between SQL and
+    `pandas` for some basic operations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Action** | **SQL syntax** | **`pandas` function** | **SQL example** | **`pandas`
+    example** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Selecting columns | `SELECT` | `[[]]` | `SELECT col1, col2, FROM df;` | `df[[''col1'',''col2'']]`
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Selecting rows | `WHERE` | `loc()`, `iloc()` | `SELECT * FROM df WHERE age=50;`
+    | `df.loc[df[''age'']==50]` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Sorting by a column | `ORDER BY` | `sort_values()` | `SELECT * FROM df ORDER
+    BY col1;` | `df.sort_values(''col1'')` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Aggregating by a column | `GROUP BY` | `groupby()` | `SELECT COUNT(*) FROM
+    df GROUP BY col1;` | `df.groupby(''col1'').size()` |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Limiting the number of rows | `LIMIT` | `head()` | `SELECT * FROM df LIMIT
+    5;` | `df.head(n=5)` |'
+  prefs: []
+  type: TYPE_TB
+- en: With these conversions in mind, we can begin to explore the data geographically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For starters, 6,825 dialysis facilities is a lot. Let''s try narrowing that
+    down by state. First, we count the dialysis facilities in each state:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: You should see a table containing 50 rows (one per state, each containing the
+    associated count).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s now sort the rows in descending order:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s further refine our query by limiting the output to 10 states:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'According to the results, California is the state with the most dialysis centers,
+    followed by Texas. If we wanted to filter dialysis facilities based on state,
+    we could do that by selecting the appropriate rows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Displaying dialysis centers based on total performance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Almost every exploration of such provider-centered data will include analyzing
+    facilities based on their quality scores. We will dive into that next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let''s get a count on the different scores received by the dialysis
+    facilities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: One thing to notice is that the `Total Performance Score` column is in a string
+    rather than integer format, and so to do numerical sorting, we must first convert
+    the column to integer format. Second, after running the preceding code, you'll
+    notice that 276 dialysis facilities have a value of `No Score` for the `Total
+    Performance Score` column. These rows must be eliminated before converting to
+    integer format to avoid throwing an error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the following code, we first eliminate the `No Score` rows, and then we
+    use the `to_numeric()` function of `pandas` to convert the string column to an
+    integer column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we create a new DataFrame that selects just a few columns that we are
+    interested in and sorts them, with the worst performing centers at the top. Such
+    a code block would be helpful for identifying the worst performing dialysis centers,
+    for example. We display the first five results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Alternatively, if we wished to analyze the mean total performance of each state''s
+    dialysis centers, we could do that by using `numpy.mean()` in conjunction with
+    `groupby()`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'According to the results of this query, Idaho and Wyoming have the nation''s
+    best performing dialysis centers. You could also add a column including the number
+    of dialysis centers in each state using the following modification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results indicate that when considering only states that have at least 100
+    dialysis centers, Arizona has the best total performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternative analyses of dialysis centers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The code introduced in this section can be adjusted to conduct all different
+    types of analyses on dialysis centers. For example, instead of measuring mean
+    performance by `State`, perhaps you wish to measure mean performance by dialysis
+    center owner. This can be done by changing the column by which you group in the
+    most recent example. Or maybe you wish to look at an individual measure instead
+    of `Total Performance Score`, which again can be accomplished by just changing
+    a column in the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have analyzed provider performance using dialysis centers in our
+    first example, we will take a look at a more complex dataset, the inpatient hospital
+    performance dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing hospitals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous example, we analyzed the performance of dialysis centers using
+    Python. Dialysis centers are just one small part of the healthcare provider pool
+    – a pool which also includes hospitals, outpatient offices, nursing homes, inpatient
+    rehabilitation facilities, and hospice providers, for example. As you were downloading
+    the dialysis facility comparison data from [https://data.medicare.gov](https://data.medicare.gov),
+    you might have noticed the presence of performance data for these other facilities.
+    We are going to now examine the data for a more complex facility type: the inpatient
+    hospital. The Hospital Compare dataset includes data for three of the eight CMS
+    value-based programs. It is a large dataset, and we are going to demonstrate some
+    advanced Python and `pandas` features using this data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading the data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To download the Hospital Compare dataset, complete the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Navigate to [https://data.medicare.gov/data/hospital-compare](https://data.medicare.gov/data/hospital-compare).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Locate the blue button on the page that is labeled DOWNLOAD CSV FLAT FILES (REVISED)
+    NOW. (To get the right year, you may have to select the GET ARCHIVED DATA button
+    instead). Click the button. A `.zip` file will begin to download.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Extract the `.zip` file using the appropriate Windows/Mac program or Linux command.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Take note of the path containing the extracted `.csv` files.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Importing the data into your Jupyter Notebook session
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Notice that the extracted Hospital Compare folder includes 71 files, the vast
+    majority of which are `.csv` files. That''s a lot of tables! Let''s import some
+    of the tables into a Jupyter Notebook:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding code loads the tables pertaining to the HVBP measure into the
+    Python session. There are five total tables, with four of the tables corresponding
+    to the four domains of the measure, and one table representing the overall scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that instead of explicitly creating and importing five dataframes, we created
+    a dictionary of dataframes using a comprehension. We covered dictionaries, lists,
+    and comprehensions in the Python chapter. This saves a lot of typing in this cell
+    and in upcoming cells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring the tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Next, let''s explore the tables and check the numbers of rows and columns in
+    each:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the preceding cell, we used the `items()` method of dictionaries to iterate
+    over each key-DataFrame pair in the dictionary of DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tables all have the same number of rows. Since each row corresponds to a
+    hospital, it is safe to assume that the hospitals in all of the tables are the
+    same (we will test that assumption shortly).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Any analysis we perform is limited due to the separation of the tables. Since
+    all the hospitals are (assumed to be) the same, we can combine all the columns
+    into one table. We will do that using the `merge()` function of `pandas`. Using `pandas`
+    `merge()` is akin to using `SQL JOIN` (you learned about `SQL JOIN` in [Chapter
+    4](e1b89921-e75b-4b16-a567-8970a173db53.xhtml), *Computing Foundations – Databases*).
+    The merge is performed by specifying a common ID column present in both of the
+    tables on which the rows will be matched. To see whether there is a common ID
+    column in the five HVBP tables, we can print out the column names of each table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you scroll through the results, you'll notice the presence of the `Provider
+    Number` column in all of the tables. `Provider Number` is a unique identifier
+    that can be used to link the tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Merging the HVBP tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s try joining two of the tables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our merge appears to have worked since the number of columns in `df_master`
+    is the sum of the columns of first two DataFrames, minus one (the `on` column
+    is not copied). Let''s look at the columns of the new DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: The duplicate columns (`Hospital Name`, `Address`, `City`, and so on) had suffixes
+    `_x` and `_y` added to their names in the joined table, to indicate which table
+    they are from, confirming that the merge worked.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s use a `for` loop to join the three remaining tables to `df_master`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this cell, first we use a loop to rename all columns from `Provider_Number`
+    to `Provider Number`, so we can join the tables cleanly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we use a loop to join each remaining table to `df_master`. The number of
+    columns in the resulting table equals the sum of the columns of the tables, minus
+    four.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To confirm that the merge worked, we can print the columns of our new table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Scrolling through the output confirms that all of the columns from the five
+    tables are present.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We leave it to you to perform additional analyses on the dataset, using the
+    code examples from the *Comparing dialysis facilities* section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have taken a look at some prominent value-based programs
+    that are shaping the US healthcare industry today. We have seen how these programs
+    quantify provider performance through the use of measures. Additionally, we have
+    downloaded the data for comparing dialysis facilities and hospitals and worked
+    through some code examples in Python to see how to analyze this data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One might argue that the analysis in this chapter could be accomplished by using
+    a spreadsheet application such as Microsoft Excel rather than programming. In
+    [Chapter 7](d029d858-9c6e-4bf0-b793-87cdc4395e86.xhtml), *Making Predictive Models
+    in Healthcare*, we will train predictive models on a healthcare dataset to predict
+    discharge status in the ED. As you will see, this type of analysis almost certainly
+    requires writing code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data.Medicare.gov (2018). Retrieved April 28, 2018 from [https://data.medicare.gov](https://data.medicare.gov).
+  prefs: []
+  type: TYPE_NORMAL
+- en: MIPS Overview (2018). Retrieved April 28, 2018, from [https://qpp.cms.gov/mips/overview](https://qpp.cms.gov/mips/overview).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the value-based programs? (2017, November 9th). *Centers for Medicare
+    and Medicaid Services*. Retrieved April 28, 2018, from [https://www.cms.gov/Medicare/Quality-Initiatives-Patient-Assessment-Instruments/Value-Based-Programs/Value-Based-Programs.html](https://www.cms.gov/Medicare/Quality-Initiatives-Patient-Assessment-Instruments/Value-Based-Programs/Value-Based-Programs.html).
+  prefs: []
+  type: TYPE_NORMAL

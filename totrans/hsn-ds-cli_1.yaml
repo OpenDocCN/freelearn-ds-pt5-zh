@@ -1,0 +1,486 @@
+- en: Data Science at the Command Line and Setting It Up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '"In the beginning... was the command line" Years ago, we didn''t have fancy
+    frameworks that handled our distributed computing for us, or applications that
+    could read files intelligently and give us accurate results. If we did, it was
+    very expensive or only worked for a small problem set, very few people had access
+    to this technology, and it was mostly proprietary.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For newcomers to the world of data science, you might have used the command
+    line for a small number of things. Maybe you moved a file from one place to another
+    using `mv`, or read a file using `cat`. Or you might have never used the command
+    line at all, or at least not for data science. In this book, we hope to show you
+    a number of tools and ways you can perform some everyday tasks that you can do
+    locally, without using today's buzzword framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We created this book for the folks who have little to no experience with the
+    command line, and perform a lot of data extraction, modelling, parsing, and analyzing.
+    This doesn't mean that if you do have a lot of command-line experience (a lot
+    of DevOps and systems folks do), you shouldn't read this book. In fact, you might
+    pick up a couple commands and techniques that you haven't used before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The history of the command line
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Language-focused shells
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why use the command line?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We will also walk through the setup and configuration of the command line with
+    the following operating systems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Windows 10
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mac OS X
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ubuntu Linux
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you are running a different operating system, we suggest obtaining an instance
+    from a cloud provider or using the Docker container that's provided in this book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: History of the command line
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Since the very first electronic machines, people have strived to communicate
+    with them the same way that we humans talk to each other. But since natural-language
+    processing was beyond the technological grasp of early computer systems, engineers
+    relatively quickly replaced the punch cards, dials, and knobs of early computing
+    machines with teletypes: typewriter-like machines that enabled keyed input and
+    textual output to a display. Teletypes were replaced fairly quickly with video
+    monitors, enabling a world of graphical displays. A novelty of the time, teletypes
+    served a function that was missing in graphical environments, and thus terminal
+    emulators were born for serving as the modern interface to the command line. The
+    programs behind the terminals started out as an ingrained part of the computer
+    itself: resident monitor programs that were able to start a job, detect when it
+    was done, and clean up.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As computers grew in complexity, so did the programs controlling them. Resident
+    monitors gave way to operating systems that were able to share time between multiple
+    jobs. In the early 1960s, Louis Pouzin had the brilliant idea to use the commands
+    being fed to the computer as a kind of program, a *shell* around the operating
+    system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"After having written dozens of commands for CTSS, I reached the stage where
+    I felt that commands should be usable as building blocks for writing more commands,
+    just like subroutine libraries. Hence, I wrote RUNCOM, a sort of shell that drives
+    the execution of command scripts, with argument substitution. The tool became
+    instantly popular, as it became possible to go home in the evening and leaving
+    long runcoms to execute overnight."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scripting in this way, and the reuse of tooling, would become an ingrained trope
+    in the exciting new world of programmable computing. Pouzin's concepts for a programmable
+    shell made their way into the design and philosophy of Multics in the 1960s and
+    its Bell Labs successor, Unix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the Bell System Technical Journal from 1978, Doug McIlroy wrote the following
+    regarding the Unix system:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"A number of maxims have gained currency among the builders and users of the
+    UNIX system to explain and promote its characteristic style: Make each program
+    do one thing well. To do a new job, build afresh rather than complicate old programs
+    by adding new features."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expect the output of every program to become the input to another, as yet unknown,
+    program. Don't clutter output with extraneous information. Avoid stringently columnar
+    or binary input formats. Don't insist on interactive input.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Design and build software, even operating systems, to be tried early, ideally
+    within weeks. Don't hesitate to throw away the clumsy parts and rebuild them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use tools in preference to unskilled help to lighten a programming task, even
+    if you have to detour to build the tools and expect to throw some of them out
+    after you've finished using them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This is the core of the Unix philosophy and the key tenets that make the command
+    line not just a way to launch programs or list files, but a powerful group of
+    community-built tools that can work together to process data in a clean, simple
+    manner. In fact, McIlroy follows up with this great example of how this had led
+    to success with data processing, even back in 1978:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"Unexpected uses of files abound: programs may be compiled to be run and also
+    typeset to be published in a book from the same text without human intervention;
+    text intended for publication serves as grist for statistical studies of English
+    to help in data compression or cryptography; mailing lists turn into maps. The
+    prevalence of free-format text, even in "data" files, makes the text-processing
+    utilities useful for many strictly data processing functions such as shuffling
+    fields, counting, or collating."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Having access to simple yet powerful components, programmers needed an easy
+    way to construct, reuse, and execute more complicated commands and scripts to
+    do the processing specific to their needs. Enter the early fully-featured command
+    line shell: the Bourne shell. Developed by Stephen Bourne (also at Bell Labs)
+    in the late 1970s for Unix''s System 7, the Bourne shell was designed from the
+    start with programmers like us in mind: it had all the scripting tools needed
+    to put the community-developed single-purpose tools to good use. It was the right
+    tool, in the right place, at the right time; almost all Unix systems today are
+    based upon System 7 and nearly all still include the original Bourne shell as
+    an option. In this book, we will use a descendant of the venerable Bourne shell,
+    known as Bash, which is a rewrite of the Bourne shell released in 1989 for the
+    GNU project that incorporated the best features of the Bourne shell itself along
+    with several of its earlier spinoffs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don't want to BaSH other shells, but...
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this book, we decided to focus on using the **Bourne-again shell** (**bash**)
+    for multiple reasons. First, it's the most popular shell and you can find it everywhere.
+    In fact, for the majority of Linux distributions, bash is the default shell. It's
+    a great first shell to learn and very easy to work with. There's a number of examples
+    and resources available to help you with bash if you ever get stuck. It's also
+    safe to say that since it's so popular, you can find it on almost any system available
+    today. From a bare-metal installation in a data center to an instance running
+    in the cloud, bash is there, installed, and waiting for input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of other shells you can choose from, such as the *Z* shell
+    (`zsh`). The *Z* shell is fairly new (and by new I mean released in 1990, which
+    is new in shell land) and provides a number of powerful features. Other notable
+    shells are `tcsh`, `ksh`, and `fish`. The *C* Shell (`tcsh`), the Korn Shell (`ksh`),
+    and the **Friendly Interactive Shell** (**fish**) are still widely used today.
+    FreeBSD has made `tcsh` its default shell for the root user and `ksh` is still
+    used for a lot of Solaris operating systems. Fish is also a great starter shell
+    with a lot of features to help the user navigate the shell without feeling lost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While these shells are still very powerful and stable, we will be focusing on
+    using bash, as we want to focus on consistency across multiple platforms and help
+    you learn a very active and popular shell that's been around for 30 years.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Language-focused shells
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a data scientist, I'm sure you do a lot of work with Python and Scala or
+    have at least heard of those two languages. Two of our favorite shell replacements
+    are Xonsh and Ammonite. Xonsh ([https://xon.sh/](https://xon.sh/)) is a Python-powered
+    shell that uses Python 3.4, and Ammonite ([http://ammonite.io/](http://ammonite.io/))
+    is a Scala-powered shell that uses Scala 2.11.7 (both versions are at time of
+    writing). If you find yourself using a lot of Python or Scala in your day-to-day
+    work, we recommend checking those shell replacements out as well after you've
+    mastered the command line using bash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, why the command line?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As the field of data science is still fairly new (it used to be called **operations
+    research**), the tools and frameworks are also fairly new. With that being said,
+    the command line is almost 50 years old and still one of the most powerful tools
+    used today. If you're familiar with interpreters, the command line will come easy
+    to you. Think of it as a place to experiment and see your results in real time.
+    Every command you enter is executed interactively, and when you call a bash script
+    to run, it executes sequentially (unless you decide not to, more in later chapters).
+    As we know, experimenting and exploring is most of what data science tries to
+    accomplish (and it's the most fun!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I was having a conversation with a newly-graduated data science student about
+    parsing text and asked, "How would you take a small file and provide a word count
+    on how many time the words appear?" By now everyone is familiar with the infamous
+    Hadoop word-count example. It's considered the "Hello, World" of data science.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer I received was a little shocking but expected. The student instantly
+    replied that they'd use Hadoop to read the file, tokenize the words to form a
+    key/value pair, reduce all the keys and values that are grouped together, and
+    add up the occurrences. The student isn't wrong, in fact, that's a perfectly acceptable
+    answer. Especially if the file is too large for a single system (big data), you
+    already have the code in place to scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With that being said, what if I told you there''s a quicker way to obtain the
+    results that doesn''t require programming in Java and setting up a cluster or
+    having Hadoop run locally? In fact, it would only take one line to complete the
+    task? Check out the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This may seem like a lot, especially if you've never used the command line before,
+    so let's break it down. The `cat` command reads files sequentially and writes
+    them to standard output. `|`, also known as pipe or the pipe operator, combines
+    a sequence of commands chained together by their standard streams so that the
+    output of each process (`stdout`) feeds directly as input (`stdin`) to the next
+    one. `tr` (translate) reads the input from `cat` (via `|` ) and writes the result
+    to standard output that replaces spaces with new lines. The `grep` command is
+    very powerful and the most used for a lot of data parsing. `grep` is used to search
+    plain-text data for lines that match a regular expression. In this example, `grep` trims
+    out the empty lines. `sort` is used for, well, sorting! You'll notice a lot of
+    the commands are named for what they actually do. The `sort` command prints the
+    lines of its input or concatenation of files listed in its argument list in sorted
+    order. `uniq` is a command that, when fed a text file, outputs the file with adjacent
+    identical lines collapsed to one. It usually works well with the `sort` command.
+    In this example, `uniq -c` is called to count occurrences. And finally, `sort
+    -bnr` sorts in numeric reverse order and ignores whitespace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don't worry if the example looks foreign to you. The command line also comes
+    with manual pages for each command. All you have to do is `man` the command to
+    view the page. You can even `man man` to get an idea of what the `man` command
+    does! Give it a whirl and `man tr` or `man sort`. Oh, you don't have the command
+    line set up? It's easier than you think, and we can get you up in running in minutes,
+    so let's get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting set up with Windows 10
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We want the readers to keep in mind that PowerShell will not work with the
+    examples listed in this book. However, Microsoft has seen fit to release their
+    Windows Subsystem for Linux as of Windows 10 version 1607 and later. It''s also
+    easy to install: open the Microsoft Store, search for `Ubuntu` (a Linux distribution),
+    and install it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e5389436-22c5-435c-befe-9804a4516a01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In Windows 10 version 1607 and later, you have the ability to run Linux natively
+    with your choice of distribution. In this example, we will use Ubuntu on top of
+    Windows 10 to get our workspace set up. Make sure you have the latest version
+    of Windows installed in order to take advantage of WSL (Windows Subsystem for
+    Linux); at a minimum, you need the Windows 10 Fall Creator update to proceed.
+    Also keep in mind that WSL is in beta at the time of writing. If you don''t feel
+    comfortable installing beta software, I recommend finding an alternative, such
+    as an EC2 instance on AWS, or skipping ahead to the *Docker* section of this book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Go to the Start menu and search for PowerShell:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/f180f301-e6c7-48d1-a70f-abb501ae6088.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Double-click Windows PowerShell and click Run as Administrator.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Type the following command to enable WSL:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following should be displayed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/c252c57c-b17f-453c-9cf2-348d91ffe433.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You will be asked to confirm your choice. Use *Y* or press *Enter*:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/c1a8cfbd-f638-496e-9f41-91bca02a5666.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Press *Y* to reboot.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Once your system has rebooted, do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go to the Start menu and search for Store.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Search for Ubuntu:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/b9902b06-f6e2-4cab-8f17-56ecb250c1f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Click Install:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/c7a4523d-722c-423a-8766-1c9f1fd00cca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Click Launch.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'When asked to create a username and password, go ahead and create one. Make
+    sure you remember this information as you''ll need it throughout this book:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/98f6a139-2bba-4acc-826d-15bf51f551c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Success! You now have completed the setup and installation of Linux on Windows
+    10.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Install the following tools as we will be using them throughout this book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Getting set up on OS X
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'OS X already has a full command-line system installed using bash as the default
+    shell. To access this shell, click the magnifying glass in the upper-right corner
+    and type `terminal` in the dialog box:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/d1f9b9a6-592a-4076-be14-879d811fa2a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This will open a bash Terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/e2c0707a-4bfc-4cad-8d5b-62dbefaec631.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As in other bash shells, this Terminal doesn''t have everything installed,
+    so type the following commands to install the requisite installers and command-line
+    tools that we''ll be using in this book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: On OS X, this script installs a few installation tools, including `pip` and `homebrew`.
+    It then uses these tools to install the commands that we use in this book that
+    aren't natively installed, namely `jq`, `gnuplot`, `sqlite`, and `pandas`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One thing to look out for in OS X is that certain standard tools are built a
+    little differently than the ones that come with Debian-based systems like the
+    rest of the systems we talk about in this chapter. In some circumstances, OS X
+    tools work slightly differently or have different options. Where this is the case
+    we have noted it in the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting set up on Ubuntu Linux
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Ubuntu has a full built-in command-line shell and typically uses bash as the
+    default shell. Different window managers have slightly different ways of opening
+    a Terminal window. For example, in the image of Ubuntu 17.10 Artful (located at
+    [https://www.osboxes.org/ubuntu/](https://www.osboxes.org/ubuntu/)), open the
+    Terminal by clicking on Activities in the upper-left corner and typing `terminal`
+    in the dialog:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/1b3a32d8-96a6-4e9e-9a8d-2d7ce0ba587d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This will bring up a command-line prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/33e324a6-3279-4df3-a3cc-87e03638bedb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As in other bash shells, this shell doesn''t have everything installed, so
+    type the following command to install the installers and command-line tools that
+    we will use in this book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: On Ubuntu, this script installs a few installation tools, including pip. It
+    then uses these tools to install the commands that we use in this book that aren't
+    natively installed, namely `jq`, `gnuplot`, `sqlite`, `curl`, and `pandas`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting set up with Docker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'What if there were a way to obtain an image with all the commands preinstalled
+    and you were able to run it on most major operating systems without any issues?
+    That''s exactly what Docker provides, and you can quickly get up and running in
+    a matter of minutes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visit [https://www.docker.com/community-edition](https://www.docker.com/community-edition) and
+    install the version of Docker for your operating system
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Run the following command to obtain the Docker image:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The command line has a long history, and it can be quite foreign to newcomers.
+    In this chapter, we covered the environment setup steps so that you can follow
+    along with the examples in this book. Essential commands will introduce what you
+    need to succeed, followed by acquiring datasets that we can play with. We will
+    cover all the shell magic, such as background processes, writing shell functions,
+    basic shell control-flow constructs, visualizing results, processing strings,
+    simulating database functionality, simple math constructs, and finally a synthesis
+    of all of these in a penultimate chapter of magical fascination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Everything you need to explore the rest of the book is now installed and configured.
+    As you saw, the command line can run on pretty much anything, which makes it an
+    invaluable tool to have in your toolkit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will use our newly-installed command-line environment
+    to run some essential commands, learn how to customize the shell, and look at
+    how to use the built-in help when we get stuck.
+  prefs: []
+  type: TYPE_NORMAL

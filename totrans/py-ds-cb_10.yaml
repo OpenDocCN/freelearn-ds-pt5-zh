@@ -1,0 +1,993 @@
+- en: Chapter 10. Large-Scale Machine Learning – Online Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will see the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using perceptron as an online linear algorithm
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using stochastic gradient descent for regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using stochastic gradient descent for classification
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we will concentrate on large-scale machine learning and the
+    algorithms suited to tackle such large-scale problems. Till now, when we trained
+    all our models, we assumed that our training set can fit into our computer's memory.
+    In this chapter, we will see how to go about building models when this assumption
+    is no longer satisfied. Our training records are of a huge size and so we cannot
+    fit them completely into our memory. We may have to load them piecewise and still
+    produce a model with a good accuracy. The argument of a training set not fitting
+    into our computer memory can be extrapolated to streaming data. With streaming
+    data, we don't see all the data at once. We should be able to make decisions based
+    on whatever data we are exposed to and also have a mechanism for continuously
+    improving our model as new data arrives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will introduce the framework of the stochastic gradient descent-based algorithms.
+    This is a versatile framework to handle very large-scale datasets that will not
+    fit completely into our memory. Several types of linear algorithms, including
+    logistic regression, linear regression, and linear SVM, can be accommodated using
+    this framework. The kernel trick, which we introduced in our previous chapter,
+    can be included in this framework in order to deal with datasets with nonlinear
+    relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will begin our list of recipes with the perceptron algorithm, the oldest
+    machine learning algorithm. Perceptron is easy to understand and implement. However,
+    Perceptron is limited to solving only linear problems. A kernel-based perceptron
+    can be used to solve nonlinear datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our second recipe, we will formally introduce the framework of gradient descent-based
+    methods and how it can be used to perform regression-based tasks. We will look
+    at different loss functions to see how different types of linear models can be
+    built using these functions. We will also see how perceptron belongs to the family
+    of stochastic gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our final recipe, we will see how classification algorithms can be built
+    using the stochastic gradient descent framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though we don't have a direct example of streaming data, with our existing
+    datasets, we will see how the streaming data use cases can be addressed. Online
+    learning algorithms are not limited to streaming data, they can be applied to
+    batch data also, except that they process only one instance at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using perceptron as an online learning algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As mentioned earlier, perceptron is one of the oldest machine learning algorithms.
+    It was first mentioned in a 1943 paper:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A LOGICAL CALCULUS OF THE IDEAS IMMANENT IN NERVOUS ACTIVITY*. WARREN S. MCCULLOCH
+    AND WALTER PITTS University of Illinois, College of Medicine, Department of Psychiatry
+    at the Illinois Neuropsychiatric Institute, University of Chicago, Chicago, U.S.A.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's revisit our definition of a classification problem. Each record or instance
+    can be written as a set (X,y), where X is a set of attributes and y is a corresponding
+    class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning a target function, F, that maps each record's attribute set to one
+    of the predefined class label, y, is the job of a classification algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference in our case is that we have a large-scale learning problem. All
+    our data will not fit into our main memory. So, we need to keep our data on a
+    disk and use only a portion of it at a time in order to build our perceptron model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s proceed to outline the perceptron algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize the weights of the model to a small random number.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Center the input data, `x`, with its mean.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'At each time step t (also called epoch):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shuffle the dataset
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pick a single instance of the record and make a prediction
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Observe the deviation of the prediction from the true label output
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Update the weights if the prediction is different from the true label
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let's consider the following scenario. We have the complete dataset on our disk.
+    In a single epoch, that is, in step 3, all the steps mentioned are performed on
+    all the data on our disk. In an online learning scenario, a bunch of instances
+    based on a windowing function will be available to us at any point in time. We
+    can update the weights as many times as the number of instances in our window
+    in a single epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's see how to go about updating our weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s say our input X is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using perceptron as an online learning algorithm](img/B04041_10_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our `Y` is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using perceptron as an online learning algorithm](img/B04041_10_02.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We will define our weights as the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using perceptron as an online learning algorithm](img/B04041_10_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our prediction after we see each record is defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using perceptron as an online learning algorithm](img/B04041_10_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The sign function returns +1 if the product of the weight and attributes is
+    positive, or -1 if the product is negative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perceptron proceeds to compare the predicted y with the actual y. If the predicted
+    y is correct, it moves on to the next record. If the prediction is incorrect,
+    there are two scenarios. If the predicted y is +1 and the actual y is -1, it decrements
+    the weight with an x value, and vice versa. If the actual y is +1 and the predicted
+    y is -1, it increments the weights. Let''s see this as an equation for more clarity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using perceptron as an online learning algorithm](img/B04041_10_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Typically, a learning rate alpha is provided so that the weights are updated
+    in a controlled manner. With the presence of noise in the data, a full increment
+    of decrements will lead to the weights not converging:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using perceptron as an online learning algorithm](img/B04041_10_06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Alpha is a very small value ranging, between 0.1 and 0.4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's jump into our recipe now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's generate data using `make_classification` in batches with a generator
+    function to simulate large-scale data and data streaming, and proceed to write
+    the perceptron algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s load the necessary libraries. We will then write a function, `get_data`,
+    which is a generator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will proceed to write two functions, one to build our perceptron model and
+    the other one to test the worthiness of our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our main function to invoke all the preceding functions,
+    to demonstrate the perceptron algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s start with our main function. We will ask our generator to send us 10
+    sets of data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here, we want to simulate both large-scale data and data streaming. While building
+    our model, we don''t have access to all the data, just part of it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will use the `next()` function in the generator in order to get the next
+    set of data. In the `get_data` function, we will use the `make_classification`
+    function from scikit-learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's look at the parameters passed to the `make_classification` method. The
+    first parameter is the number of instances required, in this case, we need 1,000
+    instances. The second parameter is about how many attributes per instance are
+    required. We will assume that we need 30\. The third parameter, `flip_y`, randomly
+    interchanges 3 percent of the instances. This is done to introduce some noise
+    in our data. The next parameter is about these 30 features and how many of them
+    should be informative enough to be used in our classification. We specified that
+    60 percent of our features, that is, 18 out of 30, should be informative. The
+    next parameter is about the redundant features. These are generated as a linear
+    combination of the informative features in order to introduce correlation among
+    the features. Finally, repeated features are duplicate features that are drawn
+    randomly from both the informative features and the redundant features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we call `next()`, we will get 1,000 instances of this data. This function
+    returns a y label as `{0,1}`; we want `{-1,+1}` and hence we will change all the
+    zeros in y to `-1`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we will center our data using the scale function from scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s proceed to build our model with the first batch of data. We will initialize
+    our weights matrix with zeros:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As we need 10 batches of data to simulate large-scale learning and data streaming,
+    we will do the model building 10 times in the for loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our perceptron algorithm is built in `build_model`. A predictor x, response
+    variable y, the weights matrix, and number of time steps or epochs are passed
+    as parameters. In our case, we have set the number of epochs to `100`. This function
+    has one additional parameter, alpha value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: By default, we have set our alpha value to `0.5`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see in our `build_model`. We will start with shuffling the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will go through each record in our dataset and start updating our weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the for loop, you can see that we do the prediction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will multiply our training data with weights, and add them together. Finally,
+    we will use the np.sign function to get our prediction. Now, based on the prediction,
+    we will update our weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: That is all. We will return the weights to the calling function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our main function, we will invoke the `model_worth` function to print the
+    goodness of the model. Here, we will use the `classification_report` convienience
+    function to print the accuracy score of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will then proceed to update our model for the next batch of incoming data.
+    Note that we have not altered the `weights` parameter. It gets updated with every
+    batch of new data coming in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s see what `model_worth` has printed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_10_07.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Scikit-learn provides us with an implementation of perceptron. Refer to the
+    following URL for more details:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Perceptron.html](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Perceptron.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another improvement that can be made in the perceptron algorithm is to use more
+    features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remember the prediction equation, we can rewrite it as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_10_08.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We replaced the x values with a function. Here, we can send a feature generator.
+    For example, a polynomial feature generator can be added to our `get_data` function,
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, kernel-based perceptron algorithms are available to handle nonlinear
+    datasets. Refer to the Wikipedia article for more information about kernel-based
+    perceptron:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://en.wikipedia.org/wiki/Kernel_perceptron](https://en.wikipedia.org/wiki/Kernel_perceptron).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Learning and using Kernels* recipe in [Chapter 5](ch05.xhtml "Chapter 5. Data
+    Mining – Needle in a Haystack"), *Data Mining - Finding a needle in a haystack*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using stochastic gradient descent for regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In a typical regression setup, we have a set of predictors (instances), as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_09.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Each instance has m attributes, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_10.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The response variable, Y, is a vector of real-valued entries. The job of regression
+    is to find a function such that when x is provided as an input to this function,
+    it should return y:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The preceding function is parameterized by a weight vector, that is, a combination
+    of the weight vector and input vector is used to predict `Y`, so rewriting the
+    function with the weight vector will get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_13.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So, the question now is how do we know that we have the right weight vectors?
+    We will use a loss function, L, to get the right weight vectors. The loss function
+    measures the cost of making a wrong prediction. It empirically measures the cost
+    of predicting y when the actual value is y. The regression problem now becomes
+    the problem of finding the right weight vector that will minimize the loss function.
+    For our whole dataset of `n` elements, the overall loss function is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_14.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our weight vectors should be those that minimize the preceding value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent is an optimization technique used to minimize the preceding
+    equation. For this equation, we will find the gradient, that is, the first-order
+    derivative with respect to W.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unlike other optimization techniques such as the batch gradient descent, stochastic
+    gradient descent operates on one instance at a time. The steps involved in stochastic
+    gradient descent are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each epoch, shuffle the dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Pick an instance and its response variable, y.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the loss function and its derivative, w.r.t weights.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Update the weights.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let''s say:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_15.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This signifies the derivative, w.r.t w. The weights are updated as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_16.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, the weights are moved in the opposite direction to the gradient,
+    thus forcing a descent that will eventually give the weight vector values, which
+    can reduce the objective cost function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A squared loss is a typical loss function used with regression. The squared
+    loss of an instance is defined in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_17.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The derivative of the preceding equation is substituted into the weight update
+    equation. With this background knowledge, let's proceed to our recipe for stochastic
+    gradient descent regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As explained in perceptron, a learning rate, eta, is added to the weight update
+    equation in order to avoid the effect of noise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for regression](img/B04041_10_18.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will be leveraging the scikit-learn's implementation of SGD regression. As
+    in some of the previous recipes, we will use the `make_regression` function from
+    scikit-learn to generate data for our recipe in order to demonstrate stochastic
+    gradient descent regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's start with a very simple example demonstrating how to build a stochastic
+    gradient descent regressor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will first load the required libraries. We will then write a function to
+    generate predictors and response variables to demonstrate regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will proceed to write the functions that will help us build, validate, and
+    inspect our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our main function to invoke all the preceding functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s start with our main function. We will invoke the `get_data` function
+    to generate our predictor x and response variable y:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the `get_data` function, we will leverage the convenient `make_regression`
+    function from scikit-learn to generate a dataset for the regression problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, we will generate a dataset with 1,000 instances specified by
+    an `n_samples` parameter, and 30 features defined by an `n_features` parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s split the data into training and testing sets using `train_test_split`.
+    We will reserve 30 percent of our data to test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once again, we will leverage `train_test_split` to split our test data into
+    dev and test sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the data divided to build, evaluate, and test the model, we will proceed
+    to build our models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will invoke the `build_model` function with our training dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In `build_model`, we will leverage scikit-learn''s SGD regressor class to build
+    our stochastic gradient descent method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: The SGD regressor is a vast method and can be used to fit a number of linear
+    models with a lot of parameters. We will first explain the basic method of stochastic
+    gradient descent and then proceed to explain the other details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's look at the parameters that we used. The first parameter is the number
+    of times that we want to go through our dataset in order to update the weights.
+    Here, we will say that we want 10 iterations. As in perceptron, after going through
+    all the records once, we need to shuffle our input records when we start the next
+    iteration. A parameter shuffle is used for the same. The default value of shuffle
+    is true, we have included it here for explanation purposes. Our loss function
+    is the squared loss and we want to do a linear regression; hence, we will specify
+    this using the loss parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our learning rate, eta, is a constant that we will specify with the `learning_rate`
+    parameter. We will provide a value for our learning rate using the eta`0` parameter.
+    We will then say that we need to fit the intercept as we have not centered our
+    data by its mean. Finally, the penalty parameter controls the type of shrinkage
+    required. In our case, we don't need any shrinkage using the none string.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will proceed to build our model by invoking the fit function with our predictor
+    and response variable. Finally we will return the model that we built to our calling
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s now inspect our model and see the value of the intercept and coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the inspect model, we will print the values of the model intercepts and
+    coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_10_19.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s now look at how our model has performed in our training data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will invoke the model_worth function to look at our model's performance.
+    The model_worth function prints the mean absolute error and mean squared error
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The mean squared error is defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_10_22.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The mean absolute error is defined in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_10_23.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The mean squared error is sensitive to outliers. Hence, the mean absolute error
+    is a more robust measure. Let''s look at the model''s performance using the training
+    data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_10_20.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s now look at the model''s performance using our dev data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_10_21.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can include regularization in the stochastic gradient descent framework.
+    Recall the following cost function of ridge regression from the previous chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_10_24.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We included an expanded version of the square loss function here and added
+    the regularization term—the sum of the square of the weights. We can include it
+    in our gradient descent procedure. Let''s say that we denote our regularization
+    term as R(W). Our weight update is now as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_10_25.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you can see, now we have the derivative of the loss function with respect
+    to the weight vector, w, and the derivative of the regularization term with respect
+    to the weights is added to our weight update rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s write a new function to build our model to include regularization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can invoke this function from our main function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s see the new parameters that we passed compared with our previous build
+    model method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Earlier, we mentioned our penalty as none. Now, you can see that we mentioned
+    that we need to add an L2 penalty to our model. Again, we will give an `alpha`
+    value of `0.01` using the `alpha` parameter. Let''s look at our coefficients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_10_26.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You can see the effect of the L2 regularization: a lot of the coefficients
+    have attained a zero value. Similarly, the L1 regularization and elastic net,
+    which combines both the L1 and L2 regularization, can be included using the penalty
+    parameter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember in our introduction, we mentioned that stochastic gradient descent
+    is more of a framework than a single method. Other linear models can be generated
+    using this framework by changing the loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'SVM regression models can be built using the epsilon-insensitive loss function.
+    This loss function is defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![There''s more…](img/B04041_10_27.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Refer to the following URL for the various parameters that can be passed to
+    the SGD regressor in scikit-learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Predicting real valued numbers using regression* recipe in [Chapter 7](ch07.xhtml
+    "Chapter 7. Machine Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Shrinkage using Ridge Regression* recipe in [Chapter 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using stochastic gradient descent for classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A classification problem setup is very similar to a regression setup except
+    for the response variable. In a classification setup, the response is a categorical
+    variable. Due to its nature, we have a different loss function to measure the
+    cost of the wrong predictions. Let's assume a binary classifier for our discussion
+    and recipe, and our target variable, Y, can take the values {`0`,`1`}.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use the derivative of this loss function in our weight update rule to
+    arrive at our weight vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SGD classifier class from scikit-learn provides us with a variety of loss
+    functions. However, in this recipe, we will see log loss, which will give us logistic
+    regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Logistic regression fits a linear model to a data of the following form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for classification](img/B04041_10_29.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have given a generalized notation. The intercept is assumed to be the first
+    dimension of our weight vector. For a binary classification problem, a logit function
+    is applied to get a prediction. as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for classification](img/B04041_10_30.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The preceding function is also called the sigmoid function. For very large
+    positive values of x_i, this function will return a value close to one, and vice
+    versa for large negative values close to zero. With this, we can define our log
+    loss function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Using stochastic gradient descent for classification](img/B04041_10_31.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: With the preceding loss function fitted into the weight update rule of the gradient
+    descent, we can arrive at the appropriate weight vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the log loss function defined in scikit-learn, refer to the following URL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.metrics.log_loss.html](http://scikit-learn.org/stable/modules/generated/sklearn.metrics.log_loss.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this knowledge, let's jump into our recipe for stochastic gradient descent-based
+    classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will leverage scikit-learn's implementation of the stochastic gradient descent
+    classifier. As we did in some of the previous recipes, we will use the `make_classification`
+    function from scikit-learn to generate data for our recipe in order to demonstrate
+    the stochastic gradient descent classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's start with a very simple example demonstrating how to build a stochastic
+    gradient descent regressor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will first load the required libraries. We will then write a function to
+    generate the predictors and response variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We will proceed to write functions that will help us build and validate our
+    model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we will write our main function to invoke all the preceding functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: How it works…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s start with our main function. We will invoke `get_data` to get our `x`
+    predictor attributes and `y` response attributes. In `get_data`, we will leverage
+    the `make_classification` dataset in order to generate our training data for the
+    random forest method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's look at the parameters passed to the `make_classification` method. The
+    first parameter is the number of instances required. In this case, we need 500
+    instances. The second parameter is about how many attributes per instance are
+    required. We say that we need 30\. The third parameter, `flip_y`, randomly interchanges
+    3 percent of the instances. This is done to introduce noise in our data. The next
+    parameter is about how many out of those 30 features should be informative enough
+    to be used in our classification. We specified that 60 percent of our features,
+    that is, 18 out of 30, should be informative. The next parameter is about redundant
+    features. These are generated as a linear combination of the informative features
+    in order to introduce correlation among the features. Finally, the repeated features
+    are duplicate features that are drawn randomly from both the informative and redundant
+    features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s split the data into training and testing sets using `train_test_split`.
+    We will reserve 30 percent of our data to test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once again, we will leverage `train_test_split` to split our test data into
+    dev and test sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With the data divided to build, evaluate, and test the model, we will proceed
+    to build our models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In `build_model`, we will leverage scikit-learn''s `SGDClassifier` class to
+    build our stochastic gradient descent method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s look at the parameters that we used. The first parameter is the number
+    of times we want to go through our dataset to update the weights. Here, we say
+    that we want 50 iterations. As in perceptron, after going through all the records
+    once, we need to shuffle our input records when we start the next iteration. The
+    shuffle parameter is used for the same. The default value of shuffle is true,
+    we have included it here for explanation purposes. Our loss function is log loss:
+    we want to do a logistic regression and we will specify this using the loss parameter.
+    Our learning rate, eta, is a constant that we will specify with the `learning_rate`
+    parameter. We will provide the value for our learning rate using the eta`0` parameter.
+    We will then proceed to say that we need to fit the intercept, as we have not
+    centered our data by its mean. Finally, the penalty parameter controls the type
+    of shrinkage required. In our case, we will say that we don''t need any shrinkage
+    using the none string.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will proceed to build our model by invoking the fit function with our predictor
+    and response variable, and evaluate our model with our training and dev dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s look at our accuracy scores:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![How it works…](img/B04041_10_28.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: There's more…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Regularization, L1, L2, or elastic net can be applied for SGD classification.
+    The procedure is the same as that of regression, and hence, we will not repeat
+    it here. Refer to the previous recipe for this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The learning rate, eta, was constant in our example. This need not be the case.
+    With every iteration, the eta value can be reduced. The learning rate parameter,
+    `learning_rate`, can be set to an optimal string or invscaling. Refer to the following
+    scikit documentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/sgd.html](http://scikit-learn.org/stable/modules/sgd.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The parameter is specified as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We used the fit method to build our model. As mentioned previously, in large-scale
+    machine learning, we know that all the data will not be available to us at once.
+    When we receive the data in batches, we need to use the `partial_fit` method,
+    instead of `fit`. Using the `fit` method will reinitialize the weights and we
+    will lose all the training information from the previous batch of data. Refer
+    to the following link for more information on `partial_fit`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html#sklearn.linear_model.SGDClassifier.partial_fit](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html#sklearn.linear_model.SGDClassifier.partial_fit).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Shrinkage using Ridge Regression* recipe in [Chapter 7](ch07.xhtml "Chapter 7. Machine
+    Learning 2"), *Machine Learning II*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Using stochastic gradient descent for regression* recipe in [Chapter 9](ch09.xhtml
+    "Chapter 9. Growing Trees"), *Machine Learning III*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

@@ -1,0 +1,853 @@
+- en: Chapter 6. Graph Fundamentals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following recipes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Representing a graph from a list of edges
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Representing a graph from an adjacency list
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conducting a topological sort on a graph
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Traversing a graph depth-first
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Traversing a graph breadth-first
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualizing a graph using Graphviz
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Directed Acyclic Word Graphs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Working with hexagonal and square grid networks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finding maximal cliques in a graph
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Determining whether any two graphs are isomorphic
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![Introduction](img/ch06.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This section on graphs is a natural extension to the previous one about trees.
+    Graphs are an essential data structure for representing networks, and this chapter
+    will cover some important algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A graph relieves some of the restrictions from a tree, which allows one to represent
+    network data such as biological gene relationship, social networks, and road topologies.
+    Haskell supports multiple graph data structure libraries with various helpful
+    tools and algorithms. This section will cover basic topics such as graph representation,
+    topological sort, traversal, and graph-specific packages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Representing a graph from a list of edges
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A graph can be defined by a list of edges, where an edge is a tuple of vertices.
+    In the `Data.Graph` package, a vertex is simply `Int`. In this recipe, we use
+    the `buildG` function to construct a graph data structure out of a list of edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will be constructing the graph represented in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_06_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will name `Main.hs`, and insert the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the `Data.Graph` package:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct a graph using the `buildG` function from the imported library:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out the graph, its edges, and its vertices:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A list of edges is fed to the `buildG :: Bounds -> [Edge] -> Graph` function
+    to form a graph data structure. The first argument specifies the lower and upper
+    bounds for the vertices, and the second argument specifies the list of edges that
+    make up the graph.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This graph data type is actually a Haskell array of vertices to a list of vertices.
+    It uses the built-in `Data.Array` package, meaning we can use all the functions
+    provided in `Data.Array` in our graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For another way to construct a graph, see the next recipe, *Representing a graph
+    from an adjacency list*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Representing a graph from an adjacency list
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It may be more convenient to construct a graph given an adjacency list. In this
+    recipe, we will use the built-in package `Data.Graph` to read a mapping of a vertex
+    to a list of connected vertices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will be constructing the graph represented in the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Getting ready](img/6331OS_06_01.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Create a new file, which we will name `Main.hs`, and insert the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the `Data.Graph` package:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use the `graphFromEdges''` function to obtain a tuple that contains the graph.
+    A graph data structure, `Graph`, is in the first element of the tuple returned.
+    The second element of the tuple contains mappings from a vertex number to its
+    corresponding value, `Vertex -> (node, key, [key])`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out some graph computations:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Running the code displays the edges and vertices of the graph:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We may notice that the keys of each vertex have been automatically assigned
+    by the algorithm. The `graphFromEdges'` function actually returns a tuple of the
+    type `(Graph, Vertex -> (node, key, [key]))`, where the first element is the graph
+    data structure, and the second element is a mapping of the vertex number to its
+    actual key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just like the previous recipe, this graph data structure is actually an array
+    from the `Data.Array` package, meaning we can use all the functions provided in
+    `Data.Array` in our graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See also
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we instead wish to create a graph from a list of edges, the previous recipe,
+    *Representing a graph from an adjacency list* does the job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conducting a topological sort on a graph
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If a graph is directed, the topological sort is one of the natural orderings
+    of the graph. In a network of dependencies, the topological sort will reveal a
+    possible enumeration through all the vertices that satisfy such dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Haskell's built-in graph package comes with a very useful function, `topSort`,
+    to conduct a topological sort over a graph. In this recipe, we will be creating
+    a graph of dependencies and enumerating a topological sort through it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will be reading the data from the user input. Each pair of lines will represent
+    a dependency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create a file `input.txt` with the following pairs of lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This file describes a list of dependencies, which are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One must understand Haskell in order to do Haskell data analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One must understand data analysis to do Haskell data analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One must do Haskell data analysis to find patterns in big data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We will use the `topsort` algorithm provided by `Data.Graph`. Beware, this function
+    does not detect cyclic dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file, which we will call `Main.hs`, insert the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the following from the graph, map, and list packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Read from the input and construct a graph from the dependencies. Run our topological
+    sort on the graph and print out a valid order:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct a graph from a list of strings, where each pair of lines represents
+    a dependency:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Sort the graph topologically and print out a valid ordering of the items:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Compile the code and feed it with the text file of dependencies:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Traversing a graph depth-first
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using depth-first search, one can traverse a graph to view the nodes in the
+    desired order. Implementing a topological sort, solving mazes, and finding connected
+    components are all examples of useful algorithms that rely on a depth-first traversal
+    of a graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Start editing a new source file, which we will name `Main.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the required packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct the graph from the adjacency list:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Scan the graph depth-first:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out the list of vertices visited:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Run the algorithm to see the order of traversal.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: We start at node 1 (which is at index 0). We traverse the first edge to 3\.
+    From number 3, we traverse to the first edge to 4\. Since 4 has no outbound edges,
+    we traverse back to 3\. Since 3 has no remaining outbound edges, we traverse back
+    to 1\. From 1, we traverse the second edge to 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traversing a graph breadth-first
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using breadth-first search, one can traverse a graph to view the nodes in the
+    desired order. In an infinite graph, a depth-first traversal may never return
+    back to the starting node. One of the most notable examples of a breadth-first
+    traversal algorithm is finding the shortest path between two nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will print out the breadth-first traversal of the nodes in
+    a graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Insert the following code in a new file, which can be called `Main.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the required packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct the graph from a list of edges:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Scan the graph breadth-first:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Print out the list of vertices visited depth-first:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Running the code shows the traversal:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Visualizing a graph using Graphviz
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One can easily draw an image that represents a graph using the `graphviz` library.
+    In the world of data analysis, visually interpreting an image can reveal peculiarities
+    about the data that the human eye can easily pick up. This recipe will let us
+    construct a diagram out of the data we are dealing with. More visualization techniques
+    are explained in [Chapter 11](ch11.html "Chapter 11. Visualizing Data"), *Visualizing
+    Data*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Install the `graphviz` library from [http://www.graphviz.org/Download.php](http://www.graphviz.org/Download.php)
+    as the Haskell package requires it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, install the package from cabal by running the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file, insert the following code. We will name our file `Main.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the package:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create the graph from nodes and edges:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use the default parameters for creating the graph. This function can be modified
+    to modify the graph''s visual parameters:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create the code from the corresponding edges:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Execute `main` to output the graph:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![How to do it...](img/6331OS_06_02.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: Using Directed Acyclic Word Graphs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We use **Directed Acyclic Word Graphs** (**DAWG**) to retrieve very quickly
+    from a large corpus of strings at an extremely small cost in space complexity.
+    Imagine compressing all words in a dictionary using a DAWG to perform efficient
+    lookups for words. It is a powerful data structure that can come in handy when
+    dealing with a large corpus of words. A very nice introduction to DAWGs can be
+    found in Steve Hanov''s blog post here: [http://stevehanov.ca/blog/index.php?id=115](http://stevehanov.ca/blog/index.php?id=115).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use this recipe to incorporate a DAWG in our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting ready
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the DAWG package using cabal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We name a new file `Main.hs` and insert the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'In `main`, download a large corpus of text to store:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Look up some strings from the DAWG constructed by the corpus:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct a getter function:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a DAWG from the corpus dictionary:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Running the code reveals that the two words indeed exist in the massive corpus.
+    Notice that there will be a time-consuming prepossessing step to build the DAWG:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Tip
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A naive approach may be to use the `isInfixOf` function from `Data.List` to
+    perform a substring search. On a typical ThinkPad T530 with 8 GB RAM on an Intel
+    i5 processor, performing the `isInfixOf` operation takes around 0.16 seconds on
+    average. However, if we preprocess a DAWG data structure, lookups take less than
+    0.01 seconds!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Working with hexagonal and square grid networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sometimes, the graph we're dealing with has a strict structure, such as a hexagonal
+    or square grid. Many video games use a hexagonal grid layout to facilitate diagonal
+    movement because moving diagonally in a square grid complicates the values of
+    the traveled distance. On the other hand, square grid structures are often used
+    within graphs to traverse pixels for image manipulation algorithms such as flood
+    fill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Working with hexagonal and square grid networks](img/6331OS_06_03.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: There is a very useful library in the Haskell package listing to deal with such
+    topologies. We can obtain the indices of a grid to traverse the world, which is
+    essentially a path embedded in a graph. For each grid index, we can query the
+    library to find the neighboring indices, effectively using grids as a graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting started
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Review the package documentation located at [https://github.com/mhwombat/grid/wiki](https://github.com/mhwombat/grid/wiki).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Install the grid package using cabal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a new file, which we will name `Main.hs`, insert the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the following libraries:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'In `main`, print out some examples of hexagonal and grid functions:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use a helper function to construct a hexagonal grid:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Use a helper function to construct a square grid:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create a hexagonal grid with the associated numerical values:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Finding maximal cliques in a graph
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Haskell comes with a luxury of vital graph libraries, conveniently one of which
+    is the clique detection library from `Data.Algorithm.MaximualCliques`. A **clique**
+    in a graph is a subgraph where all the nodes have connections between themselves,
+    and is depicted as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Finding maximal cliques in a graph](img/6331OS_06_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: For example, the preceding graph contains two cliques shaded in different colors.
+    Perhaps, the graph represents web pages that link to each other. We can visually
+    infer that there might be two clusters of Internet communities due to the structure
+    of the graph. As the network of connections increases, finding the greatest clique
+    becomes an exponentially difficult problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this recipe, we will use an efficient implementation of the maximal clique
+    problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting started
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the clique library using cabal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Write the following code in a new file, which we will name `Main.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the required library:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'In `main`, print out the max cliques:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Create the following graph:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Determine the node range:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: How it works...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The library applies the recursive Bron-Kerbosch pivoting algorithm for identifying
+    a maximal clique in an undirected graph. The core idea in the algorithm is to
+    intelligently backtrack until a maximum clique is found.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Determining whether any two graphs are isomorphic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Graphs can have arbitrary labels, but their topology may be isomorphic. In the
+    world of data analysis, we can examine different graphical networks and identify
+    clusters of nodes that have identical connection patterns. This helps us discover
+    when two seemingly different graphical networks end up with the same network mapping.
+    Maybe then we can declare a one-to-one isomorphism between the nodes and learn
+    something profound about the nature of the graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use the `isIsomorphic` function from `Data.Graph.Automorphism` to detect
+    whether two graphs are identical in their connection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this recipe, we will let the library calculate whether the two graphs in
+    the following diagram are isomorphic in their connections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Determining whether any two graphs are isomorphic](img/6331OS_06_05.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Getting started
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Install the Automorphism library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: How to do it...
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Write the following code in a new file, which we will name `Main.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the following packages:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct a graph:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Construct another graph:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Check whether the graphs have the same topology:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE

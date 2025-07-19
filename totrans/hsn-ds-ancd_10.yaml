@@ -1,0 +1,866 @@
+- en: Predictive Data Analytics – Modeling and Validation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our utmost objective in conducting various data analyses is trying to find patterns
+    in order to predict what might happen in the future. For the stock market, researchers
+    and professionals are conducting various tests to understand market mechanisms.
+    In this case, many questions could be asked. What will the market index level
+    be in the next five years? What will IBM's price range be next year? Will the
+    market volatility increase or decrease in the future? What might be the impact
+    if governments change their tax policies? What is the potential gain and loss
+    if one country launches a trade war with another one? How do we predict a consumer's
+    behavior by analyzing some related variables? Could we predict the probability
+    that an undergraduate student will successfully graduate? Could we find an association
+    between certain behaviors of one specific disease?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, the following topics will be covered:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding predictive data analytics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Useful dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Predicting future events
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model selection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Granger causality test
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding predictive data analytics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In terms of future events, people could have many questions. For an investor,
+    if he/she could predict the future movement of a stock price, he/she could make
+    more profit. For a company, if they could forecast the trend of their products,
+    they could increase their stock price and products' market shares. For governments,
+    if they could predict the impact of an aging population on society and the economy,
+    they would have more incentive to design a better policy in terms of government
+    budget and other related strategic decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For universities, if they could have a good grasp of the market demand in terms
+    of quality and skill sets for their graduates, they could design a set of better
+    programs or launch new programs to satisfy the future needs in terms of a labor
+    force.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a better prediction or forecast, researchers have to consider many issues.
+    For example, is the sample too small? How do we remove missing variables? Is this
+    dataset biased in terms of data collection procedures? How do we treat extreme
+    values or outliers? What is the seasonality and how do we deal with it? What kinds
+    of models should we apply? In this chapter, some of these issues will be touched
+    upon. We start with the useful dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Useful datasets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One of the best data sources is the **UCI Machine Learning Repository**. When
+    we go to the web page at [https://archive.ics.uci.edu/ml/datasets.html](https://archive.ics.uci.edu/ml/datasets.html),
+    we see the following list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a9587907-a45b-4cbe-96dd-1311c15b3231.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For example, if we click the first dataset (Abalone), we see the following.
+    To save space, only the top part is shown:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/acbbd129-c545-45ce-ab26-912bfaf16444.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From the web page, users can download the dataset and find definitions of variables
+    and even citations. The code that follows can be used to download a related R
+    dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b6b6bf66-c2dd-43c9-b1a9-9ecc2ec02dab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From the preceding output, we know that the dataset has `427` observations
+    (dataset). For each dataset, we have `7` related features, such as `Name`, `Data_Types`,
+    `Default_Task`, `Attribute_Types`, `N_Instances` (number of instances), `N_Attributes` (number
+    of attributes), and `Year`. The variable called `Default_Task` could be interpreted
+    as the basic usage of each dataset. For example, the first dataset, called `Abalone`,
+    could be used for `Classification` problems. The `unique()` function could be
+    used to find out all possible `Default_Task`, shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/422f53a0-2c9e-49ec-a8e1-3dd33534925d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The AppliedPredictiveModeling R package
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This package includes many useful datasets that can be used for this chapter
+    and others. The easiest way to find those datasets is with the `help()` function,
+    shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following table shows the datasets included in this package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Data (name)** | **Names of dataset(s)** | **Explanation** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `abalone` | `abalone` | Abalone data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `bio` | `bio` | Hepatic injury data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `bookTheme` | `bookTheme` | Lattice themes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `cars2010`,`cars2011`, and `cars2012` | `cars2010`,`cars2011`, `cars2012`
+    | Fuel economy data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `chem` | `chem` | Hepatic injury data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `ChemicalManufacturingProcess` | `ChemicalManufacturingProcess` | Chemical
+    manufacturing process data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `classes` | `classes` | Two class example data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `concrete` | `concrete` | Compressive strength of concrete |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `diagnosis` | `diagnosis` | Alzheimer''s disease CSF data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `easyBoundaryFunc` | `easyBoundaryFunc` | Functions for simulating data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `fingerprints` | `fingerprints` | Permeability data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `getPackages` | `getPackages` | Install packages for each chapter |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `injury` | `injury` | Hepatic injury data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `logisticCreditPredictions` | `logisticCreditPredictions` | Credit data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `mixtures` | `mixtures` | Compressive strength of concrete |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `permeability` | `permeability` | Permeability data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `permuteRelief` | `permuteRelief` | Permutation statistics for the relief
+    algorithm |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `predictors` | `predictors` | Alzheimer''s disease CSF data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `quadBoundaryFunc` | `quadBoundaryFunc` | Functions for simulating data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `schedulingData` | `schedulingData` | HPC job scheduling data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `scriptLocation` | `scriptLocation` | Find chapter script files |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `segmentationOriginal` | `segmentationOriginal` | Cell body segmentation
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `solubility` | `solTestX`,`solTestXtrans`,`solTestY`,`solTrainX`,`solTrainXtrans`,`solTrainY`,
+    and `trainX` | Solubility data |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `transparentTheme` | `transparentTheme` | Lattice themes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| `twoClassData` | `twoClassData` | Two class example data |'
+  prefs: []
+  type: TYPE_TB
+- en: Table 10.1 datasets embedded in the R package AppliedPredictiveModeling
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, we show you a few examples of how to load these datasets. To load one
+    set of data, we use the `data()` function. For the first dataset, called `abalone`,
+    we have the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/bbc1cb31-46bf-404a-8870-e8b7a73b3548.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For some, the big dataset includes a few sub-datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: To load each dataset, we could use the `dim()`, `head()`, `tail()`, and `summary()`
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series analytics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Time series can be defined as a quantity''s set of values obtained at successive
+    times, often with equal intervals between them. There are different frequencies
+    such as annual, quarterly, monthly, weekly, and daily. For the GDP (Gross Domestic
+    Product) time series, we usually have quarterly or annual ones. For stock data,
+    we usually have annual, monthly, and daily frequencies. Using the following code,
+    we could upload the US GDP data for both quarterly and annual frequencies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, we have many issues for time series analysis. For example, from the
+    point of view of macroeconomics, we have business or economic cycles which could
+    be viewed when the economy is expanding and in recession. Industries or companies
+    could have seasonality. Using the agriculture industry as an example, farmers
+    would spend more during spring and fall seasons and less on winter. For the retail
+    industry, they would have a huge cash inflow during the end-of-year holiday season.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To manipulate time series, we could use many useful functions included in an
+    R package called `timeSeries`. For the following program, we average daily data
+    with a weekly frequency:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We could also use the `head()` function to see a few observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Predicting future events
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are many techniques we could employ when trying to predict the future,
+    such as **moving average** (**MA**), regression, auto-regression, and the like.
+    First, let''s start with the simplest one for a moving average:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding program, the default value for the number of periods is `10`.
+    We could use the dataset called `MSFT` included in the R package called `timeSeries`
+    (see the code that follows):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Manually, we find that the average of the first three values of *x* is the same
+    as the third value of *y*. In a sense, we could use the moving average to predict
+    the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the next example, we will show you how to estimate the expected next year''s
+    market return. Here, we use the S&P500 index and the historical annual average
+    as our expected values. First, we could go to Yahoo!Finance to download the data.
+    The symbol for the S&P500 index is `^GSPC`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we download the S&P500 index''s historical monthly price data from Yahoo!Finance.
+    Alternatively, we could use the following code to download the R dataset. The
+    first several commands are used to download the related dataset called .`sp500monthly`.
+    The objective of the program is to estimate annual mean and its 90% confidence
+    range:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: From the result, the historical mean annual returns for S&P500 is 9%. If we
+    claimed that next year's index return would be 9% as well, it could be between
+    5% and 13%, a potential huge swing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seasonality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the next example, we will show you auto-correlation. First, we upload an
+    R package called `astsa`, which stands for **Applied Statistical Time Series Analysis**.
+    Then, we upload the US GDP with quarterly frequency:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding program, the `diff()` function takes a difference, such as
+    the current value minus the previous value. The second input value indicates the
+    lag. The function called `acf2()` is used to plot and print the ACF and PACF of
+    a time series. ACF stands for **auto-covariance function**, while PACF stands
+    for the **partial auto-correlation function**. The related graphs are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5e6f8677-2f47-4131-b91e-e55150949837.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualizing components
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It is understandable that the concepts and datasets would be much more clear
+    if we could use graphs. The first example shows the fluctuation of the US GDP
+    over the last five decades:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related graph is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f5b79b72-a3ec-413b-ad67-27474b4d0220.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If we used log scale for the GDP, we would have the following code and graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following graph is close to a straight line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5bb7b753-57a8-42a5-b6f6-b57aec1c920e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: R package – LiblineaR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This package is the linear predictive models based on the `LIBLINEAR C/C++
+    Library`. Here is one example using the `iris` dataset. The program tries to predict
+    which category a plant belongs to by using training data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output is as follows. The `BCR` is the **Balanced Classification Rate**.
+    For this rate, the higher, the better:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: R package – datarobot
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The name DataRobot refers to three things: a Boston-based software company,
+    the massively parallel modelling engine developed by the DataRobot company, and
+    an open source R package that allows interactive R users to connect to this modelling
+    engine. This vignette provides a brief introduction to the `datarobot` R package,
+    highlighting the following key details of its use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connecting to the DataRobot modeling engine from an interactive R session
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Creating a new modeling project in the DataRobot modeling engine
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Retrieving the results from a DataRobot modeling project
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Generating predictions from any DataRobot model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To launch the package, we use the `library()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After the previous code, there is a good chance a new user will get an error
+    message, something like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This means that we have to register with the company to get a verified token
+    key. The final one will have the following format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We could also use the `help()` function to find users of the package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: R package – eclust
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This package is the **Environment-Based Clustering for Interpretable Predictive
+    Models in High Dimensional Data**. First, let''s look at a dataset called `simdata`,
+    which contains simulated data for the package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding output shows that the dimension of the data is `100` by `502`.
+    `Y` is a continuous response vector, and `E` is a binary environment variable
+    for the ECLUST method. *E = 0* for unexposed *(n=50)* and *E = 1* for exposed
+    *(n=50)*. The following R program estimates the Fisher z-transformation of correlations.
+    The definition of Fisher''s Z transformation is shown in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The Fisher''s Z-transformation is defined here. Assuming that we have a set
+    of *n* pairs of x[i] and y[i], we could estimate their correlation by applying
+    the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/620cdfd9-7840-43c2-a907-d09d61ae4861.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, ρ is the correlation between two variables, while ![](img/53fe2075-f3dc-4564-b3a1-d5a6ab640992.png) and ![](img/7a3b0972-d6a4-4152-b5bf-9ef439ea5467.png) are
+    the means of *x* and *y.* The Fisher's z value is defined as *:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7026ef21-8c4b-44b1-bb17-37482070aa91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In is the natural logarithm function and `arctanh()` is the inverse hyperbolic
+    tangent function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model selection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When finding a good model, sometimes we face under fitting and over fitting.
+    The first example is borrowed; you can download the program at [http://scikit-learn.org/stable/auto_examples/model_selection/plot_underfitting_overfitting.html#sphx-glr-auto-examples-model-selection-plot-underfitting-overfitting-py](http://scikit-learn.org/stable/auto_examples/model_selection/plot_underfitting_overfitting.html#sphx-glr-auto-examples-model-selection-plot-underfitting-overfitting-py).
+    It demonstrates the problems of under fitting and over fitting and how we can
+    use linear regression with polynomial features to approximate nonlinear functions.
+    The true function is given here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/42ddbca0-48d7-4ea0-b0d4-3fba96443781.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the following program, we try to use linear and polynomial models to approximate
+    the equation. The slightly modified code is shown here. The program tries to show
+    the impact of different models in terms of under-fitting and over-fitting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related graphs are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/05828301-7b09-4455-ad01-0185668c1de2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that, on the top of each graph, **MSE** stands for the **Mean Squared Error**.
+    For the left-hand graph, the program tries to use a line to fit the true model
+    based on the input dataset. Since it is linear, the **Degree** is **1**. Compared
+    with the second model with a **Degree** of **4**, the **MSE** of this learned
+    model is larger, 0.54 versus 0.0879\. This indicates that the linear model might
+    under-fit the model while the second model might over-fit the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python package – model-catwalk
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One example can be found at [https://pypi.python.org/pypi/model-catwalk/0.2.1](https://pypi.python.org/pypi/model-catwalk/0.2.1)
+    . Its first several lines of code are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here. To save space, only the top part is presented:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Python package – sklearn
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since Python `sklearn` is a very useful package, it is worthwhile to show you
+    more examples of using this package. The example cited here is how to use the
+    package to classify documents by topics using a bag-of-words approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This example uses a `scipy.sparse` matrix to store the features and demonstrates
+    various classifiers that can efficiently handle sparse matrices. The dataset used
+    in this example is the 20 newsgroups dataset. It will be automatically downloaded,
+    then cached. The ZIP file contains the input files and can be downloaded at [http://people.csail.mit.edu/jrennie/20Newsgroups/20news-bydate.tar.gz](http://people.csail.mit.edu/jrennie/20Newsgroups/20news-bydate.tar.gz).
+    It has a size of about 14 MB. The code is available at the following web link: [http://scikit-learn.org/stable/auto_examples/text/document_classification_20newsgroups.html#sphx-glr-auto-examples-text-document-classification-20newsgroups-py](http://scikit-learn.org/stable/auto_examples/text/document_classification_20newsgroups.html#sphx-glr-auto-examples-text-document-classification-20newsgroups-py).
+    To save space, only the first several lines are shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/ec6151e8-5131-4094-9450-3d875bb7860e.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For each method, there are three measures: **score**, **training time**, and
+    **testing time**. For example, for the `RandomForestClassier` method, it uses
+    lots of time for training and testing; see the longest three bars. It is understandable
+    since this method uses lots of simulations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Julia package – QuantEcon
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For predicting a future possible event, one of the tools is the Monte Carlo
+    simulation. For this purpose, we could use a Julia package called `QuantEcon`.
+    This package is **Quantitative Economics with Julia**. The first example is the
+    Markov simulation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The first part of the program simulates 100,000 times of P matrix while the
+    second part simulates two statuses: `employed` and `unemployed`. See the following
+    output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3fda3b1a-27f1-4191-b659-126d13c59ba9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The next example is also borrowed from the manual. The objective is to see
+    how a person from one economic status transforms to another one in the future.
+    First, let''s see the following graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/152cb150-81fe-41ec-a543-8809645ad64f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let''s look at the leftmost oval with **poor** inside. It means for a **poor**
+    person he/she has 90% chance to remain **poor** and 10% moves to the **middle
+    class**. It could be represented by the following matrix, putting zeros where
+    there''s no edge between nodes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/747ea972-9704-472b-92c1-c2255dfd3f64.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Two states, *x* and *y*, are said to communicate with each other if there exists
+    positive integers *j* and *k*, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f2000473-f69d-4a6f-a007-a40c7398b014.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The stochastic matrix P is called irreducible if all states communicate; that
+    is, if *x* and *y* communicate for every (*x, y*). It''s clear from the graph
+    that this stochastic matrix is irreducible: we can reach any state from any other
+    state eventually. The following code would confirm this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following graph would represent an extreme case for irreducible since the
+    future status for a **poor** person will be 100% **poor**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a26a6f7b-a22d-43d4-bfc7-3f9b19a746ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The following code would confirm this as well, as the result will be `false`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Octave package – ltfat
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The `ltfat` package stands for **Large Time/Frequency Analysis Toolbox** and
+    is a Matlab/Octave toolbox for working with time frequency analysis, wavelets,
+    and signal processing. It is intended both as an educational and a computational
+    tool. The toolbox provides a large number of linear transforms including Gabor
+    and wavelet transforms, along with routines for constructing windows (filter prototypes)
+    and manipulating coefficients. The following example is borrowed from their manual,
+    which is available at [http://ltfat.github.io/doc/ltfat.pdf](http://ltfat.github.io/doc/ltfat.pdf).
+    The following example shows how the function `franalasso()` produces a sparse
+    representation of a test signal `greasy`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The program outputs three graphs, and the last one is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/7d94b9e0-425d-4b52-9082-53b83bc25ce0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Granger causality test
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When saying that A causes B, this means that A is the reason that B happens.
+    This is the common definition of causality: which one causes the next one. The
+    Granger causality test is used to determine whether one time series is a factor
+    and offers useful information in forecasting the second one. In the following
+    code, a dataset called `ChickEgg` is used as an illustration. The dataset has
+    two columns, number of chicks and number of eggs, with a timestamp:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The question is: could we use this year''s egg numbers to predict the next
+    year''s chicken numbers? If this is true, our statement will be *the number of
+    chicks Granger causes the number of eggs*. If this is not true, we say *the number
+    of chicks does not Granger cause the number of eggs*. Here is the related code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In model 1, we try to use the lags of chicken plus the lags of the lags of
+    egg to explain the chicken numbers. Since the P-value is quite small, it is significant
+    at `0.01`. Because of this, we say that *egg Granger causes chicken*. The following
+    test shows that chicken could not be used to forecast the next period''s error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the next example, we test which one (IBM''s return or S&P500 return) could
+    Granger cause the other. First, we define a return function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that we use the return plus the ticker as the column name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, the function could be called with the input values. The objective of the
+    program is to test if we could use the lagged market returns to explain IBM''s
+    returns. Similarly, we test whether the lagged IBM''s returns explain the market''s
+    returns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The preceding results suggest that the S&P500 index could be used to explain
+    IBM''s next period''s return, since it is statistically significant at 0.1%. The
+    next line will test if the IBM lags of returns would explain S&P500 index returns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result suggests that, over this period, IMB's returns could be used to explain
+    the S&P500 index in the next period's returns as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we have discussed predictive data analytics, modeling and validation,
+    some useful datasets, time series analytics, how to predict future events, seasonality,
+    and how to visualize our data. For Python packages, we have mentioned `prsklearn` and `catwalk`.
+    For R packages, we have discussed `datarobot`, `LiblineaR`, `andeclust`. For Julia
+    packages, we explained `EQuantEcon`. For Octave, we have explained `ltfat`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will discuss Anaconda Cloud. Some topics include the
+    Jupyter Notebook in depth, different formats of the Jupyter Notebooks, how to
+    share notebooks with your partners, how to share different projects over different
+    platforms, how to share your working environments, and how to replicate others'
+    environments locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Review questions and exercises
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Why do we care about predicting the future?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What does *seasonality* mean? How could it impact our predictions?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How does one measure the impact of seasonality?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Write an R program to use the moving average of the last five years to predict
+    the next year's expected return. The source of the data is [http://fiannce.yahoo.com](http://fiannce.yahoo.com).
+    You can test a few stocks such as IBM, C, and WMT. In addition, apply the same
+    method to the S&P500 index. What is your conclusion?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Assume that we have the following true model:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](img/86816f62-37f9-4548-85e8-7676d31831d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Write a Python program to use linear and polynomial models to approximate the
+    previous function and show the related graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download a market index monthly data and estimate its next year's annual return.
+    The S&P500 could be used as the index and Yahoo!Finance at [finance.yahoo.com](http://finance.yahoo.com)
+    could be used as the source of data. Source of data: [https://finance.yahoo.com](https://finance.yahoo.com)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Download several countries' index data, such as the US, Canada, Hong Kong, and
+    China. Estimate the returns. Conduct the Granger causality test to see which country's
+    stock market index is a dominant force.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'From Professor French''s Data Library, download the Fama-French three-factor
+    time series. Estimate the next year''s **Small Minus Big** (**SMB**) factor and
+    **High Minus Low** (**HML**) factor. The web page is [http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html](http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html).
+    Alternatively, a Python dataset can be downloaded at [http://canisius.edu/~yany/python/data/ffMonthly.pkl](http://canisius.edu/~yany/python/data/ffMonthly.pkl).
+    A few lines of Python code are shown here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The related output is shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: What is IBM's next expected annual return?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What is the next three years' S&P500 index level?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Could we add the business cycle to our regression models? The dataset can be
+    downloaded by using the following R code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: A peak is defined as 1 while a trough is defined as -1\. Any months between
+    a peak or trough or between a trough and peak are linearly interpolated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the following four questions are based on Octave machine learning
+    examples. The dataset and Octave sample programs can be downloaded at [https://github.com/partharamanujam/octave-ml.](https://github.com/partharamanujam/octave-ml)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run the sample Octave machine learning program called `linear_gd.m`, the dataset
+    containing historical records on the change in the water level.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run the sample Octave machine learning program called `svm.m`. The program reads
+    `spam-vocab` list into a struct `words` which occur at least 100 times in the
+    spam corpus. Three input files are `spam-vocab.txt`, `spamTrain.mat`, and `spamTest.mat`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run the sample Octave machine learning program called `logistic_gd.m`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run the sample Octave machine learning program called `pca.m`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Install a Julia package called `EmpiricalRisks` and show a few examples by using
+    this package.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

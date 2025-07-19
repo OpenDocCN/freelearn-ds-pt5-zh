@@ -1,0 +1,1097 @@
+- en: Parallel Computing Using Dask
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dask is one of the simplest ways to process your data in a parallel manner.
+    The platform is for pandas lovers who struggle with large datasets. Dask offers
+    scalability in a similar manner to Hadoop and Spark and the same flexibility that
+    Airflow and Luigi provide. Dask can be used to work on pandas DataFrames and Numpy
+    arrays that cannot fit into RAM. It splits these data structures and processes
+    them in parallel while making minimal code changes. It utilizes your laptop power
+    and has the ability to run locally. We can also deploy it on large distributed
+    systems as we deploy Python applications. Dask can execute data in parallel and
+    processes it in less time. It also scales the computation power of your workstation
+    without migrating to a larger or distributed environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main objective of this chapter is to learn how to perform flexible parallel
+    computation on large datasets using Dask. The platform provides three data types
+    for parallel execution: Dask Arrays, Dask DataFrames, and Dask Bags. The Dask
+    array is like a NumPy array, while Dask DataFrames are like pandas DataFrames.
+    Both can execute data in parallel. A Dask Bag is a wrapper for Python objects
+    so that they can perform operations simultaneously. Another concept we''ll cover
+    in this chapter is Dask Delayed, which parallelizes code. Dask also offers data
+    preprocessing and machine learning model development in parallel mode.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter, we will cover the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallel computing using Dask
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dask data types
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dask Delayed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Preprocessing data at scale
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Machine learning at scale
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let's get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallel computing using Dask
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Python is one of the most popular programming languages among data professionals.
+    Python data science libraries such as Numpy, Pandas, Scipy, and Scikit-learn can
+    sequentially perform data science tasks. However, with large datasets, these libraries
+    will become very slow due to not being scalable beyond a single machine. This
+    is where Dask comes into the picture. Dask helps data professionals handle datasets
+    that are larger than the RAM size on a single machine. Dask utilizes the multiple
+    cores of a processor or uses it as a distributed computed environment. Dask has
+    the following qualities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is familiar with existing Python libraries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It offers flexible task scheduling
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It offers a single and distributed environment for parallel computation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It performs fast operations with lower latency and overhead
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It can scale up and scale down
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Dask offers similar concepts to pandas, NumPy, and Scikit-learn, which makes
+    it easier to learn. It is an open source parallel computing Python library that
+    runs on top of pandas, Numpy, and Scikit-learn across multiple cores of a CPU
+    or multiple systems. For example, if a laptop has a quad-core processor, then
+    Dask will use 4 cores for processing the data. If the data won''t fit in the RAM,
+    it will be partitioned into chunks before processing. Dask scales up the pandas
+    and NumPy capacity to deal with moderately large datasets. Let''s understand how
+    Dask perform operations in parallel by looking at the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/69c5e3db-7f88-419a-9439-f46457b33a4c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dask creates a task graph to execute a program in parallel mode. In the task
+    graph, nodes represent the task, and the edges between the nodes represent the
+    dependency of one task over another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s install the Dask library on our local system. By default, Anaconda has
+    Dask installed already, but if you want to reinstall or update Dask, you can use
+    the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also install it using the `pip` command, as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: With that, we have learned how to install the `dask` library for parallel and
+    fast execution. Now, let's look at the core data types of the Dask library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dask data types
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In computer programming, data types are basic building blocks for writing any
+    kind of functionality. They help us work with different types of variables. Data
+    types are the kind of values that are stored in variables. They can be primary
+    and secondary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Primary data types are the basic data types such as int, float, and char, while
+    secondary data types are developed using primary data types such as lists, arrays,
+    strings, and DataFrames. Dask offers three data structures for parallel operations:
+    DataFrames, Bags, and Arrays. These data structures split data into multiple partitions
+    and distribute them to multiple nodes in the cluster. A Dask DataFrame is a combination
+    of multiple small pandas DataFrames and it operates in a similar manner. Dask
+    Arrays are like NumPy arrays and support all the operations of Numpy. Finally,
+    Dask Bags are used to process large Python objects.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, it's time to explore these data types. We'll start with Dask Arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dask Arrays
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A Dask Array is an abstraction of the NumPy n-dimensional array, processed
+    in parallel and partitioned into multiple sub-arrays. These small arrays can be
+    on local or distributed remote machines. Dask Arrays can compute large-sized arraysby
+    utilizing all the available cores in the system. They can be applied to statistics,
+    optimization, bioinformatics, business domains, environmental science, and many
+    more fields. They also support lots of NumPy operations, such as arithmetic and
+    scalar operations, aggregation operations, matrices, and linear algebra operations.
+    However, they do not support unknown shapes. Also, the `tolist` and `sort` operations
+    are difficult to perform in parallel. Let''s understand how Dask Arrays decompose
+    data into a NumPy array and execute them in parallel by taking a look at the following
+    diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/440d99ec-54de-42e2-9a13-9c42a62657c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As we can see, there are multiple blocks of different shapes, all of which
+    represent NumPy arrays. These arrays form a Dask Array and can be executed on
+    multiple machines. Let''s create an array using Dask:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding example, we used the `compute()` function to get the final
+    output. The `da.arange()` function will only create the computational graph, while
+    the `compute()` function is used to execute that graph. We have generated 18 values
+    with a chunk size of 4 using the `da.arange()` function. Let''s also check the
+    chunks in each partition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, an array with 18 values was partitioned into five
+    parts with a chunk size of 4, where these initial chunks have 4 values each and
+    the last one has 2 values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dask DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Dask DataFrames are abstractions of pandas DataFrames. They are processed in
+    parallel and partitioned into multiple smaller pandas DataFrames, as shown in
+    the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/3d495ac7-de60-4729-a550-1411cd567081.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'These small DataFrames can be stored on local or distributed remote machines.
+    Dask DataFrames can compute large-sized DataFrames by utilizing all the available
+    cores in the system. They coordinate the DataFrames using indexing and support
+    standard pandas operations such as `groupby`, `join`, and `time series`. Dask
+    DataFrames perform operations such as element-wise, row-wise, `isin()`, and date
+    faster compared to `set_index()` and `join()` on index operations. Now, let''s
+    experiment with the performance or execution speed of Dask:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we tested the read time of a file using the pandas `read_csv()`
+    function. Now, let''s test the read time for the Dask `read_csv()` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: In both examples, we can observe that the execution time for data reading is
+    reduced when using the Dask `read_csv()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: DataFrame Indexing
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Dask DataFrames support two types of index: label-based and positional indexing.
+    The main problem with Dask Indexing is that it does not maintain the partition''s
+    information. This means it is difficult to perform row indexing; only column indexing
+    is possible. `DataFrame.iloc` only supports integer-based indexing, while `DataFrame.loc`
+    supports label-based indexing. `DataFrame.iloc` only selects columns.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s perform these indexing operations on a Dask DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we must create a DataFrame and perform column indexing:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we created a pandas DataFrame (with `p`, `q`, and
+    `r` indexes and `P` and `Q` columns) and converted it into a Dask DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The column selection process in Dask is similar to what we do in pandas. Let''s
+    select a single column in our Dask DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we selected a single column by passing the name of the
+    column. For multiple column selection, we need to pass a list of columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s select multiple columns in our Dask DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we have selected two columns from the list of columns available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let''s create a DataFrame with an integer index:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we created a pandas DataFrame and converted it into a
+    Dask DataFrame using the `from_pandas()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s select the required column using a positional integer index:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we swapped the column's location using `iloc` while using
+    a positional integer index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we try to select all the rows, we will get a `NotImplementedError`, as shown
+    here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code block, we can see that the `DataFrame.iloc` only supports
+    selecting columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Filter data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We can filter the data from a Dask DataFrame similar to how we would do this
+    for a pandas DataFrame. Let''s take a look at the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/5e709ff8-2afe-406e-8c8f-78b7900d9288.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code, we read the human resource CSV file using the `read_csv()`
+    function into the Dask DataFrame. This output is only showing some of the columns.
+    However, when you run the notebook for yourself, you will be able to see all the
+    available columns. Let''s filter the low-salary employees in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/07172a2b-fe5d-45df-b710-a62a3d81b469.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we filtered the low-salary employees through the condition
+    into the brackets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Groupby
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The `groupby` operation is used to aggregate similar items. First, it splits
+    the data based on the values, finds an aggregate of similar values, and combines
+    the aggregated results. This can be seen in the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b612b1d2-b4e8-4d83-8598-8da093bb00ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we grouped the data based on the left column (it shows
+    an employee who stayed or left the company) and aggregated it by the mean value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting a pandas DataFrame into a Dask DataFrame
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Dask DataFrames are implemented based on pandas DataFrames. For data analysts,
+    it is necessary to learn how to convert a Dask DataFrame into a pandas DataFrame.
+    Take a look at the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we have used the `from_pandas()` method to convert a pandas DataFrame
+    into a Dask DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting a Dask DataFrame into a pandas DataFrame
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In the previous subsection, we converted a pandas DataFrame into a Dask DataFrame.
+    Similarly, we can convert a Dask DataFrame into a pandas DataFrame using the `compute()`
+    method, as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let''s learn about another important topic: Dask Bags.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dask Bags
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A Dask Bag is an abstraction over generic Python objects. It performs `map`,
+    `filter`, `fold`, and `groupby` operations in the parallel interface of smaller
+    Python objects using a Python iterator. This execution is similar to PyToolz or
+    the PySpark RDD. Dask Bags are more suitable for unstructured and semi-structured
+    datasets such as text, JSON, and log files. They perform multiprocessing for computation
+    for faster processing but will not perform well with inter-worker communication.
+    Bags are immutable types of structures that cannot be changed and are slower compared
+    to Dask Arrays and DataFrames. Bags also perform slowly on the `groupby` operation,
+    so it is recommended that you use `foldby` instead of `groupby`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let's create various Dask Bag objects and perform operations on them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a Dask Bag using Python iterable items
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let''s create some Dask Bag objects using Python iterable items:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we created a bag of list items using the `from_sequence()`
+    method. The `from_Sequence()` method takes a list and places it into `npartitions`
+    (a number of partitions). Let''s filter odd numbers from the list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the preceding code, we filtered the odd numbers from the bag of lists using
+    the `filter()` method. Now, let''s square each item of the bag using the `map`
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we used the `map()` function to map the bag items. We
+    mapped these items to their square value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a Dask Bag using a text file
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We can create a Dask Bag using a text file by using the `read_text()` method,
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we read a text file into a `dask bag` object by using
+    the `read_text()` method. This allowed us to show the two initial items in the
+    Dask Bag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing a Dask Bag in a text file
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let''s store a Dask Bag in a text file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, `to_textfiles()` converted the `bag` object into a text
+    file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing a Dask Bag in a DataFrame
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let''s store a Dask Bag in a DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/a9775f85-da6d-40b1-8966-54dda0e973a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we created a Dask Bag of dictionary items and converted
+    it into a Dask DataFrame using the `to_dataframe()` method. In the next section,
+    we'll look at Dask Delayed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dask Delayed
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dask Delayed is an approach we can use to parallelize code. It can delay the
+    dependent function calls in task graphs and provides complete user control over
+    parallel processes while improving performance. Its lazy computation helps us
+    control the execution of functions. However, this differs from the execution timings
+    of functions for parallel execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s understand the concept of Dask Delayed by looking at an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, two methods, `cube` and `average`, were annotated
+    with `@dask.delayed`. A list of three numbers was created and a cube containing
+    every value was computed. After computing the cube of list values, we calculated
+    the average of all the values. All these operations are lazy in nature and are
+    computed later when the output is expected from the programmer and the flow of
+    execution is stored in a computational graph. We executed this using the `compute()`
+    method. Here, all the cube operations will execute in a parallel fashion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we will visualize the computational graph. However, before we can do this,
+    we need to install the Graphviz editor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On Windows, we can install Graphviz using `pip`. We must also set the path
+    in an environment variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On Mac, we can install it using `brew`, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On Ubuntu, we need to install it on a Terminal using the `sudo apt-get` command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let''s visualize the computational graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/8ca62af1-10ff-4937-b676-38a5a916aa17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding example, we printed a computational graph using the `visualize()`
+    method. In this graph, all the cube operations were executed in a parallel fashion
+    and their result was consumed by the `average()` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preprocessing data at scale
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dask preprocessing offers scikit-learn functionalities such as scalers, encoders,
+    and train/test splits. These preprocessing functionalities work well with Dask
+    DataFrames and Arrays since they can fit and transform data in parallel. In this
+    section, we will discuss feature scaling and feature encoding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature scaling in Dask
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we discussed in Chapter 7, *Cleaning Messy Data*, feature scaling, also
+    known as feature normalization, is used to scale the features at the same level.
+    It can handle issues regarding different column ranges and units. Dask also offers
+    scaling methods that have parallel execution capacity. It uses most of the methods
+    that scikit-learn offers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Scaler** | **Description** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| MinMaxScaler | Transforms features by scaling each feature to a given range
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| RobustScaler | Scales features using statistics that are robust to outliers
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| StandardScaler | Standardizes features by removing the mean and scaling them
+    to unit variance |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Let''s scale the `last_evaluation` (employee performance score) column of the
+    human resource dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/b1909ce6-1ceb-45ef-a434-838e69870c19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code, we read the human resource CSV file using the `read_csv()`
+    function into a Dask DataFrame. The preceding output only shows some of the columns
+    that are available. However, when you run the notebook for yourself, you''ll be
+    able to see all the columns in the dataset. Now, let''s scale the `last_evalaution`
+    column (last evaluated performance score):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, we scaled the `last_evaluation` (last evaluated performance
+    score) column. We scaled it from a range of 0-1 range to a range of 0-100\. Next,
+    we will look at feature encoding in Dask.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature encoding in Dask
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we discussed in Chapter 7, *Cleaning Messy Data*, feature encoding is a
+    very useful technique for handling categorical features. Dask also offers encoding
+    methods that have parallel execution capacity. It uses most of the methods that
+    scikit-learn offers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Encoder** | **Description** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LabelEncoder | Encodes labels with a value between 0 and 1 that''s less than
+    the number of classes available. |'
+  prefs: []
+  type: TYPE_TB
+- en: '| OneHotEncoder | Encodes categorical integer features as a one-hot encoding.
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| OrdinalEncoder | Encodes a categorical column as an ordinal variable. |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Let''s try using these methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/db24794a-b6d2-4580-b831-673e354e2a22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the preceding code, we read the human resource CSV file using the `read_csv()`
+    function into a Dask DataFrame. The preceding output only shows some of the columns
+    that are available. However, when you run the notebook for yourself, you''ll be
+    able to see all the columns in the dataset. Now, let''s scale the `last_evalaution`
+    column (last evaluated performance score):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | **salary_low** | **salary_medium** | **salary_high** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **0** | 1.0 | 0.0 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **1** | 0.0 | 1.0 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **2** | 0.0 | 1.0 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **3** | 1.0 | 0.0 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **4** | 1.0 | 0.0 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: In the preceding example, the `scikit-learn` pipeline was created using `Categorizer()`
+    and `OneHotEncoder()`. The Salary column of the Human Resource data was then encoded
+    using the `fit()` and `transform()` methods. Note that the categorizer will convert
+    the columns of a DataFrame into categorical data types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, we can also encode the Salary column using the ordinal encoder.
+    Let''s take a look at an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding example, the scikit-learn pipeline was created using `Categorizer()`
+    and `OrdinalEncoder()`. The Salary column of the Human Resource data was then
+    encoded using the `fit()` and `transform()` methods. Note that the categorizer
+    will convert the columns of a DataFrame in categorical data types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine learning at scale
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dask offers Dask-ML services for large-scale machine learning operations using
+    Python. Dask-ML decreases the model training time for medium-sized datasets and
+    experiments with hyperparameter tuning. It offers scikit-learn-like machine learning
+    algorithms for ML operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can scale scikit-learn in three different ways: parallelize scikit-learn
+    using `joblib` by using random forest and SVC; reimplement algorithms using Dask
+    Arrays using generalized linear models, preprocessing, and clustering; and partner
+    it with distributed libraries such as XGBoost and Tensorflow.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's start by looking at parallel computing using scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallel computing using scikit-learn
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To perform parallel computing using scikit-learn on a single CPU, we need to
+    use `joblib`. This makes scikit-learn operations parallel computable. The `joblib`
+    library performs parallelization on Python jobs. Dask can help us perform parallel
+    operations on multiple scikit-learn estimators. Let''s take a look:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we need to read the dataset. We can load the dataset using a pandas
+    DataFrame, like so:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f8d1eb2a-6eea-4c18-9a03-a2ab565ab35f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we read the human resource CSV file using the `read_csv()`
+    function into a Dask DataFrame. The preceding output only shows some of the columns
+    that are available. However, when you run the notebook for yourself, you will
+    be able to see all the columns in the dataset. Now, let's scale the `last_evalaution`
+    column (last evaluated performance score).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we must select the dependent and independent columns. To do this, select
+    the columns and divide the data into dependent and independent variables, as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Create a scheduler and generate the model in parallel. Import the `dask.distributed`
+    client to create a scheduler and worker on a local machine:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The next step is to create a parallel backend using `sklearn.externals.joblib`
+    and write the normal `scikit-learn` code:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: The preceding parallel generated random forest model has given us 92% accuracy,
+    which is very good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reimplementing ML algorithms for Dask
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Some machine learning algorithms have been reimplemented by the Dask development
+    team using Dask Arrays and DataFrames. The following algorithms have been reimplemented:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear machine learning models such as linear regression and logistic regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Preprocessing with scalers and encoders
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Unsupervised algorithms such as k-means clustering and spectral clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the following subsection, we will build a logistic regression model and perform
+    clustering on the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logistic regression
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let''s build a classifier using logistic regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Load the dataset into a Dask DataFrame, as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/f287e4e5-469b-41fc-8117-06e8045a37fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we read the human resource CSV file using the `read_csv()`
+    function into a Dask DataFrame. The preceding output only shows some of the columns
+    that are available. However, you run the notebook for yourself, you will be able
+    to see all the columns in the dataset. Now, let's scale the `last_evalaution`
+    column (last evaluated performance score).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, select the required column for classification and divide it into dependent
+    and independent variables:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let''s create a `LogisticRegression` model. First, import `LogisticRegression`
+    and `train_test_split`. Once you''ve imported the required libraries, divide the
+    dataset into two parts; that is, training and testing datasets:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Instantiate the model and fit it to a training dataset. Now, you can predict
+    the test data and compute the model''s accuracy, as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see, the model is offering an accuracy of 77.5%, which is considered
+    good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clustering
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The developers of Dask have also reimplemented various k-means clustering algorithms.
+    Let''s perform clustering using Dask:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Read the human resource data into a Dask DataFrame, as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/297bf3c5-6313-4b48-9d89-c7ca02af7461.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we read the human resource CSV file using the `read_csv()`
+    function into a Dask DataFrame. The preceding output only shows some of the columns
+    that are available. However, when you run the notebook for yourself, you will
+    be able to see all the columns in the dataset. Now, let's scale the `last_evalaution`
+    column (last evaluated performance score).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, select the required column for k-means clustering. We have selected the
+    `satisfaction_level` and `last_evaluation` columns here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let''s create a k-means clustering model. First, import k-means. Once
+    you''ve imported the required libraries, fit them onto the dataset and get the
+    necessary labels. We can find these labels by using the `compute()` method:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the preceding code, we created the k-means model with three clusters, fitted
+    the model, and predicted the labels for the cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we will visualize the k-means results using the `matplotlib` library:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](img/90f1c4ae-6f0b-423a-8161-42c3f618b457.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the preceding code, we visualized the clusters using `matplotlib.pyplot`.
+    Here, we have plotted the satisfaction score on the X-axis, the performance score
+    on the Y-axis, and distinguished between the clusters by using different colors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this chapter, we focused on how to perform parallel computation on basic
+    data science Python libraries such as pandas, Numpy, and scikit-learn. Dask provides
+    a complete abstraction for DataFrames and Arrays for processing moderately large
+    datasets over single/multiple core machines or multiple nodes in a cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We started this chapter by looking at Dask data types such as DataFrames, Arrays,
+    and Bags. After that, we focused on Dask Delayed, preprocessing, and machine learning
+    algorithms in a parallel environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This was the last chapter of this book, which means our learning journey ends
+    here. We have focused on core Python libraries for data analysis and machine learning
+    such as pandas, Numpy, Scipy, and scikit-learn. We have also focused on Python
+    libraries that can be used for text analytics, image analytics, and parallel computation
+    such as NLTK, spaCy, OpenCV, and Dask. Of course, your learning process doesn't
+    need to stop here; keep learning new things and about the latest changes. Try
+    to explore and change code based on your business or client needs. You can also
+    start private or personal projects for learning purposes. If you are unable to
+    decide on what kind of project you want to start, you can participate in Kaggle
+    competitions at [http://www.kaggle.com/](http://www.kaggle.com/) and more!
+  prefs: []
+  type: TYPE_NORMAL

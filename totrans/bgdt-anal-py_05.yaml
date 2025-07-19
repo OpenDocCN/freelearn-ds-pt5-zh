@@ -1,0 +1,683 @@
+- en: '*Chapter 5*'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Handling Missing Values and Correlation Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Learning Objectives
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'By the end of this chapter, you will be able to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detect and handle missing values in data using PySpark
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Describe correlations between variables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compute correlations between two or more variables in PySpark
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create a correlation matrix using PySpark
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this chapter, we will be using the Iris dataset to handle missing data and
+    find correlations between data values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous chapter, we learned the basic concepts of Spark DataFrames and
+    saw how to leverage them for big data analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we will go a step further and learn about handling missing
+    values in data and correlation analysis with Spark DataFrames—concepts that will
+    help us with data preparation for machine learning and exploratory data analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will briefly cover these concepts to provide the reader with some context,
+    but our focus is on their implementation with Spark DataFrames. We will use the
+    same Iris dataset that we used in the previous chapter for the exercises in this
+    chapter as well. But the Iris dataset has no missing values, so we have randomly
+    removed two entries from the `Sepallength` column and one entry from the `Petallength`
+    column from the original dataset. So, now we have a dataset with missing values,
+    and we will learn how to handle these missing values using PySpark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also look at the correlation between the variables in the Iris dataset
+    by computing their correlation coefficients and correlation matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up the Jupyter Notebook
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following steps are required before getting started with the exercises:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import all the required modules and packages in the Jupyter notebook:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, use the following command to set up `SparkContext`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Similarly, use the following command to set up `SQLContext` in the Jupyter
+    notebook:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Note
+  prefs:
+  - PREF_IND
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'Make sure you have the PySpark CSV reader package from the Databricks website
+    ([https://databricks.com/](https://databricks.com/)) installed and ready before
+    executing the next command. If not, then download it using the following command:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`pyspark –packages com.databricks:spark-csv_2.10:1.4.0`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Read the Iris dataset from the CSV file into a Spark DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output of the preceding command is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 5.1: Iris DataFrame](img/C12913_05_01.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 5.1: Iris DataFrame'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Missing Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The data entries with no value assigned to them are called **missing values**.
+    In the real world, encountering missing values in data is common. Values may be
+    missing for a wide variety of reasons, such as non-responsiveness of the system/responder,
+    data corruption, and partial deletion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some fields are more likely than other fields to contain missing values. For
+    example, income data collected from surveys is likely to contain missing values,
+    because of people not wanting to disclose their income.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, it is one of the major problems plaguing the data analytics world.
+    Depending on the percentage of missing data, missing values may prove to be a
+    significant challenge in data preparation and exploratory analysis. So, it's important
+    to calculate the missing data percentage before getting started with data analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following exercise, we will learn how to detect and calculate the number
+    of missing value entries in PySpark DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 38: Counting Missing Values in a DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will learn how to count the missing values from the PySpark
+    DataFrame column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use the following command to check whether the Spark DataFrame has missing
+    values or not:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, we will count the missing values in the `Sepallength` column of the Iris
+    dataset loaded in the PySpark DataFrame `df` object:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Exercise 39: Counting Missing Values in All DataFrame Columns'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will count the missing values present in all the columns
+    of a PySpark DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, import all the required modules, as illustrated here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now let''s show the data using the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![](img/C12913_05_02.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 5.2: Iris DataFrame, counting missing values'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: The output shows we have `2` missing entries in the `Seapllength` column and
+    `1` missing entry in the `Petallength` column in the PySpark DataFrame.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'A simple way is to just use the `describe()` function, which gives the count
+    of non-missing values for each column, along with a bunch of other summary statistics.
+    Let''s execute the following command in the notebook:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 5.3: Iris DataFrame, counting the missing values using different approach](img/C12913_05_03.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 5.3: Iris DataFrame, counting the missing values using different approach'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: As we can see, there are `148` non-missing values in the `Sepallength` column,
+    indicating `2` missing entries and `149` non-missing values in the `Petallength`
+    column, indicating `1` missing entry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following section, we will explore how to find the missing values from
+    the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fetching Missing Value Records from the DataFrame
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We can also filter out the records containing the missing value entries from
+    the PySpark DataFrame using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](img/C12913_05_04.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5.4: Iris DataFrame, fetching the missing value'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: The `show` function displays the first 20 records of a PySpark DataFrame. We
+    only get two here as the `Sepallength` column only has two records with missing
+    entries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Handling Missing Values in Spark DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Missing value handling is one of the complex areas of data science. There are
+    a variety of techniques that are used to handle missing values depending on the
+    type of missing data and the business use case at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These methods range from simple logic-based methods to advanced statistical
+    methods such as regression and KNN. However, irrespective of the method used to
+    tackle the missing values, we will end up performing one of the following two
+    operations on the missing value data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removing the records with missing values from the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Imputing the missing value entries with some constant value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this section, we will explore how to do both these operations with PySpark
+    DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 40: Removing Records with Missing Values from a DataFrame'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will remove the records containing missing value entries
+    for the PySpark DataFrame. Let''s perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To remove the missing values from a particular column, use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: The previous code will return `148` as the output as the two records containing
+    missing entries for the `Sepallength` column have been removed from the PySpark
+    DataFrame.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'To remove all the records containing any missing value entry for any column
+    from the PySpark DataFrame, use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The DataFrame had `3` records with missing values, as we saw in *Exercise 2:
+    Counting Missing Values in all DataFrame Columns*—two records with missing entries
+    for the `Sepallength` column and one with a missing entry for the `Petallength`
+    column.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The previous code removes all three records, thereby returning 147 complete
+    records in the PySpark DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 41: Filling Missing Values with a Constant in a DataFrame Column'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this exercise, we will replace the missing value entries of the PySpark DataFrame
+    column with a constant numeric value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our DataFrame has missing values in two columns—`Sepallength` and `Petallength`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let''s replace the missing value entries in both these columns with a
+    constant numeric value of `1`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, let''s count the missing values in the new DataFrame, `y`, that we just
+    created. The new DataFrame should have no missing values:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 5.5: Iris DataFrame, finding the missing value](img/Image43351.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 5.5: Iris DataFrame, finding the missing value'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Sometimes, we want to replace all the missing values in the DataFrame with a
+    single constant value.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Use the following command to replace all the missing values in the PySpark
+    DataFrame with a constant numeric value of 1:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, let''s count the missing values in the new DataFrame `z` that we just
+    created. The new DataFrame should have no missing values:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'The output is as follows:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 5.6: Iris DataFrame, printing the missing value](img/Image43362.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 5.6: Iris DataFrame, printing the missing value'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Correlation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Correlation is a statistical measure of the level of association between two
+    numerical variables. It gives us an idea of how closely two variables are related
+    with each other. For example, age and income are quite closely related variables.
+    It has been observed that the average income grows with age within a threshold.
+    Thus, we can assume that age and income are positively correlated with each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: However, correlation does not establish a **cause-effect relationship**. A cause-effect
+    relationship means that one variable is causing a change in another variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most common metric used to compute this association is the **Pearson Product-Moment
+    Correlation**, commonly known as **Pearson correlation coefficient** or simply
+    as the **correlation coefficient**. It is named after its inventor, *Karl Pearson*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pearson correlation coefficient is computed by dividing the covariance of
+    the two variables by the product of their standard deviations. The correlation
+    value lies between *-1* and *+1* with values close to *1* or *-1* signifying strong
+    association and values close to *0*, signifying weak association. The sign (`+`,
+    `-`) of the coefficient tells us whether the association is positive (both variables
+    increase/decrease together) or negative (vice-versa).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: Correlation only captures the linear association between variables. So, if the
+    association is non-linear, the correlation coefficient won't capture it. Two disassociated
+    variables will have a low or zero correlation coefficient, but variables with
+    zero/low correlation values are not necessarily disassociated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Correlation is of great importance in statistical analysis, as it helps explain
+    the data and sometimes highlights predictive relationships between variables.
+    In this section, we will learn how to compute correlation between variables and
+    compute a correlation matrix in PySpark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Exercise 42: Computing Correlation'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this exercise, we will compute the value of the Pearson correlation coefficient
+    between two numerical variables and a correlation matrix for all the numerical
+    columns of our PySpark DataFrame. The correlation matrix helps us visualize the
+    correlation of all the numerical columns with each other:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perform the following steps to calculate the correlation between two variables:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: The previous code outputs the Pearson correlation coefficient of `-0.1122503554120474`
+    between the two variables mentioned.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Import the relevant modules, as illustrated here:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Remove any missing values from the data with the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'To remove any non-numerical columns before computing the correlation matrix,
+    use the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, let''s compute the correlation matrix with the help of the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'To convert the matrix into a pandas DataFrame for easy visualization, execute
+    the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Rename the indexes of the pandas DataFrame with the name of the columns from
+    the original PySpark DataFrame:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Now, visualize the pandas DataFrame with the following command:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![Figure 5.7: Iris DataFrame, computing correlation](img/C12913_05_07.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 5.7: Iris DataFrame, computing correlation'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'Activity 12: Missing Value Handling and Correlation Analysis with PySpark DataFrames'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In this activity, we will detect and handle missing values in the Iris dataset.
+    We will also compute the correlation matrix and verify the variables showing strong
+    correlations by plotting them with each other and fitting a linear line on the
+    plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perform the initial procedure of importing packages and libraries in the Jupyter
+    notebook.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set up `SparkContext` and `SQLContext`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Read the data from the CSV file into a Spark object:![Figure 5.8: Iris DataFrame,
+    reading data from the DataFrame](img/C12913_05_08.jpg)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Figure 5.8: Iris DataFrame, reading data from the DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Fill in the missing values in the `Sepallength` column with its column mean.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the correlation matrix for the dataset. Make sure to import the required
+    modules.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove the `String` columns from the PySpark DataFrame and compute the correlation
+    matrix in the Spark DataFrame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Convert the correlation matrix into a pandas DataFrame:![Figure 5.9: Iris DataFrame,
+    converting the correlation matrix into a pandas DataFrame](img/C12913_05_09.jpg)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Figure 5.9: Iris DataFrame, converting the correlation matrix into a pandas
+    DataFrame'
+  prefs:
+  - PREF_IND
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Load the required modules and plotting data to plot the variable pairs showing
+    strong positive correlation and fit a linear line on them.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'This is the graph for `x = "Sepallength", y = "Petalwidth"`:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '![Figure 5.10: Iris DataFrame, plotting graph as x = “Sepallength”, y = “Petalwidth”](img/C12913_05_10.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Figure 5.10: Iris DataFrame, plotting graph as x = "Sepallength", y = "Petalwidth"'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'This is the graph for `x = "Sepallength", y = "Petalwidth"`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 5.11: Iris DataFrame, plotting graph as x = “Sepallength”, y = “Petalwidth”](img/C12913_05_11.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5.11: Iris DataFrame, plotting graph as x = "Sepallength", y = "Petalwidth"'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: 'This is the graph for `x = "Petallength", y = "Petalwidth"`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Figure 5.12: Iris DataFrame, plotting graph as x = “Petallength”, y = “Petalwidth”](img/C12913_05_12.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5.12: Iris DataFrame, plotting graph as x = "Petallength", y = "Petalwidth"'
+  prefs:
+  - PREF_H6
+  type: TYPE_NORMAL
+- en: Note
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: Alternatively, you can use any dataset for this activity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution for this activity can be found on page 229.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this chapter, we learned how to detect and handle the missing values in PySpark
+    DataFrames. We looked at how to perform correlation and a metric to quantify the
+    Pearson correlation coefficient. Later, we computed Pearson correlation coefficients
+    for different numerical variable pairs and learned how to compute the correlation
+    matrix for all the variables in the PySpark DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, we will learn what problem definition is, and understand
+    how to perform KPI generation. We will also use the data aggregation and data
+    merge operations (learned about in previous chapters) and analyze data using graphs.
+  prefs: []
+  type: TYPE_NORMAL

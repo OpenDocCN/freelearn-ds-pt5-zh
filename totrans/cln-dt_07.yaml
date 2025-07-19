@@ -1217,6 +1217,7 @@
   id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在关心的列是`query_phrase`列。查看该列数据，我们可以看到同样的短语反复出现。这些显然是最初用于定位和选择现在存在于数据集中的推文的搜索短语。在`sentiment140`表中的498条推文中，查询短语有多少次被反复使用？我们可以通过以下SQL来检测这一点：
 - en: '[PRE29]'
   id: totrans-168
   prefs: []
@@ -1227,6 +1228,7 @@
   id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询结果显示，只有80个不同的查询短语，但它们在498行数据中反复出现。
 - en: This may not seem like a problem in a table of 498 rows, but if we had an extremely
     large table, such as with hundreds of millions of rows, we should be concerned
     with two things about this column. First, duplicating these strings over and over
@@ -1235,6 +1237,7 @@
   id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 这在498行数据的表中可能看起来不算问题，但如果我们有一个非常大的表，比如包含数亿行的表，我们就需要关注这个列的两个问题。首先，重复这些字符串占用了数据库中不必要的空间；其次，查找不同的字符串值会非常慢。
 - en: 'To solve this problem, we will create a **lookup table** of query values. Each
     query string will exist only once in this new table, and we will also create an
     ID number for each one. Then, we will change the original table to use these new
@@ -1243,11 +1246,13 @@
   id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，我们将创建一个**查找表**来存储查询值。每个查询字符串只会在这个新表中出现一次，我们还会为每个查询字符串创建一个ID号。接下来，我们将修改原始表，使用这些新的数字值，而不是目前使用的字符串值。我们的操作流程如下：
 - en: 'Create a new lookup table:'
   id: totrans-172
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建一个新的查找表：
 - en: '[PRE30]'
   id: totrans-173
   prefs:
@@ -1260,6 +1265,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 用不同的查询短语填充查找表，并自动为每个短语分配一个`query_id`编号：
 - en: '[PRE31]'
   id: totrans-175
   prefs:
@@ -1271,6 +1277,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在原始表中创建一个新列，用于存储查询短语编号：
 - en: '[PRE32]'
   id: totrans-177
   prefs:
@@ -1287,6 +1294,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在下一步操作出错的情况下，备份`sentiment140`表。每次对表执行`UPDATE`操作时，最好先进行备份。我们可以使用像phpMyAdmin这样的工具轻松复制表（使用**操作**标签）。或者，我们可以重新创建一份表的副本，并将原始表中的行导入到副本中，如下所示的SQL：
 - en: '[PRE33]'
   id: totrans-179
   prefs:
@@ -1301,6 +1309,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 用正确的数字填充新列。为此，我们通过它们的文本列将两个表连接起来，然后从查找表中查找正确的数字值，并将其插入到`sentiment140`表中。在以下查询中，每个表都被赋予了别名`s`和`sq`：
 - en: '[PRE34]'
   id: totrans-181
   prefs:
@@ -1312,6 +1321,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 删除`sentiment140`表中的旧`query_phrase`列：
 - en: '[PRE35]'
   id: totrans-183
   prefs:
@@ -1323,6 +1333,7 @@
   id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经找到了一种有效的方法来创建短语列表，具体如下。这些短语按字母顺序排列：
 - en: '[PRE36]'
   id: totrans-185
   prefs: []
@@ -1333,6 +1344,7 @@
   id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以通过对这两个表进行连接，查找包含给定短语（如`baseball`）的推文：
 - en: '[PRE37]'
   id: totrans-187
   prefs: []
@@ -1345,11 +1357,13 @@
   id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 到此为止，我们已经清理了`sentiment140`表，并创建了四个新表来存储各种提取和清理后的值，包括话题标签、用户提及、网址和查询短语。我们的`tweet_text`和`date_clean`列已经清理干净，并且我们已经有了一个查询短语的查找表。
 - en: Step nine – document what you did
   id: totrans-189
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第九步 – 记录你所做的工作
 - en: With nine steps of cleaning and multiple languages and tools in use, there is
     no doubt there'll be a point at which we will make a mistake and have to repeat
     a step. If we had to describe to someone else what we did, we will almost certainly

@@ -1,304 +1,304 @@
-<html><head></head><body><div class="chapter" title="Chapter&#xA0;4.&#xA0;Using Hadoop Streaming with R"><div class="titlepage"><div><div><h1 class="title"><a id="ch04"/>Chapter 4. Using Hadoop Streaming with R</h1></div></div></div><p>In the previous chapter, we learned how to integrate R and Hadoop with the help of RHIPE and RHadoop and also sample examples. In this chapter, we are going to discuss the following topics:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Understanding the basics of Hadoop streaming</li><li class="listitem" style="list-style-type: disc">Understanding how to run Hadoop streaming with R</li><li class="listitem" style="list-style-type: disc">Exploring the HadoopStreaming R package</li></ul></div><div class="section" title="Understanding the basics of Hadoop streaming"><div class="titlepage"><div><div><h1 class="title"><a id="ch04lvl1sec32"/>Understanding the basics of Hadoop streaming</h1></div></div></div><p>Hadoop <a id="id421" class="indexterm"/>streaming is a Hadoop utility for running the Hadoop MapReduce job with executable scripts such as Mapper and Reducer. This is similar to the pipe operation in Linux. With this, the text input file is printed on stream (<code class="literal">stdin</code>), which is provided as an input to Mapper and the output (<code class="literal">stdout</code>) of Mapper is provided as an input to Reducer; finally, Reducer writes the output to the HDFS directory.</p><p>The main advantage of the Hadoop streaming utility is that it allows Java as well as non-Java programmed MapReduce jobs to be executed over Hadoop clusters. Also, it takes care of the progress of running MapReduce jobs. The Hadoop streaming supports the Perl, Python, PHP, R, and C++ programming languages. To run an application written in other programming languages, the developer just needs to translate the application logic into the Mapper and Reducer sections with the key and value output elements. We learned in <a class="link" href="ch02.html" title="Chapter 2. Writing Hadoop MapReduce Programs">Chapter 2</a>, <span class="emphasis"><em>Writing Hadoop MapReduce Programs</em></span>, that to create Hadoop MapReduce jobs we need Mapper, Reducer, and Driver as the three main components. Here, creating the driver file for running the MapReduce job is optional when we are implementing MapReduce with R and Hadoop.</p><p>This chapter is written with the intention of integrating R and Hadoop. So we will see the example of R with Hadoop streaming. Now, we will see how we can use Hadoop streaming with the R script written with Mapper and Reducer. From the following diagrams, we can identify the various components of the Hadoop streaming MapReduce job.</p><div class="mediaobject"><img src="graphics/3282OS_04_01.jpg" alt="Understanding the basics of Hadoop streaming"/><div class="caption"><p>Hadoop streaming components</p></div></div><p>Now, assume<a id="id422" class="indexterm"/> we have implemented our Mapper and Reducer as <code class="literal">code_mapper.R</code> and <code class="literal">code_reducer.R</code>. We will see how we can run them in an integrated environment of R and Hadoop. This can be run with the Hadoop streaming command with various generic and streaming options.</p><p>Let's see the format of the Hadoop streaming command:</p><div class="informalexample"><pre class="programlisting"> bin/hadoop command [generic Options] [streaming Options]
+<html><head></head><body><div><div><div><div><h1 class="title"><a id="ch04"/>Chapter 4. Using Hadoop Streaming with R</h1></div></div></div><p>In the previous chapter, we learned how to integrate R and Hadoop with the help of RHIPE and RHadoop and also sample examples. In this chapter, we are going to discuss the following topics:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Understanding the basics of Hadoop streaming</li><li class="listitem" style="list-style-type: disc">Understanding how to run Hadoop streaming with R</li><li class="listitem" style="list-style-type: disc">Exploring the HadoopStreaming R package</li></ul></div><div><div><div><div><h1 class="title"><a id="ch04lvl1sec32"/>Understanding the basics of Hadoop streaming</h1></div></div></div><p>Hadoop <a id="id421" class="indexterm"/>streaming is a Hadoop utility for running the Hadoop MapReduce job with executable scripts such as Mapper and Reducer. This is similar to the pipe operation in Linux. With this, the text input file is printed on stream (<code class="literal">stdin</code>), which is provided as an input to Mapper and the output (<code class="literal">stdout</code>) of Mapper is provided as an input to Reducer; finally, Reducer writes the output to the HDFS directory.</p><p>The main advantage of the Hadoop streaming utility is that it allows Java as well as non-Java programmed MapReduce jobs to be executed over Hadoop clusters. Also, it takes care of the progress of running MapReduce jobs. The Hadoop streaming supports the Perl, Python, PHP, R, and C++ programming languages. To run an application written in other programming languages, the developer just needs to translate the application logic into the Mapper and Reducer sections with the key and value output elements. We learned in <a class="link" href="ch02.html" title="Chapter 2. Writing Hadoop MapReduce Programs">Chapter 2</a>, <em>Writing Hadoop MapReduce Programs</em>, that to create Hadoop MapReduce jobs we need Mapper, Reducer, and Driver as the three main components. Here, creating the driver file for running the MapReduce job is optional when we are implementing MapReduce with R and Hadoop.</p><p>This chapter is written with the intention of integrating R and Hadoop. So we will see the example of R with Hadoop streaming. Now, we will see how we can use Hadoop streaming with the R script written with Mapper and Reducer. From the following diagrams, we can identify the various components of the Hadoop streaming MapReduce job.</p><div><img src="img/3282OS_04_01.jpg" alt="Understanding the basics of Hadoop streaming"/><div><p>Hadoop streaming components</p></div></div><p>Now, assume<a id="id422" class="indexterm"/> we have implemented our Mapper and Reducer as <code class="literal">code_mapper.R</code> and <code class="literal">code_reducer.R</code>. We will see how we can run them in an integrated environment of R and Hadoop. This can be run with the Hadoop streaming command with various generic and streaming options.</p><p>Let's see the format of the Hadoop streaming command:</p><div><pre class="programlisting"> bin/hadoop command [generic Options] [streaming Options]
        
-    </pre></div><p>The following diagram shows an example of the execution of Hadoop streaming, a MapReduce job with several streaming options.</p><div class="mediaobject"><img src="graphics/3282OS_04_02.jpg" alt="Understanding the basics of Hadoop streaming"/><div class="caption"><p>Hadoop streaming command options</p></div></div><p>In the preceding image, there are about six unique important components that are required for the entire Hadoop streaming MapReduce job. All of them are streaming options <a id="id423" class="indexterm"/>except jar.</p><p>The following is a line-wise description of the preceding Hadoop streaming command:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Line 1</strong></span>: This is used to specify the Hadoop jar files (setting up the classpath for the Hadoop jar)</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Line 2</strong></span>: This is used for specifying the input directory of HDFS</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Line 3</strong></span>: This is used for specifying the output directory of HDFS</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Line 4</strong></span>: This is used for making a file available to a local machine</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Line 5</strong></span>: This is used to define the available R file as Mapper</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Line 6</strong></span>: This is used for making a file available to a local machine</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Line 7</strong></span>: This is used to define the available R file as Reducer</li></ul></div><p>The main six Hadoop streaming components of the preceding command are listed and explained as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>jar:</strong></span> This <a id="id424" class="indexterm"/>option is used to run a jar with coded classes that are designed for serving the streaming functionality with Java as well as other programmed Mappers and Reducers. It's called the Hadoop streaming jar.</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>input</strong></span><a id="id425" class="indexterm"/><span class="strong"><strong>:</strong></span> This option is used for specifying the location of input dataset (stored on HDFS) to Hadoop streaming MapReduce job.</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>output:</strong></span> This <a id="id426" class="indexterm"/>option is used for telling the HDFS output directory (where the output of the MapReduce job will be written) to Hadoop streaming MapReduce job.</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>file:</strong></span> This<a id="id427" class="indexterm"/> option is used for copying the MapReduce resources such as Mapper, Reducer, and Combiner to computer nodes (Tasktrackers) to make it local.</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>mapper:</strong></span> This<a id="id428" class="indexterm"/> option is used for identification of the executable <code class="literal">Mapper</code> file.</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>reducer:</strong></span> This<a id="id429" class="indexterm"/> option is used for identification of the executable <code class="literal">Reducer</code> file.</li></ul></div><p>There are other Hadoop streaming command options too, but they are optional. Let's have a look at them:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">inputformat</code>: This is used to define the input data format by specifying the Java <a id="id430" class="indexterm"/>class name. By default, it's <code class="literal">TextInputFormat</code>.</li><li class="listitem" style="list-style-type: disc"><code class="literal">outputformat</code>: This is used to define the output data format by specifying the<a id="id431" class="indexterm"/> Java class name. By default, it's <code class="literal">TextOutputFormat</code>.</li><li class="listitem" style="list-style-type: disc"><code class="literal">partitioner</code>: This<a id="id432" class="indexterm"/> is used to include the class or file written with the code for partitioning the output as (key, value) pairs of the Mapper phase.</li><li class="listitem" style="list-style-type: disc"><code class="literal">combiner</code>: This <a id="id433" class="indexterm"/>is used to include the class or file written with the code for reducing the Mapper output by aggregating the values of keys. Also, we can use the <a id="id434" class="indexterm"/>default combiner that will simply combine all the key attribute values before providing the Mapper's output to the Reducer.</li><li class="listitem" style="list-style-type: disc"><code class="literal">cmdenv</code>: This <a id="id435" class="indexterm"/>option will pass the environment variable to the streaming command. For example, we can pass <code class="literal">R_LIBS = /your /path /to /R /libraries</code>.</li><li class="listitem" style="list-style-type: disc"><code class="literal">inputreader</code>: This <a id="id436" class="indexterm"/>can be used instead of the <code class="literal">inputformat</code> class for specifying the record reader class.</li><li class="listitem" style="list-style-type: disc"><code class="literal">verbose</code>: This<a id="id437" class="indexterm"/> is used to verbose the output.</li><li class="listitem" style="list-style-type: disc"><code class="literal">numReduceTasks</code>: This<a id="id438" class="indexterm"/> is used to specify the number of Reducers.</li><li class="listitem" style="list-style-type: disc"><code class="literal">mapdebug</code>: This<a id="id439" class="indexterm"/> is used to debug the script of the <code class="literal">Mapper</code> file when the Mapper task fails.</li><li class="listitem" style="list-style-type: disc"><code class="literal">reducedebug</code>: This<a id="id440" class="indexterm"/> is used to debug the script of the <code class="literal">Reducer</code> file when the Reducer task fails.</li></ul></div><p>Now, it's time to look at some generic options for the Hadoop streaming MapReduce job.</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">conf</code>: This is used to specify an application configuration file.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-conf configuration_file</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">D</code>: This is used to define the value for a specific MapReduce or HDFS property. For example:</li><li class="listitem" style="list-style-type: disc"><code class="literal">-D property = value or to specify the temporary HDFS directory</code>.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-D dfs.temp.dir=/app/tmp/Hadoop/</strong></span>
-</pre></div><p>or to specify the total number of zero Reducers:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-D mapred.reduce.tasks=0</strong></span>
-</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note02"/>Note</h3><p>The <code class="literal">-D</code> option only works when a tool is implemented.</p></div></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">fs</code>: This is used to define the Hadoop NameNode.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-fs localhost:port</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">jt</code>: This is used to define the Hadoop JobTracker.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-jt localhost:port</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">files</code>: This is used to specify the large or multiple text files from HDFS.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-files hdfs://host:port/directory/txtfile.txt</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">libjars</code>: This is<a id="id441" class="indexterm"/> used to specify the multiple jar files to be included in the classpath.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-libjars  /opt/ current/lib/a.jar, /opt/ current/lib/b.jar</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">archives</code>: This is used to specify the jar files to be unarchived on the local machine.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>-archives hdfs://host:fs_port/user/testfile.jar</strong></span>
+    </pre></div><p>The following diagram shows an example of the execution of Hadoop streaming, a MapReduce job with several streaming options.</p><div><img src="img/3282OS_04_02.jpg" alt="Understanding the basics of Hadoop streaming"/><div><p>Hadoop streaming command options</p></div></div><p>In the preceding image, there are about six unique important components that are required for the entire Hadoop streaming MapReduce job. All of them are streaming options <a id="id423" class="indexterm"/>except jar.</p><p>The following is a line-wise description of the preceding Hadoop streaming command:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><strong>Line 1</strong>: This is used to specify the Hadoop jar files (setting up the classpath for the Hadoop jar)</li><li class="listitem" style="list-style-type: disc"><strong>Line 2</strong>: This is used for specifying the input directory of HDFS</li><li class="listitem" style="list-style-type: disc"><strong>Line 3</strong>: This is used for specifying the output directory of HDFS</li><li class="listitem" style="list-style-type: disc"><strong>Line 4</strong>: This is used for making a file available to a local machine</li><li class="listitem" style="list-style-type: disc"><strong>Line 5</strong>: This is used to define the available R file as Mapper</li><li class="listitem" style="list-style-type: disc"><strong>Line 6</strong>: This is used for making a file available to a local machine</li><li class="listitem" style="list-style-type: disc"><strong>Line 7</strong>: This is used to define the available R file as Reducer</li></ul></div><p>The main six Hadoop streaming components of the preceding command are listed and explained as follows:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><strong>jar:</strong> This <a id="id424" class="indexterm"/>option is used to run a jar with coded classes that are designed for serving the streaming functionality with Java as well as other programmed Mappers and Reducers. It's called the Hadoop streaming jar.</li><li class="listitem" style="list-style-type: disc"><strong>input</strong><a id="id425" class="indexterm"/><strong>:</strong> This option is used for specifying the location of input dataset (stored on HDFS) to Hadoop streaming MapReduce job.</li><li class="listitem" style="list-style-type: disc"><strong>output:</strong> This <a id="id426" class="indexterm"/>option is used for telling the HDFS output directory (where the output of the MapReduce job will be written) to Hadoop streaming MapReduce job.</li><li class="listitem" style="list-style-type: disc"><strong>file:</strong> This<a id="id427" class="indexterm"/> option is used for copying the MapReduce resources such as Mapper, Reducer, and Combiner to computer nodes (Tasktrackers) to make it local.</li><li class="listitem" style="list-style-type: disc"><strong>mapper:</strong> This<a id="id428" class="indexterm"/> option is used for identification of the executable <code class="literal">Mapper</code> file.</li><li class="listitem" style="list-style-type: disc"><strong>reducer:</strong> This<a id="id429" class="indexterm"/> option is used for identification of the executable <code class="literal">Reducer</code> file.</li></ul></div><p>There are other Hadoop streaming command options too, but they are optional. Let's have a look at them:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">inputformat</code>: This is used to define the input data format by specifying the Java <a id="id430" class="indexterm"/>class name. By default, it's <code class="literal">TextInputFormat</code>.</li><li class="listitem" style="list-style-type: disc"><code class="literal">outputformat</code>: This is used to define the output data format by specifying the<a id="id431" class="indexterm"/> Java class name. By default, it's <code class="literal">TextOutputFormat</code>.</li><li class="listitem" style="list-style-type: disc"><code class="literal">partitioner</code>: This<a id="id432" class="indexterm"/> is used to include the class or file written with the code for partitioning the output as (key, value) pairs of the Mapper phase.</li><li class="listitem" style="list-style-type: disc"><code class="literal">combiner</code>: This <a id="id433" class="indexterm"/>is used to include the class or file written with the code for reducing the Mapper output by aggregating the values of keys. Also, we can use the <a id="id434" class="indexterm"/>default combiner that will simply combine all the key attribute values before providing the Mapper's output to the Reducer.</li><li class="listitem" style="list-style-type: disc"><code class="literal">cmdenv</code>: This <a id="id435" class="indexterm"/>option will pass the environment variable to the streaming command. For example, we can pass <code class="literal">R_LIBS = /your /path /to /R /libraries</code>.</li><li class="listitem" style="list-style-type: disc"><code class="literal">inputreader</code>: This <a id="id436" class="indexterm"/>can be used instead of the <code class="literal">inputformat</code> class for specifying the record reader class.</li><li class="listitem" style="list-style-type: disc"><code class="literal">verbose</code>: This<a id="id437" class="indexterm"/> is used to verbose the output.</li><li class="listitem" style="list-style-type: disc"><code class="literal">numReduceTasks</code>: This<a id="id438" class="indexterm"/> is used to specify the number of Reducers.</li><li class="listitem" style="list-style-type: disc"><code class="literal">mapdebug</code>: This<a id="id439" class="indexterm"/> is used to debug the script of the <code class="literal">Mapper</code> file when the Mapper task fails.</li><li class="listitem" style="list-style-type: disc"><code class="literal">reducedebug</code>: This<a id="id440" class="indexterm"/> is used to debug the script of the <code class="literal">Reducer</code> file when the Reducer task fails.</li></ul></div><p>Now, it's time to look at some generic options for the Hadoop streaming MapReduce job.</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">conf</code>: This is used to specify an application configuration file.<div><pre class="programlisting">
+<strong>-conf configuration_file</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">D</code>: This is used to define the value for a specific MapReduce or HDFS property. For example:</li><li class="listitem" style="list-style-type: disc"><code class="literal">-D property = value or to specify the temporary HDFS directory</code>.<div><pre class="programlisting">
+<strong>-D dfs.temp.dir=/app/tmp/Hadoop/</strong>
+</pre></div><p>or to specify the total number of zero Reducers:</p><div><pre class="programlisting">
+<strong>-D mapred.reduce.tasks=0</strong>
+</pre></div><div><div><h3 class="title"><a id="note02"/>Note</h3><p>The <code class="literal">-D</code> option only works when a tool is implemented.</p></div></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">fs</code>: This is used to define the Hadoop NameNode.<div><pre class="programlisting">
+<strong>-fs localhost:port</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">jt</code>: This is used to define the Hadoop JobTracker.<div><pre class="programlisting">
+<strong>-jt localhost:port</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">files</code>: This is used to specify the large or multiple text files from HDFS.<div><pre class="programlisting">
+<strong>-files hdfs://host:port/directory/txtfile.txt</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">libjars</code>: This is<a id="id441" class="indexterm"/> used to specify the multiple jar files to be included in the classpath.<div><pre class="programlisting">
+<strong>-libjars  /opt/ current/lib/a.jar, /opt/ current/lib/b.jar</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">archives</code>: This is used to specify the jar files to be unarchived on the local machine.<div><pre class="programlisting">
+<strong>-archives hdfs://host:fs_port/user/testfile.jar</strong>
 </pre></div></li></ul></div></div></div>
-<div class="section" title="Understanding how to run Hadoop streaming with R"><div class="titlepage"><div><div><h1 class="title"><a id="ch04lvl1sec33"/>Understanding how to run Hadoop streaming with R</h1></div></div></div><p>Now, we <a id="id442" class="indexterm"/>understood what Hadoop streaming is and how it can be called with Hadoop generic as well as streaming options. Next, it's time to know how an R script can be developed and run with R. For this, we can consider a better example than a simple word count program.</p><p>The four different stages of MapReduce operations are explained here as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Understanding a MapReduce application</li><li class="listitem" style="list-style-type: disc">Understanding how to code a MapReduce application</li><li class="listitem" style="list-style-type: disc">Understanding how to run a MapReduce application</li><li class="listitem" style="list-style-type: disc">Understanding how to explore the output of a MapReduce application</li></ul></div><div class="section" title="Understanding a MapReduce application"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec41"/>Understanding a MapReduce application</h2></div></div></div><p>Problem<a id="id443" class="indexterm"/> definition: The problem is to segment a <a id="id444" class="indexterm"/>page visit by the geolocation. In this problem, we are going to consider the website <a class="ulink" href="http://www.gtuadmissionhelpline.com/">http://www.gtuadmissionhelpline.com/</a>, which has been developed to provide guidance to students who are looking for admission in the Gujarat Technological University. This website contains the college details of various fields such as Engineering (diploma, degree, and masters), Medical, Hotel Management, Architecture, Pharmacy, MBA, and MCA. With this MapReduce application, we will identify the fields that visitors are interested in geographically.</p><p>For example, most of the online visitors from Valsad city visit the pages of MBA colleges <a id="id445" class="indexterm"/>more often. Based on this, we can identify the mindset of Valsad students; they are highly interested in getting admissions in<a id="id446" class="indexterm"/> the MBA field. So, with this website traffic dataset, we can identify the city-wise interest levels. Now, if there are no MBA colleges in Valsad, it will be a big issue for them. They will need to relocate to other cities; this may increase the cost of their education.</p><p>By using this type of data, the Gujarat Technological University can generate informative insights for students from different cities.</p><p>Input dataset source: To perform this type of analysis, we need to have the web traffic data for that website. Google Analytics is one of the popular and free services for tracking an online visitor's metadata from the website. Google Analytics stores the web traffic data in terms of various dimensions ad metrics. We need to design a specific query to extract the dataset from Google Analytics.</p><p>Input dataset: The extracted Google Analytics dataset contains the following four data columns:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">date</code>: This is the date of visit and in the form of YYYY/MM/DD.</li><li class="listitem" style="list-style-type: disc"><code class="literal">country</code>: This is the country of the visitor.</li><li class="listitem" style="list-style-type: disc"><code class="literal">city</code>: This is the city of the visitor.</li><li class="listitem" style="list-style-type: disc"><code class="literal">pagePath</code>: This is the URL of a page of the website.</li></ul></div><p>The head section of the input dataset is as follows:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>$ head -5 gadata_mr.csv</strong></span>
-<span class="strong"><strong>20120301,India,Ahmedabad,/</strong></span>
-<span class="strong"><strong>20120302,India,Ahmedabad,/gtuadmissionhelpline-team</strong></span>
-<span class="strong"><strong>20120302,India,Mumbai,/</strong></span>
-<span class="strong"><strong>20120302,India,Mumbai,/merit-calculator</strong></span>
-<span class="strong"><strong>20120303,India,Chennai,/</strong></span>
-</pre></div><p>The expected output format is shown in the following diagram:</p><div class="mediaobject"><img src="graphics/3282OS_04_03.jpg" alt="Understanding a MapReduce application"/></div><p>The<a id="id447" class="indexterm"/> following is<a id="id448" class="indexterm"/> a sample output:</p><div class="mediaobject"><img src="graphics/3282OS_04_04.jpg" alt="Understanding a MapReduce application"/></div></div><div class="section" title="Understanding how to code a MapReduce application"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec42"/>Understanding how to code a MapReduce application</h2></div></div></div><p>In <a id="id449" class="indexterm"/>this section, we will learn about the<a id="id450" class="indexterm"/> following two units of a MapReduce application:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Mapper code</li><li class="listitem" style="list-style-type: disc">Reducer code</li></ul></div><p>Let's start with the Mapper code.</p><p>Mapper code: This R script, named <code class="literal">ga-mapper.R</code>, will take care of the Map phase of a MapReduce job.</p><p>The Mapper's job is to work on each line and extract a pair (key, value) and pass it to the Reducer to be grouped/aggregated. In this example, each line is an input to Mapper and the output <code class="literal">City:PagePath</code>. <code class="literal">City</code> is a key and <code class="literal">PagePath</code> is a value. Now Reducer can get all the page paths for a given city; hence, it can be grouped easily.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># To identify the type of the script, here it is RScript</strong></span>
-<span class="strong"><strong>#! /usr/bin/env Rscript</strong></span>
-<span class="strong"><strong># To disable the warning massages to be printed</strong></span>
-<span class="strong"><strong>options(warn=-1)</strong></span>
-<span class="strong"><strong># To initiating the connection to standard input</strong></span>
-<span class="strong"><strong>input &lt;- file("stdin", "r")</strong></span>
-<span class="strong"><strong>Each line has these four fields (date, country, city, and pagePath) in the same order. We split the line by a comma. The result is a vector which has the date, country, city, and pathPath in the indexes 1,2,3, and 4 respectively.</strong></span>
-</pre></div><p>We extract the third and fourth element for the city and pagePath respectively. Then, they will be written to the stream as key-value pairs and fed to Reducer for further processing.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># Running while loop until all the lines are read</strong></span>
-<span class="strong"><strong>while(length(currentLine &lt;- readLines(input, n=1, warn=FALSE)) &gt; 0) {</strong></span>
+<div><div><div><div><h1 class="title"><a id="ch04lvl1sec33"/>Understanding how to run Hadoop streaming with R</h1></div></div></div><p>Now, we <a id="id442" class="indexterm"/>understood what Hadoop streaming is and how it can be called with Hadoop generic as well as streaming options. Next, it's time to know how an R script can be developed and run with R. For this, we can consider a better example than a simple word count program.</p><p>The four different stages of MapReduce operations are explained here as follows:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Understanding a MapReduce application</li><li class="listitem" style="list-style-type: disc">Understanding how to code a MapReduce application</li><li class="listitem" style="list-style-type: disc">Understanding how to run a MapReduce application</li><li class="listitem" style="list-style-type: disc">Understanding how to explore the output of a MapReduce application</li></ul></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec41"/>Understanding a MapReduce application</h2></div></div></div><p>Problem<a id="id443" class="indexterm"/> definition: The problem is to segment a <a id="id444" class="indexterm"/>page visit by the geolocation. In this problem, we are going to consider the website <a class="ulink" href="http://www.gtuadmissionhelpline.com/">http://www.gtuadmissionhelpline.com/</a>, which has been developed to provide guidance to students who are looking for admission in the Gujarat Technological University. This website contains the college details of various fields such as Engineering (diploma, degree, and masters), Medical, Hotel Management, Architecture, Pharmacy, MBA, and MCA. With this MapReduce application, we will identify the fields that visitors are interested in geographically.</p><p>For example, most of the online visitors from Valsad city visit the pages of MBA colleges <a id="id445" class="indexterm"/>more often. Based on this, we can identify the mindset of Valsad students; they are highly interested in getting admissions in<a id="id446" class="indexterm"/> the MBA field. So, with this website traffic dataset, we can identify the city-wise interest levels. Now, if there are no MBA colleges in Valsad, it will be a big issue for them. They will need to relocate to other cities; this may increase the cost of their education.</p><p>By using this type of data, the Gujarat Technological University can generate informative insights for students from different cities.</p><p>Input dataset source: To perform this type of analysis, we need to have the web traffic data for that website. Google Analytics is one of the popular and free services for tracking an online visitor's metadata from the website. Google Analytics stores the web traffic data in terms of various dimensions ad metrics. We need to design a specific query to extract the dataset from Google Analytics.</p><p>Input dataset: The extracted Google Analytics dataset contains the following four data columns:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">date</code>: This is the date of visit and in the form of YYYY/MM/DD.</li><li class="listitem" style="list-style-type: disc"><code class="literal">country</code>: This is the country of the visitor.</li><li class="listitem" style="list-style-type: disc"><code class="literal">city</code>: This is the city of the visitor.</li><li class="listitem" style="list-style-type: disc"><code class="literal">pagePath</code>: This is the URL of a page of the website.</li></ul></div><p>The head section of the input dataset is as follows:</p><div><pre class="programlisting">
+<strong>$ head -5 gadata_mr.csv</strong>
+<strong>20120301,India,Ahmedabad,/</strong>
+<strong>20120302,India,Ahmedabad,/gtuadmissionhelpline-team</strong>
+<strong>20120302,India,Mumbai,/</strong>
+<strong>20120302,India,Mumbai,/merit-calculator</strong>
+<strong>20120303,India,Chennai,/</strong>
+</pre></div><p>The expected output format is shown in the following diagram:</p><div><img src="img/3282OS_04_03.jpg" alt="Understanding a MapReduce application"/></div><p>The<a id="id447" class="indexterm"/> following is<a id="id448" class="indexterm"/> a sample output:</p><div><img src="img/3282OS_04_04.jpg" alt="Understanding a MapReduce application"/></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec42"/>Understanding how to code a MapReduce application</h2></div></div></div><p>In <a id="id449" class="indexterm"/>this section, we will learn about the<a id="id450" class="indexterm"/> following two units of a MapReduce application:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Mapper code</li><li class="listitem" style="list-style-type: disc">Reducer code</li></ul></div><p>Let's start with the Mapper code.</p><p>Mapper code: This R script, named <code class="literal">ga-mapper.R</code>, will take care of the Map phase of a MapReduce job.</p><p>The Mapper's job is to work on each line and extract a pair (key, value) and pass it to the Reducer to be grouped/aggregated. In this example, each line is an input to Mapper and the output <code class="literal">City:PagePath</code>. <code class="literal">City</code> is a key and <code class="literal">PagePath</code> is a value. Now Reducer can get all the page paths for a given city; hence, it can be grouped easily.</p><div><pre class="programlisting">
+<strong># To identify the type of the script, here it is RScript</strong>
+<strong>#! /usr/bin/env Rscript</strong>
+<strong># To disable the warning massages to be printed</strong>
+<strong>options(warn=-1)</strong>
+<strong># To initiating the connection to standard input</strong>
+<strong>input &lt;- file("stdin", "r")</strong>
+<strong>Each line has these four fields (date, country, city, and pagePath) in the same order. We split the line by a comma. The result is a vector which has the date, country, city, and pathPath in the indexes 1,2,3, and 4 respectively.</strong>
+</pre></div><p>We extract the third and fourth element for the city and pagePath respectively. Then, they will be written to the stream as key-value pairs and fed to Reducer for further processing.</p><div><pre class="programlisting">
+<strong># Running while loop until all the lines are read</strong>
+<strong>while(length(currentLine &lt;- readLines(input, n=1, warn=FALSE)) &gt; 0) {</strong>
 
-<span class="strong"><strong># Splitting the line into vectors by "," separator </strong></span>
-<span class="strong"><strong>  fields &lt;- unlist(strsplit(currentLine, ","))</strong></span>
+<strong># Splitting the line into vectors by "," separator </strong>
+<strong>  fields &lt;- unlist(strsplit(currentLine, ","))</strong>
 
-<span class="strong"><strong># Capturing the city and pagePath from fields</strong></span>
-<span class="strong"><strong>  city &lt;- as.character(fields[3])</strong></span>
-<span class="strong"><strong>  pagepath &lt;- as.character(fields[4])</strong></span>
+<strong># Capturing the city and pagePath from fields</strong>
+<strong>  city &lt;- as.character(fields[3])</strong>
+<strong>  pagepath &lt;- as.character(fields[4])</strong>
 
-<span class="strong"><strong># Printing both to the standard output</strong></span>
-<span class="strong"><strong>print(paste(city, pagepath,sep="\t"),stdout())</strong></span>
+<strong># Printing both to the standard output</strong>
+<strong>print(paste(city, pagepath,sep="\t"),stdout())</strong>
 
 
-<span class="strong"><strong>}</strong></span>
+<strong>}</strong>
 
-<span class="strong"><strong># Closing the connection to that input stream</strong></span>
-<span class="strong"><strong>close(input)</strong></span>
-</pre></div><p>As soon as the output of the Mapper phase as (key, value) pairs is available to the standard output, Reducers will read the line-oriented output from <code class="literal">stdout</code> and convert it into final aggregated key-value pairs.</p><p>Let's see<a id="id451" class="indexterm"/> how the Mapper output <a id="id452" class="indexterm"/>format is and how the input data format of Reducer looks like.</p><p>Reducer code: This R script named <code class="literal">ga_reducer.R</code> will take care of the Reducer section of the MapReduce job.</p><p>As we discussed, the output of Mapper will be considered as the input for Reducer. Reducer will read these city and pagePath pairs, and combine all of the values with its respective key elements.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># To identify the type of the script, here it is RScript</strong></span>
-<span class="strong"><strong>#! /usr/bin/env Rscript</strong></span>
+<strong># Closing the connection to that input stream</strong>
+<strong>close(input)</strong>
+</pre></div><p>As soon as the output of the Mapper phase as (key, value) pairs is available to the standard output, Reducers will read the line-oriented output from <code class="literal">stdout</code> and convert it into final aggregated key-value pairs.</p><p>Let's see<a id="id451" class="indexterm"/> how the Mapper output <a id="id452" class="indexterm"/>format is and how the input data format of Reducer looks like.</p><p>Reducer code: This R script named <code class="literal">ga_reducer.R</code> will take care of the Reducer section of the MapReduce job.</p><p>As we discussed, the output of Mapper will be considered as the input for Reducer. Reducer will read these city and pagePath pairs, and combine all of the values with its respective key elements.</p><div><pre class="programlisting">
+<strong># To identify the type of the script, here it is RScript</strong>
+<strong>#! /usr/bin/env Rscript</strong>
 
-<span class="strong"><strong># Defining the variables with their initial values</strong></span>
-<span class="strong"><strong>city.key &lt;- NA</strong></span>
-<span class="strong"><strong>page.value &lt;- 0.0</strong></span>
+<strong># Defining the variables with their initial values</strong>
+<strong>city.key &lt;- NA</strong>
+<strong>page.value &lt;- 0.0</strong>
 
-<span class="strong"><strong># To initiating the connection to standard input</strong></span>
-<span class="strong"><strong>input &lt;- file("stdin", open="r")</strong></span>
+<strong># To initiating the connection to standard input</strong>
+<strong>input &lt;- file("stdin", open="r")</strong>
 
-<span class="strong"><strong># Running while loop until all the lines are read</strong></span>
-<span class="strong"><strong>while (length(currentLine &lt;- readLines(input, n=1)) &gt; 0) {</strong></span>
+<strong># Running while loop until all the lines are read</strong>
+<strong>while (length(currentLine &lt;- readLines(input, n=1)) &gt; 0) {</strong>
 
-<span class="strong"><strong># Splitting the Mapper output line into vectors by </strong></span>
-<span class="strong"><strong># tab("\t") separator</strong></span>
-<span class="strong"><strong>  fields &lt;- strsplit(currentLine, "\t")</strong></span>
+<strong># Splitting the Mapper output line into vectors by </strong>
+<strong># tab("\t") separator</strong>
+<strong>  fields &lt;- strsplit(currentLine, "\t")</strong>
 
-<span class="strong"><strong># capturing key and value form the fields</strong></span>
-<span class="strong"><strong># collecting the first data element from line which is city</strong></span>
-<span class="strong"><strong>  key &lt;- fields[[1]][1]</strong></span>
-<span class="strong"><strong># collecting the pagepath value from line </strong></span>
-<span class="strong"><strong>  value &lt;- as.character(fields[[1]][2])</strong></span>
-</pre></div><p>The Mapper output is written in two main fields with <code class="literal">\t</code> as the separator and the data line-by-line; hence, we have split the data by using <code class="literal">\t</code> to capture the two main attributes (key and values) from the stream input.</p><p>After <a id="id453" class="indexterm"/>collecting the key and value, the<a id="id454" class="indexterm"/> Reducer will compare it with the previously captured value. If not set previously, then set it; otherwise, combine it with the previous<a id="id455" class="indexterm"/> character value using the <code class="literal">combine</code> function in R and finally, print it to the HDFS output location.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># setting up key and values</strong></span>
+<strong># capturing key and value form the fields</strong>
+<strong># collecting the first data element from line which is city</strong>
+<strong>  key &lt;- fields[[1]][1]</strong>
+<strong># collecting the pagepath value from line </strong>
+<strong>  value &lt;- as.character(fields[[1]][2])</strong>
+</pre></div><p>The Mapper output is written in two main fields with <code class="literal">\t</code> as the separator and the data line-by-line; hence, we have split the data by using <code class="literal">\t</code> to capture the two main attributes (key and values) from the stream input.</p><p>After <a id="id453" class="indexterm"/>collecting the key and value, the<a id="id454" class="indexterm"/> Reducer will compare it with the previously captured value. If not set previously, then set it; otherwise, combine it with the previous<a id="id455" class="indexterm"/> character value using the <code class="literal">combine</code> function in R and finally, print it to the HDFS output location.</p><div><pre class="programlisting">
+<strong># setting up key and values</strong>
 
-<span class="strong"><strong># if block will check whether key attribute is </strong></span>
-<span class="strong"><strong># initialized or not. If not initialized then it will be # assigned from collected key attribute with value from # mapper output. This is designed to run at initial time.</strong></span>
-<span class="strong"><strong>  if (is.na(city.key)) {</strong></span>
-<span class="strong"><strong>    city.key &lt;- key</strong></span>
-<span class="strong"><strong>    page.value &lt;- value</strong></span>
-<span class="strong"><strong>  }</strong></span>
-<span class="strong"><strong>  else {</strong></span>
+<strong># if block will check whether key attribute is </strong>
+<strong># initialized or not. If not initialized then it will be # assigned from collected key attribute with value from # mapper output. This is designed to run at initial time.</strong>
+<strong>  if (is.na(city.key)) {</strong>
+<strong>    city.key &lt;- key</strong>
+<strong>    page.value &lt;- value</strong>
+<strong>  }</strong>
+<strong>  else {</strong>
 
-<span class="strong"><strong># Once key attributes are set, then will match with the previous key attribute value. If both of them matched then they will combined in to one.</strong></span>
-<span class="strong"><strong>    if (city.key == key) {</strong></span>
-<span class="strong"><strong>      page.value &lt;- c(page.value, value)</strong></span>
+<strong># Once key attributes are set, then will match with the previous key attribute value. If both of them matched then they will combined in to one.</strong>
+<strong>    if (city.key == key) {</strong>
+<strong>      page.value &lt;- c(page.value, value)</strong>
 
-<span class="strong"><strong>    }</strong></span>
-<span class="strong"><strong>    else {</strong></span>
+<strong>    }</strong>
+<strong>    else {</strong>
 
-<span class="strong"><strong># if key attributes are set already but attribute value # is other than previous one then it will emit the store #p agepath values along with associated key attribute value of city,</strong></span>
+<strong># if key attributes are set already but attribute value # is other than previous one then it will emit the store #p agepath values along with associated key attribute value of city,</strong>
 
-<span class="strong"><strong>      page.value &lt;- unique(page.value)</strong></span>
-<span class="strong"><strong># printing key and value to standard output</strong></span>
-<span class="strong"><strong>print(list(city.key, page.value),stdout())</strong></span>
-<span class="strong"><strong>      city.key &lt;- key</strong></span>
-<span class="strong"><strong>      page.value &lt;- value</strong></span>
-<span class="strong"><strong>    }</strong></span>
-<span class="strong"><strong>  }</strong></span>
-<span class="strong"><strong>}</strong></span>
+<strong>      page.value &lt;- unique(page.value)</strong>
+<strong># printing key and value to standard output</strong>
+<strong>print(list(city.key, page.value),stdout())</strong>
+<strong>      city.key &lt;- key</strong>
+<strong>      page.value &lt;- value</strong>
+<strong>    }</strong>
+<strong>  }</strong>
+<strong>}</strong>
 
-<span class="strong"><strong>print(list(city.key, page.value), stdout())</strong></span>
+<strong>print(list(city.key, page.value), stdout())</strong>
 
-<span class="strong"><strong># closing the connection</strong></span>
-<span class="strong"><strong>close(input)</strong></span>
-</pre></div></div><div class="section" title="Understanding how to run a MapReduce application"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec43"/>Understanding how to run a MapReduce application</h2></div></div></div><p>After <a id="id456" class="indexterm"/>the development of the Mapper and Reducer script with the R language, it's time to run them in the Hadoop<a id="id457" class="indexterm"/> environment. Before we execute this script, it is recommended to test them on the sample dataset with simple pipe operations.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>$ cat gadata_sample.csv | ga_mapper.R |sort | ga_reducer.R</strong></span>
-</pre></div><p>The preceding command will run the developed Mapper and Reducer scripts over a local machine. But it will run similar to the Hadoop streaming job. We need to test this for any issue that might occur at runtime or for the identification of programming or logical mistakes.</p><p>Now, we <a id="id458" class="indexterm"/>have Mapper and Reducer tested <a id="id459" class="indexterm"/>and ready to be run with the Hadoop streaming command. This Hadoop streaming operation can be executed by calling the generic <code class="literal">jar</code> command followed with the streaming command options as we learned in the <span class="emphasis"><em>Understanding the basics of Hadoop streaming</em></span> section of this chapter. We can execute the Hadoop streaming job in the following ways:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">From a command prompt</li><li class="listitem" style="list-style-type: disc">R or the RStudio console</li></ul></div><p>The execution command with the generic and streaming command options will be the same for both the ways.</p><div class="section" title="Executing a Hadoop streaming job from the command prompt"><div class="titlepage"><div><div><h3 class="title"><a id="ch04lvl3sec28"/>Executing a Hadoop streaming job from the command prompt</h3></div></div></div><p>As <a id="id460" class="indexterm"/>we already learned in the<a id="id461" class="indexterm"/> section <span class="emphasis"><em>Understanding the basics of Hadoop streaming</em></span>, the execution of Hadoop streaming MapReduce jobs developed with R can be run using the following command:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>$ bin/hadoop jar {HADOOP_HOME}/contrib/streaming/hadoop-streaming-1.0.3.jar </strong></span>
-<span class="strong"><strong> -input /ga/gadaat_mr.csv </strong></span>
-<span class="strong"><strong> -output /ga/output1 </strong></span>
-<span class="strong"><strong> -file /usr/local/hadoop/ga/ga_mapper.R  </strong></span>
-<span class="strong"><strong> -mapper ga_mapper.R </strong></span>
-<span class="strong"><strong> -file /usr/local/hadoop/ga/ga_ reducer.R </strong></span>
-<span class="strong"><strong> -reducer ga_reducer.R</strong></span>
-</pre></div></div><div class="section" title="Executing the Hadoop streaming job from R or an RStudio console"><div class="titlepage"><div><div><h3 class="title"><a id="ch04lvl3sec29"/>Executing the Hadoop streaming job from R or an RStudio console</h3></div></div></div><p>Being <a id="id462" class="indexterm"/>an R<a id="id463" class="indexterm"/> user, it<a id="id464" class="indexterm"/> will be more appropriate<a id="id465" class="indexterm"/> to run<a id="id466" class="indexterm"/> the Hadoop streaming job from an R console. This can be done with the <code class="literal">system</code> command:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>system(paste("bin/hadoop jar”, “{HADOOP_HOME}/contrib/streaming/hadoop-streaming-1.0.3.jar",
+<strong># closing the connection</strong>
+<strong>close(input)</strong>
+</pre></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec43"/>Understanding how to run a MapReduce application</h2></div></div></div><p>After <a id="id456" class="indexterm"/>the development of the Mapper and Reducer script with the R language, it's time to run them in the Hadoop<a id="id457" class="indexterm"/> environment. Before we execute this script, it is recommended to test them on the sample dataset with simple pipe operations.</p><div><pre class="programlisting">
+<strong>$ cat gadata_sample.csv | ga_mapper.R |sort | ga_reducer.R</strong>
+</pre></div><p>The preceding command will run the developed Mapper and Reducer scripts over a local machine. But it will run similar to the Hadoop streaming job. We need to test this for any issue that might occur at runtime or for the identification of programming or logical mistakes.</p><p>Now, we <a id="id458" class="indexterm"/>have Mapper and Reducer tested <a id="id459" class="indexterm"/>and ready to be run with the Hadoop streaming command. This Hadoop streaming operation can be executed by calling the generic <code class="literal">jar</code> command followed with the streaming command options as we learned in the <em>Understanding the basics of Hadoop streaming</em> section of this chapter. We can execute the Hadoop streaming job in the following ways:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">From a command prompt</li><li class="listitem" style="list-style-type: disc">R or the RStudio console</li></ul></div><p>The execution command with the generic and streaming command options will be the same for both the ways.</p><div><div><div><div><h3 class="title"><a id="ch04lvl3sec28"/>Executing a Hadoop streaming job from the command prompt</h3></div></div></div><p>As <a id="id460" class="indexterm"/>we already learned in the<a id="id461" class="indexterm"/> section <em>Understanding the basics of Hadoop streaming</em>, the execution of Hadoop streaming MapReduce jobs developed with R can be run using the following command:</p><div><pre class="programlisting">
+<strong>$ bin/hadoop jar {HADOOP_HOME}/contrib/streaming/hadoop-streaming-1.0.3.jar </strong>
+<strong> -input /ga/gadaat_mr.csv </strong>
+<strong> -output /ga/output1 </strong>
+<strong> -file /usr/local/hadoop/ga/ga_mapper.R  </strong>
+<strong> -mapper ga_mapper.R </strong>
+<strong> -file /usr/local/hadoop/ga/ga_ reducer.R </strong>
+<strong> -reducer ga_reducer.R</strong>
+</pre></div></div><div><div><div><div><h3 class="title"><a id="ch04lvl3sec29"/>Executing the Hadoop streaming job from R or an RStudio console</h3></div></div></div><p>Being <a id="id462" class="indexterm"/>an R<a id="id463" class="indexterm"/> user, it<a id="id464" class="indexterm"/> will be more appropriate<a id="id465" class="indexterm"/> to run<a id="id466" class="indexterm"/> the Hadoop streaming job from an R console. This can be done with the <code class="literal">system</code> command:</p><div><pre class="programlisting">
+<strong>system(paste("bin/hadoop jar”, “{HADOOP_HOME}/contrib/streaming/hadoop-streaming-1.0.3.jar",
  "-input /ga/gadata_mr.csv", 
  "-output /ga/output2", 
  "-file /usr/local/hadoop/ga/ga_mapper.R",
 "-mapper ga_mapper.R", 
  "-file /usr/local/hadoop/ga/ga_reducer.R", 
  "-reducer ga_reducer.R"))
-</strong></span>
-</pre></div><p>This preceding command is similar to the one that you have already used in the command prompt to execute the Hadoop streaming job with the generic options as well as the streaming options.</p></div></div><div class="section" title="Understanding how to explore the output of MapReduce application"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec44"/>Understanding how to explore the output of MapReduce application</h2></div></div></div><p>After completing the execution successfully, it's time to explore the output to check whether the generated output is important or not. The output will be generated along with two directories, <code class="literal">_logs</code> and <code class="literal">_SUCCESS</code>. <code class="literal">_logs</code> will be used for tracking all the operations as well as errors; <code class="literal">_SUCCESS</code> will be generated only on the successful completion of the MapReduce job.</p><p>Again, the <a id="id467" class="indexterm"/>commands can be fired in the following<a id="id468" class="indexterm"/> two ways:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">From a command prompt</li><li class="listitem" style="list-style-type: disc">From an R console</li></ul></div><div class="section" title="Exploring an output from the command prompt"><div class="titlepage"><div><div><h3 class="title"><a id="ch04lvl3sec30"/>Exploring an output from the command prompt</h3></div></div></div><p>To list <a id="id469" class="indexterm"/>the generated files in the output directory, the <a id="id470" class="indexterm"/>following command will be called:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>$ bin/hadoop dfs -cat /ga/output/part-* &gt; temp.txt</strong></span>
-<span class="strong"><strong>$ head -n 40 temp.txt</strong></span>
-</pre></div><p>The snapshot for checking the output is as follows:</p><p> </p><div class="mediaobject"><img src="graphics/3282OS_04_05.jpg" alt="Exploring an output from the command prompt"/></div></div><div class="section" title="Exploring an output from R or an RStudio console"><div class="titlepage"><div><div><h3 class="title"><a id="ch04lvl3sec31"/>Exploring an output from R or an RStudio console</h3></div></div></div><p>The same<a id="id471" class="indexterm"/> command can<a id="id472" class="indexterm"/> be <a id="id473" class="indexterm"/>used with the <code class="literal">system</code> method in the <a id="id474" class="indexterm"/>R (with RStudio) <a id="id475" class="indexterm"/>console.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>dir &lt;- system("bin/hadoop dfs -ls /ga/output",intern=TRUE)
-out &lt;- system("bin/hadoop dfs -cat /ga/output2/part-00000",intern=TRUE)</strong></span>
-</pre></div><p>A screenshot of the preceding function is shown as follows:</p><div class="mediaobject"><img src="graphics/3282OS_04_06.jpg" alt="Exploring an output from R or an RStudio console"/></div></div></div><div class="section" title="Understanding basic R functions used in Hadoop MapReduce scripts"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec45"/>Understanding basic R functions used in Hadoop MapReduce scripts</h2></div></div></div><p>Now, <a id="id476" class="indexterm"/>we will see<a id="id477" class="indexterm"/> some basic utility functions used in <a id="id478" class="indexterm"/>Hadoop Mapper and Reducer for data processing:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">file</code>: This<a id="id479" class="indexterm"/> function is used to create the connection to a file for the reading or writing operation. It is also used for reading and writing from/to <code class="literal">stdin</code> or <code class="literal">stdout</code>. This function will be used at the initiation of the Mapper and Reducer phase.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>Con &lt;- file("stdin", "r")</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">write</code>: This<a id="id480" class="indexterm"/> function is used to write data to a file or standard input. It will be used after the key and value pair is set in the Mapper.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>write(paste(city,pagepath,sep="\t"),stdout())</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">print</code>: This <a id="id481" class="indexterm"/>function is used to write data to a file or standard input. It will be used after the key and value pair is ready in the Mapper.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>print(paste(city,pagepath,sep="\t"),stdout())</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">close</code>: This function can be <a id="id482" class="indexterm"/>used for closing the connection to the file after the reading or writing operation is completed. It can be used with Mapper and<a id="id483" class="indexterm"/> Reducer at the close (<code class="literal">conn</code>) end <a id="id484" class="indexterm"/>when all the processes are completed.</li><li class="listitem" style="list-style-type: disc"><code class="literal">stdin</code>: This is a standard connection<a id="id485" class="indexterm"/> corresponding to the input. The <code class="literal">stdin()</code> function is a text mode connection <a id="id486" class="indexterm"/>that returns the connection object. This function will be used in Mapper as well as Reducer.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>conn &lt;- file("stdin", open="r")</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">stdout</code>: This <a id="id487" class="indexterm"/>is a standard connection corresponding to the output. The <code class="literal">stdout()</code> function is a text mode connection that also returns the object. This function will be used in Mapper as well as Reducer.<div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>print(list(city.key, page.value),stdout())</strong></span>
+</strong>
+</pre></div><p>This preceding command is similar to the one that you have already used in the command prompt to execute the Hadoop streaming job with the generic options as well as the streaming options.</p></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec44"/>Understanding how to explore the output of MapReduce application</h2></div></div></div><p>After completing the execution successfully, it's time to explore the output to check whether the generated output is important or not. The output will be generated along with two directories, <code class="literal">_logs</code> and <code class="literal">_SUCCESS</code>. <code class="literal">_logs</code> will be used for tracking all the operations as well as errors; <code class="literal">_SUCCESS</code> will be generated only on the successful completion of the MapReduce job.</p><p>Again, the <a id="id467" class="indexterm"/>commands can be fired in the following<a id="id468" class="indexterm"/> two ways:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">From a command prompt</li><li class="listitem" style="list-style-type: disc">From an R console</li></ul></div><div><div><div><div><h3 class="title"><a id="ch04lvl3sec30"/>Exploring an output from the command prompt</h3></div></div></div><p>To list <a id="id469" class="indexterm"/>the generated files in the output directory, the <a id="id470" class="indexterm"/>following command will be called:</p><div><pre class="programlisting">
+<strong>$ bin/hadoop dfs -cat /ga/output/part-* &gt; temp.txt</strong>
+<strong>$ head -n 40 temp.txt</strong>
+</pre></div><p>The snapshot for checking the output is as follows:</p><p> </p><div><img src="img/3282OS_04_05.jpg" alt="Exploring an output from the command prompt"/></div></div><div><div><div><div><h3 class="title"><a id="ch04lvl3sec31"/>Exploring an output from R or an RStudio console</h3></div></div></div><p>The same<a id="id471" class="indexterm"/> command can<a id="id472" class="indexterm"/> be <a id="id473" class="indexterm"/>used with the <code class="literal">system</code> method in the <a id="id474" class="indexterm"/>R (with RStudio) <a id="id475" class="indexterm"/>console.</p><div><pre class="programlisting">
+<strong>dir &lt;- system("bin/hadoop dfs -ls /ga/output",intern=TRUE)
+out &lt;- system("bin/hadoop dfs -cat /ga/output2/part-00000",intern=TRUE)</strong>
+</pre></div><p>A screenshot of the preceding function is shown as follows:</p><div><img src="img/3282OS_04_06.jpg" alt="Exploring an output from R or an RStudio console"/></div></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec45"/>Understanding basic R functions used in Hadoop MapReduce scripts</h2></div></div></div><p>Now, <a id="id476" class="indexterm"/>we will see<a id="id477" class="indexterm"/> some basic utility functions used in <a id="id478" class="indexterm"/>Hadoop Mapper and Reducer for data processing:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">file</code>: This<a id="id479" class="indexterm"/> function is used to create the connection to a file for the reading or writing operation. It is also used for reading and writing from/to <code class="literal">stdin</code> or <code class="literal">stdout</code>. This function will be used at the initiation of the Mapper and Reducer phase.<div><pre class="programlisting">
+<strong>Con &lt;- file("stdin", "r")</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">write</code>: This<a id="id480" class="indexterm"/> function is used to write data to a file or standard input. It will be used after the key and value pair is set in the Mapper.<div><pre class="programlisting">
+<strong>write(paste(city,pagepath,sep="\t"),stdout())</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">print</code>: This <a id="id481" class="indexterm"/>function is used to write data to a file or standard input. It will be used after the key and value pair is ready in the Mapper.<div><pre class="programlisting">
+<strong>print(paste(city,pagepath,sep="\t"),stdout())</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">close</code>: This function can be <a id="id482" class="indexterm"/>used for closing the connection to the file after the reading or writing operation is completed. It can be used with Mapper and<a id="id483" class="indexterm"/> Reducer at the close (<code class="literal">conn</code>) end <a id="id484" class="indexterm"/>when all the processes are completed.</li><li class="listitem" style="list-style-type: disc"><code class="literal">stdin</code>: This is a standard connection<a id="id485" class="indexterm"/> corresponding to the input. The <code class="literal">stdin()</code> function is a text mode connection <a id="id486" class="indexterm"/>that returns the connection object. This function will be used in Mapper as well as Reducer.<div><pre class="programlisting">
+<strong>conn &lt;- file("stdin", open="r")</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">stdout</code>: This <a id="id487" class="indexterm"/>is a standard connection corresponding to the output. The <code class="literal">stdout()</code> function is a text mode connection that also returns the object. This function will be used in Mapper as well as Reducer.<div><pre class="programlisting">
+<strong>print(list(city.key, page.value),stdout())</strong>
 
-<span class="strong"><strong>## where city.key is key and page.value is value of that key</strong></span>
-</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">sink</code>: <code class="literal">sink</code> drives the R output to the connection. If there is a file or stream connection, the <a id="id488" class="indexterm"/>output will be returned to the file or stream. This will be used in Mapper and Reducer for tracking all the functional outputs as well as the errors.<div class="informalexample"><pre class="programlisting">sink("log.txt")
+<strong>## where city.key is key and page.value is value of that key</strong>
+</pre></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">sink</code>: <code class="literal">sink</code> drives the R output to the connection. If there is a file or stream connection, the <a id="id488" class="indexterm"/>output will be returned to the file or stream. This will be used in Mapper and Reducer for tracking all the functional outputs as well as the errors.<div><pre class="programlisting">sink("log.txt")
 k &lt;- 1:5
 for(i in 1:k){
 print(paste("value of k",k))
 }sink()
-unlink("log.txt")</pre></div></li></ul></div></div><div class="section" title="Monitoring the Hadoop MapReduce job"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec46"/>Monitoring the Hadoop MapReduce job</h2></div></div></div><p>A small<a id="id489" class="indexterm"/> syntax error in the Reducer<a id="id490" class="indexterm"/> phase leads to a failure of the MapReduce job. After the failure of a Hadoop MapReduce job, we can track the problem from the Hadoop MapReduce administration page, where we can get information about running jobs as well as completed jobs.</p><p>In case of a failed job, we can see the total number of completed/failed Map and Reduce jobs. Clicking on the failed jobs will provide the reason for the failing of those particular number of Mappers or Reducers.</p><p>Also, we <a id="id491" class="indexterm"/>can check the real-time <a id="id492" class="indexterm"/>progress of that running MapReduce job with the JobTracker console as shown in the following screenshot:</p><div class="mediaobject"><img src="graphics/3282OS_04_07.jpg" alt="Monitoring the Hadoop MapReduce job"/><div class="caption"><p>Monitoring Hadoop MapReduce job</p></div></div><p>Through the command, we can check the history of that particular MapReduce job by specifying its output directory with the following command:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>$ bin/hadoop job –history /output/location </strong></span>
-</pre></div><p>The following command will print the details of the MapReduce job, failed and reasons for killed up jobs.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>$ bin/hadoop job -history all /output/location </strong></span>
+unlink("log.txt")</pre></div></li></ul></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec46"/>Monitoring the Hadoop MapReduce job</h2></div></div></div><p>A small<a id="id489" class="indexterm"/> syntax error in the Reducer<a id="id490" class="indexterm"/> phase leads to a failure of the MapReduce job. After the failure of a Hadoop MapReduce job, we can track the problem from the Hadoop MapReduce administration page, where we can get information about running jobs as well as completed jobs.</p><p>In case of a failed job, we can see the total number of completed/failed Map and Reduce jobs. Clicking on the failed jobs will provide the reason for the failing of those particular number of Mappers or Reducers.</p><p>Also, we <a id="id491" class="indexterm"/>can check the real-time <a id="id492" class="indexterm"/>progress of that running MapReduce job with the JobTracker console as shown in the following screenshot:</p><div><img src="img/3282OS_04_07.jpg" alt="Monitoring the Hadoop MapReduce job"/><div><p>Monitoring Hadoop MapReduce job</p></div></div><p>Through the command, we can check the history of that particular MapReduce job by specifying its output directory with the following command:</p><div><pre class="programlisting">
+<strong>$ bin/hadoop job –history /output/location </strong>
+</pre></div><p>The following command will print the details of the MapReduce job, failed and reasons for killed up jobs.</p><div><pre class="programlisting">
+<strong>$ bin/hadoop job -history all /output/location </strong>
 </pre></div><p>The preceding command will print about the successful task and the task attempts made for each task.</p></div></div>
-<div class="section" title="Exploring the HadoopStreaming R package"><div class="titlepage"><div><div><h1 class="title"><a id="ch04lvl1sec34"/>Exploring the HadoopStreaming R package</h1></div></div></div><p>HadoopStreaming is an R package developed by <span class="emphasis"><em>David S. Rosenberg</em></span>. We can say this is a simple<a id="id493" class="indexterm"/> framework for MapReduce scripting. This also runs without Hadoop for operating data in a streaming fashion. We can consider this R package as a Hadoop MapReduce initiator. For any analyst or developer who is not able to recall the Hadoop streaming command to be passed in the command prompt, this package will be helpful to quickly run the Hadoop MapReduce job.</p><p>The three main features of this package are as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Chunkwise data reading: The package allows chunkwise data reading and writing for Hadoop streaming. This feature will overcome memory issues.</li><li class="listitem" style="list-style-type: disc">Supports various data formats: The package allows the reading and writing of data in three different data formats.</li><li class="listitem" style="list-style-type: disc">Robust utility for the Hadoop streaming command: The package also allows users to specify the command-line argument for Hadoop streaming.</li></ul></div><p>This package is mainly designed with three functions for reading the data efficiently:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">hsTableReader</code></li><li class="listitem" style="list-style-type: disc"><code class="literal">hsKeyValReader</code></li><li class="listitem" style="list-style-type: disc"><code class="literal">hsLineReader</code></li></ul></div><p>Now, let's understand these functions and their use cases. After that we will understand these functions with the help of the word count MapReduce job.</p><div class="section" title="Understanding the hsTableReader function"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec47"/>Understanding the hsTableReader function</h2></div></div></div><p>The <code class="literal">hsTableReader</code> function is designed for reading data in the table format. This function<a id="id494" class="indexterm"/> assumes that there is an<a id="id495" class="indexterm"/> input connection established with the file, so it will retrieve the entire row. It assumes that all the rows with the same keys are stored consecutively in the input ﬁle.</p><p>As the Hadoop streaming job guarantees that the output rows of Mappers will be sorted before providing to the reducers, there is no need to use the <code class="literal">sort</code> function in a Hadoop streaming MapReduce job. When we are not running this over Hadoop, we explicitly need to <a id="id496" class="indexterm"/>call the <code class="literal">sort</code> function after the <code class="literal">Mapper</code> <a id="id497" class="indexterm"/>function gets execute.</p><p>Defining a function of <code class="literal">hsTableReader</code>:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>hsTableReader(file="", cols='character',</strong></span>
-<span class="strong"><strong>  chunkSize=-1, FUN=print,</strong></span>
-<span class="strong"><strong>  ignoreKey=TRUE, singleKey=TRUE, skip=0,</strong></span>
-<span class="strong"><strong>  sep='\t', keyCol='key',</strong></span>
-<span class="strong"><strong>  FUN=NULL, ,carryMemLimit=512e6,</strong></span>
-<span class="strong"><strong>  carryMaxRows=Inf,</strong></span>
-<span class="strong"><strong>  stringsAsFactors=FALSE)</strong></span>
-</pre></div><p>The<a id="id498" class="indexterm"/> terms in the preceding code<a id="id499" class="indexterm"/> are as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">file</code>: This is a connection object, stream, or string.</li><li class="listitem" style="list-style-type: disc"><code class="literal">chunkSize</code>: This indicates the maximum number of lines to be read at a time by the function. <code class="literal">-1</code> means all the lines at a time.</li><li class="listitem" style="list-style-type: disc"><code class="literal">cols</code>: This means a list of column names as "what" argument to scan.</li><li class="listitem" style="list-style-type: disc"><code class="literal">skip</code>: This is used to skip the first n data rows.</li><li class="listitem" style="list-style-type: disc"><code class="literal">FUN</code>: This function will use the data entered by the user.</li><li class="listitem" style="list-style-type: disc"><code class="literal">carryMemLimit</code>: This indicates the maximum memory limit for the values of a single key.</li><li class="listitem" style="list-style-type: disc"><code class="literal">carryMaxRows</code>: This indicates the maximum rows to be considered or read from the file.</li><li class="listitem" style="list-style-type: disc"><code class="literal">stringsAsFactors</code>: This defines whether the strings are converted to factors or not (<code class="literal">TRUE</code> or <code class="literal">FALSE</code>).</li></ul></div><p>For example, data in file:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># Loading libraries</strong></span>
-<span class="strong"><strong>Library("HadoopStreaming")</strong></span>
-<span class="strong"><strong># Input data String with collection of key and values</strong></span>
-<span class="strong"><strong>str &lt;- " key1\t1.91\nkey1\t2.1\nkey1\t20.2\nkey1\t3.2\nkey2\t1.2\nkey2\t10\nkey3\t2.5\nkey3\t2.1\nkey4\t1.2\n"cat(str)</strong></span>
-</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div class="mediaobject"><img src="graphics/3282OS_04_08.jpg" alt="Understanding the hsTableReader function"/></div><p>The data<a id="id500" class="indexterm"/> read by <code class="literal">hsTableReader</code> is <a id="id501" class="indexterm"/>as follows:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># A list of column names, as'what' arg to scan</strong></span>
-<span class="strong"><strong>cols = list(key='',val=0)</strong></span>
+<div><div><div><div><h1 class="title"><a id="ch04lvl1sec34"/>Exploring the HadoopStreaming R package</h1></div></div></div><p>HadoopStreaming is an R package developed by <em>David S. Rosenberg</em>. We can say this is a simple<a id="id493" class="indexterm"/> framework for MapReduce scripting. This also runs without Hadoop for operating data in a streaming fashion. We can consider this R package as a Hadoop MapReduce initiator. For any analyst or developer who is not able to recall the Hadoop streaming command to be passed in the command prompt, this package will be helpful to quickly run the Hadoop MapReduce job.</p><p>The three main features of this package are as follows:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Chunkwise data reading: The package allows chunkwise data reading and writing for Hadoop streaming. This feature will overcome memory issues.</li><li class="listitem" style="list-style-type: disc">Supports various data formats: The package allows the reading and writing of data in three different data formats.</li><li class="listitem" style="list-style-type: disc">Robust utility for the Hadoop streaming command: The package also allows users to specify the command-line argument for Hadoop streaming.</li></ul></div><p>This package is mainly designed with three functions for reading the data efficiently:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">hsTableReader</code></li><li class="listitem" style="list-style-type: disc"><code class="literal">hsKeyValReader</code></li><li class="listitem" style="list-style-type: disc"><code class="literal">hsLineReader</code></li></ul></div><p>Now, let's understand these functions and their use cases. After that we will understand these functions with the help of the word count MapReduce job.</p><div><div><div><div><h2 class="title"><a id="ch04lvl2sec47"/>Understanding the hsTableReader function</h2></div></div></div><p>The <code class="literal">hsTableReader</code> function is designed for reading data in the table format. This function<a id="id494" class="indexterm"/> assumes that there is an<a id="id495" class="indexterm"/> input connection established with the file, so it will retrieve the entire row. It assumes that all the rows with the same keys are stored consecutively in the input ﬁle.</p><p>As the Hadoop streaming job guarantees that the output rows of Mappers will be sorted before providing to the reducers, there is no need to use the <code class="literal">sort</code> function in a Hadoop streaming MapReduce job. When we are not running this over Hadoop, we explicitly need to <a id="id496" class="indexterm"/>call the <code class="literal">sort</code> function after the <code class="literal">Mapper</code> <a id="id497" class="indexterm"/>function gets execute.</p><p>Defining a function of <code class="literal">hsTableReader</code>:</p><div><pre class="programlisting">
+<strong>hsTableReader(file="", cols='character',</strong>
+<strong>  chunkSize=-1, FUN=print,</strong>
+<strong>  ignoreKey=TRUE, singleKey=TRUE, skip=0,</strong>
+<strong>  sep='\t', keyCol='key',</strong>
+<strong>  FUN=NULL, ,carryMemLimit=512e6,</strong>
+<strong>  carryMaxRows=Inf,</strong>
+<strong>  stringsAsFactors=FALSE)</strong>
+</pre></div><p>The<a id="id498" class="indexterm"/> terms in the preceding code<a id="id499" class="indexterm"/> are as follows:</p><div><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">file</code>: This is a connection object, stream, or string.</li><li class="listitem" style="list-style-type: disc"><code class="literal">chunkSize</code>: This indicates the maximum number of lines to be read at a time by the function. <code class="literal">-1</code> means all the lines at a time.</li><li class="listitem" style="list-style-type: disc"><code class="literal">cols</code>: This means a list of column names as "what" argument to scan.</li><li class="listitem" style="list-style-type: disc"><code class="literal">skip</code>: This is used to skip the first n data rows.</li><li class="listitem" style="list-style-type: disc"><code class="literal">FUN</code>: This function will use the data entered by the user.</li><li class="listitem" style="list-style-type: disc"><code class="literal">carryMemLimit</code>: This indicates the maximum memory limit for the values of a single key.</li><li class="listitem" style="list-style-type: disc"><code class="literal">carryMaxRows</code>: This indicates the maximum rows to be considered or read from the file.</li><li class="listitem" style="list-style-type: disc"><code class="literal">stringsAsFactors</code>: This defines whether the strings are converted to factors or not (<code class="literal">TRUE</code> or <code class="literal">FALSE</code>).</li></ul></div><p>For example, data in file:</p><div><pre class="programlisting">
+<strong># Loading libraries</strong>
+<strong>Library("HadoopStreaming")</strong>
+<strong># Input data String with collection of key and values</strong>
+<strong>str &lt;- " key1\t1.91\nkey1\t2.1\nkey1\t20.2\nkey1\t3.2\nkey2\t1.2\nkey2\t10\nkey3\t2.5\nkey3\t2.1\nkey4\t1.2\n"cat(str)</strong>
+</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div><img src="img/3282OS_04_08.jpg" alt="Understanding the hsTableReader function"/></div><p>The data<a id="id500" class="indexterm"/> read by <code class="literal">hsTableReader</code> is <a id="id501" class="indexterm"/>as follows:</p><div><pre class="programlisting">
+<strong># A list of column names, as'what' arg to scan</strong>
+<strong>cols = list(key='',val=0)</strong>
 
-<span class="strong"><strong># To make a text connection</strong></span>
-<span class="strong"><strong>con &lt;- textConnection(str, open = "r")</strong></span>
-<span class="strong"><strong># To read the data with chunksize 3</strong></span>
-<span class="strong"><strong>hsTableReader(con,cols,chunkSize=3,FUN=print,ignoreKey=TRUE)</strong></span>
-</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div class="mediaobject"><img src="graphics/3282OS_04_09.jpg" alt="Understanding the hsTableReader function"/></div></div><div class="section" title="Understanding the hsKeyValReader function"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec48"/>Understanding the hsKeyValReader function</h2></div></div></div><p>The <code class="literal">hsKeyValReader</code> function is designed for reading the data available in the key-value pair<a id="id502" class="indexterm"/> format. This function <a id="id503" class="indexterm"/>also uses <code class="literal">chunkSize</code> for defining the number of lines to be read at a time, and each line consists of a key string and a value string.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>hsKeyValReader(file = "", chunkSize = -1, skip = 0, sep = "\t",FUN = function(k, v) cat(paste(k, v))</strong></span>
-</pre></div><p>The terms of this function are similar to <code class="literal">hsTablereader()</code>.</p><p>Example:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># Function for reading chunkwise dataset</strong></span>
-<span class="strong"><strong>printkeyval &lt;- function(k,v) {cat('A chunk:\n')cat(paste(k,v,sep=': '),sep='\n')}</strong></span>
-<span class="strong"><strong>str &lt;- "key1\tval1\nkey2\tval2\nkey3\tval3\n"</strong></span>
-<span class="strong"><strong>con &lt;- textConnection(str, open = "r")</strong></span>
+<strong># To make a text connection</strong>
+<strong>con &lt;- textConnection(str, open = "r")</strong>
+<strong># To read the data with chunksize 3</strong>
+<strong>hsTableReader(con,cols,chunkSize=3,FUN=print,ignoreKey=TRUE)</strong>
+</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div><img src="img/3282OS_04_09.jpg" alt="Understanding the hsTableReader function"/></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec48"/>Understanding the hsKeyValReader function</h2></div></div></div><p>The <code class="literal">hsKeyValReader</code> function is designed for reading the data available in the key-value pair<a id="id502" class="indexterm"/> format. This function <a id="id503" class="indexterm"/>also uses <code class="literal">chunkSize</code> for defining the number of lines to be read at a time, and each line consists of a key string and a value string.</p><div><pre class="programlisting">
+<strong>hsKeyValReader(file = "", chunkSize = -1, skip = 0, sep = "\t",FUN = function(k, v) cat(paste(k, v))</strong>
+</pre></div><p>The terms of this function are similar to <code class="literal">hsTablereader()</code>.</p><p>Example:</p><div><pre class="programlisting">
+<strong># Function for reading chunkwise dataset</strong>
+<strong>printkeyval &lt;- function(k,v) {cat('A chunk:\n')cat(paste(k,v,sep=': '),sep='\n')}</strong>
+<strong>str &lt;- "key1\tval1\nkey2\tval2\nkey3\tval3\n"</strong>
+<strong>con &lt;- textConnection(str, open = "r")</strong>
 
-<span class="strong"><strong>hsKeyValReader(con, chunkSize=1, FUN=printFn)</strong></span>
-</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div class="mediaobject"><img src="graphics/3282OS_04_10.jpg" alt="Understanding the hsKeyValReader function"/></div></div><div class="section" title="Understanding the hsLineReader function"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec49"/>Understanding the hsLineReader function</h2></div></div></div><p>The <code class="literal">hsLineReader</code> function is designed for reading the entire line as a string without performing<a id="id504" class="indexterm"/> the data-parsing operation. It<a id="id505" class="indexterm"/> repeatedly reads the <code class="literal">chunkSize</code> lines of data from the file and passes a character vector of these strings to <code class="literal">FUN</code>.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>hsLineReader(file = "", chunkSize = 3, skip = 0, FUN = function(x) cat(x, sep = "\n"))</strong></span>
-</pre></div><p>The terms of this function are similar to <code class="literal">hsTablereader()</code>.</p><p>Example:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>str &lt;- " This is HadoopStreaming!!\n here are,\n examples for chunk dataset!!\n in R\n  ?"</strong></span>
+<strong>hsKeyValReader(con, chunkSize=1, FUN=printFn)</strong>
+</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div><img src="img/3282OS_04_10.jpg" alt="Understanding the hsKeyValReader function"/></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec49"/>Understanding the hsLineReader function</h2></div></div></div><p>The <code class="literal">hsLineReader</code> function is designed for reading the entire line as a string without performing<a id="id504" class="indexterm"/> the data-parsing operation. It<a id="id505" class="indexterm"/> repeatedly reads the <code class="literal">chunkSize</code> lines of data from the file and passes a character vector of these strings to <code class="literal">FUN</code>.</p><div><pre class="programlisting">
+<strong>hsLineReader(file = "", chunkSize = 3, skip = 0, FUN = function(x) cat(x, sep = "\n"))</strong>
+</pre></div><p>The terms of this function are similar to <code class="literal">hsTablereader()</code>.</p><p>Example:</p><div><pre class="programlisting">
+<strong>str &lt;- " This is HadoopStreaming!!\n here are,\n examples for chunk dataset!!\n in R\n  ?"</strong>
 
-<span class="strong"><strong>#  For defining the string as data source</strong></span>
-<span class="strong"><strong>con &lt;- textConnection(str, open = "r")</strong></span>
+<strong>#  For defining the string as data source</strong>
+<strong>con &lt;- textConnection(str, open = "r")</strong>
 
-<span class="strong"><strong># read from the con object</strong></span>
-<span class="strong"><strong>hsLineReader(con,chunkSize=2,FUN=print)</strong></span>
-</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div class="mediaobject"><img src="graphics/3282OS_04_11.jpg" alt="Understanding the hsLineReader function"/></div><p>You <a id="id506" class="indexterm"/>can get more information<a id="id507" class="indexterm"/> on these methods as well as other existing methods at <a class="ulink" href="http://cran.r-project.org/web/packages/HadoopStreaming/HadoopStreaming.pdf">http://cran.r-project.org/web/packages/HadoopStreaming/HadoopStreaming.pdf</a>.</p><p>Now, we will implement the above data-reading methods with the Hadoop MapReduce program to be run over Hadoop. In some of the cases, the key-values pairs or data rows will not be fed in the machine memory; so reading that data chunk wise will be more appropriate than improving the machine configuration.</p><p>Problem definition:</p><p>Hadoop word count: As we already know what a word count application is, we will implement the above given methods with the concept of word count. This R script has been reproduced here from the HadoopStreaming R package, which can be downloaded along with the HadoopStreaming R library distribution as the sample code.</p><p>Input dataset: This has been taken from <a class="link" href="ch01.html" title="Chapter 1. Getting Ready to Use R and Hadoop">Chapter 1</a> of <span class="emphasis"><em>Anna Karenina</em></span> (novel) by the Russian writer <span class="emphasis"><em>Leo Tolstoy</em></span>.</p><p>R script: This <a id="id508" class="indexterm"/>section contains the code <a id="id509" class="indexterm"/>of the Mapper, Reducer, and the rest of the configuration parameters.</p><p>File: <code class="literal">hsWordCnt.R</code></p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>## Loading the library</strong></span>
-<span class="strong"><strong>library(HadoopStreaming)</strong></span>
+<strong># read from the con object</strong>
+<strong>hsLineReader(con,chunkSize=2,FUN=print)</strong>
+</pre></div><p>The output for the preceding code is as shown in the following screenshot:</p><div><img src="img/3282OS_04_11.jpg" alt="Understanding the hsLineReader function"/></div><p>You <a id="id506" class="indexterm"/>can get more information<a id="id507" class="indexterm"/> on these methods as well as other existing methods at <a class="ulink" href="http://cran.r-project.org/web/packages/HadoopStreaming/HadoopStreaming.pdf">http://cran.r-project.org/web/packages/HadoopStreaming/HadoopStreaming.pdf</a>.</p><p>Now, we will implement the above data-reading methods with the Hadoop MapReduce program to be run over Hadoop. In some of the cases, the key-values pairs or data rows will not be fed in the machine memory; so reading that data chunk wise will be more appropriate than improving the machine configuration.</p><p>Problem definition:</p><p>Hadoop word count: As we already know what a word count application is, we will implement the above given methods with the concept of word count. This R script has been reproduced here from the HadoopStreaming R package, which can be downloaded along with the HadoopStreaming R library distribution as the sample code.</p><p>Input dataset: This has been taken from <a class="link" href="ch01.html" title="Chapter 1. Getting Ready to Use R and Hadoop">Chapter 1</a> of <em>Anna Karenina</em> (novel) by the Russian writer <em>Leo Tolstoy</em>.</p><p>R script: This <a id="id508" class="indexterm"/>section contains the code <a id="id509" class="indexterm"/>of the Mapper, Reducer, and the rest of the configuration parameters.</p><p>File: <code class="literal">hsWordCnt.R</code></p><div><pre class="programlisting">
+<strong>## Loading the library</strong>
+<strong>library(HadoopStreaming)</strong>
 
-<span class="strong"><strong>## Additional command line arguments for this script (rest are default in hsCmdLineArgs)</strong></span>
-<span class="strong"><strong>spec = c('printDone','D',0,"logical","A flag to write DONE at the end.",FALSE)</strong></span>
+<strong>## Additional command line arguments for this script (rest are default in hsCmdLineArgs)</strong>
+<strong>spec = c('printDone','D',0,"logical","A flag to write DONE at the end.",FALSE)</strong>
 
-<span class="strong"><strong>opts = hsCmdLineArgs(spec, openConnections=T)</strong></span>
-
-
-<span class="strong"><strong>if (!opts$set) {</strong></span>
-<span class="strong"><strong>  quit(status=0)</strong></span>
-<span class="strong"><strong>}</strong></span>
-
-<span class="strong"><strong># Defining the Mapper columns names</strong></span>
-<span class="strong"><strong>mapperOutCols = c('word','cnt')</strong></span>
-
-<span class="strong"><strong># Defining the Reducer columns names</strong></span>
-<span class="strong"><strong>reducerOutCols = c('word','cnt')</strong></span>
-
-<span class="strong"><strong># printing the column header for Mapper output</strong></span>
-<span class="strong"><strong>if (opts$mapcols) {</strong></span>
-<span class="strong"><strong>  cat( paste(mapperOutCols,collapse=opts$outsep),'\n', file=opts$outcon )</strong></span>
-<span class="strong"><strong>} </strong></span>
+<strong>opts = hsCmdLineArgs(spec, openConnections=T)</strong>
 
 
-<span class="strong"><strong># Printing the column header for Reducer output </strong></span>
-<span class="strong"><strong>if (opts$reducecols) {</strong></span>
-<span class="strong"><strong>  cat( paste(reducerOutCols,collapse=opts$outsep),'\n', file=opts$outcon )</strong></span>
-<span class="strong"><strong>}</strong></span>
+<strong>if (!opts$set) {</strong>
+<strong>  quit(status=0)</strong>
+<strong>}</strong>
 
-<span class="strong"><strong>## For running the Mapper</strong></span>
-<span class="strong"><strong>if (opts$mapper) {</strong></span>
-<span class="strong"><strong>  mapper &lt;- function(d) {</strong></span>
-<span class="strong"><strong>    words &lt;- strsplit(paste(d,collapse=' '),'[[:punct:][:space:]]+')[[1]] # split on punctuation and spaces</strong></span>
-<span class="strong"><strong>    words &lt;- words[!(words=='')]  # get rid of empty words caused by whitespace at beginning of lines</strong></span>
-<span class="strong"><strong>    df = data.frame(word=words)</strong></span>
-<span class="strong"><strong>    df[,'cnt']=1</strong></span>
-<span class="strong"><strong>    </strong></span>
-<span class="strong"><strong># For writing the output in the form of key-value table format</strong></span>
-<span class="strong"><strong>hsWriteTable(df[,mapperOutCols],file=opts$outcon,sep=opts$outsep)</strong></span>
-<span class="strong"><strong>  }</strong></span>
+<strong># Defining the Mapper columns names</strong>
+<strong>mapperOutCols = c('word','cnt')</strong>
 
-<span class="strong"><strong> </strong></span>
-<span class="strong"><strong>## For chunk wise reading the Mapper output, to be feeded to Reducer hsLineReader(opts$incon,chunkSize=opts$chunksize,FUN=mapper)</strong></span>
+<strong># Defining the Reducer columns names</strong>
+<strong>reducerOutCols = c('word','cnt')</strong>
+
+<strong># printing the column header for Mapper output</strong>
+<strong>if (opts$mapcols) {</strong>
+<strong>  cat( paste(mapperOutCols,collapse=opts$outsep),'\n', file=opts$outcon )</strong>
+<strong>} </strong>
 
 
-<span class="strong"><strong>## For running the Reducer</strong></span>
-<span class="strong"><strong>} else if (opts$reducer) {</strong></span>
+<strong># Printing the column header for Reducer output </strong>
+<strong>if (opts$reducecols) {</strong>
+<strong>  cat( paste(reducerOutCols,collapse=opts$outsep),'\n', file=opts$outcon )</strong>
+<strong>}</strong>
 
-<span class="strong"><strong>  reducer &lt;- function(d) {</strong></span>
-<span class="strong"><strong>    cat(d[1,'word'],sum(d$cnt),'\n',sep=opts$outsep)</strong></span>
-<span class="strong"><strong>  }</strong></span>
-<span class="strong"><strong>  cols=list(word='',cnt=0)  # define the column names and types (''--&gt;string 0--&gt;numeric)</strong></span>
-<span class="strong"><strong>  hsTableReader(opts$incon,cols,chunkSize=opts$chunksize,skip=opts$skip,sep=opts$insep,keyCol='word',singleKey=T, ignoreKey= F, FUN=reducer)</strong></span>
-<span class="strong"><strong>  if (opts$printDone) {</strong></span>
-<span class="strong"><strong>    cat("DONE\n");</strong></span>
-<span class="strong"><strong>  }</strong></span>
-<span class="strong"><strong>}</strong></span>
+<strong>## For running the Mapper</strong>
+<strong>if (opts$mapper) {</strong>
+<strong>  mapper &lt;- function(d) {</strong>
+<strong>    words &lt;- strsplit(paste(d,collapse=' '),'[[:punct:][:space:]]+')[[1]] # split on punctuation and spaces</strong>
+<strong>    words &lt;- words[!(words=='')]  # get rid of empty words caused by whitespace at beginning of lines</strong>
+<strong>    df = data.frame(word=words)</strong>
+<strong>    df[,'cnt']=1</strong>
+<strong>    </strong>
+<strong># For writing the output in the form of key-value table format</strong>
+<strong>hsWriteTable(df[,mapperOutCols],file=opts$outcon,sep=opts$outsep)</strong>
+<strong>  }</strong>
+
+<strong> </strong>
+<strong>## For chunk wise reading the Mapper output, to be feeded to Reducer hsLineReader(opts$incon,chunkSize=opts$chunksize,FUN=mapper)</strong>
 
 
-<span class="strong"><strong># For closing the connection corresponding to input</strong></span>
-<span class="strong"><strong>if (!is.na(opts$infile)) {</strong></span>
-<span class="strong"><strong>  close(opts$incon)</strong></span>
-<span class="strong"><strong>}</strong></span>
+<strong>## For running the Reducer</strong>
+<strong>} else if (opts$reducer) {</strong>
+
+<strong>  reducer &lt;- function(d) {</strong>
+<strong>    cat(d[1,'word'],sum(d$cnt),'\n',sep=opts$outsep)</strong>
+<strong>  }</strong>
+<strong>  cols=list(word='',cnt=0)  # define the column names and types (''--&gt;string 0--&gt;numeric)</strong>
+<strong>  hsTableReader(opts$incon,cols,chunkSize=opts$chunksize,skip=opts$skip,sep=opts$insep,keyCol='word',singleKey=T, ignoreKey= F, FUN=reducer)</strong>
+<strong>  if (opts$printDone) {</strong>
+<strong>    cat("DONE\n");</strong>
+<strong>  }</strong>
+<strong>}</strong>
 
 
-<span class="strong"><strong># For closing the connection corresponding to input</strong></span>
-<span class="strong"><strong>if (!is.na(opts$outfile)) {</strong></span>
-<span class="strong"><strong>  close(opts$outcon)</strong></span>
-<span class="strong"><strong>}</strong></span>
-</pre></div></div><div class="section" title="Running a Hadoop streaming job"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec50"/>Running a Hadoop streaming job</h2></div></div></div><p>Since<a id="id510" class="indexterm"/> this is a Hadoop <a id="id511" class="indexterm"/>streaming job, it will run same as the executed previous example of a Hadoop streaming job. For this example, we will use a shell script to execute the <code class="literal">runHadoop.sh</code> file to run Hadoop streaming.</p><p>Setting up the system environment variable:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>#! /usr/bin/env bash</strong></span>
-<span class="strong"><strong>HADOOP="$HADOOP_HOME/bin/hadoop"   # Hadoop command</strong></span>
+<strong># For closing the connection corresponding to input</strong>
+<strong>if (!is.na(opts$infile)) {</strong>
+<strong>  close(opts$incon)</strong>
+<strong>}</strong>
 
-<span class="strong"><strong>HADOOPSTREAMING="$HADOOP jar</strong></span>
-<span class="strong"><strong>$HADOOP_HOME/contrib/streaming/hadoop-streaming-1.0.3.jar" # change version number as appropriate</strong></span>
 
-<span class="strong"><strong>RLIBPATH=/usr/local/lib/R/site-library  # can specify additional R Library paths here</strong></span>
-</pre></div><p>Setting up the MapReduce job parameters:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>INPUTFILE="anna.txt"</strong></span>
-<span class="strong"><strong>HFSINPUTDIR="/HadoopStreaming"</strong></span>
-<span class="strong"><strong>OUTDIR="/HadoopStreamingRpkg_output"</strong></span>
+<strong># For closing the connection corresponding to input</strong>
+<strong>if (!is.na(opts$outfile)) {</strong>
+<strong>  close(opts$outcon)</strong>
+<strong>}</strong>
+</pre></div></div><div><div><div><div><h2 class="title"><a id="ch04lvl2sec50"/>Running a Hadoop streaming job</h2></div></div></div><p>Since<a id="id510" class="indexterm"/> this is a Hadoop <a id="id511" class="indexterm"/>streaming job, it will run same as the executed previous example of a Hadoop streaming job. For this example, we will use a shell script to execute the <code class="literal">runHadoop.sh</code> file to run Hadoop streaming.</p><p>Setting up the system environment variable:</p><div><pre class="programlisting">
+<strong>#! /usr/bin/env bash</strong>
+<strong>HADOOP="$HADOOP_HOME/bin/hadoop"   # Hadoop command</strong>
 
-<span class="strong"><strong>RFILE=" home/hduser/Desktop/HadoopStreaming/inst/wordCntDemo/ hsWordCnt.R"</strong></span>
-<span class="strong"><strong>#LOCALOUT="/home/hduser/Desktop/HadoopStreaming/inst/wordCntDemo/annaWordCnts.out"</strong></span>
-<span class="strong"><strong># Put the file into the Hadoop file system</strong></span>
-<span class="strong"><strong>#$HADOOP fs -put $INPUTFILE $HFSINPUTDIR</strong></span>
-</pre></div><p>Removing the existing output directory:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># Remove the directory if already exists (otherwise, won't run)</strong></span>
-<span class="strong"><strong>#$HADOOP fs -rmr $OUTDIR</strong></span>
-</pre></div><p>Designing the Hadoop MapReduce command with generic and streaming options:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>MAPARGS="--mapper"  </strong></span>
-<span class="strong"><strong>REDARGS="--reducer"</strong></span>
-<span class="strong"><strong>JOBARGS="-cmdenv R_LIBS=$RLIBPATH" # numReduceTasks 0</strong></span>
-<span class="strong"><strong># echo $HADOOPSTREAMING -cmdenv R_LIBS=$RLIBPATH  -input $HFSINPUTDIR/$INPUTFILE -output $OUTDIR -mapper "$RFILE $MAPARGS" -reducer "$RFILE $REDARGS" -file $RFILE </strong></span>
+<strong>HADOOPSTREAMING="$HADOOP jar</strong>
+<strong>$HADOOP_HOME/contrib/streaming/hadoop-streaming-1.0.3.jar" # change version number as appropriate</strong>
 
-<span class="strong"><strong>$HADOOPSTREAMING $JOBARGS   -input $HFSINPUTDIR/$INPUTFILE -output $OUTDIR -mapper "$RFILE $MAPARGS" -reducer "$RFILE $REDARGS" -file $RFILE </strong></span>
-</pre></div><p>Extracting<a id="id512" class="indexterm"/> the output <a id="id513" class="indexterm"/>from HDFS to the local directory:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong># Extract output</strong></span>
-<span class="strong"><strong>./$RFILE --reducecols &gt; $LOCALOUT</strong></span>
-<span class="strong"><strong>$HADOOP fs -cat $OUTDIR/part* &gt;&gt; $LOCALOUT</strong></span>
-</pre></div><div class="section" title="Executing the Hadoop streaming job"><div class="titlepage"><div><div><h3 class="title"><a id="ch04lvl3sec32"/>Executing the Hadoop streaming job</h3></div></div></div><p>We can <a id="id514" class="indexterm"/>now execute the Hadoop streaming job by executing the command, <code class="literal">runHadoop.sh</code>. To execute this, we need to set the user permission.</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>sudo chmod +x runHadoop.sh</strong></span>
-</pre></div><p>Executing via the following command:</p><div class="informalexample"><pre class="programlisting">
-<span class="strong"><strong>./runHadoop.sh</strong></span>
+<strong>RLIBPATH=/usr/local/lib/R/site-library  # can specify additional R Library paths here</strong>
+</pre></div><p>Setting up the MapReduce job parameters:</p><div><pre class="programlisting">
+<strong>INPUTFILE="anna.txt"</strong>
+<strong>HFSINPUTDIR="/HadoopStreaming"</strong>
+<strong>OUTDIR="/HadoopStreamingRpkg_output"</strong>
+
+<strong>RFILE=" home/hduser/Desktop/HadoopStreaming/inst/wordCntDemo/ hsWordCnt.R"</strong>
+<strong>#LOCALOUT="/home/hduser/Desktop/HadoopStreaming/inst/wordCntDemo/annaWordCnts.out"</strong>
+<strong># Put the file into the Hadoop file system</strong>
+<strong>#$HADOOP fs -put $INPUTFILE $HFSINPUTDIR</strong>
+</pre></div><p>Removing the existing output directory:</p><div><pre class="programlisting">
+<strong># Remove the directory if already exists (otherwise, won't run)</strong>
+<strong>#$HADOOP fs -rmr $OUTDIR</strong>
+</pre></div><p>Designing the Hadoop MapReduce command with generic and streaming options:</p><div><pre class="programlisting">
+<strong>MAPARGS="--mapper"  </strong>
+<strong>REDARGS="--reducer"</strong>
+<strong>JOBARGS="-cmdenv R_LIBS=$RLIBPATH" # numReduceTasks 0</strong>
+<strong># echo $HADOOPSTREAMING -cmdenv R_LIBS=$RLIBPATH  -input $HFSINPUTDIR/$INPUTFILE -output $OUTDIR -mapper "$RFILE $MAPARGS" -reducer "$RFILE $REDARGS" -file $RFILE </strong>
+
+<strong>$HADOOPSTREAMING $JOBARGS   -input $HFSINPUTDIR/$INPUTFILE -output $OUTDIR -mapper "$RFILE $MAPARGS" -reducer "$RFILE $REDARGS" -file $RFILE </strong>
+</pre></div><p>Extracting<a id="id512" class="indexterm"/> the output <a id="id513" class="indexterm"/>from HDFS to the local directory:</p><div><pre class="programlisting">
+<strong># Extract output</strong>
+<strong>./$RFILE --reducecols &gt; $LOCALOUT</strong>
+<strong>$HADOOP fs -cat $OUTDIR/part* &gt;&gt; $LOCALOUT</strong>
+</pre></div><div><div><div><div><h3 class="title"><a id="ch04lvl3sec32"/>Executing the Hadoop streaming job</h3></div></div></div><p>We can <a id="id514" class="indexterm"/>now execute the Hadoop streaming job by executing the command, <code class="literal">runHadoop.sh</code>. To execute this, we need to set the user permission.</p><div><pre class="programlisting">
+<strong>sudo chmod +x runHadoop.sh</strong>
+</pre></div><p>Executing via the following command:</p><div><pre class="programlisting">
+<strong>./runHadoop.sh</strong>
 </pre></div><p>Finally, it will execute the whole Hadoop streaming job and then copy the output to the local directory.</p></div></div></div>
-<div class="section" title="Summary"><div class="titlepage"><div><div><h1 class="title"><a id="ch04lvl1sec35"/>Summary</h1></div></div></div><p>We have learned most of the ways to integrate R and Hadoop for performing data operations. In the next chapter, we will learn about the data analytics cycle for solving real world data analytics problems with the help of R and Hadoop.</p></div></body></html>
+<div><div><div><div><h1 class="title"><a id="ch04lvl1sec35"/>Summary</h1></div></div></div><p>We have learned most of the ways to integrate R and Hadoop for performing data operations. In the next chapter, we will learn about the data analytics cycle for solving real world data analytics problems with the help of R and Hadoop.</p></div></body></html>

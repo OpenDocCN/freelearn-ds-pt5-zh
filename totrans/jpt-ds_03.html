@@ -1,30 +1,24 @@
-<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Data Visualization and Prediction</h1>
-                </header>
+<html><head></head><body><div><h1 class="header-title">Data Visualization and Prediction</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Making predictions is usually precarious. However, there are methods that have been in use that provide some confidence in your results. Under Jupyter, we can use Python and/or R for predictions with readily available functionality.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Make a prediction using scikit-learn</h1>
-                </header>
+<div><h1 class="header-title">Make a prediction using scikit-learn</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">scikit-learn is a machine learning toolset built using Python. Part of the package is supervised learning, where the sample data points have attributes that allow you to assign the data points into separate classes. We use an estimator that assigns a data point to a class and makes predictions as to other data points with similar attributes. In scikit-learn, an estimator provides two functions, <kbd class="calibre21">fit()</kbd> and <kbd class="calibre21">predict()</kbd>, providing mechanisms to classify data points and predict classes of other data points, respectively.</p>
 <p class="calibre5">As an example, we will be using the housing data from <a href="https://uci.edu/" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9">https://uci.edu/</a> (I think this is data for the Boston area). There are a number of factors including a price factor.</p>
@@ -155,42 +149,37 @@
 <p class="calibre5">The following coding is followed by a discussion of the algorithm used and results:</p>
 <pre class="commandlinepackt"><strong class="calibre3">#define all the imports we are using<br class="calibre2"/></strong><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3">import random<br class="calibre2"/></strong><strong class="calibre3">from sklearn import datasets, linear_model<br class="calibre2"/></strong><strong class="calibre3">from sklearn.cross_validation import train_test_split<br class="calibre2"/></strong><strong class="calibre3"># load the data set<br class="calibre2"/></strong><strong class="calibre3">df = pd.read_table('http://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data', sep='\s+')<br class="calibre2"/></strong><strong class="calibre3"># add column names<br class="calibre2"/></strong><strong class="calibre3">df.columns = ['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', \<br class="calibre2"/></strong><strong class="calibre3">              'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PRATIO',\<br class="calibre2"/></strong><strong class="calibre3">              'B', 'LSTAT', 'MDEV']<br class="calibre2"/></strong><strong class="calibre3">#produce basic statistics to make sure things are lined up<br class="calibre2"/></strong><strong class="calibre3">df.head()</strong></pre>
 <p class="calibre5">The results of the <kbd class="calibre21">head()</kbd> function is the first few rows of the data frame:</p>
-<div class="packt_figure"><img class="image-border39" src="Images/6b4abf3c-153f-4452-b502-fa92767d3ddb.png"/></div>
+<div><img class="image-border39" src="img/6b4abf3c-153f-4452-b502-fa92767d3ddb.png"/></div>
 <pre class="commandlinepackt"><strong class="calibre3">df.describe()</strong>  </pre>
 <p class="calibre5">Similarly, the preceding <kbd class="calibre21">describe</kbd> statement gives us some quick statistics on the data frame:</p>
-<div class="packt_figure"><img class="image-border40" src="Images/8ec1918c-75cb-4643-992d-7dde81c07065.png"/></div>
+<div><img class="image-border40" src="img/8ec1918c-75cb-4643-992d-7dde81c07065.png"/></div>
 <p class="calibre5">When splitting up the dataset between training and test sets, we use random allocation between the two. This gives us an unbiased set of data to work with. However, in order for you to reproduce the results shown here, you need to use the same random seed/starting value. This is why the <kbd class="calibre21">random.seed()</kbd> call is made. In practice, you would forgo this method call:</p>
 <pre class="commandlinepackt"><strong class="calibre3">#we are going to be splitting up the data set 'randomly',<br class="calibre2"/></strong><strong class="calibre3">#however we need to reproduce results so set the seed<br class="calibre2"/></strong><strong class="calibre3">random.seed(3277)<br class="calibre2"/></strong><strong class="calibre3">#split the data into training and testing (25% for testing)<br class="calibre2"/></strong><strong class="calibre3">training, testing = train_test_split(df, test_size = 0.25)<br class="calibre2"/></strong><strong class="calibre3">#need this step to create an instance of the lreg model<br class="calibre2"/></strong><strong class="calibre3">regr = linear_model.LinearRegression()<br class="calibre2"/></strong><strong class="calibre3"># Train the model using the training set (MDEV=target)<br class="calibre2"/></strong><strong class="calibre3">training_data = training.drop('MDEV', axis=1)<br class="calibre2"/></strong><strong class="calibre3">training_test = training.iloc[:,-1] #training.loc[:,['MDEV']]<br class="calibre2"/></strong><strong class="calibre3">#look at coefficients in the model to validate<br class="calibre2"/></strong><strong class="calibre3">regr.fit(training_data,training_test)<br class="calibre2"/></strong><strong class="calibre3">print('Coefficients: \n', regr.coef_)<br class="calibre2"/></strong><strong class="calibre3">'Coefficients: \n', array([<br class="calibre2"/></strong><strong class="calibre3">        -1.18763385e-01,   4.19752612e-02,  -1.18584543e-02,<br class="calibre2"/></strong><strong class="calibre3">         5.53125252e-01,  -1.19774970e+01,   3.80050180e+00,<br class="calibre2"/></strong><strong class="calibre3">        -8.55663104e-03,  -1.46613256e+00,   3.86772585e-01,<br class="calibre2"/></strong><strong class="calibre3">        -1.53024705e-02,  -9.55933426e-01,   1.31347272e-02,<br class="calibre2"/></strong><strong class="calibre3">        -5.28183554e-01])) 
 </strong></pre>
 <p class="calibre5">Most of these are small numbers, except for a positive correlation with #6 at 3.8 for the number of rooms and a negative correlation with #8 at -1.5 for the distance from the business center. It is interesting how people value being close to work so highly:</p>
 <pre class="commandlinepackt"><strong class="calibre3">#split up our test set<br class="calibre2"/></strong><strong class="calibre3">testing_data = testing.loc[:,['CRIM', 'ZN', 'INDUS', 'CHAS',\<br class="calibre2"/></strong><strong class="calibre3">'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PRATIO', 'B',\<br class="calibre2"/></strong><strong class="calibre3">'LSTAT']]<br class="calibre2"/></strong><strong class="calibre3">testing_test = testing[['MDEV']].as_matrix()<br class="calibre2"/></strong><strong class="calibre3">#make our prediction   <br class="calibre2"/></strong><strong class="calibre3">prediction_of_test = regr.predict(testing_data)<br class="calibre2"/></strong><strong class="calibre3"># compute MSE<br class="calibre2"/></strong><strong class="calibre3"># would usually use the built-in mse function,<br class="calibre2"/></strong><strong class="calibre3"># but the test_test and prediction have diff # cols<br class="calibre2"/></strong><strong class="calibre3">sum = 0<br class="calibre2"/></strong><strong class="calibre3">rows = len(testing_test)<br class="calibre2"/></strong><strong class="calibre3">for i in range(rows):<br class="calibre2"/></strong><strong class="calibre3">    test = testing_test[i]<br class="calibre2"/></strong><strong class="calibre3">    prediction = prediction_of_test[i]<br class="calibre2"/></strong><strong class="calibre3">    diff = (test - prediction) ** 2<br class="calibre2"/></strong><strong class="calibre3">    sum = sum + diff<br class="calibre2"/></strong><strong class="calibre3">mse = sum / rows<br class="calibre2"/></strong><strong class="calibre3">print("MSE ", mse)<br class="calibre2"/></strong><strong class="calibre3">('MSE ', array([ 23.1571225]))</strong></pre>
-<p class="calibre5"><span class="calibre8">There is an MSE of 23, which seems very low in comparison to the size of the numbers being worked with. Now, let us graph our results to get a good visual of what is going on:</span></p>
-<pre class="commandlinepackt"><strong class="calibre3">%matplotlib inline<br class="calibre2"/></strong><strong class="calibre3">#this preceding line is needed to display inline on Jupyter<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#plot the tests and predictions<br class="calibre2"/></strong><strong class="calibre3">plt.scatter(testing_test, prediction_of_test, color='black')<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#draw a line through the middle showing the fit<br class="calibre2"/></strong><strong class="calibre3">x0 = min(testing_test)<br class="calibre2"/></strong><strong class="calibre3">x1 = max(testing_test)<br class="calibre2"/></strong><strong class="calibre3">y0 = min(prediction_of_test)<br class="calibre2"/></strong><strong class="calibre3">y1 = max(prediction_of_test)<br class="calibre2"/></strong><strong class="calibre3">plt.plot([x0,x1],[y0,y1], color="red")<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#add labels<br class="calibre2"/></strong><strong class="calibre3">plt.xlabel("Actual Price")<br class="calibre2"/></strong><strong class="calibre3">plt.ylabel("Predicted Price")<br class="calibre2"/></strong><strong class="calibre3">plt.title("Actual Price vs Predicted Price")<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
+<p class="calibre5">There is an MSE of 23, which seems very low in comparison to the size of the numbers being worked with. Now, let us graph our results to get a good visual of what is going on:</p>
+<pre class="commandlinepackt"><code></strong><strong class="calibre3">#this preceding line is needed to display inline on Jupyter<br class="calibre2"/></code><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#plot the tests and predictions<br class="calibre2"/></strong><strong class="calibre3">plt.scatter(testing_test, prediction_of_test, color='black')<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#draw a line through the middle showing the fit<br class="calibre2"/></strong><strong class="calibre3">x0 = min(testing_test)<br class="calibre2"/></strong><strong class="calibre3">x1 = max(testing_test)<br class="calibre2"/></strong><strong class="calibre3">y0 = min(prediction_of_test)<br class="calibre2"/></strong><strong class="calibre3">y1 = max(prediction_of_test)<br class="calibre2"/></strong><strong class="calibre3">plt.plot([x0,x1],[y0,y1], color="red")<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#add labels<br class="calibre2"/></strong><strong class="calibre3">plt.xlabel("Actual Price")<br class="calibre2"/></strong><strong class="calibre3">plt.ylabel("Predicted Price")<br class="calibre2"/></strong><strong class="calibre3">plt.title("Actual Price vs Predicted Price")<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
 <p class="calibre5">Visually, we appear to have a good fit. Most of the data points are aligned with the axis drawn through. There are, as always, a few distinct outliers such as at <em class="calibre18">20</em>, <em class="calibre18">50</em>:</p>
-<div class="title-page-name">
-<div class="packt_figure"><img class="image-border41" src="Images/be50e5ba-bd26-4f82-a0fe-0ad2ccad1861.png"/></div>
+<div><div><img class="image-border41" src="img/be50e5ba-bd26-4f82-a0fe-0ad2ccad1861.png"/></div>
 </div>
-<div class="title-page-name">
-<div class="packt_figure"><img class="image-border42" src="Images/8fae67be-da54-476d-ae7a-14bcd0a9605f.png"/></div>
+<div><div><img class="image-border42" src="img/8fae67be-da54-476d-ae7a-14bcd0a9605f.png"/></div>
 </div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Make a prediction using R</h1>
-                </header>
+<div><h1 class="header-title">Make a prediction using R</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">We can perform the same analysis using R in a notebook. The functions are different for the different language, but the functionality is very close.</p>
 <p class="calibre5">We use the same algorithm:</p>
@@ -226,7 +215,7 @@
 <strong class="calibre3"> 3rd Qu.:0.6240   3rd Qu.:6.623   3rd Qu.: 94.08   3rd Qu.: 5.188  </strong>
 <strong class="calibre3"> Max.   :0.8710   Max.   :8.780   Max.   :100.00   Max.   :12.127  </strong>
 <strong class="calibre3">...</strong>  </pre>
-<div class="packt_infobox">Make sure the dataset is in the right order for our modeling.</div>
+<p>Make sure the dataset is in the right order for our modeling.</p>
 <pre class="commandlinepackt"><strong class="calibre3">housing &lt;- housing[order(housing$MDEV),]</strong>
 
 <strong class="calibre3">#check if there are any relationships between the data items</strong>
@@ -238,8 +227,7 @@
 <li class="calibre20"><kbd class="calibre21">NOX</kbd> (smog) and <kbd class="calibre21">DIST</kbd> (distance to work) have an inverse relationship. I think we want that.</li>
 <li class="calibre20">Otherwise, there doesn't appear to be any relationship between the data items:</li>
 </ul>
-<div class="title-page-name">
-<div class="packt_figure"><img class="image-border43" src="Images/7469f515-7daa-4354-a7e8-7d2f7bb836d2.png"/></div>
+<div><div><img class="image-border43" src="img/7469f515-7daa-4354-a7e8-7d2f7bb836d2.png"/></div>
 </div>
 <p class="calibre5">We go about forcing the seed, as before, to be able to reproduce results. We then split the data into training and testing partitions made with the <kbd class="calibre21">createDataPartitions</kbd> function. We can then train our model and test the resultant model for validation:</p>
 <pre class="commandlinepackt"><strong class="calibre3">#force the random seed so we can reproduce results</strong>
@@ -300,36 +288,31 @@
 <strong class="calibre3">#visually compare prediction to actual</strong>
 <strong class="calibre3">plot(predicted, housingTesting$MDEV)</strong>  </pre>
 <p class="calibre5">It looks like a pretty good correlation, very close to a 45 degree mapping. The exception is that the predicted values are a little higher than actuals:</p>
-<div class="title-page-name">
-<div class="packt_figure"><img class="image-border44" src="Images/79ca2a39-3cb8-49c4-8a22-f54746e311af.png"/></div>
+<div><div><img class="image-border44" src="img/79ca2a39-3cb8-49c4-8a22-f54746e311af.png"/></div>
 </div>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Interactive visualization</h1>
-                </header>
+<div><h1 class="header-title">Interactive visualization</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">There is a Python package, Bokeh, that can be used to generate a figure in your notebook where the user can interact and change the figure.</p>
 <p class="calibre5">In this example, I am using the same data from the histogram example later in this chapter (also included in the file set for this chapter) to display an interactive Bokeh histogram.</p>
 <p class="calibre5">The coding is as follows:</p>
-<pre class="commandlinepackt"><strong class="calibre3">from bokeh.io import show, output_notebook<br class="calibre2"/></strong><strong class="calibre3">from bokeh.charts import Histogram<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3"># this step is necessary to have display inline in a notebook<br class="calibre2"/></strong><strong class="calibre3">output_notebook()<br class="calibre2"/></strong><strong class="calibre3"># load the counts from other histogram example<br class="calibre2"/></strong><strong class="calibre3">from_counts = np.load("from_counts.npy")<br class="calibre2"/></strong><strong class="calibre3"># convert array to a dataframe for Histogram<br class="calibre2"/></strong><strong class="calibre3">df = pd.DataFrame({'Votes':from_counts})<br class="calibre2"/></strong><strong class="calibre3"># make sure dataframe is working correctly<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">   Votes<br class="calibre2"/></strong><strong class="calibre3">0     23<br class="calibre2"/></strong><strong class="calibre3">1     29<br class="calibre2"/></strong><strong class="calibre3">2     23<br class="calibre2"/></strong><strong class="calibre3">3    302<br class="calibre2"/></strong><strong class="calibre3">4     24<br class="calibre2"/></strong><strong class="calibre3"># display the Bokeh histogram<br class="calibre2"/></strong><strong class="calibre3">hist = Histogram(from_counts, \<br class="calibre2"/></strong><strong class="calibre3">title="How Many Votes Made By Users", \<br class="calibre2"/></strong><strong class="calibre3">bins=12)<br class="calibre2"/></strong><strong class="calibre3">show(hist) 
+<pre class="commandlinepackt"><code></strong><strong class="calibre3">output_notebook()<br class="calibre2"/></code><strong class="calibre3"># load the counts from other histogram example<br class="calibre2"/></strong><strong class="calibre3">from_counts = np.load("from_counts.npy")<br class="calibre2"/></strong><strong class="calibre3"># convert array to a dataframe for Histogram<br class="calibre2"/></strong><strong class="calibre3">df = pd.DataFrame({'Votes':from_counts})<br class="calibre2"/></strong><strong class="calibre3"># make sure dataframe is working correctly<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">   Votes<br class="calibre2"/></strong><strong class="calibre3">0     23<br class="calibre2"/></strong><strong class="calibre3">1     29<br class="calibre2"/></strong><strong class="calibre3">2     23<br class="calibre2"/></strong><strong class="calibre3">3    302<br class="calibre2"/></strong><strong class="calibre3">4     24<br class="calibre2"/></strong><strong class="calibre3"># display the Bokeh histogram<br class="calibre2"/></strong><strong class="calibre3">hist = Histogram(from_counts, \<br class="calibre2"/></strong><strong class="calibre3">title="How Many Votes Made By Users", \<br class="calibre2"/></strong><strong class="calibre3">bins=12)<br class="calibre2"/></strong><strong class="calibre3">show(hist) 
 </strong></pre>
 <p class="calibre5">We can see the histogram displayed as follows. There is little being done automatically to clean up the graph, such as move counters around or the uninteresting axes labels. I assume there are options with the <kbd class="calibre21">Histogram</kbd> function that would allow further changes:</p>
-<div class="title-page-name">
-<div class="packt_figure"><img class="image-border45" src="Images/3a7b7992-570e-4e6b-9e4d-a709eca9e425.png"/></div>
+<div><div><img class="image-border45" src="img/3a7b7992-570e-4e6b-9e4d-a709eca9e425.png"/></div>
 </div>
 <p class="calibre5">Notice the widgets across the top of the image:</p>
 <ul class="calibre19">
@@ -348,22 +331,19 @@
 </ul>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Plotting using Plotly</h1>
-                </header>
+<div><h1 class="header-title">Plotting using Plotly</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Plotly is an interesting mix. It is a subscription website that provides significant data analysis graphing functionality. You can use the free version of the software, but you still need to log in with credentials to use it. The graphics functions are available in a variety of languages from Node.js to Python and the like.</p>
 <p class="calibre5">Further, the graphics generated are available in Plotly and in your local notebook. If you mark the graphic as public, then you can access it from the notebook, just like any other graphic over the internet. Similarly, as a web graphic, you can select from the display and save locally as needed.</p>
@@ -398,27 +378,23 @@
 <strong class="calibre3"># plot on plot.ly site</strong>
 <strong class="calibre3">py.iplot(data, filename='basic histogram')</strong>  </pre>
 <p class="calibre5">I think this is one of the nicer renderings that I have seen for a histogram using the out-of-the-box options/settings. We have the same histogram we had seen previously, just displayed using more eye-appealing attributes:</p>
-<div class="title-page-name">
-<div class="packt_figure"><img class="image-border46" src="Images/c6e195ed-27c8-4579-be22-306541091ae2.png"/></div>
+<div><div><img class="image-border46" src="img/c6e195ed-27c8-4579-be22-306541091ae2.png"/></div>
 </div>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Creating a human density map</h1>
-                </header>
+<div><h1 class="header-title">Creating a human density map</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">I had originally planned on producing a worldwide human density map, but the graphics available don't allow for setting the color of each country. So, I built a density map for the United States.</p>
 <p class="calibre5">The algorithm is:</p>
@@ -435,28 +411,25 @@
 </li>
 </ol>
 <p class="calibre5">This is coded with the following (comments embedded as the code proceeds):</p>
-<pre class="commandlinepackt"><strong class="calibre3">%matplotlib inline<br class="calibre2"/></strong><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></strong><strong class="calibre3">from mpl_toolkits.basemap import Basemap<br class="calibre2"/></strong><strong class="calibre3">from matplotlib.patches import Polygon<br class="calibre2"/></strong><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">import matplotlib<br class="calibre2"/></strong><strong class="calibre3"># create the map<br class="calibre2"/></strong><strong class="calibre3">map = Basemap(llcrnrlon=-119,llcrnrlat=22,urcrnrlon=-64,urcrnrlat=49,<br class="calibre2"/></strong><strong class="calibre3">        projection='lcc',lat_1=33,lat_2=45,lon_0=-95)<br class="calibre2"/></strong><strong class="calibre3"># load the shapefile, use the name 'states'<br class="calibre2"/></strong><strong class="calibre3"># download from https://github.com/matplotlib/basemap/tree/master/examples/st99_d00.dbf,shx,shp<br class="calibre2"/></strong><strong class="calibre3">map.readshapefile('st99_d00', name='states', drawbounds=True)<br class="calibre2"/></strong><strong class="calibre3"># collect the state names from the shapefile attributes so we can<br class="calibre2"/></strong><strong class="calibre3"># look up the shape obect for a state by it's name<br class="calibre2"/></strong><strong class="calibre3">state_names = []<br class="calibre2"/></strong><strong class="calibre3">for shape_dict in map.states_info:<br class="calibre2"/></strong><strong class="calibre3">    state_names.append(shape_dict['NAME'])<br class="calibre2"/></strong><strong class="calibre3">ax = plt.gca() # get current axes instance<br class="calibre2"/></strong><strong class="calibre3"># load density data drawn from<br class="calibre2"/></strong><strong class="calibre3"># https://en.wikipedia.org/wiki/List_of_U.S._states_by_population_density<br class="calibre2"/></strong><strong class="calibre3">df = pd.read_csv('states.csv')<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">State        rank density/mi2  density/km2  pop_rank   2015_pop<br class="calibre2"/></strong><strong class="calibre3">New Jersey      1       1,218          470        11  8,958,013  <br class="calibre2"/></strong><strong class="calibre3">Rhode Island    2       1,021          394        43  1,056,298  <br class="calibre2"/></strong><strong class="calibre3">Massachusetts   3         871          336        15  6,794,422  <br class="calibre2"/></strong><strong class="calibre3">Connecticut     4         741          286        29  3,590,886  <br class="calibre2"/></strong><strong class="calibre3">Maryland        5         618          238        19  6,006,401  <br class="calibre2"/></strong><strong class="calibre3">   land_rank area_mi2   area_km2 <br class="calibre2"/></strong><strong class="calibre3">0         46    7,354  19,046.80 <br class="calibre2"/></strong><strong class="calibre3">1         50    1,034   2,678.00 <br class="calibre2"/></strong><strong class="calibre3">2         45    7,800  20,201.90 <br class="calibre2"/></strong><strong class="calibre3">3         48    4,842  12,540.70 <br class="calibre2"/></strong><strong class="calibre3">4         42    9,707  25,141.00<br class="calibre2"/></strong><strong class="calibre3"># determine the range of density values<br class="calibre2"/></strong><strong class="calibre3">max_density = -1.0<br class="calibre2"/></strong><strong class="calibre3">min_density = -1.0<br class="calibre2"/></strong><strong class="calibre3">for index, row in df.iterrows():<br class="calibre2"/></strong><strong class="calibre3">    d = row['density/mi2']<br class="calibre2"/></strong><strong class="calibre3">    density = float(d.replace(',' , ''))<br class="calibre2"/></strong><strong class="calibre3">    if (max_density==-1.0) or (max_density&lt;density):<br class="calibre2"/></strong><strong class="calibre3">        max_density = density<br class="calibre2"/></strong><strong class="calibre3">    if (min_density==-1.0) or (min_density&gt;density):<br class="calibre2"/></strong><strong class="calibre3">        min_density = density<br class="calibre2"/></strong><strong class="calibre3">print('max',max_density)<br class="calibre2"/></strong><strong class="calibre3">print('min',min_density)<br class="calibre2"/></strong><strong class="calibre3">range_density = max_density - min_density<br class="calibre2"/></strong><strong class="calibre3">print(range_density)<br class="calibre2"/></strong><strong class="calibre3">('max', 1218.0)<br class="calibre2"/></strong><strong class="calibre3">('min', 1.0)<br class="calibre2"/></strong><strong class="calibre3">1217.0<br class="calibre2"/></strong><strong class="calibre3"># we pick a color for the state density out of color map<br class="calibre2"/></strong><strong class="calibre3">cmap = matplotlib.cm.get_cmap('Spectral')<br class="calibre2"/></strong><strong class="calibre3"># for each state get the color for it's density<br class="calibre2"/></strong><strong class="calibre3">for index, row in df.iterrows():<br class="calibre2"/></strong><strong class="calibre3">    state_name = row['State']<br class="calibre2"/></strong><strong class="calibre3">    d = row['density/mi2']<br class="calibre2"/></strong><strong class="calibre3">    density = float(d.replace(',' , ''))<br class="calibre2"/></strong><strong class="calibre3">    color = cmap((density - min_density)/range_density)<br class="calibre2"/></strong><strong class="calibre3">    seg = map.states[state_names.index(state_name)]<br class="calibre2"/></strong><strong class="calibre3">    poly = Polygon(seg, facecolor=color, edgecolor=color)<br class="calibre2"/></strong><strong class="calibre3">    ax.add_patch(poly)<br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
+<pre class="commandlinepackt"><code></strong><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></code><strong class="calibre3">from mpl_toolkits.basemap import Basemap<br class="calibre2"/></strong><strong class="calibre3">from matplotlib.patches import Polygon<br class="calibre2"/></strong><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">import matplotlib<br class="calibre2"/></strong><strong class="calibre3"># create the map<br class="calibre2"/></strong><strong class="calibre3">map = Basemap(llcrnrlon=-119,llcrnrlat=22,urcrnrlon=-64,urcrnrlat=49,<br class="calibre2"/></strong><strong class="calibre3">        projection='lcc',lat_1=33,lat_2=45,lon_0=-95)<br class="calibre2"/></strong><strong class="calibre3"># load the shapefile, use the name 'states'<br class="calibre2"/></strong><strong class="calibre3"># download from https://github.com/matplotlib/basemap/tree/master/examples/st99_d00.dbf,shx,shp<br class="calibre2"/></strong><strong class="calibre3">map.readshapefile('st99_d00', name='states', drawbounds=True)<br class="calibre2"/></strong><strong class="calibre3"># collect the state names from the shapefile attributes so we can<br class="calibre2"/></strong><strong class="calibre3"># look up the shape obect for a state by it's name<br class="calibre2"/></strong><strong class="calibre3">state_names = []<br class="calibre2"/></strong><strong class="calibre3">for shape_dict in map.states_info:<br class="calibre2"/></strong><strong class="calibre3">    state_names.append(shape_dict['NAME'])<br class="calibre2"/></strong><strong class="calibre3">ax = plt.gca() # get current axes instance<br class="calibre2"/></strong><strong class="calibre3"># load density data drawn from<br class="calibre2"/></strong><strong class="calibre3"># https://en.wikipedia.org/wiki/List_of_U.S._states_by_population_density<br class="calibre2"/></strong><strong class="calibre3">df = pd.read_csv('states.csv')<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">State        rank density/mi2  density/km2  pop_rank   2015_pop<br class="calibre2"/></strong><strong class="calibre3">New Jersey      1       1,218          470        11  8,958,013  <br class="calibre2"/></strong><strong class="calibre3">Rhode Island    2       1,021          394        43  1,056,298  <br class="calibre2"/></strong><strong class="calibre3">Massachusetts   3         871          336        15  6,794,422  <br class="calibre2"/></strong><strong class="calibre3">Connecticut     4         741          286        29  3,590,886  <br class="calibre2"/></strong><strong class="calibre3">Maryland        5         618          238        19  6,006,401  <br class="calibre2"/></strong><strong class="calibre3">   land_rank area_mi2   area_km2 <br class="calibre2"/></strong><strong class="calibre3">0         46    7,354  19,046.80 <br class="calibre2"/></strong><strong class="calibre3">1         50    1,034   2,678.00 <br class="calibre2"/></strong><strong class="calibre3">2         45    7,800  20,201.90 <br class="calibre2"/></strong><strong class="calibre3">3         48    4,842  12,540.70 <br class="calibre2"/></strong><strong class="calibre3">4         42    9,707  25,141.00<br class="calibre2"/></strong><strong class="calibre3"># determine the range of density values<br class="calibre2"/></strong><strong class="calibre3">max_density = -1.0<br class="calibre2"/></strong><strong class="calibre3">min_density = -1.0<br class="calibre2"/></strong><strong class="calibre3">for index, row in df.iterrows():<br class="calibre2"/></strong><strong class="calibre3">    d = row['density/mi2']<br class="calibre2"/></strong><strong class="calibre3">    density = float(d.replace(',' , ''))<br class="calibre2"/></strong><strong class="calibre3">    if (max_density==-1.0) or (max_density&lt;density):<br class="calibre2"/></strong><strong class="calibre3">        max_density = density<br class="calibre2"/></strong><strong class="calibre3">    if (min_density==-1.0) or (min_density&gt;density):<br class="calibre2"/></strong><strong class="calibre3">        min_density = density<br class="calibre2"/></strong><strong class="calibre3">print('max',max_density)<br class="calibre2"/></strong><strong class="calibre3">print('min',min_density)<br class="calibre2"/></strong><strong class="calibre3">range_density = max_density - min_density<br class="calibre2"/></strong><strong class="calibre3">print(range_density)<br class="calibre2"/></strong><strong class="calibre3">('max', 1218.0)<br class="calibre2"/></strong><strong class="calibre3">('min', 1.0)<br class="calibre2"/></strong><strong class="calibre3">1217.0<br class="calibre2"/></strong><strong class="calibre3"># we pick a color for the state density out of color map<br class="calibre2"/></strong><strong class="calibre3">cmap = matplotlib.cm.get_cmap('Spectral')<br class="calibre2"/></strong><strong class="calibre3"># for each state get the color for it's density<br class="calibre2"/></strong><strong class="calibre3">for index, row in df.iterrows():<br class="calibre2"/></strong><strong class="calibre3">    state_name = row['State']<br class="calibre2"/></strong><strong class="calibre3">    d = row['density/mi2']<br class="calibre2"/></strong><strong class="calibre3">    density = float(d.replace(',' , ''))<br class="calibre2"/></strong><strong class="calibre3">    color = cmap((density - min_density)/range_density)<br class="calibre2"/></strong><strong class="calibre3">    seg = map.states[state_names.index(state_name)]<br class="calibre2"/></strong><strong class="calibre3">    poly = Polygon(seg, facecolor=color, edgecolor=color)<br class="calibre2"/></strong><strong class="calibre3">    ax.add_patch(poly)<br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
 <p class="calibre5">We see a color-coded density map in the following figure. I am not sure why Minnesota and Wisconsin did not match up with the data (they show no color for the density in the map). The data file looks correct and does appear to map to the image points.</p>
-<div class="packt_infobox">The packages used in this example would need to be installed, as they are not part of the standard set issued:</div>
-<p class="packt_figure1"><img class="image-border47" src="Images/8de833df-ebec-462b-a03a-5aac1fe1a03b.png"/></p>
+<p>The packages used in this example would need to be installed, as they are not part of the standard set issued:</p>
+<p class="packt_figure1"><img class="image-border47" src="img/8de833df-ebec-462b-a03a-5aac1fe1a03b.png"/></p>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Draw a histogram of social data</h1>
-                </header>
+<div><h1 class="header-title">Draw a histogram of social data</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">There are a wide variety of social sites that produce datasets. In this example, we will gather one of the datasets and produce a histogram from the data. The specific dataset is the voting behavior on WIKI from <a href="https://snap.stanford.edu/data/wiki-Vote.html" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9">https://snap.stanford.edu/data/wiki-Vote.html</a>. Each data item shows user number <kbd class="calibre21">N</kbd> voted for user number <kbd class="calibre21">X</kbd>. So, we produce some statistics in a histogram to analyze voting behavior by:</p>
 <ul class="calibre19">
@@ -469,43 +442,40 @@
 </ul>
 </li>
 </ul>
-<p class="calibre5"><span class="calibre8">The coding is as follows:</span></p>
-<pre class="commandlinepackt"><strong class="calibre3">%matplotlib inline<br class="calibre2"/></strong><strong class="calibre3"># import all packages being used<br class="calibre2"/></strong><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></strong><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">import matplotlib<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3"># load voting data drawn from https://snap.stanford.edu/data/wiki-Vote.html<br class="calibre2"/></strong><strong class="calibre3">df = pd.read_table('wiki-Vote.txt', sep=r"\s+", index_col=0)<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3"># produce standard summary info to validate<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">print(df.describe())</strong></pre>
-<div class="packt_infobox">Python will automatically assign the first column as the index into the table, regardless of whether the index is re-used (as is this case). You can see in the <kbd class="calibre21">describe()</kbd> results only the <kbd class="calibre21">ToNodeId</kbd> column is mentioned:</div>
+<p class="calibre5">The coding is as follows:</p>
+<pre class="commandlinepackt"><code></strong><strong class="calibre3"># import all packages being used<br class="calibre2"/></code><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></strong><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">import matplotlib<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3"># load voting data drawn from https://snap.stanford.edu/data/wiki-Vote.html<br class="calibre2"/></strong><strong class="calibre3">df = pd.read_table('wiki-Vote.txt', sep=r"\s+", index_col=0)<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3"># produce standard summary info to validate<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">print(df.describe())</strong></pre>
+<p>Python will automatically assign the first column as the index into the table, regardless of whether the index is re-used (as is this case). You can see in the <kbd class="calibre21">describe()</kbd> results only the <kbd class="calibre21">ToNodeId</kbd> column is mentioned:</p>
 <pre class="commandlinepackt"><strong class="calibre3">            ToNodeId<br class="calibre2"/></strong><strong class="calibre3">FromNodeId         <br class="calibre2"/></strong><strong class="calibre3">30              1412<br class="calibre2"/></strong><strong class="calibre3">30              3352<br class="calibre2"/></strong><strong class="calibre3">30              5254<br class="calibre2"/></strong><strong class="calibre3">30              5543<br class="calibre2"/></strong><strong class="calibre3">30              7478<br class="calibre2"/></strong><strong class="calibre3">            ToNodeId<br class="calibre2"/></strong><strong class="calibre3">count  103689.000000<br class="calibre2"/></strong><strong class="calibre3">mean     3580.347018<br class="calibre2"/></strong><strong class="calibre3">std      2204.045658<br class="calibre2"/></strong><strong class="calibre3">min         3.000000<br class="calibre2"/></strong><strong class="calibre3">25%      1746.000000<br class="calibre2"/></strong><strong class="calibre3">50%      3260.000000<br class="calibre2"/></strong><strong class="calibre3">75%      5301.000000<br class="calibre2"/></strong><strong class="calibre3">max      8297.000000</strong></pre>
 <p class="calibre5">Next, we produce grouped totals by the number of votes by a person and number of votes for a person. I assume there is a built-in function that would do this more nicely, but I did not find it:</p>
 <pre class="commandlinepackt"><strong class="calibre3">from_counter = {}<br class="calibre2"/></strong><strong class="calibre3">to_counter = {}<br class="calibre2"/></strong><strong class="calibre3">for index, row in df.iterrows():<br class="calibre2"/></strong><strong class="calibre3">    ton = row['ToNodeId']<br class="calibre2"/></strong><strong class="calibre3">    fromn = index<br class="calibre2"/></strong><strong class="calibre3">   <br class="calibre2"/></strong><strong class="calibre3">    #add the from entry<br class="calibre2"/></strong><strong class="calibre3">    if from_counter.has_key(fromn):<br class="calibre2"/></strong><strong class="calibre3">        # bump entry<br class="calibre2"/></strong><strong class="calibre3">        from_counter[fromn] = from_counter.get(fromn) + 1<br class="calibre2"/></strong><strong class="calibre3">    else:<br class="calibre2"/></strong><strong class="calibre3">        # create entry<br class="calibre2"/></strong><strong class="calibre3">        from_counter[fromn] = 1<br class="calibre2"/></strong><strong class="calibre3">       <br class="calibre2"/></strong><strong class="calibre3">    #add the to entry<br class="calibre2"/></strong><strong class="calibre3">    if to_counter.has_key(ton):<br class="calibre2"/></strong><strong class="calibre3">        # bump entry<br class="calibre2"/></strong><strong class="calibre3">        to_counter[ton] = to_counter.get(ton) + 1<br class="calibre2"/></strong><strong class="calibre3">    else:<br class="calibre2"/></strong><strong class="calibre3">        # create entry<br class="calibre2"/></strong><strong class="calibre3">        to_counter[ton] = 1<br class="calibre2"/></strong><strong class="calibre3">       <br class="calibre2"/></strong><strong class="calibre3">print(from_counter)<br class="calibre2"/></strong><strong class="calibre3">print(to_counter)<br class="calibre2"/></strong><strong class="calibre3">{3: 23, 4: 29, 5: 23, 6: 302, 7: 24, 8: 182, 9: 81, 10: 86, 11: 743,…</strong></pre>
 <p class="calibre5">We can already see some big numbers in there, like <kbd class="calibre21">743</kbd>:</p>
 <pre class="commandlinepackt"><strong class="calibre3">#extract the count values<br class="calibre2"/></strong><strong class="calibre3">from_counts = from_counter.values()<br class="calibre2"/></strong><strong class="calibre3">to_counts = to_counter.values()<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">print("Most votes by a user",max(from_counts))<br class="calibre2"/></strong><strong class="calibre3">print("Most voted for",max(to_counts))<br class="calibre2"/></strong><strong class="calibre3">('Most votes by a user', 893)<br class="calibre2"/></strong><strong class="calibre3">('Most voted for', 457)<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#make histogram of number of references made by a user<br class="calibre2"/></strong><strong class="calibre3">plt.hist(from_counts)<br class="calibre2"/></strong><strong class="calibre3">plt.title("How Many Votes Made By Users")<br class="calibre2"/></strong><strong class="calibre3">plt.xlabel("Value")<br class="calibre2"/></strong><strong class="calibre3">plt.ylabel("Frequency")<br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
 <p class="calibre5">We see the following plot, with the now familiar display of votes by users. I think this is one of the plainer layouts I have seen:</p>
-<p class="packt_figure1"><img class="image-border48" src="Images/df3b9b68-3e71-4e4d-a94d-a1d679d28f24.png"/></p>
+<p class="packt_figure1"><img class="image-border48" src="img/df3b9b68-3e71-4e4d-a94d-a1d679d28f24.png"/></p>
 <p class="calibre5">Now we make a histogram of the references made for a user with the following code:</p>
 <pre class="commandlinepackt"><strong class="calibre3">#make histogram of number of references made for a user<br class="calibre2"/></strong><strong class="calibre3">plt.hist(to_counts)<br class="calibre2"/></strong><strong class="calibre3">plt.title("How Many Votes Made for User")<br class="calibre2"/></strong><strong class="calibre3">plt.xlabel("Value")<br class="calibre2"/></strong><strong class="calibre3">plt.ylabel("Frequency")<br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
 <p class="calibre5">We see the votes by users plot as follows. I hadn't expected such lopsided results: only a few people vote a lot and only a few people got significant votes:</p>
-<p class="packt_figure1"><img class="image-border49" src="Images/4e1121bc-a31a-4b70-ba40-41c9620f8ed8.png"/></p>
+<p class="packt_figure1"><img class="image-border49" src="img/4e1121bc-a31a-4b70-ba40-41c9620f8ed8.png"/></p>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Plotting 3D data</h1>
-                </header>
+<div><h1 class="header-title">Plotting 3D data</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Many of the data analysis packages (R, Python, and so on) have significant data visualization capabilities. An interesting one is to display data in three dimensions. Often, when three dimensions are used, unexpected visualizations appear.</p>
 <p class="calibre5">For this example, we are using the car dataset from <a href="https://uci.edu/" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9">https://uci.edu/</a>. It is a well-used dataset with several attributes for vehicles, for example, <kbd class="calibre21">mpg</kbd>, <kbd class="calibre21">weight</kbd>, and <kbd class="calibre21">acceleration</kbd>. What if we were to plot three of those data attributes together and see if we can recognize any apparent rules?</p>
 <p class="calibre5">The coding involved is as follows:</p>
-<pre class="commandlinepackt"><strong class="calibre3">%matplotlib inline<br class="calibre2"/></strong><strong class="calibre3"># import tools we are using<br class="calibre2"/></strong><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">from mpl_toolkits.mplot3d import Axes3D<br class="calibre2"/></strong><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></strong><strong class="calibre3"># read in the car 'table' – not a csv, so we need<br class="calibre2"/></strong><strong class="calibre3"># to add in the column names<br class="calibre2"/></strong><strong class="calibre3">column_names = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']<br class="calibre2"/></strong><strong class="calibre3">df = pd.read_table('http://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data', \<br class="calibre2"/></strong><strong class="calibre3">                  sep=r"\s+", index_col=0, header=None, names = column_names)<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">      cylinders  displacement horsepower  weight  acceleration  year  origin  \<br class="calibre2"/></strong><strong class="calibre3">mpg                                                                           <br class="calibre2"/></strong><strong class="calibre3">18.0          8         307.0  130.0  3504.0          12.0    70       1  <br class="calibre2"/></strong><strong class="calibre3">15.0          8         350.0  165.0  3693.0          11.5    70       1  <br class="calibre2"/></strong><strong class="calibre3">18.0          8         318.0  150.0  3436.0          11.0    70       1  <br class="calibre2"/></strong><strong class="calibre3">16.0          8         304.   150.0  3433.0          12.0    70       1  <br class="calibre2"/></strong><strong class="calibre3">17.0          8         302.   140.0  3449.0          10.5    70       1  <br class="calibre2"/></strong><strong class="calibre3">                   <br class="calibre2"/></strong><strong class="calibre3">mpg                        name             <br class="calibre2"/></strong><strong class="calibre3">18.0  chevrolet chevelle malibu <br class="calibre2"/></strong><strong class="calibre3">15.0          buick skylark 320 <br class="calibre2"/></strong><strong class="calibre3">18.0         plymouth satellite <br class="calibre2"/></strong><strong class="calibre3">16.0              amc rebel sst <br class="calibre2"/></strong><strong class="calibre3">17.0                ford torino </strong></pre>
+<pre class="commandlinepackt"><code></strong><strong class="calibre3"># import tools we are using<br class="calibre2"/></code><strong class="calibre3">import pandas as pd<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">from mpl_toolkits.mplot3d import Axes3D<br class="calibre2"/></strong><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></strong><strong class="calibre3"># read in the car 'table' – not a csv, so we need<br class="calibre2"/></strong><strong class="calibre3"># to add in the column names<br class="calibre2"/></strong><strong class="calibre3">column_names = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']<br class="calibre2"/></strong><strong class="calibre3">df = pd.read_table('http://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data', \<br class="calibre2"/></strong><strong class="calibre3">                  sep=r"\s+", index_col=0, header=None, names = column_names)<br class="calibre2"/></strong><strong class="calibre3">print(df.head())<br class="calibre2"/></strong><strong class="calibre3">      cylinders  displacement horsepower  weight  acceleration  year  origin  \<br class="calibre2"/></strong><strong class="calibre3">mpg                                                                           <br class="calibre2"/></strong><strong class="calibre3">18.0          8         307.0  130.0  3504.0          12.0    70       1  <br class="calibre2"/></strong><strong class="calibre3">15.0          8         350.0  165.0  3693.0          11.5    70       1  <br class="calibre2"/></strong><strong class="calibre3">18.0          8         318.0  150.0  3436.0          11.0    70       1  <br class="calibre2"/></strong><strong class="calibre3">16.0          8         304.   150.0  3433.0          12.0    70       1  <br class="calibre2"/></strong><strong class="calibre3">17.0          8         302.   140.0  3449.0          10.5    70       1  <br class="calibre2"/></strong><strong class="calibre3">                   <br class="calibre2"/></strong><strong class="calibre3">mpg                        name             <br class="calibre2"/></strong><strong class="calibre3">18.0  chevrolet chevelle malibu <br class="calibre2"/></strong><strong class="calibre3">15.0          buick skylark 320 <br class="calibre2"/></strong><strong class="calibre3">18.0         plymouth satellite <br class="calibre2"/></strong><strong class="calibre3">16.0              amc rebel sst <br class="calibre2"/></strong><strong class="calibre3">17.0                ford torino </strong></pre>
 <p class="calibre5">In the following code, we plot out the data according to three axes that appear to be significant factors—weight, miles per gallon, and the number of cylinders in the engines:</p>
 <pre class="commandlinepackt"><strong class="calibre3">#start out plotting (uses a subplot as that can be 3d)</strong><br class="calibre2"/><strong class="calibre3">fig = plt.figure()</strong><br class="calibre2"/><strong class="calibre3">ax = fig.add_subplot(111, projection='3d')<br class="calibre2"/></strong><strong class="calibre3"># pull out the 3 columns that we want</strong><br class="calibre2"/><strong class="calibre3">xs = []</strong><br class="calibre2"/><strong class="calibre3">ys = []</strong><br class="calibre2"/><strong class="calibre3">zs = []</strong><br class="calibre2"/><strong class="calibre3">for index, row in df.iterrows():</strong><br class="calibre2"/><strong class="calibre3"> xs.append(row['weight'])</strong><br class="calibre2"/><strong class="calibre3"> ys.append(index) #read_table uses first column as index</strong><br class="calibre2"/><strong class="calibre3"> zs.append(row['cylinders'])<br class="calibre2"/></strong><strong class="calibre3"># based on our data, set the extents of the axes</strong><br class="calibre2"/><strong class="calibre3">plt.xlim(min(xs), max(xs))</strong><br class="calibre2"/><strong class="calibre3">plt.ylim(min(ys), max(ys))</strong><br class="calibre2"/><strong class="calibre3">ax.set_zlim(min(zs), max(zs))<br class="calibre2"/></strong><strong class="calibre3"># standard scatter diagram (except it is 3d)</strong><br class="calibre2"/><strong class="calibre3">ax.scatter(xs, ys, zs)<br class="calibre2"/></strong><strong class="calibre3">ax.set_xlabel('Weight')</strong><br class="calibre2"/><strong class="calibre3">ax.set_ylabel('MPG')</strong><br class="calibre2"/><strong class="calibre3">ax.set_zlabel('Cylinders')<br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
 <p class="calibre5">Unexpectedly, there appears to be three levels by the apparent three lines of data points, regardless of weight:</p>
@@ -515,34 +485,31 @@
 <li class="calibre20">A higher mpg for four cylinder vehicles</li>
 </ul>
 <p class="calibre5">I would have expected the weight to have a bigger effect:</p>
-<p class="packt_figure1">&gt;<img class="image-border50" src="Images/aa52296f-33f9-424a-b808-b67c42896dbe.png"/></p>
+<p class="packt_figure1">&gt;<img class="image-border50" src="img/aa52296f-33f9-424a-b808-b67c42896dbe.png"/></p>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Summary</h1>
-                </header>
+<div><h1 class="header-title">Summary</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">In this chapter, we used prediction models from Python and R under Jupyter. We used Matplotlib for data visualization. We used interactive plotting (under Python). And we covered several graphing techniques available in Jupyter. We created a density map with SciPy. We used histograms to visualize social data. Lastly, we generated a 3D plot under Jupyter.</p>
 <p class="calibre5">In the next chapter, we will look at accessing data in different ways under Jupyter.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 

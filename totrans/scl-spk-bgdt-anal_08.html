@@ -1,13 +1,13 @@
 <html><head></head><body>
-        <section id="75QNI1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Introduce a Little Structure - Spark SQL</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Introduce a Little Structure - Spark SQL</h1>
                 
             
-            <article>
+            
                 
-<div class="book-info-bottom-author-body">"One machine can do the work of fifty ordinary men. No machine can do the work of one extraordinary man."</div>
+<p>"One machine can do the work of fifty ordinary men. No machine can do the work of one extraordinary man."</p>
 <p class="cdpalignright">- Elbert Hubbard</p>
 <p class="mce-root">In this chapter, you will learn how to use Spark for the analysis of structured data (unstructured data, such as a document containing arbitrary text or some other format has to be transformed into a structured form); we will see how DataFrames/datasets are the corner stone here, and how Spark SQL's APIs make querying structured data simple yet robust. Moreover, we introduce datasets and see the difference between datasets, DataFrames, and RDDs. In a nutshell, the following topics will be covered in this chapter:</p>
 <ul class="calibre9">
@@ -21,57 +21,57 @@
 </ul>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header id="76P842-21aec46d8593429cacea59dbdcd64e1c">
-                    </header><h1 class="header-title" id="calibre_pb_0">Spark SQL and DataFrames</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Spark SQL and DataFrames</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Before Apache Spark, Apache Hive was the go-to technology whenever anyone wanted to run an SQL-like query on a large amount of data. Apache Hive essentially translated SQL queries into MapReduce-like, like logic, automatically making it very easy to perform many kinds of analytics on big data without actually learning to write complex code in Java and Scala.</p>
 <p class="mce-root">With the advent of Apache Spark, there was a paradigm shift in how we can perform analysis on big data scale. Spark SQL provides an easy-to-use SQL-like layer on top of Apache Spark's distributed computation abilities. In fact, Spark SQL can be used as an online analytical processing database.</p>
-<div class="cdpaligncenter"><img class="image-border91" src="../images/00297.jpeg"/></div>
+<div><img class="image-border91" src="img/00297.jpeg"/></div>
 <p class="mce-root">Spark SQL works by parsing the SQL-like statement into an <strong class="calibre1">Abstract Syntax Tree</strong> (<strong class="calibre1">AST</strong>), subsequently converting that plan to a logical plan and then optimizing the logical plan into a physical plan that can be executed. The final execution uses the underlying DataFrame API, making it very easy for anyone to use DataFrame APIs by simply using an SQL-like interface rather than learning all the internals. Since this book dives into technical details of various APIs, we will primarily cover the DataFrame APIs, showing Spark SQL API in some places to contrast the different ways of using the APIs.</p>
 <p class="mce-root">Thus, DataFrame API is the underlying layer beneath Spark SQL. In this chapter, we will show you how to create DataFrames using various techniques, including SQL queries and performing operations on the DataFrames.</p>
 <p class="mce-root">A DataFrame is an abstraction of the <strong class="calibre1">Resilient Distributed dataset</strong> (<strong class="calibre1">RDD</strong>), dealing with higher level functions optimized using catalyst optimizer and also highly performant via the Tungsten Initiative. You can think of a dataset as an efficient table of an RDD with heavily optimized binary representation of the data. The binary representation is achieved using encoders, which serializes the various objects into a binary structure for much better performance than RDD representation. Since DataFrames uses the RDD internally anyway, a DataFrame/dataset is also distributed exactly like an RDD, and thus is also a distributed dataset. Obviously, this also means datasets are immutable.</p>
 <p class="mce-root">The following is an illustration of the binary representation of data:</p>
-<div class="cdpaligncenter"><img class="image-border92" src="../images/00037.jpeg"/></div>
+<div><img class="image-border92" src="img/00037.jpeg"/></div>
 <p class="mce-root">datasets were added in Spark 1.6 and provide the benefits of strong typing on top of DataFrames. In fact, since Spark 2.0, the DataFrame is simply an alias of a dataset.</p>
-<div class="packt_infobox"><kbd class="calibre22">org.apache.spark.sql</kbd> defines type <kbd class="calibre22">DataFrame</kbd> as a <kbd class="calibre22">dataset[Row]</kbd>, which means that most of the APIs will work well with both datasets and <kbd class="calibre22">DataFrames</kbd><br class="calibre23"/>
+<div><kbd class="calibre22">org.apache.spark.sql</kbd> defines type <kbd class="calibre22">DataFrame</kbd> as a <kbd class="calibre22">dataset[Row]</kbd>, which means that most of the APIs will work well with both datasets and <kbd class="calibre22">DataFrames</kbd><br class="calibre23"/>
 <strong class="calibre27">type DataFrame = dataset[Row]</strong></div>
 <p class="mce-root">A DataFrame is conceptually similar to a table in a Relational Database. Hence, a DataFrame contains rows of data, with each row comprised of several columns.</p>
 <p class="mce-root">One of the first things we need to keep in mind is that, just like RDDs, DataFrames are immutable. This property of DataFrames being immutable means every transformation or action creates a new DataFrame.</p>
-<div class="cdpaligncenter"><img class="image-border93" src="../images/00034.jpeg"/></div>
+<div><img class="image-border93" src="img/00034.jpeg"/></div>
 <p class="mce-root">Let's start looking more into DataFrames and how they are different from RDDs. RDD's, as seen before, represent a low-level API of data manipulation in Apache Spark. The DataFrames were created on top of RDDs to abstract the low-level inner workings of RDDs and expose high-level APIs, which are easier to use and provide a lot of functionality out-of-the-box. DataFrame was created by following similar concepts found in the Python pandas package, R language, Julia language, and so on.</p>
 <p class="mce-root">As we mentioned before, DataFrames translate the SQL code and domain specific language expressions into optimized execution plans to be run on top of Spark Core APIs in order for the SQL statements to perform a wide variety of operations. DataFrames support many different types of input data sources and many types of operations. These includes all types of SQL operations, such as joins, group by, aggregations, and window functions, as most of the databases. Spark SQL is also quite similar to the Hive query language, and since Spark provides a natural adapter to Apache Hive, users who have been working in Apache Hive can easily transfer their knowledge, applying it to Spark SQL, thus minimizing the transition time.</p>
 <p class="mce-root">DataFrames essentially depend on the concept of a table, as seen previously. The table can be operated on very similar to how Apache Hive works. In fact, many of the operations on the tables in Apache Spark are similar to how Apache Hive handles tables and operates on those tables. Once you have a table that is the DataFrame, the DataFrame can be registered as a table and you can operate on the data using Spark SQL statements in lieu of DataFrame APIs.</p>
 <p class="mce-root">DataFrames depend on the catalyst optimizer and the Tungsten performance improvements, so let's briefly examine how catalyst optimizer works. A catalyst optimizer creates a parsed logical plan from the input SQL and then analyzes the logical plan by looking at all the various attributes and columns used in the SQL statement. Once the analyzed logical plan is created, catalyst optimizer further tries to optimize the plan by combining several operations and also rearranging the logic to get better performance.</p>
-<div class="packt_infobox">In order to understand the catalyst optimizer, think about it as a common sense logic Optimizer which can reorder operations such as filters and transformations, sometimes grouping several operations into one so as to minimize the amount of data that is shuffled across the worker nodes. For example, catalyst optimizer may decide to broadcast the smaller datasets when performing joint operations between different datasets. Use explain to look at the execution plan of any data frame. The catalyst optimizer also computes statistics of the DataFrame's columns and partitions, improving the speed of execution.</div>
+<p>In order to understand the catalyst optimizer, think about it as a common sense logic Optimizer which can reorder operations such as filters and transformations, sometimes grouping several operations into one so as to minimize the amount of data that is shuffled across the worker nodes. For example, catalyst optimizer may decide to broadcast the smaller datasets when performing joint operations between different datasets. Use explain to look at the execution plan of any data frame. The catalyst optimizer also computes statistics of the DataFrame's columns and partitions, improving the speed of execution.</p>
 <p class="mce-root">For example, if there are transformations and filters on the data partitions, then the order in which we filter data and apply transformations matters a lot to the overall performance of the operations. As a result of all the optimizations, the optimized logical plan is generated, which is then converted into a physical plan. Obviously, several physical plans are possibilities to execute the same SQL statement and generate the same result. The cost optimization logic determines and picks a good physical plan, based on cost optimizations and estimations.</p>
 <p class="mce-root">Tungsten performance improvements are another key ingredient in the secret sauce behind the phenomenal performance improvements offered by Spark 2.x compared to the previous releases, such as Spark 1.6 and older. Tungsten implements a complete overhaul of memory management and other performance improvements. Most important memory management improvements use binary encoding of the objects and referencing them in both off-heap and on-heap memory. Thus, Tungsten allows the usage of office heap memory using the binary encoding mechanism to encode all the objects. Binary encoded objects take up much less memory. Project Tungsten also improves shuffle performance.</p>
 <p class="mce-root">The data is typically loaded into DataFrames through the <kbd class="calibre11">DataFrameReader</kbd>, and data is saved from DataFrames through <kbd class="calibre11">DataFrameWriter</kbd>.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header id="77NOM2-21aec46d8593429cacea59dbdcd64e1c">
-                    </header><h1 class="header-title" id="calibre_pb_0">DataFrame API and SQL API</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">DataFrame API and SQL API</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">The creation of a DataFrame can be done in several ways:</p>
 <ul class="calibre9">
@@ -124,7 +124,7 @@
 <pre class="calibre19">
 <strong class="calibre1">scala&gt; statesDF.printSchema</strong><br class="title-page-name"/>root<br class="title-page-name"/> |-- State: string (nullable = true)<br class="title-page-name"/> |-- Year: integer (nullable = true)<br class="title-page-name"/> |-- Population: integer (nullable = true)
 </pre>
-<div class="packt_tip"><kbd class="calibre22">option("header", "true").option("inferschema", "true").option("sep", ",")</kbd> tells Spark that the CSV has a <kbd class="calibre22">header</kbd>; a comma separator is used to separate the fields/columns and also that schema can be inferred implicitly.</div>
+<div><kbd class="calibre22">option("header", "true").option("inferschema", "true").option("sep", ",")</kbd> tells Spark that the CSV has a <kbd class="calibre22">header</kbd>; a comma separator is used to separate the fields/columns and also that schema can be inferred implicitly.</div>
 <p class="mce-root">DataFrame works by parsing the logical plan, analyzing the logical plan, optimizing the plan, and then finally executing the physical plan of execution.</p>
 <p class="mce-root">Using explain on DataFrame shows the plan of execution:</p>
 <pre class="calibre19">
@@ -139,7 +139,7 @@
 <strong class="calibre1">scala&gt; statesDF.show(5)</strong><br class="title-page-name"/><strong class="calibre1">scala&gt; spark.sql("select * from states limit 5").show</strong><br class="title-page-name"/>+----------+----+----------+<br class="title-page-name"/>| State|Year|Population|<br class="title-page-name"/>+----------+----+----------+<br class="title-page-name"/>| Alabama|2010| 4785492|<br class="title-page-name"/>| Alaska|2010| 714031|<br class="title-page-name"/>| Arizona|2010| 6408312|<br class="title-page-name"/>| Arkansas|2010| 2921995|<br class="title-page-name"/>|California|2010| 37332685|<br class="title-page-name"/>+----------+----+----------+
 </pre>
 <p class="mce-root">If you see in the preceding piece of code, we have written an SQL-like statement and executed it using <kbd class="calibre11">spark.sql</kbd> API.</p>
-<div class="packt_tip"><br class="calibre23"/>
+<div><br class="calibre23"/>
 Note that the Spark SQL is simply converted to the DataFrame API for execution and the SQL is only a DSL for ease of use.</div>
 <p class="mce-root">Using the <kbd class="calibre11">sort</kbd> operation on the DataFrame, you can order the rows in the DataFrame by any column. We see the effect of descending <kbd class="calibre11">sort</kbd> using the <kbd class="calibre11">Population</kbd> column as follows. The rows are ordered by the Population in a descending order.</p>
 <pre class="calibre19">
@@ -149,7 +149,7 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 <pre class="calibre19">
 <strong class="calibre1">scala&gt; statesDF.groupBy("State").sum("Population").show(5)</strong><br class="title-page-name"/><strong class="calibre1">scala&gt; spark.sql("select State, sum(Population) from states group by State limit 5").show</strong><br class="title-page-name"/>+---------+---------------+<br class="title-page-name"/>| State|sum(Population)|<br class="title-page-name"/>+---------+---------------+<br class="title-page-name"/>| Utah| 20333580|<br class="title-page-name"/>| Hawaii| 9810173|<br class="title-page-name"/>|Minnesota| 37914011|<br class="title-page-name"/>| Ohio| 81020539|<br class="title-page-name"/>| Arkansas| 20703849|<br class="title-page-name"/>+---------+---------------+
 </pre>
-<p class="mce-root">Using <span><span>the <kbd class="calibre11">agg</kbd> operation,</span></span> you can perform many different operations on columns of the DataFrame, such as finding the <kbd class="calibre11">min</kbd>, <kbd class="calibre11">max</kbd>, and <kbd class="calibre11">avg</kbd> of a column. You can also perform the operation and rename the column at the same time to suit your use case.</p>
+<p class="mce-root">Using the <kbd class="calibre11">agg</kbd> operation, you can perform many different operations on columns of the DataFrame, such as finding the <kbd class="calibre11">min</kbd>, <kbd class="calibre11">max</kbd>, and <kbd class="calibre11">avg</kbd> of a column. You can also perform the operation and rename the column at the same time to suit your use case.</p>
 <pre class="calibre19">
 <strong class="calibre1">scala&gt; statesDF.groupBy("State").agg(sum("Population").alias("Total")).show(5)</strong><br class="title-page-name"/><strong class="calibre1">scala&gt; spark.sql("select State, sum(Population) as Total from states group by State limit 5").show</strong><br class="title-page-name"/>+---------+--------+<br class="title-page-name"/>| State| Total|<br class="title-page-name"/>+---------+--------+<br class="title-page-name"/>| Utah|20333580|<br class="title-page-name"/>| Hawaii| 9810173|<br class="title-page-name"/>|Minnesota|37914011|<br class="title-page-name"/>| Ohio|81020539|<br class="title-page-name"/>| Arkansas|20703849|<br class="title-page-name"/>+---------+--------+
 </pre>
@@ -163,26 +163,26 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 <strong class="calibre1">scala&gt; statesDF.groupBy("State").agg(sum("Population").alias("Total")).sort(col("Total").desc).show(5)</strong><br class="title-page-name"/><strong class="calibre1">scala&gt; spark.sql("select State, sum(Population) as Total from states group by State order by Total desc limit 5").show</strong><br class="title-page-name"/>+----------+---------+<br class="title-page-name"/>| State| Total|<br class="title-page-name"/>+----------+---------+<br class="title-page-name"/>|California|268280590|<br class="title-page-name"/>| Texas|185672865|<br class="title-page-name"/>| Florida|137618322|<br class="title-page-name"/>| New York|137409471|<br class="title-page-name"/>| Illinois| 89960023|<br class="title-page-name"/>+----------+---------+
 </pre>
 <p class="mce-root">The preceding chained operation consists of multiple transformations and actions, which can be visualized using the following diagram:</p>
-<div class="cdpaligncenter"><img class="image-border94" src="../images/00042.jpeg"/></div>
+<div><img class="image-border94" src="img/00042.jpeg"/></div>
 <p class="mce-root">It's also possible to create multiple aggregations at the same time, as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">scala&gt; statesDF.groupBy("State").agg(<br class="title-page-name"/>             min("Population").alias("minTotal"), <br class="title-page-name"/>             max("Population").alias("maxTotal"),        <br class="title-page-name"/>             avg("Population").alias("avgTotal"))<br class="title-page-name"/>           .sort(col("minTotal").desc).show(5)<br class="title-page-name"/></strong><br class="title-page-name"/><strong class="calibre1">scala&gt; spark.sql("select State, min(Population) as minTotal, max(Population) as maxTotal, avg(Population) as avgTotal from states group by State order by minTotal desc limit 5").show</strong><br class="title-page-name"/>+----------+--------+--------+--------------------+<br class="title-page-name"/>| State|minTotal|maxTotal| avgTotal|<br class="title-page-name"/>+----------+--------+--------+--------------------+<br class="title-page-name"/>|California|37332685|39250017|3.8325798571428575E7|<br class="title-page-name"/>| Texas|25244310|27862596| 2.6524695E7|<br class="title-page-name"/>| New York|19402640|19747183| 1.962992442857143E7|<br class="title-page-name"/>| Florida|18849098|20612439|1.9659760285714287E7|<br class="title-page-name"/>| Illinois|12801539|12879505|1.2851431857142856E7|<br class="title-page-name"/>+----------+--------+--------+--------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="78M981-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Pivots</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Pivots</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Pivoting is a great way of transforming the table to create a different view, more suitable to doing many summarizations and aggregations. This is accomplished by taking the values of a column and making each of the values an actual column.</p>
 <p class="mce-root">To understand this better, let's pivot the rows of the DataFrame by <kbd class="calibre11">Year</kbd> and examine the result, which shows that, now, the column <kbd class="calibre11">Year</kbd> created several new columns by converting each unique value into an actual column. The end result of this is that, now, instead of just looking at year columns, we can use the per year columns created to summarize and aggregate by <kbd class="calibre11">Year</kbd>.</p>
@@ -191,19 +191,19 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="79KPQ1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Filters</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Filters</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">DataFrame also supports Filters, which can be used to quickly filter the DataFrame rows to generate new DataFrames. The Filters enable very important transformations of the data to narrow down the DataFrame to our use case. For example, if all you want is to analyze the state of California, then using <kbd class="calibre11">filter</kbd> API performs the elimination of non-matching rows on every partition of data, thus improving the performance of the operations.</p>
 <p class="mce-root">Let's look at the execution plan for the filtering of the DataFrame to only consider the state of California.</p>
@@ -217,22 +217,22 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7AJAC1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">User-Defined Functions (UDFs)</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">User-Defined Functions (UDFs)</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">UDFs define new column-based functions that extend the functionality of Spark SQL. Often, the inbuilt functions provided in Spark do not handle the exact need we have. In such cases, Apache Spark supports the creation of UDFs, which can be used.</p>
-<div class="packt_infobox"><kbd class="calibre22">udf()</kbd> internally calls a case class User-Defined Function, which itself calls ScalaUDF internally.</div>
+<div><kbd class="calibre22">udf()</kbd> internally calls a case class User-Defined Function, which itself calls ScalaUDF internally.</div>
 <p class="mce-root">Let's go through an example of an UDF which simply converts State column values to uppercase.</p>
 <p class="mce-root">First, we create the function we need in Scala.</p>
 <pre class="calibre19">
@@ -248,38 +248,38 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7BHQU1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Schema   structure of data</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Schema   structure of data</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">A schema is the description of the structure of your data and can be either Implicit or Explicit.</p>
 <p class="mce-root">Since the DataFrames are internally based on the RDD, there are two main methods of converting existing RDDs into datasets. An RDD can be converted into a dataset by using reflection to infer the schema of the RDD. A second method for creating datasets is through a programmatic interface, using which you can take an existing RDD and provide a schema to convert the RDD into a dataset with schema.</p>
 <p class="mce-root">In order to create a DataFrame from an RDD by inferring the schema using reflection, the Scala API for Spark provides case classes which can be used to define the schema of the table. The DataFrame is created programmatically from the RDD, because the case classes are not easy to use in all cases. For instance, creating a case classes on a 1000 column table is time consuming.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7CGBG1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Implicit schema</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Implicit schema</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Let us look at an example of loading a <strong class="calibre1">CSV</strong> (c<strong class="calibre1">omma-separated Values</strong>) file into a DataFrame. Whenever a text file contains a header, read API can infer the schema by reading the header line. We also have the option to specify the separator to be used to split the text file lines.</p>
 <p class="mce-root">We read the <kbd class="calibre11">csv</kbd> inferring the schema from the header line and uses comma (<kbd class="calibre11">,</kbd>) as the separator. We also show use of <kbd class="calibre11">schema</kbd> command and <kbd class="calibre11">printSchema</kbd> command to verify the schema of the input file.</p>
@@ -288,23 +288,23 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7DES21-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Explicit schema</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Explicit schema</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">A schema is described using <kbd class="calibre11">StructType</kbd>, which is a collection of <kbd class="calibre11">StructField</kbd> objects.</p>
-<div class="packt_infobox"><kbd class="calibre22">StructType</kbd> and <kbd class="calibre22">StructField</kbd> belong to the <kbd class="calibre22">org.apache.spark.sql.types</kbd> package.<br class="calibre23"/>
-<span class="field">DataTypes such as</span> <kbd class="calibre22">IntegerType</kbd><span class="field">,</span> <kbd class="calibre22">StringType</kbd> <span class="field">also belong to the</span> <kbd class="calibre22">org.apache.spark.sql.types</kbd> <span class="field">package.</span></div>
+<div><kbd class="calibre22">StructType</kbd> and <kbd class="calibre22">StructField</kbd> belong to the <kbd class="calibre22">org.apache.spark.sql.types</kbd> package.<br class="calibre23"/>
+DataTypes such as <kbd class="calibre22">IntegerType</kbd>, <kbd class="calibre22">StringType</kbd> also belong to the <kbd class="calibre22">org.apache.spark.sql.types</kbd> package.</div>
 <p class="mce-root">Using these imports, we can define a custom explicit schema.</p>
 <p class="mce-root">First, import the necessary classes:</p>
 <pre class="calibre19">
@@ -328,19 +328,19 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7EDCK1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Encoders</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Encoders</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Spark 2.x supports a different way of defining schema for complex data types. First, let's look at a simple example.</p>
 <p class="mce-root">Encoders must be imported using the import statement in order for you to use Encoders:</p>
@@ -456,40 +456,39 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </table>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7FBT61-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Loading and saving datasets</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Loading and saving datasets</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">We need to have data read into the cluster as input and output or results written back to the storage to do anything practical with our code. Input data can be read from a variety of datasets and sources such as Files, Amazon S3 storage, Databases, NoSQLs, and Hive, and the output can similarly also be saved to Files, S3, Databases, Hive, and so on.</p>
 <p class="mce-root">Several systems have support for Spark via a connector, and this number is growing day by day as more systems are latching onto the Spark processing framework.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7GADO1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Loading datasets</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Loading datasets</h1>
                 
             
-            <article>
+            
                 
-<div class="title-page-name">
-<p class="mce-root">Spark SQL can read data from external storage systems such as files, Hive tables, and JDBC databases through the <kbd class="calibre11">DataFrameReader</kbd> interface.</p>
+<div><p class="mce-root">Spark SQL can read data from external storage systems such as files, Hive tables, and JDBC databases through the <kbd class="calibre11">DataFrameReader</kbd> interface.</p>
 <p class="mce-root">The format of the API call is <kbd class="calibre11">spark.read.inputtype</kbd></p>
 <ul class="calibre9">
 <li class="mce-root1">Parquet</li>
@@ -506,23 +505,22 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre></div>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7H8UA1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Saving datasets</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Saving datasets</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Spark SQL can save data to external storage systems such as files, Hive tables and JDBC databases through <kbd class="calibre11">DataFrameWriter</kbd> interface.</p>
-<div class="title-page-name">
-<p class="mce-root"><span>The format of the API call is <kbd class="calibre11">dataframe</kbd></span><kbd class="calibre11"><span>.write.</span>outputtype</kbd></p>
+<div><p class="mce-root">The format of the API call is <kbd class="calibre11">dataframe</kbd><kbd class="calibre11">.write.outputtype</kbd></p>
 </div>
 <ul class="calibre9">
 <li class="mce-root1">Parquet</li>
@@ -539,23 +537,23 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7I7ES1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Aggregations</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Aggregations</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Aggregation is the method of collecting data based on a condition and performing analytics on the data. Aggregation is very important to make sense of data of all sizes, as just having raw records of data is not that useful for most use cases.</p>
 <p class="mce-root">For example, if you look at the following table and then the aggregated view, it is obvious that just raw records do not help you understand the data.</p>
-<div class="packt_tip">Imagine a table containing one temperature measurement per day for every city in the world for five years.</div>
+<p>Imagine a table containing one temperature measurement per day for every city in the world for five years.</p>
 <p class="mce-root">Shown in the following is a table containing records of average temperature per day per city:</p>
 <table class="calibre37">
 <tbody class="calibre5">
@@ -573,22 +571,22 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </tr>
 <tr class="calibre6">
 <td class="calibre7">New York</td>
-<td class="calibre7"><span>12/24/2016</span></td>
+<td class="calibre7">12/24/2016</td>
 <td class="calibre7">36</td>
 </tr>
 <tr class="calibre6">
 <td class="calibre7">Boston</td>
-<td class="calibre7"><span>12/24/2016</span></td>
+<td class="calibre7">12/24/2016</td>
 <td class="calibre7">30</td>
 </tr>
 <tr class="calibre6">
 <td class="calibre7">Philadelphia</td>
-<td class="calibre7"><span>12/25/2016</span></td>
+<td class="calibre7">12/25/2016</td>
 <td class="calibre7">34</td>
 </tr>
 <tr class="calibre6">
 <td class="calibre7">Boston</td>
-<td class="calibre7"><span>12/25/2016</span></td>
+<td class="calibre7">12/25/2016</td>
 <td class="calibre7">28</td>
 </tr>
 </tbody>
@@ -617,41 +615,41 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </table>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7J5VE1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Aggregate functions</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Aggregate functions</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Most aggregations can be done using functions that can be found in the <kbd class="calibre11">org.apache.spark.sql.functions</kbd> package. In addition, custom aggregation functions can also be created, also known as <strong class="calibre1">User Defined Aggregation Functions</strong> (<strong class="calibre1">UDAF</strong>).</p>
-<div class="packt_tip">Each grouping operation returns a <kbd class="calibre22">RelationalGroupeddataset</kbd>, on which you can specify aggregations.</div>
+<p>Each grouping operation returns a <kbd class="calibre22">RelationalGroupeddataset</kbd>, on which you can specify aggregations.</p>
 <p class="mce-root">We will load the sample data to illustrate all the different types of aggregate functions in this section:</p>
 <pre class="calibre19">
 <strong class="calibre1">val statesPopulationDF = spark.read.option("header", "true").option("inferschema", "true").option("sep", ",").csv("statesPopulation.csv")</strong>
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7K4G01-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Count</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Count</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Count is the most basic aggregate function, which simply counts the number of rows for the column specified. An extension is the <kbd class="calibre11">countDistinct</kbd>, which also eliminates duplicates.</p>
 <p class="mce-root">The <kbd class="calibre11">count</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
@@ -664,324 +662,324 @@ Note that the Spark SQL is simply converted to the DataFrame API for execution a
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7L30I1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">First</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">First</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Gets the first record in the <kbd class="calibre11">RelationalGroupeddataset.</kbd></p>
-<p class="mce-root">The <kbd class="calibre11">first</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case:</span></p>
+<p class="mce-root">The <kbd class="calibre11">first</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
 <pre class="calibre19">
 <strong class="calibre1">def first(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the first value of a column in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def first(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the first value in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def first(columnName: String, ignoreNulls: Boolean): Column</strong><br class="title-page-name"/>Aggregate function: returns the first value of a column in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def first(e: Column, ignoreNulls: Boolean): Column</strong><br class="title-page-name"/>Aggregate function: returns the first value in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">first</kbd></span> <span>on the DataFrame to output the first row:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">first</kbd> on the DataFrame to output the first row:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(first("State")).show</strong><br class="title-page-name"/>+-------------------+<br class="title-page-name"/>|first(State, false)|<br class="title-page-name"/>+-------------------+<br class="title-page-name"/>| Alabama|<br class="title-page-name"/>+-------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7M1H41-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Last</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Last</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Gets the last record in the <kbd class="calibre11">RelationalGroupeddataset</kbd>.</p>
-<p class="mce-root">The <span><kbd class="calibre11">last</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</span></p>
+<p class="mce-root">The <kbd class="calibre11">last</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
 <pre class="calibre19">
 <strong class="calibre1">def last(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the last value of the column in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def last(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the last value in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def last(columnName: String, ignoreNulls: Boolean): Column</strong><br class="title-page-name"/>Aggregate function: returns the last value of the column in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def last(e: Column, ignoreNulls: Boolean): Column</strong><br class="title-page-name"/>Aggregate function: returns the last value in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">last</kbd></span> <span>on the DataFrame to output the last row.</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">last</kbd> on the DataFrame to output the last row.</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(last("State")).show</strong><br class="title-page-name"/>+------------------+<br class="title-page-name"/>|last(State, false)|<br class="title-page-name"/>+------------------+<br class="title-page-name"/>| Wyoming|<br class="title-page-name"/>+------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7N01M1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">approx_count_distinct</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">approx_count_distinct</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Approximate distinct count is much faster at approximately counting the distinct records rather than doing an exact count, which usually needs a lot of shuffles and other operations. While the approximate count is not 100% accurate, many use cases can perform equally well even without an exact count.</p>
-<p class="mce-root">The <kbd class="calibre11">approx_count_distinct</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case.</span></p>
+<p class="mce-root">The <kbd class="calibre11">approx_count_distinct</kbd> API has several implementations, as follows. The exact API used depends on the specific use case.</p>
 <pre class="calibre19">
 <strong class="calibre1">def approx_count_distinct(columnName: String, rsd: Double): Column</strong><br class="title-page-name"/>Aggregate function: returns the approximate number of distinct items in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def approx_count_distinct(e: Column, rsd: Double): Column</strong><br class="title-page-name"/>Aggregate function: returns the approximate number of distinct items in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def approx_count_distinct(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the approximate number of distinct items in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def approx_count_distinct(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the approximate number of distinct items in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">approx_count_distinct</kbd></span> <span>on the DataFrame to print the approximate count of the DataFrame:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">approx_count_distinct</kbd> on the DataFrame to print the approximate count of the DataFrame:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(col("*")).agg(approx_count_distinct("State")).show</strong><br class="title-page-name"/>+----------------------------+<br class="title-page-name"/>|approx_count_distinct(State)|<br class="title-page-name"/>+----------------------------+<br class="title-page-name"/>| 48|<br class="title-page-name"/>+----------------------------+<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; statesPopulationDF.select(approx_count_distinct("State", 0.2)).show</strong><br class="title-page-name"/>+----------------------------+<br class="title-page-name"/>|approx_count_distinct(State)|<br class="title-page-name"/>+----------------------------+<br class="title-page-name"/>| 49|<br class="title-page-name"/>+----------------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7NUI81-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Min</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Min</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">The minimum of the column value of one of the columns in the DataFrame. An example is if you want to find the minimum temperature of a city.</p>
-<p class="mce-root">The <kbd class="calibre11">min</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case:</span></p>
+<p class="mce-root">The <kbd class="calibre11">min</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
 <pre class="calibre19">
 <strong class="calibre1">def min(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the minimum value of the column in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def min(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the minimum value of the expression in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">min</kbd></span> <span>on the DataFrame to print the minimum Population:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">min</kbd> on the DataFrame to print the minimum Population:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(min("Population")).show</strong><br class="title-page-name"/>+---------------+<br class="title-page-name"/>|min(Population)|<br class="title-page-name"/>+---------------+<br class="title-page-name"/>| 564513|<br class="title-page-name"/>+---------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7OT2Q1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Max</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Max</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">The maximum of the column value of one of the columns in the DataFrame. An example is if you want to find the maximum temperature of a city.</p>
-<p class="mce-root">The <kbd class="calibre11">max</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case.</span></p>
+<p class="mce-root">The <kbd class="calibre11">max</kbd> API has several implementations, as follows. The exact API used depends on the specific use case.</p>
 <pre class="calibre19">
 <strong class="calibre1">def max(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the maximum value of the column in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def max(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the maximum value of the expression in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">max</kbd></span> <span>on the DataFrame to print the maximum Population:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">max</kbd> on the DataFrame to print the maximum Population:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(max("Population")).show</strong><br class="title-page-name"/>+---------------+<br class="title-page-name"/>|max(Population)|<br class="title-page-name"/>+---------------+<br class="title-page-name"/>| 39250017|<br class="title-page-name"/>+---------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7PRJC1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Average</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Average</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">The average of the values is calculated by adding the values and dividing by the number of values.</p>
-<div class="packt_tip"><br class="calibre23"/>
+<div><br class="calibre23"/>
 Average of 1,2,3 is (1 + 2 + 3) / 3 = 6/3 = 2</div>
-<p class="mce-root">The <kbd class="calibre11">avg</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case:</span></p>
+<p class="mce-root">The <kbd class="calibre11">avg</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
 <pre class="calibre19">
 <strong class="calibre1">def avg(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the average of the values in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def avg(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the average of the values in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking <kbd class="calibre11">avg</kbd></span> <span>on the DataFrame to print the average population:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">avg</kbd> on the DataFrame to print the average population:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(avg("Population")).show</strong><br class="title-page-name"/>+-----------------+<br class="title-page-name"/>| avg(Population)|<br class="title-page-name"/>+-----------------+<br class="title-page-name"/>|6253399.371428572|<br class="title-page-name"/>+-----------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7QQ3U1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Sum</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Sum</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Computes the sum of the values of the column. Optionally, <kbd class="calibre11">sumDistinct</kbd> can be used to only add up distinct values.</p>
-<p class="mce-root">The <kbd class="calibre11">sum</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case:</span></p>
+<p class="mce-root">The <kbd class="calibre11">sum</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
 <pre class="calibre19">
 <strong class="calibre1">def sum(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the sum of all values in the given column.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def sum(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the sum of all values in the expression.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def sumDistinct(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the sum of distinct values in the expression<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def sumDistinct(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the sum of distinct values in the expression.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">sum</kbd></span> <span>on the DataFrame to print the summation (total) <kbd class="calibre11">Population</kbd>.</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">sum</kbd> on the DataFrame to print the summation (total) <kbd class="calibre11">Population</kbd>.</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(sum("Population")).show</strong><br class="title-page-name"/>+---------------+<br class="title-page-name"/>|sum(Population)|<br class="title-page-name"/>+---------------+<br class="title-page-name"/>| 2188689780|<br class="title-page-name"/>+---------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7ROKG1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Kurtosis</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Kurtosis</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Kurtosis is a way of quantifying differences in the shape of distributions, which may look very similar in terms of means and variances, yet are actually different. In such cases, kurtosis becomes a good measure of the weight of the distribution at the tail of the distribution, as compared to the middle of the distribution.</p>
-<p class="mce-root">The <kbd class="calibre11">kurtosis</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case.</span></p>
+<p class="mce-root">The <kbd class="calibre11">kurtosis</kbd> API has several implementations, as follows. The exact API used depends on the specific use case.</p>
 <pre class="calibre19">
 <strong class="calibre1">def kurtosis(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the kurtosis of the values in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def kurtosis(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the kurtosis of the values in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">kurtosis</kbd></span> <span>on the DataFrame on the <kbd class="calibre11">Population</kbd> column:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">kurtosis</kbd> on the DataFrame on the <kbd class="calibre11">Population</kbd> column:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(kurtosis("Population")).show</strong><br class="title-page-name"/>+--------------------+<br class="title-page-name"/>|kurtosis(Population)|<br class="title-page-name"/>+--------------------+<br class="title-page-name"/>| 7.727421920829375|<br class="title-page-name"/>+--------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7SN521-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Skewness</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Skewness</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Skewness measures the asymmetry of the values in your data around the average or mean.</p>
-<p class="mce-root">The <kbd class="calibre11">skewness</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case.</span></p>
+<p class="mce-root">The <kbd class="calibre11">skewness</kbd> API has several implementations, as follows. The exact API used depends on the specific use case.</p>
 <pre class="calibre19">
 <strong class="calibre1">def skewness(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the skewness of the values in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def skewness(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the skewness of the values in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">skewness</kbd></span> <span>on the DataFrame on the Population column:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">skewness</kbd> on the DataFrame on the Population column:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(skewness("Population")).show</strong><br class="title-page-name"/>+--------------------+<br class="title-page-name"/>|skewness(Population)|<br class="title-page-name"/>+--------------------+<br class="title-page-name"/>| 2.5675329049100024|<br class="title-page-name"/>+--------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7TLLK1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Variance</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Variance</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Variance is the average of the squared differences of each of the values from the mean.</p>
-<p class="mce-root">The <kbd class="calibre11">var</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case:</span></p>
+<p class="mce-root">The <kbd class="calibre11">var</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
 <pre class="calibre19">
 <strong class="calibre1">def var_pop(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the population variance of the values in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def var_pop(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the population variance of the values in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def var_samp(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the unbiased variance of the values in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def var_samp(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the unbiased variance of the values in a group.
 </pre>
-<p class="mce-root"><span>Now, let's look at an example of invoking <kbd class="calibre11">var_pop</kbd></span> <span>on the DataFrame measuring variance of <kbd class="calibre11">Population</kbd>:</span></p>
+<p class="mce-root">Now, let's look at an example of invoking <kbd class="calibre11">var_pop</kbd> on the DataFrame measuring variance of <kbd class="calibre11">Population</kbd>:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(var_pop("Population")).show</strong><br class="title-page-name"/>+--------------------+<br class="title-page-name"/>| var_pop(Population)|<br class="title-page-name"/>+--------------------+<br class="title-page-name"/>|4.948359064356177E13|<br class="title-page-name"/>+--------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7UK661-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Standard deviation</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Standard deviation</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Standard deviation is the square root of the variance (see previously).</p>
-<p class="mce-root">The <span><kbd class="calibre11">stddev</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</span></p>
+<p class="mce-root">The <kbd class="calibre11">stddev</kbd> API has several implementations, as follows. The exact API used depends on the specific use case:</p>
 <pre class="calibre19">
 <strong class="calibre1">def stddev(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: alias for stddev_samp.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def stddev(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: alias for stddev_samp.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def stddev_pop(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the population standard deviation of the expression in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def stddev_pop(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the population standard deviation of the expression in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def stddev_samp(columnName: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the sample standard deviation of the expression in a group.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def stddev_samp(e: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the sample standard deviation of the expression in a group.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">stddev</kbd></span> <span>on the DataFrame printing the standard deviation of <kbd class="calibre11">Population</kbd>:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">stddev</kbd> on the DataFrame printing the standard deviation of <kbd class="calibre11">Population</kbd>:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(stddev("Population")).show</strong><br class="title-page-name"/>+-----------------------+<br class="title-page-name"/>|stddev_samp(Population)|<br class="title-page-name"/>+-----------------------+<br class="title-page-name"/>| 7044528.191173398|<br class="title-page-name"/>+-----------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="7VIMO1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Covariance</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Covariance</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Covariance is a measure of the joint variability of two random variables. If the greater values of one variable mainly corresponds with the greater values of the other variable, and the same holds for the lesser values, then the variables tend to show similar behavior and the covariance is positive. If the opposite is true, and the greater values of one variable correspond with the lesser values of the other variable, then the covariance is negative.</p>
-<p class="mce-root">The <kbd class="calibre11">covar</kbd> <span>API has several implementations, as follows. The exact API used depends on the specific use case.</span></p>
+<p class="mce-root">The <kbd class="calibre11">covar</kbd> API has several implementations, as follows. The exact API used depends on the specific use case.</p>
 <pre class="calibre19">
 <strong class="calibre1">def covar_pop(columnName1: String, columnName2: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the population covariance for two columns.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def covar_pop(column1: Column, column2: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the population covariance for two columns.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def covar_samp(columnName1: String, columnName2: String): Column</strong><br class="title-page-name"/>Aggregate function: returns the sample covariance for two columns.<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">def covar_samp(column1: Column, column2: Column): Column</strong><br class="title-page-name"/>Aggregate function: returns the sample covariance for two columns.
 </pre>
-<p class="mce-root"><span>Let's look at an example of invoking</span> <span><kbd class="calibre11">covar_pop</kbd></span> <span>on the DataFrame to calculate the covariance between the year and population columns:</span></p>
+<p class="mce-root">Let's look at an example of invoking <kbd class="calibre11">covar_pop</kbd> on the DataFrame to calculate the covariance between the year and population columns:</p>
 <pre class="calibre19">
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(covar_pop("Year", "Population")).show</strong><br class="title-page-name"/>+---------------------------+<br class="title-page-name"/>|covar_pop(Year, Population)|<br class="title-page-name"/>+---------------------------+<br class="title-page-name"/>| 183977.56000006935|<br class="title-page-name"/>+---------------------------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="80H7A1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">groupBy</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">groupBy</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">A common task seen in data analysis is to group the data into grouped categories and then perform calculations on the resultant groups of data.</p>
-<div class="packt_tip">A quick way to understand grouping is to imagine being asked to assess what supplies you need for your office very quickly. You could start looking around you and just group different types of items, such as pens, paper, staplers, and analyze what you have and what you need.</div>
+<p>A quick way to understand grouping is to imagine being asked to assess what supplies you need for your office very quickly. You could start looking around you and just group different types of items, such as pens, paper, staplers, and analyze what you have and what you need.</p>
 <p class="mce-root">Let's run <kbd class="calibre11">groupBy</kbd> function on the <kbd class="calibre11">DataFrame</kbd> to print aggregate counts of each State:</p>
 <pre class="calibre19">
 <strong class="calibre1">scala&gt; statesPopulationDF.groupBy("State").count.show(5)</strong><br class="title-page-name"/>+---------+-----+<br class="title-page-name"/>| State|count|<br class="title-page-name"/>+---------+-----+<br class="title-page-name"/>| Utah| 7|<br class="title-page-name"/>| Hawaii| 7|<br class="title-page-name"/>|Minnesota| 7|<br class="title-page-name"/>| Ohio| 7|<br class="title-page-name"/>| Arkansas| 7|<br class="title-page-name"/>+---------+-----+<br class="title-page-name"/><br class="title-page-name"/>
@@ -992,19 +990,19 @@ Average of 1,2,3 is (1 + 2 + 3) / 3 = 6/3 = 2</div>
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="81FNS1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Rollup</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Rollup</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Rollup is a multi-dimensional aggregation used to perform hierarchical or nested calculations. For example, if we want to show the number of records for each State+Year group, as well as for each State (aggregating over all years to give a grand total for each <kbd class="calibre11">State</kbd> irrespective of the <kbd class="calibre11">Year</kbd>), we can use <kbd class="calibre11">rollup</kbd> as follows:</p>
 <pre class="calibre19">
@@ -1013,39 +1011,39 @@ Average of 1,2,3 is (1 + 2 + 3) / 3 = 6/3 = 2</div>
 <p class="mce-root">The <kbd class="calibre11">rollup</kbd> calculates the count for state and year, such as California+2014, as well as California state (adding up all years).</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="82E8E1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Cube</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Cube</h1>
                 
             
-            <article>
+            
                 
-<p class="mce-root"><span>Cube is a multi-dimensional aggregation used to perform hierarchical or nested calculations just like rollup, but with the difference that cube does the same operation for all dimensions. For example, if we want to show the number of records for each <kbd class="calibre11">State</kbd> and <kbd class="calibre11">Year</kbd> group, as well as for each <kbd class="calibre11">State</kbd> (aggregating over all Years to give a grand total for each State irrespective of the <kbd class="calibre11">Year</kbd>), we</span> <span>can</span> <span>use rollup as follows. In addition, <kbd class="calibre11">cube</kbd> also shows a grand total for each Year (irrespective of the <kbd class="calibre11">State</kbd>):</span></p>
+<p class="mce-root">Cube is a multi-dimensional aggregation used to perform hierarchical or nested calculations just like rollup, but with the difference that cube does the same operation for all dimensions. For example, if we want to show the number of records for each <kbd class="calibre11">State</kbd> and <kbd class="calibre11">Year</kbd> group, as well as for each <kbd class="calibre11">State</kbd> (aggregating over all Years to give a grand total for each State irrespective of the <kbd class="calibre11">Year</kbd>), we can use rollup as follows. In addition, <kbd class="calibre11">cube</kbd> also shows a grand total for each Year (irrespective of the <kbd class="calibre11">State</kbd>):</p>
 <pre class="calibre19">
 <strong class="calibre1">scala&gt; statesPopulationDF.cube("State", "Year").count.show(5)</strong><br class="title-page-name"/>+------------+----+-----+<br class="title-page-name"/>| State|Year|count|<br class="title-page-name"/>+------------+----+-----+<br class="title-page-name"/>|South Dakota|2010| 1|<br class="title-page-name"/>| New York|2012| 1|<br class="title-page-name"/>| null|2014| 50|<br class="title-page-name"/>| Wyoming|2014| 1|<br class="title-page-name"/>| Hawaii|null| 7|<br class="title-page-name"/>+------------+----+-----+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="83CP01-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Window functions</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Window functions</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Window functions allow you to perform aggregations over a window of data rather than entire data or some filtered data. The use cases of such window functions are:</p>
 <ul class="calibre9">
@@ -1054,7 +1052,7 @@ Average of 1,2,3 is (1 + 2 + 3) / 3 = 6/3 = 2</div>
 <li class="mce-root1">Weighted moving average</li>
 </ul>
 <p class="mce-root">The best way to understand window functions is to imagine a sliding window over the larger dataset universe. You can specify a window looking at three rows T-1, T, and T+1, and by performing a simple calculation. You can also specify a window of latest/most recent ten values:</p>
-<div class="cdpaligncenter"><img class="image-border95" src="../images/00047.jpeg"/></div>
+<div><img class="image-border95" src="img/00047.jpeg"/></div>
 <p class="cdpalignleft1">The API for the window specification requires three properties, the <kbd class="calibre11">partitionBy()</kbd>, <kbd class="calibre11">orderBy()</kbd>, and the <kbd class="calibre11">rowsBetween()</kbd>. The <kbd class="calibre11">partitionBy</kbd> chunks the data into the partitions/groups as specified by <kbd class="calibre11">partitionBy()</kbd>. <kbd class="calibre11">orderBy()</kbd> is used to order the data within each partition of data.</p>
 <p class="cdpalignleft1">The <kbd class="calibre11">rowsBetween()</kbd> specifies the window frame or the span of the sliding window to perform the calculations.</p>
 <p class="cdpalignleft1">To try out the windows function, there are certain packages that are needed. You can import the necessary packages using import directives, as follows:</p>
@@ -1071,19 +1069,19 @@ Average of 1,2,3 is (1 + 2 + 3) / 3 = 6/3 = 2</div>
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="84B9I1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">ntiles</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">ntiles</h1>
                 
             
-            <article>
+            
                 
 <p class="cdpalignleft1">The ntiles is a popular aggregation over a window and is commonly used to divide input dataset into n parts. For example, in predictive analytics, deciles (10 parts) are often used to first group the data and then divide it into 10 parts to get a fair distribution of data. This is a natural function of the window function approach, hence ntiles is a good example of how window functions can help.</p>
 <p class="cdpalignleft1">For example, if we want to partition the <kbd class="calibre11">statesPopulationDF</kbd> by <kbd class="calibre11">State</kbd> (window specification was shown previously), order by population, and then divide into two portions, we can use <kbd class="calibre11">ntile</kbd> over the <kbd class="calibre11">windowspec</kbd>:</p>
@@ -1091,23 +1089,23 @@ Average of 1,2,3 is (1 + 2 + 3) / 3 = 6/3 = 2</div>
 <strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>scala&gt; statesPopulationDF.select(col("State"), col("Year"), ntile(2).over(windowSpec), rank().over(windowSpec)).sort("State", "Year").show(10)</strong><br class="title-page-name"/>+-------+----+-----------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------+<br class="title-page-name"/>| State|Year|ntile(2) OVER (PARTITION BY State ORDER BY Population DESC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)|RANK() OVER (PARTITION BY State ORDER BY Population DESC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)|<br class="title-page-name"/>+-------+----+-----------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------+<br class="title-page-name"/>|Alabama|2010| 2| 6|<br class="title-page-name"/>|Alabama|2011| 2| 7|<br class="title-page-name"/>|Alabama|2012| 2| 5|<br class="title-page-name"/>|Alabama|2013| 1| 4|<br class="title-page-name"/>|Alabama|2014| 1| 3|<br class="title-page-name"/>|Alabama|2015| 1| 2|<br class="title-page-name"/>|Alabama|2016| 1| 1|<br class="title-page-name"/>| Alaska|2010| 2| 7|<br class="title-page-name"/>| Alaska|2011| 2| 6|<br class="title-page-name"/>| Alaska|2012| 2| 5|<br class="title-page-name"/>+-------+----+-----------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------
 </pre>
 <p class="mce-root">As shown previously, we have used <kbd class="calibre11">Window</kbd> function and <kbd class="calibre11">ntile()</kbd> together to divide the rows of each <kbd class="calibre11">State</kbd> into two equal portions.</p>
-<div class="packt_tip"><br class="calibre23"/>
+<div><br class="calibre23"/>
 A popular use of this function is to compute deciles used in data science Models.</div>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="859Q41-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Joins</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Joins</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">In traditional databases, joins are used to join one transaction table with another lookup table to generate a more complete view. For example, if you have a table of online transactions by customer ID and another table containing the customer city and customer ID, you can use join to generate reports on the transactions by city.</p>
 <p class="mce-root"><strong class="calibre1">Transactions table</strong>: The following table has three columns, the <strong class="calibre1">CustomerID</strong>, the <strong class="calibre1">Purchased item,</strong> and how much the customer paid for the item:</p>
@@ -1258,81 +1256,79 @@ A popular use of this function is to compute deciles used in data science Models
 <strong class="calibre1">join(right: dataset[_]): DataFrame</strong><br class="title-page-name"/>Condition-less inner join<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">join(right: dataset[_], usingColumn: String): DataFrame</strong><br class="title-page-name"/>Inner join with a single column<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">join(right: dataset[_], usingColumns: Seq[String]): DataFrame </strong><br class="title-page-name"/>Inner join with multiple columns<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">join(right: dataset[_], usingColumns: Seq[String], joinType: String): DataFrame</strong><br class="title-page-name"/>Join with multiple columns and a join type (inner, outer,....)<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">join(right: dataset[_], joinExprs: Column): DataFrame</strong><br class="title-page-name"/>Inner Join using a join expression<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">join(right: dataset[_], joinExprs: Column, joinType: String): DataFrame </strong><br class="title-page-name"/>Join using a Join expression and a join type (inner, outer, ...)
 </pre>
 <p class="mce-root">We will use one of the APIs to understand how to use join APIs ; however, you can choose to use other APIs depending on the use case:</p>
-<div class="title-page-name">
-<div class="title-page-name">
-<pre class="calibre19">
-<strong class="calibre1"><span><span>def</span> </span> <span> <span>join</span><span>(right: dataset[_], joinExprs: Column, joinType: <span>String</span>)</span><span>: DataFrame</span> <br class="title-page-name"/></span></strong>Join with another DataFrame using the given join expression<br class="title-page-name"/><br class="title-page-name"/>right: Right side of the join.<br class="title-page-name"/>joinExprs: Join expression.<br class="title-page-name"/>joinType : Type of join to perform. Default is <em class="calibre8">inner</em> join<br class="title-page-name"/><br class="title-page-name"/><span>// Scala:</span><br class="title-page-name"/><strong class="calibre1"><span>import</span> org.apache.spark.sql.functions._<br class="title-page-name"/>import spark.implicits._</strong><br class="title-page-name"/><strong class="calibre1">df1.join(df2, $<span>"df1Key"</span> === $<span>"df2Key"</span>, <span>"outer"</span>)<br class="title-page-name"/></strong>
+<div><div><pre class="calibre19">
+<strong class="calibre1">def   join(right: dataset[_], joinExprs: Column, joinType: String): DataFrame <br class="title-page-name"/></strong>Join with another DataFrame using the given join expression<br class="title-page-name"/><br class="title-page-name"/>right: Right side of the join.<br class="title-page-name"/>joinExprs: Join expression.<br class="title-page-name"/>joinType : Type of join to perform. Default is <em class="calibre8">inner</em> join<br class="title-page-name"/><br class="title-page-name"/>// Scala:<br class="title-page-name"/><strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/>import spark.implicits._</strong><br class="title-page-name"/><strong class="calibre1">df1.join(df2, $"df1Key" === $"df2Key", "outer")<br class="title-page-name"/></strong>
 </pre></div>
 </div>
 <p class="mce-root">Note that joins will be covered in detail in the next few sections.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="868AM1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Inner workings of join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Inner workings of join</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Join works by operating on the partitions of a DataFrame using the multiple executors. However, the actual operations and the subsequent performance depends on the type of <kbd class="calibre11">join</kbd> and the nature of the datasets being joined. In the next section, we will look at the types of joins.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="876R81-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Shuffle join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Shuffle join</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Join between two big datasets involves shuffle join where partitions of both left and right datasets are spread across the executors. Shuffles are expensive and it's important to analyze the logic to make sure the distribution of partitions and shuffles is done optimally. The following is an illustration of how shuffle join works internally:</p>
-<div class="cdpaligncenter"><img class="image-border96" src="../images/00166.jpeg"/></div>
+<div><img class="image-border96" src="img/00166.jpeg"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     
 
-        <section id="885BQ1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Broadcast join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Broadcast join</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">A join between one large dataset and a smaller dataset can be done by broadcasting the smaller dataset to all executors where a partition from the left dataset exists. The following is an illustration of how a broadcast join works internally:</p>
-<div class="cdpaligncenter"><img class="image-border97" src="../images/00194.jpeg"/></div>
+<div><img class="image-border97" src="img/00194.jpeg"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     
 
-        <section id="893SC1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Join types</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Join types</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">The following is a table of the different types of joins. This is important, as the choice made when joining two datasets makes all the difference in the output, and also the performance.</p>
 <table class="calibre24">
@@ -1357,7 +1353,7 @@ A popular use of this function is to compute deciles used in data science Models
 </tr>
 <tr class="calibre6">
 <td class="calibre7"><strong class="calibre1">leftanti</strong></td>
-<td class="calibre7"><span>The leftanti Join gives</span> <span>only</span> <span>rows in <em class="calibre8">left</em> based on non-existence on <em class="calibre8">right</em> side.</span></td>
+<td class="calibre7">The leftanti Join gives only rows in <em class="calibre8">left</em> based on non-existence on <em class="calibre8">right</em> side.</td>
 </tr>
 <tr class="calibre6">
 <td class="calibre7"><strong class="calibre1">left, leftouter</strong></td>
@@ -1369,7 +1365,7 @@ A popular use of this function is to compute deciles used in data science Models
 </tr>
 <tr class="calibre6">
 <td class="calibre7"><strong class="calibre1">right, rightouter</strong></td>
-<td class="calibre7"><span>The rightouter Join gives all rows in <em class="calibre8">right</em> plus common rows of <em class="calibre8">left</em> and <em class="calibre8">right</em> (inner join). Fills in NULL if not in <em class="calibre8">left</em>.</span></td>
+<td class="calibre7">The rightouter Join gives all rows in <em class="calibre8">right</em> plus common rows of <em class="calibre8">left</em> and <em class="calibre8">right</em> (inner join). Fills in NULL if not in <em class="calibre8">left</em>.</td>
 </tr>
 </tbody>
 </table>
@@ -1380,22 +1376,22 @@ A popular use of this function is to compute deciles used in data science Models
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8A2CU1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Inner join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Inner join</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">Inner join results in rows from both <kbd class="calibre11">statesPopulationDF</kbd> and <kbd class="calibre11">statesTaxRatesDF</kbd> when state is non-NULL in both datasets.</p>
-<div class="cdpaligncenter"><img class="image-border98" src="../images/00095.jpeg"/></div>
+<div><img class="image-border98" src="img/00095.jpeg"/></div>
 <p class="mce-root">Join the two datasets by the state column as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">val joinDF = statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State") === statesTaxRatesDF("State"), "inner")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">%sql</strong><br class="title-page-name"/><strong class="calibre1">val joinDF = spark.sql("SELECT * FROM statesPopulationDF INNER JOIN statesTaxRatesDF ON statesPopulationDF.State = statesTaxRatesDF.State")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.count</strong><br class="title-page-name"/>res22: Long = 329<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.show</strong><br class="title-page-name"/>+--------------------+----+----------+--------------------+-------+<br class="title-page-name"/>| State|Year|Population| State|TaxRate|<br class="title-page-name"/>+--------------------+----+----------+--------------------+-------+<br class="title-page-name"/>| Alabama|2010| 4785492| Alabama| 4.0|<br class="title-page-name"/>| Arizona|2010| 6408312| Arizona| 5.6|<br class="title-page-name"/>| Arkansas|2010| 2921995| Arkansas| 6.5|<br class="title-page-name"/>| California|2010| 37332685| California| 7.5|<br class="title-page-name"/>| Colorado|2010| 5048644| Colorado| 2.9|<br class="title-page-name"/>| Connecticut|2010| 3579899| Connecticut| 6.35|
@@ -1406,152 +1402,152 @@ A popular use of this function is to compute deciles used in data science Models
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8B0TG1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Left outer join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Left outer join</h1>
                 
             
-            <article>
+            
                 
-<p class="mce-root">Left outer join results in all rows from <span><kbd class="calibre11">statesPopulationDF</kbd>, including any common in</span> <kbd class="calibre11">statesPopulationDF</kbd> and <kbd class="calibre11">statesTaxRatesDF</kbd>.</p>
-<div class="cdpaligncenter"><img class="image-border99" src="../images/00273.jpeg"/></div>
-<p class="cdpalignleft1"><span>Join the two datasets by the state column, shown as follows:</span></p>
+<p class="mce-root">Left outer join results in all rows from <kbd class="calibre11">statesPopulationDF</kbd>, including any common in <kbd class="calibre11">statesPopulationDF</kbd> and <kbd class="calibre11">statesTaxRatesDF</kbd>.</p>
+<div><img class="image-border99" src="img/00273.jpeg"/></div>
+<p class="cdpalignleft1">Join the two datasets by the state column, shown as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">val joinDF = statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State") === statesTaxRatesDF("State"), "leftouter")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">%sql</strong><br class="title-page-name"/><strong class="calibre1">val joinDF = spark.sql("SELECT * FROM statesPopulationDF LEFT OUTER JOIN statesTaxRatesDF ON statesPopulationDF.State = statesTaxRatesDF.State")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.count</strong><br class="title-page-name"/>res22: Long = 357<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.show(5)</strong><br class="title-page-name"/>+----------+----+----------+----------+-------+<br class="title-page-name"/>| State|Year|Population| State|TaxRate|<br class="title-page-name"/>+----------+----+----------+----------+-------+<br class="title-page-name"/>| Alabama|2010| 4785492| Alabama| 4.0|<br class="title-page-name"/>| Alaska|2010| 714031| null| null|<br class="title-page-name"/>| Arizona|2010| 6408312| Arizona| 5.6|<br class="title-page-name"/>| Arkansas|2010| 2921995| Arkansas| 6.5|<br class="title-page-name"/>|California|2010| 37332685|California| 7.5|<br class="title-page-name"/>+----------+----+----------+----------+-------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8BVE21-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Right outer join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Right outer join</h1>
                 
             
-            <article>
+            
                 
-<p class="mce-root"><span>Right outer join results in all rows from <kbd class="calibre11">statesTaxRatesDF</kbd></span><span>, including any common in</span> <span><kbd class="calibre11">statesPopulationDF</kbd> and <kbd class="calibre11">statesTaxRatesDF</kbd></span><span>.</span></p>
-<div class="cdpaligncenter"><img class="image-border100" src="../images/00319.jpeg"/></div>
-<p class="mce-root"><span>Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</span></p>
+<p class="mce-root">Right outer join results in all rows from <kbd class="calibre11">statesTaxRatesDF</kbd>, including any common in <kbd class="calibre11">statesPopulationDF</kbd> and <kbd class="calibre11">statesTaxRatesDF</kbd>.</p>
+<div><img class="image-border100" src="img/00319.jpeg"/></div>
+<p class="mce-root">Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">val joinDF = statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State") === statesTaxRatesDF("State"), "rightouter")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">%sql</strong><br class="title-page-name"/><strong class="calibre1">val joinDF = spark.sql("SELECT * FROM statesPopulationDF RIGHT OUTER JOIN statesTaxRatesDF ON statesPopulationDF.State = statesTaxRatesDF.State")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.count</strong><br class="title-page-name"/>res22: Long = 323<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.show</strong><br class="title-page-name"/>+--------------------+----+----------+--------------------+-------+<br class="title-page-name"/>| State|Year|Population| State|TaxRate|<br class="title-page-name"/>+--------------------+----+----------+--------------------+-------+<br class="title-page-name"/>| Colorado|2011| 5118360| Colorado| 2.9|<br class="title-page-name"/>| Colorado|2010| 5048644| Colorado| 2.9|<br class="title-page-name"/>| null|null| null|Connecticut| 6.35|<br class="title-page-name"/>| Florida|2016| 20612439| Florida| 6.0|<br class="title-page-name"/>| Florida|2015| 20244914| Florida| 6.0|<br class="title-page-name"/>| Florida|2014| 19888741| Florida| 6.0|
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8CTUK1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Outer join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Outer join</h1>
                 
             
-            <article>
+            
                 
-<p class="mce-root"><span>Outer join results in all rows from</span> <span><kbd class="calibre11">statesPopulationDF</kbd> and <kbd class="calibre11">statesTaxRatesDF</kbd></span><span>.</span></p>
-<div class="cdpaligncenter"><img class="image-border101" src="../images/00245.jpeg"/></div>
-<p class="cdpalignleft1"><span>Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</span></p>
+<p class="mce-root">Outer join results in all rows from <kbd class="calibre11">statesPopulationDF</kbd> and <kbd class="calibre11">statesTaxRatesDF</kbd>.</p>
+<div><img class="image-border101" src="img/00245.jpeg"/></div>
+<p class="cdpalignleft1">Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">val joinDF = statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State") === statesTaxRatesDF("State"), "fullouter")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">%sql</strong><br class="title-page-name"/><strong class="calibre1">val joinDF = spark.sql("SELECT * FROM statesPopulationDF FULL OUTER JOIN statesTaxRatesDF ON statesPopulationDF.State = statesTaxRatesDF.State")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.count</strong><br class="title-page-name"/>res22: Long = 351<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.show</strong><br class="title-page-name"/>+--------------------+----+----------+--------------------+-------+<br class="title-page-name"/>| State|Year|Population| State|TaxRate|<br class="title-page-name"/>+--------------------+----+----------+--------------------+-------+<br class="title-page-name"/>| Delaware|2010| 899816| null| null|<br class="title-page-name"/>| Delaware|2011| 907924| null| null|<br class="title-page-name"/>| West Virginia|2010| 1854230| West Virginia| 6.0|<br class="title-page-name"/>| West Virginia|2011| 1854972| West Virginia| 6.0|<br class="title-page-name"/>| Missouri|2010| 5996118| Missouri| 4.225|<br class="title-page-name"/>| null|null| null|  Connecticut|   6.35|
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8DSF61-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Left anti join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Left anti join</h1>
                 
             
-            <article>
+            
                 
-<p class="mce-root"><span>Left anti join results in rows from only</span> <span><kbd class="calibre11">statesPopulationDF</kbd> if, and only if, there is NO corresponding row in</span> <kbd class="calibre11"><span>statesTaxRatesDF</span></kbd><span>.</span></p>
-<div class="cdpaligncenter"><img class="image-border102" src="../images/00072.jpeg"/></div>
-<p class="cdpalignleft1"><span>Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</span></p>
+<p class="mce-root">Left anti join results in rows from only <kbd class="calibre11">statesPopulationDF</kbd> if, and only if, there is NO corresponding row in <kbd class="calibre11">statesTaxRatesDF</kbd>.</p>
+<div><img class="image-border102" src="img/00072.jpeg"/></div>
+<p class="cdpalignleft1">Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">val joinDF = statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State") === statesTaxRatesDF("State"), "leftanti")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">%sql</strong><br class="title-page-name"/><strong class="calibre1">val joinDF = spark.sql("SELECT * FROM statesPopulationDF LEFT ANTI JOIN statesTaxRatesDF ON statesPopulationDF.State = statesTaxRatesDF.State")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.count</strong><br class="title-page-name"/>res22: Long = 28<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.show(5)</strong><br class="title-page-name"/>+--------+----+----------+<br class="title-page-name"/>| State|Year|Population|<br class="title-page-name"/>+--------+----+----------+<br class="title-page-name"/>| Alaska|2010| 714031|<br class="title-page-name"/>|Delaware|2010| 899816|<br class="title-page-name"/>| Montana|2010| 990641|<br class="title-page-name"/>| Oregon|2010| 3838048|<br class="title-page-name"/>| Alaska|2011| 722713|<br class="title-page-name"/>+--------+----+----------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8EQVO1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Left semi join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Left semi join</h1>
                 
             
-            <article>
+            
                 
-<p class="mce-root"><span>Left semi join results in rows from only</span> <span><kbd class="calibre11">statesPopulationDF</kbd> if, and only if, there is a corresponding row in <kbd class="calibre11">statesTaxRatesDF</kbd>.</span></p>
-<div class="cdpaligncenter"><img class="image-border103" src="../images/00097.jpeg"/></div>
-<p class="cdpalignleft1"><span>Join the two datasets by the state column as follows:</span></p>
+<p class="mce-root">Left semi join results in rows from only <kbd class="calibre11">statesPopulationDF</kbd> if, and only if, there is a corresponding row in <kbd class="calibre11">statesTaxRatesDF</kbd>.</p>
+<div><img class="image-border103" src="img/00097.jpeg"/></div>
+<p class="cdpalignleft1">Join the two datasets by the state column as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">val joinDF = statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State") === statesTaxRatesDF("State"), "leftsemi")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">%sql</strong><br class="title-page-name"/><strong class="calibre1">val joinDF = spark.sql("SELECT * FROM statesPopulationDF LEFT SEMI JOIN statesTaxRatesDF ON statesPopulationDF.State = statesTaxRatesDF.State")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.count</strong><br class="title-page-name"/>res22: Long = 322<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.show(5)</strong><br class="title-page-name"/>+----------+----+----------+<br class="title-page-name"/>| State|Year|Population|<br class="title-page-name"/>+----------+----+----------+<br class="title-page-name"/>| Alabama|2010| 4785492|<br class="title-page-name"/>| Arizona|2010| 6408312|<br class="title-page-name"/>| Arkansas|2010| 2921995|<br class="title-page-name"/>|California|2010| 37332685|<br class="title-page-name"/>| Colorado|2010| 5048644|<br class="title-page-name"/>+----------+----+----------+
 </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8FPGA1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Cross join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Cross join</h1>
                 
             
-            <article>
+            
                 
-<p class="mce-root"><span>Cross join matches every row from</span> <em class="calibre8">left</em> <span>with every row from</span> <em class="calibre8">right,</em> <span>generating a Cartesian cross product</span>.</p>
-<div class="cdpaligncenter"><img class="image-border104" src="../images/00312.jpeg"/></div>
-<p class="cdpalignleft1"><span>Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</span></p>
+<p class="mce-root">Cross join matches every row from <em class="calibre8">left</em> with every row from <em class="calibre8">right,</em> generating a Cartesian cross product.</p>
+<div><img class="image-border104" src="img/00312.jpeg"/></div>
+<p class="cdpalignleft1">Join the two datasets by the <kbd class="calibre11">State</kbd> column as follows:</p>
 <pre class="calibre19">
 <strong class="calibre1">scala&gt; val joinDF=statesPopulationDF.crossJoin(statesTaxRatesDF)</strong><br class="title-page-name"/><strong class="calibre1">joinDF: org.apache.spark.sql.DataFrame = [State: string, Year: int ... 3 more fields]</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">%sql</strong><br class="title-page-name"/><strong class="calibre1">val joinDF = spark.sql("SELECT * FROM statesPopulationDF CROSS JOIN statesTaxRatesDF")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.count</strong><br class="title-page-name"/>res46: Long = 16450<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; joinDF.show(10)</strong><br class="title-page-name"/>+-------+----+----------+-----------+-------+<br class="title-page-name"/>| State|Year|Population| State|TaxRate|<br class="title-page-name"/>+-------+----+----------+-----------+-------+<br class="title-page-name"/>|Alabama|2010| 4785492| Alabama| 4.0|<br class="title-page-name"/>|Alabama|2010| 4785492| Arizona| 5.6|<br class="title-page-name"/>|Alabama|2010| 4785492| Arkansas| 6.5|<br class="title-page-name"/>|Alabama|2010| 4785492| California| 7.5|<br class="title-page-name"/>|Alabama|2010| 4785492| Colorado| 2.9|<br class="title-page-name"/>|Alabama|2010| 4785492|Connecticut| 6.35|<br class="title-page-name"/>|Alabama|2010| 4785492| Florida| 6.0|<br class="title-page-name"/>|Alabama|2010| 4785492| Georgia| 4.0|<br class="title-page-name"/>|Alabama|2010| 4785492| Hawaii| 4.0|<br class="title-page-name"/>|Alabama|2010| 4785492| Idaho| 6.0|<br class="title-page-name"/>+-------+----+----------+-----------+-------+
 </pre>
-<div class="packt_tip">You can also use join with cross jointype instead of calling the cross join API. <kbd class="calibre22">statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State").isNotNull, "cross").count</kbd>.</div>
+<p>You can also use join with cross jointype instead of calling the cross join API. <kbd class="calibre22">statesPopulationDF.join(statesTaxRatesDF, statesPopulationDF("State").isNotNull, "cross").count</kbd>.</p>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     
 
-        <section id="8GO0S1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Performance implications of join</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Performance implications of join</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">The join type chosen directly impacts the performance of the join. This is because joins require the shuffling of data between executors to execute the tasks, hence different joins, and even the order of the joins, need to be considered when using join.</p>
 <p class="mce-root">The following is a table you could use to refer to when writing <kbd class="calibre11">Join</kbd> code:</p>
@@ -1577,7 +1573,7 @@ A popular use of this function is to compute deciles used in data science Models
 </tr>
 <tr class="calibre6">
 <td class="calibre7"><strong class="calibre1">leftanti</strong></td>
-<td class="calibre7"><span>Leftanti Join gives</span> <span>only</span> <span>rows in <em class="calibre8">left</em> based on non-existence on <em class="calibre8">right</em> side. Very good performance, as only one table is fully considered and the other is only checked for the join condition.</span></td>
+<td class="calibre7">Leftanti Join gives only rows in <em class="calibre8">left</em> based on non-existence on <em class="calibre8">right</em> side. Very good performance, as only one table is fully considered and the other is only checked for the join condition.</td>
 </tr>
 <tr class="calibre6">
 <td class="calibre7"><strong class="calibre1">left, leftouter</strong></td>
@@ -1585,37 +1581,37 @@ A popular use of this function is to compute deciles used in data science Models
 </tr>
 <tr class="calibre6">
 <td class="calibre7"><strong class="calibre1">leftsemi</strong></td>
-<td class="calibre7">Leftsemi Join gives only rows in <em class="calibre8">left</em> based on existence on <em class="calibre8">right</em> side. Does not include <em class="calibre8">right</em> side values. <span>Very good performance, as only one table is fully considered and other is only checked for the join condition.</span></td>
+<td class="calibre7">Leftsemi Join gives only rows in <em class="calibre8">left</em> based on existence on <em class="calibre8">right</em> side. Does not include <em class="calibre8">right</em> side values. Very good performance, as only one table is fully considered and other is only checked for the join condition.</td>
 </tr>
 <tr class="calibre6">
 <td class="calibre7"><strong class="calibre1">right, rightouter</strong></td>
-<td class="calibre7"><span>Rightouter Join gives all rows in <em class="calibre8">right</em> plus common rows of <em class="calibre8">left</em> and <em class="calibre8">right</em> (inner join). Fills in NULL if not in <em class="calibre8">left</em>. Performance is similar to the leftouter join mentioned previously in this table.</span></td>
+<td class="calibre7">Rightouter Join gives all rows in <em class="calibre8">right</em> plus common rows of <em class="calibre8">left</em> and <em class="calibre8">right</em> (inner join). Fills in NULL if not in <em class="calibre8">left</em>. Performance is similar to the leftouter join mentioned previously in this table.</td>
 </tr>
 </tbody>
 </table>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section id="8HMHE1-21aec46d8593429cacea59dbdcd64e1c">
+        
 
-                            <header>
-                    </header><h1 class="header-title" id="calibre_pb_0">Summary</h1>
+                            
+                    <h1 class="header-title" id="calibre_pb_0">Summary</h1>
                 
             
-            <article>
+            
                 
 <p class="mce-root">In this chapter, we discussed the origin of DataFrames and how Spark SQL provides the SQL interface on top of DataFrames. The power of DataFrames is such that execution times have decreased manyfold over original RDD-based computations. Having such a powerful layer with a simple SQL-like interface makes them all the more powerful. We also looked at various APIs to create, and manipulate DataFrames, as well as digging deeper into the sophisticated features of aggregations, including <kbd class="calibre11">groupBy</kbd>, <kbd class="calibre11">Window</kbd>, <kbd class="calibre11">rollup</kbd>, and <kbd class="calibre11">cubes</kbd>. Finally, we also looked at the concept of joining datasets and the various types of joins possible, such as inner, outer, cross, and so on.</p>
-<p class="mce-root">In the next chapter, we will explore the exciting world of real-time data processing and analytics in the <a href="part0288.html#8IL201-21aec46d8593429cacea59dbdcd64e1c" class="calibre10">Chapter 9</a>, <span><em class="calibre8">Stream Me Up, Scotty - Spark Streaming</em>.</span></p>
+<p class="mce-root">In the next chapter, we will explore the exciting world of real-time data processing and analytics in the <a href="part0288.html#8IL201-21aec46d8593429cacea59dbdcd64e1c" class="calibre10">Chapter 9</a>, <em class="calibre8">Stream Me Up, Scotty - Spark Streaming</em>.</p>
 <p class="mce-root"> </p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </body></html>

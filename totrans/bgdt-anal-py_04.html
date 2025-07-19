@@ -1,12 +1,9 @@
 <html><head></head><body>
-		<div class="Content" id="_idContainer071">
-			<h1 id="_idParaDest-98"><em class="italics"><a id="_idTextAnchor105"/>Chapter 4</em></h1>
+		<div><h1 id="_idParaDest-98"><em class="italics"><a id="_idTextAnchor105"/>Chapter 4</em></h1>
 		</div>
-		<div class="Content" id="_idContainer072">
-			<h1 id="_idParaDest-99"><a id="_idTextAnchor106"/>Diving Deeper with Spark</h1>
+		<div><h1 id="_idParaDest-99"><a id="_idTextAnchor106"/>Diving Deeper with Spark</h1>
 		</div>
-		<div class="Content" id="_idContainer073">
-			<h2>Learning Objectives</h2>
+		<div><h2>Learning Objectives</h2>
 			<p>By the end of this chapter, you will be able to:</p>
 			<ul>
 				<li class="bullets">Implement the basic Spark DataFrame API</li>
@@ -16,8 +13,7 @@
 			</ul>
 			<p>In this chapter, we will use the Spark as an analysis tool for big datasets.</p>
 		</div>
-		<div class="Content" id="_idContainer102">
-			<h2 id="_idParaDest-100"><a id="_idTextAnchor107"/>Introduction</h2>
+		<div><h2 id="_idParaDest-100"><a id="_idTextAnchor107"/>Introduction</h2>
 			<p>The last chapter introduced us to one of the most popular distributed data processing platforms used to process big data—Spark.</p>
 			<p>In this chapter, we will learn more about how to work with Spark and Spark DataFrames using its Python API—<strong class="bold">PySpark</strong>. It gives us the capability to process petabyte-scale data, but also implements <strong class="bold">machine learning</strong> (<strong class="bold">ML</strong>) algorithms at petabyte scale in real time. This chapter will focus on the data processing part using Spark DataFrames in PySpark.</p>
 			<h4>Note</h4>
@@ -29,14 +25,14 @@
 			<p>To get started with Spark DataFrames, we will have to create something called a SparkContext first. SparkContext configures the internal services under the hood and facilitates command execution from the Spark execution environment.</p>
 			<h4>Note</h4>
 			<p class="callout">We will be using Spark version 2.1.1, running on Python 3.7.1. Spark and Python are installed on a MacBook Pro, running macOS Mojave version 10.14.3, with a 2.7 GHz Intel Core i5 processor and 8 GB 1867 MHz DDR3 RAM.</p>
-			<p>The following code snippet is used to create <strong class="inline">SparkContext</strong>:</p>
-			<p class="snippet">from pyspark import SparkContext</p>
-			<p class="snippet">sc = SparkContext()<a id="_idTextAnchor109"/></p>
+			<p>The following code snippet is used to create <code>SparkContext</code>:</p>
+			<pre>from pyspark import SparkContext
+sc = SparkContext()<a id="_idTextAnchor109"/></pre>
 			<h4>Note</h4>
-			<p class="callout">In case you are working in the PySpark shell, you should skip this step, as the shell automatically creates the <strong class="inline">sc (SparkContext)</strong> variable when it is started. However, be sure to create the <strong class="inline">sc</strong> variable while creating a PySpark script or working with Jupyter Notebook, or your code will throw an error.</p>
-			<p>We also need to create an <strong class="inline">SQLContext</strong> before we can start working with DataFrames. <strong class="inline">SQLContext</strong> in Spark is a class that provides SQL-like functionality within Spark. We can create <strong class="inline">SQLContext</strong> using <strong class="inline">SparkContext</strong>:</p>
-			<p class="snippet">from pyspark.sql import SQLContext</p>
-			<p class="snippet">sqlc = SQLContext(sc)</p>
+			<p class="callout">In case you are working in the PySpark shell, you should skip this step, as the shell automatically creates the <code>sc (SparkContext)</code> variable when it is started. However, be sure to create the <code>sc</code> variable while creating a PySpark script or working with Jupyter Notebook, or your code will throw an error.</p>
+			<p>We also need to create an <code>SQLContext</code> before we can start working with DataFrames. <code>SQLContext</code> in Spark is a class that provides SQL-like functionality within Spark. We can create <code>SQLContext</code> using <code>SparkContext</code>:</p>
+			<pre>from pyspark.sql import SQLContext
+sqlc = SQLContext(sc)</pre>
 			<p>There are three different ways of creating a DataFrame in Spark:</p>
 			<ul>
 				<li>We can programmatically specify the schema of the DataFrame and manually enter the data in it. However, since Spark is generally used to handle big data, this method is of little use, apart from creating data for small test/sample cases.</li>
@@ -46,28 +42,39 @@
 			<h3 id="_idParaDest-102"><a id="_idTextAnchor110"/>Exercise 24: Specifying the Schema of a DataFrame</h3>
 			<p>In this exercise, we will create a small sample DataFrame by manually specifying the schema and entering data in Spark. Even though this method has little application in a practical scenario, it will be a good starting point in getting started with Spark DataFrames:</p>
 			<ol>
-				<li>Importing the necessary files:<p class="snippet">from pyspark import SparkContext</p><p class="snippet">sc = SparkContext()</p><p class="snippet">from pyspark.sql import SQLContext</p><p class="snippet">sqlc = SQLContext(sc)</p></li>
-				<li>Import SQL utilities from the PySpark module and specify the schema of the sample DataFrame:<p class="snippet">from pyspark.sql import *</p><p class="snippet">na_schema = Row("Name","Age")</p></li>
-				<li>Create rows for the DataFrame as per the specified schema:<p class="snippet">row1 = na_schema("Ankit", 23)</p><p class="snippet">row2 = na_schema("Tyler", 26)</p><p class="snippet">row3 = na_schema("Preity", 36)</p></li>
-				<li>Combine the rows together to create the DataFrame:<p class="snippet">na_list = [row1, row2, row3]</p><p class="snippet">df_na = sqlc.createDataFrame(na_list)</p><p class="snippet">type(df_na)</p></li>
-				<li>Now, show the DataFrame using the following command:<p class="snippet">df_na.show()</p><p>The output is as follows:</p><div class="IMG---Figure" id="_idContainer074"><img alt="Figure 4.1: Sample PySpark DataFrame" src="image/C12913_04_01.jpg"/></div></li>
+				<li>Importing the necessary files:<pre>from pyspark import SparkContext
+sc = SparkContext()
+from pyspark.sql import SQLContext
+sqlc = SQLContext(sc)</pre></li>
+				<li>Import SQL utilities from the PySpark module and specify the schema of the sample DataFrame:<pre>from pyspark.sql import *
+na_schema = Row("Name","Age")</pre></li>
+				<li>Create rows for the DataFrame as per the specified schema:<pre>row1 = na_schema("Ankit", 23)
+row2 = na_schema("Tyler", 26)
+row3 = na_schema("Preity", 36)</pre></li>
+				<li>Combine the rows together to create the DataFrame:<pre>na_list = [row1, row2, row3]
+df_na = sqlc.createDataFrame(na_list)
+type(df_na)</pre></li>
+				<li>Now, show the DataFrame using the following command:<pre>df_na.show()</pre><p>The output is as follows:</p><div><img alt="Figure 4.1: Sample PySpark DataFrame" src="img/C12913_04_01.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.1: Sample PySpark DataFrame</h6>
 			<h3 id="_idParaDest-103"><a id="_idTextAnchor111"/>Exercise 25: Creating a DataFrame from an Existing RDD</h3>
 			<p>In this exercise, we will create a small sample DataFrame from an existing RDD object in Spark:</p>
 			<ol>
-				<li value="1">Create an RDD object that we will convert into DataFrame:<p class="snippet">data = [("Ankit",23),("Tyler",26),("Preity",36)]</p><p class="snippet">data_rdd = sc.parallelize(data)</p><p class="snippet">type(data_rdd)</p></li>
-				<li>Convert the RDD object into a DataFrame:<p class="snippet">data_sd = sqlc.createDataFrame(data_rdd)</p></li>
-				<li>Now, show the DataFrame using the following command:<p class="snippet">data_sd.show()</p><div class="IMG---Figure" id="_idContainer075"><img alt="Figure 4.2: DataFrame converted from the RDD object" src="image/C12913_04_02.jpg"/></div></li>
+				<li value="1">Create an RDD object that we will convert into DataFrame:<pre>data = [("Ankit",23),("Tyler",26),("Preity",36)]
+data_rdd = sc.parallelize(data)
+type(data_rdd)</pre></li>
+				<li>Convert the RDD object into a DataFrame:<pre>data_sd = sqlc.createDataFrame(data_rdd)</pre></li>
+				<li>Now, show the DataFrame using the following command:<pre>data_sd.show()</pre><div><img alt="Figure 4.2: DataFrame converted from the RDD object" src="img/C12913_04_02.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.2: DataFrame converted from the RDD object</h6>
 			<h3 id="_idParaDest-104"><a id="_idTextAnchor112"/>Exercise 25: Creating a DataFrame Using a CSV File</h3>
 			<p>A variety of different data sources can be used to create a DataFrame. In this exercise, we will use the open source Iris dataset, which can be found under datasets in the scikit-learn library. The Iris dataset is a multivariate dataset containing 150 records, with 50 records for each of the 3 species of Iris flower (Iris Setosa, Iris Virginica, and Iris Versicolor).</p>
-			<p>The dataset contains five attributes for each of the Iris species, namely, <strong class="inline">petal length</strong>, <strong class="inline">petal width</strong>, <strong class="inline">sepal length</strong>, <strong class="inline">sepal width</strong>, and <strong class="inline">species</strong>. We have stored this dataset in an external CSV file that we will read into Spark:</p>
+			<p>The dataset contains five attributes for each of the Iris species, namely, <code>petal length</code>, <code>petal width</code>, <code>sepal length</code>, <code>sepal width</code>, and <code>species</code>. We have stored this dataset in an external CSV file that we will read into Spark:</p>
 			<ol>
-				<li value="1">Download and install the PySpark CSV reader package from the Databricks website:<p class="snippet">pyspark –packages com.databricks:spark-csv_2.10:1.4.0</p></li>
-				<li>R<a id="_idTextAnchor113"/>ead the data from the CSV file into the Spark DataFrame:<p class="snippet">df = sqlc.read.format('com.databricks.spark.csv').options(header='true', inferschema='true').load('iris.csv')</p><p class="snippet">type(df)</p></li>
-				<li>Now, show the DataFrame using the following command:<p class="snippet">df.show(4)</p><div class="IMG---Figure" id="_idContainer076"><img alt="Figure 4.3: Iris DataFrame, first four rows" src="image/C12913_04_03.jpg"/></div></li>
+				<li value="1">Download and install the PySpark CSV reader package from the Databricks website:<pre>pyspark –packages com.databricks:spark-csv_2.10:1.4.0</pre></li>
+				<li>R<a id="_idTextAnchor113"/>ead the data from the CSV file into the Spark DataFrame:<pre>df = sqlc.read.format('com.databricks.spark.csv').options(header='true', inferschema='true').load('iris.csv')
+type(df)</pre></li>
+				<li>Now, show the DataFrame using the following command:<pre>df.show(4)</pre><div><img alt="Figure 4.3: Iris DataFrame, first four rows" src="img/C12913_04_03.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.3: Iris DataFrame, first four rows</h6>
 			<h4>Note for the Instructor</h4>
@@ -78,20 +85,24 @@
 			<h3 id="_idParaDest-106"><a id="_idTextAnchor115"/>Exercise 27: Converting a Spark DataFrame to a Pandas DataFrame</h3>
 			<p>In this exercise, we will use the pre-created Spark DataFrame of the Iris dataset in the previous exercise, and convert it into a local pandas DataFrame. We will then store this DataFrame into a CSV file. Perform the following steps:</p>
 			<ol>
-				<li value="1">Convert the Spark DataFrame into a pandas DataFrame using the following command:<p class="snippet">import pandas as pd</p><p class="snippet">df.toPandas()</p></li>
-				<li>Now use the following command to write the pandas DataFrame to a CSV file:<p class="snippet">df.toPandas().to_csv('iris.csv')</p><h4>Note</h4><p class="callout">Writing the contents of a Spark DataFrame to a CSV file requires a one-liner using the <strong class="inline">spark-csv</strong> package:</p><p class="callout"><strong class="inline">df.write.csv('iris.csv')</strong></p></li>
+				<li value="1">Convert the Spark DataFrame into a pandas DataFrame using the following command:<pre>import pandas as pd
+df.toPandas()</pre></li>
+				<li>Now use the following command to write the pandas DataFrame to a CSV file:<pre>df.toPandas().to_csv('iris.csv')</pre><h4>Note</h4><p class="callout">Writing the contents of a Spark DataFrame to a CSV file requires a one-liner using the <code>spark-csv</code> package:</p><p class="callout"><code>df.write.csv('iris.csv')</code></p></li>
 			</ol>
 			<h2 id="_idParaDest-107"><a id="_idTextAnchor116"/>Exploring Spark DataFrames</h2>
 			<p>One of the major advantages that the Spark DataFrames offer over the traditional RDDs is the ease of data use and exploration. The data is stored in a more structured tabular format in the DataFrames and hence is easier to make sense of. We can compute basic statistics such as the number of rows and columns, look at the schema, and compute summary statistics such as mean and standard deviation.</p>
 			<h3 id="_idParaDest-108"><a id="_idTextAnchor117"/>Exercise 28: Displaying Basic DataFrame Statistics</h3>
 			<p>In this exercise, we will show basic DataFrame statistics of the first few rows of the data, and summary statistics for all the numerical DataFrame columns and an individual DataFrame column:</p>
 			<ol>
-				<li value="1">Look at the DataFrame schema. The schema is displayed in a tree format on the console:<p class="snippet">df.printSchema()</p><div class="IMG---Figure" id="_idContainer077"><img alt="Figure 4.4: Iris DataFrame schema" src="image/Image39860.jpg"/></div><h6>Figure 4.4: Iris DataFrame schema</h6></li>
-				<li>Now, use the following command to print the column names of the Spark DataFrame:<p class="snippet">df.schema.names</p><div class="IMG---Figure" id="_idContainer078"><img alt="Figure 4.5: Iris column names" src="image/C12913_04_05.jpg"/></div><h6>Figure 4.5: Iris column names</h6></li>
-				<li>To retrieve the number of rows and columns present in the Spark DataFrame, use the following command:<p class="snippet">## Counting the number of rows in DataFrame</p><p class="snippet">df.count()#134</p><p class="snippet">## Counting the number of columns in DataFrame</p><p class="snippet">len(df.columns)#5</p></li>
-				<li>Let's fetch the first <em class="italics">n</em> rows of the data. We can do this by using the <strong class="inline">head()</strong> method. However, we use the <strong class="inline">show()</strong> method as it displays the data in a better format:<p class="snippet">df.show(4)</p><p>The output is as follows:</p><div class="IMG---Figure" id="_idContainer079"><img alt="Figure 4.6: Iris DataFrame, first four rows" src="image/C12913_04_06.jpg"/></div><h6>Figure 4.6: Iris DataFrame, first four rows</h6></li>
-				<li>Now, compute the summary statistics, such as mean and standard deviation, for all the numerical columns in the DataFrame:<p class="snippet">df.describe().show()</p><p>The output is as follows:</p><div class="IMG---Figure" id="_idContainer080"><img alt="Figure 4.7: Iris DataFrame, summary statistics" src="image/C12913_04_07.jpg"/></div><h6>Figure 4.7: Iris DataFrame, summary statistics</h6></li>
-				<li>To compute the summary statistics for an individual numerical column of a Spark DataFrame, use the following command:<p class="snippet">df.describe('Sepalwidth').show()</p><p>The output is as follows:</p><div class="IMG---Figure" id="_idContainer081"><img alt="Figure 4.8: Iris DataFrame, summary statistics of Sepalwidth column" src="image/C12913_04_08.jpg"/></div></li>
+				<li value="1">Look at the DataFrame schema. The schema is displayed in a tree format on the console:<pre>df.printSchema()</pre><div><img alt="Figure 4.4: Iris DataFrame schema" src="img/Image39860.jpg"/></div><h6>Figure 4.4: Iris DataFrame schema</h6></li>
+				<li>Now, use the following command to print the column names of the Spark DataFrame:<pre>df.schema.names</pre><div><img alt="Figure 4.5: Iris column names" src="img/C12913_04_05.jpg"/></div><h6>Figure 4.5: Iris column names</h6></li>
+				<li>To retrieve the number of rows and columns present in the Spark DataFrame, use the following command:<pre>## Counting the number of rows in DataFrame
+df.count()#134
+## Counting the number of columns in DataFrame
+len(df.columns)#5</pre></li>
+				<li>Let's fetch the first <em class="italics">n</em> rows of the data. We can do this by using the <code>head()</code> method. However, we use the <code>show()</code> method as it displays the data in a better format:<pre>df.show(4)</pre><p>The output is as follows:</p><div><img alt="Figure 4.6: Iris DataFrame, first four rows" src="img/C12913_04_06.jpg"/></div><h6>Figure 4.6: Iris DataFrame, first four rows</h6></li>
+				<li>Now, compute the summary statistics, such as mean and standard deviation, for all the numerical columns in the DataFrame:<pre>df.describe().show()</pre><p>The output is as follows:</p><div><img alt="Figure 4.7: Iris DataFrame, summary statistics" src="img/C12913_04_07.jpg"/></div><h6>Figure 4.7: Iris DataFrame, summary statistics</h6></li>
+				<li>To compute the summary statistics for an individual numerical column of a Spark DataFrame, use the following command:<pre>df.describe('Sepalwidth').show()</pre><p>The output is as follows:</p><div><img alt="Figure 4.8: Iris DataFrame, summary statistics of Sepalwidth column" src="img/C12913_04_08.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.8: Iris DataFrame, summary statistics of Sepalwidth column</h6>
 			<h3 id="_idParaDest-109"><a id="_idTextAnchor118"/>Activity 9: Getting Started with Spark DataFrames</h3>
@@ -110,53 +121,54 @@
 			<p>Data manipulation is a prerequisite for any data analysis. To draw meaningful insights from the data, we first need to understand, process, and massage the data. But this step becomes particularly hard with the increase in the size of data. Due to the scale of data, even simple operations such as filtering and sorting become complex coding problems. Spark DataFrames make data manipulation on big data a piece of cake.</p>
 			<p>Manipulating the data in Spark DataFrames is quite like working on regular pandas DataFrames. Most of the data manipulation operations on Spark DataFrames can be done using simple and intuitive one-liners. We will use the Spark DataFrame containing the Iris dataset that we created in previous exercises for these data manipulation exercises.</p>
 			<h3 id="_idParaDest-111"><a id="_idTextAnchor120"/>Exercise 29: Selecting and Renaming Columns from the DataFrame</h3>
-			<p>In this exercise, we will first rename the column using the <strong class="inline">withColumnRenamed</strong> method and then select and print the schema using the <strong class="inline">select</strong> method.</p>
+			<p>In this exercise, we will first rename the column using the <code>withColumnRenamed</code> method and then select and print the schema using the <code>select</code> method.</p>
 			<p>Perform the following steps:</p>
 			<ol>
-				<li value="1">Rename the columns of a Spark DataFrame using the <strong class="inline">withColumnRenamed()</strong> method:<p class="snippet">df = df.withColumnRenamed('Sepal.Width','Sepalwidth')</p><h4>Note</h4><p class="callout">Sp<a id="_idTextAnchor121"/>ark does not recognize column names containing a period(<strong class="inline">.</strong>). Make sure to rename them using this method.</p></li>
-				<li>Select a single column or multiple columns from a Spark DataFrame using the <strong class="inline">select</strong> method:<p class="snippet">df.select('Sepalwidth','Sepallength').show(4)</p><div class="IMG---Figure" id="_idContainer082"><img alt="Figure 4.9: Iris DataFrame, Sepalwidth and Sepallength column" src="image/C12913_04_09.jpg"/></div></li>
+				<li value="1">Rename the columns of a Spark DataFrame using the <code>withColumnRenamed()</code> method:<pre>df = df.withColumnRenamed('Sepal.Width','Sepalwidth')</pre><h4>Note</h4><p class="callout">Sp<a id="_idTextAnchor121"/>ark does not recognize column names containing a period(<code>.</code>). Make sure to rename them using this method.</p></li>
+				<li>Select a single column or multiple columns from a Spark DataFrame using the <code>select</code> method:<pre>df.select('Sepalwidth','Sepallength').show(4)</pre><div><img alt="Figure 4.9: Iris DataFrame, Sepalwidth and Sepallength column" src="img/C12913_04_09.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.9: Iris DataFrame, Sepalwidth and Sepallength column</h6>
 			<h3 id="_idParaDest-112"><a id="_idTextAnchor122"/>Exercise 30: Adding and Removing a Column from the DataFrame</h3>
-			<p>In this exercise, we will add a new column in the dataset using the <strong class="inline">withColumn</strong> method, and later, using the <strong class="inline">drop</strong> function, will remove it. Now, let's perform the following steps:</p>
+			<p>In this exercise, we will add a new column in the dataset using the <code>withColumn</code> method, and later, using the <code>drop</code> function, will remove it. Now, let's perform the following steps:</p>
 			<ol>
-				<li value="1">Add a new column in a Spark DataFrame using the <strong class="inline">withColumn</strong> method:<p class="snippet">df = df.withColumn('Half_sepal_width', df['Sepalwidth']/2.0)</p></li>
-				<li>Use the following command to show the dataset with the newly added column:<p class="snippet">df.show(4)</p><div class="IMG---Figure" id="_idContainer083"><img alt="Figure 4.10: Introducing new column, Half_sepal_width" src="image/C12913_04_10.jpg"/></div><h6>Figure 4.10: Introducing new column, Half_sepal_width</h6></li>
-				<li>Now, to remove a column in a Spark DataFrame, use the <strong class="inline">drop</strong> method illustrated here:<p class="snippet">df = df.drop('Half_sepal_width')</p></li>
-				<li>Let's show the dataset to verify that the column has been removed:<p class="snippet">df.show(4)</p><div class="IMG---Figure" id="_idContainer084"><img alt="Figure 4.11: Iris DataFrame after dropping the Half_sepal_width column" src="image/C12913_04_11.jpg"/></div></li>
+				<li value="1">Add a new column in a Spark DataFrame using the <code>withColumn</code> method:<pre>df = df.withColumn('Half_sepal_width', df['Sepalwidth']/2.0)</pre></li>
+				<li>Use the following command to show the dataset with the newly added column:<pre>df.show(4)</pre><div><img alt="Figure 4.10: Introducing new column, Half_sepal_width" src="img/C12913_04_10.jpg"/></div><h6>Figure 4.10: Introducing new column, Half_sepal_width</h6></li>
+				<li>Now, to remove a column in a Spark DataFrame, use the <code>drop</code> method illustrated here:<pre>df = df.drop('Half_sepal_width')</pre></li>
+				<li>Let's show the dataset to verify that the column has been removed:<pre>df.show(4)</pre><div><img alt="Figure 4.11: Iris DataFrame after dropping the Half_sepal_width column" src="img/C12913_04_11.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.11: Iris DataFrame after dropping the Half_sepal_width column</h6>
 			<h3 id="_idParaDest-113"><a id="_idTextAnchor123"/>Exercise 31: Displaying and Counting Distinct Values in a DataFrame</h3>
-			<p>To display the distinct values in a DataFrame, we use the <strong class="inline">distinct().show()</strong> method. Similarly, to count the distinct values, we will be using the <strong class="inline">distinct().count()</strong> method. Perform the following procedures to print the distinct values with the total count:</p>
+			<p>To display the distinct values in a DataFrame, we use the <code>distinct().show()</code> method. Similarly, to count the distinct values, we will be using the <code>distinct().count()</code> method. Perform the following procedures to print the distinct values with the total count:</p>
 			<ol>
-				<li value="1">Select the distinct values in any column of a Spark DataFrame using the <strong class="inline">distinct</strong> method, in conjunction with the <strong class="inline">select</strong> method:<p class="snippet">df.select('Species').distinct().show()</p><div class="IMG---Figure" id="_idContainer085"><img alt="Figure 4.12: Iris DataFrame, Species column" src="image/C12913_04_12.jpg"/></div><h6>Figure 4.12: Iris DataFrame, Species column</h6></li>
-				<li>To count the distinct values in any column of a Spark DataFrame, use the <strong class="inline">count</strong> method, in conjunction with the <strong class="inline">distinct</strong> method:<p class="snippet">df.select('Species').distinct().count()</p></li>
+				<li value="1">Select the distinct values in any column of a Spark DataFrame using the <code>distinct</code> method, in conjunction with the <code>select</code> method:<pre>df.select('Species').distinct().show()</pre><div><img alt="Figure 4.12: Iris DataFrame, Species column" src="img/C12913_04_12.jpg"/></div><h6>Figure 4.12: Iris DataFrame, Species column</h6></li>
+				<li>To count the distinct values in any column of a Spark DataFrame, use the <code>count</code> method, in conjunction with the <code>distinct</code> method:<pre>df.select('Species').distinct().count()</pre></li>
 			</ol>
 			<h3 id="_idParaDest-114"><a id="_idTextAnchor124"/>Exercise 32: Removing Duplicate Rows and Filtering Rows of a DataFrame</h3>
 			<p>In this exercise, we will learn how to remove the duplicate rows from the dataset, and later, perform filtering operations on the same column.</p>
 			<p>Perform these steps:</p>
 			<ol>
-				<li value="1">Remove the duplicate values from a DataFrame using the <strong class="inline">dropDuplicates()</strong> method:<p class="snippet">df.select('Species').dropDuplicates().show()</p><div class="IMG---Figure" id="_idContainer086"><img alt="Figure 4.13: Iris DataFrame, Species column after removing duplicate column" src="image/C12913_04_13.jpg"/></div><h6>Figure 4.13: Iris DataFrame, Species column after removing duplicate column</h6></li>
-				<li>Filter the rows from a DataFrame using one or multiple conditions. These multiple conditions can be passed together to the DataFrame using Boolean operators such as and (<strong class="inline">&amp;</strong>), or <strong class="inline">|</strong>, similar to how we do it for pandas DataFrames:<p class="snippet"># Filtering using a single condition</p><p class="snippet">df.filter(df.Species == 'setosa').show(4)</p><div class="IMG---Figure" id="_idContainer087"><img alt="" src="image/Image39953.jpg"/></div><h6>Figure 4.14: Iris DataFrame after filtering with single conditions</h6></li>
-				<li>Now, to filter the column using multiple conditions, use the following command:<p class="snippet">df.filter((df.Sepallength &gt; 5) &amp; (df.Species == 'setosa')).show(4)</p><div class="IMG---Figure" id="_idContainer088"><img alt="Figure 4.15: Iris DataFrame after filtering with multiple conditions" src="image/C12913_04_16.jpg"/></div></li>
+				<li value="1">Remove the duplicate values from a DataFrame using the <code>dropDuplicates()</code> method:<pre>df.select('Species').dropDuplicates().show()</pre><div><img alt="Figure 4.13: Iris DataFrame, Species column after removing duplicate column" src="img/C12913_04_13.jpg"/></div><h6>Figure 4.13: Iris DataFrame, Species column after removing duplicate column</h6></li>
+				<li>Filter the rows from a DataFrame using one or multiple conditions. These multiple conditions can be passed together to the DataFrame using Boolean operators such as and (<code>&amp;</code>), or <code>|</code>, similar to how we do it for pandas DataFrames:<pre># Filtering using a single condition
+df.filter(df.Species == 'setosa').show(4)</pre><div><img alt="" src="img/Image39953.jpg"/></div><h6>Figure 4.14: Iris DataFrame after filtering with single conditions</h6></li>
+				<li>Now, to filter the column using multiple conditions, use the following command:<pre>df.filter((df.Sepallength &gt; 5) &amp; (df.Species == 'setosa')).show(4)</pre><div><img alt="Figure 4.15: Iris DataFrame after filtering with multiple conditions" src="img/C12913_04_16.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.15: Iris DataFrame after filtering with multiple conditions</h6>
 			<h3 id="_idParaDest-115"><a id="_idTextAnchor125"/>Exercise 33: Ordering Rows in a DataFrame</h3>
 			<p>In this exercise, we will explore how to sort the rows in a DataFrame in ascending and descending order. Let's perform these steps:</p>
 			<ol>
-				<li value="1">Sort the rows in a DataFrame, using one or multiple conditions, in ascending or descending order:<p class="snippet">df.orderBy(df.Sepallength).show(5)</p><div class="IMG---Figure" id="_idContainer089"><img alt="Figure 4.16: Filtered Iris DataFrame" src="image/C12913_04_161.jpg"/></div><h6>Figure 4.16: Filtered Iris DataFrame</h6></li>
-				<li>To sort the rows in descending order, use the following command:<p class="snippet">df.orderBy(df.Sepallength.desc()).show(5)</p><div class="IMG---Figure" id="_idContainer090"><img alt="Figure 4.17: Iris DataFrame after sorting it in the descending order" src="image/C12913_04_17.jpg"/></div></li>
+				<li value="1">Sort the rows in a DataFrame, using one or multiple conditions, in ascending or descending order:<pre>df.orderBy(df.Sepallength).show(5)</pre><div><img alt="Figure 4.16: Filtered Iris DataFrame" src="img/C12913_04_161.jpg"/></div><h6>Figure 4.16: Filtered Iris DataFrame</h6></li>
+				<li>To sort the rows in descending order, use the following command:<pre>df.orderBy(df.Sepallength.desc()).show(5)</pre><div><img alt="Figure 4.17: Iris DataFrame after sorting it in the descending order" src="img/C12913_04_17.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.17: Iris DataFrame after sorting it in the descending order</h6>
 			<h3 id="_idParaDest-116"><a id="_idTextAnchor126"/>Exercise 34: Aggregating Values in a DataFrame</h3>
-			<p>We can group the values in a DataFrame by one or more variable, and calculate aggregated metrics such as <strong class="inline">mean</strong>, <strong class="inline">sum</strong>, <strong class="inline">count</strong>, and many more. In this exercise, we will calculate the mean sepal width for each of the flower species in the Iris dataset. We will also calculate the count of the rows for each species:</p>
+			<p>We can group the values in a DataFrame by one or more variable, and calculate aggregated metrics such as <code>mean</code>, <code>sum</code>, <code>count</code>, and many more. In this exercise, we will calculate the mean sepal width for each of the flower species in the Iris dataset. We will also calculate the count of the rows for each species:</p>
 			<ol>
-				<li value="1">To calculate the mean sepal width for each species, use the following command:<p class="snippet">df.groupby('Species').agg({'Sepalwidth' : 'mean'}).show()</p><div class="IMG---Figure" id="_idContainer091"><img alt="" src="image/Image39999.jpg"/></div><h6>Figure 4.18: Iris DataFrame, calculating mean sepal width</h6></li>
-				<li>Now, let's calculate the number of rows for each species by using the following command:<p class="snippet">df.groupby('Species').count().show()</p><div class="IMG---Figure" id="_idContainer092"><img alt="Figure 4.19: Iris DataFrame, calculating number of rows for each species" src="image/C12913_04_19.jpg"/></div></li>
+				<li value="1">To calculate the mean sepal width for each species, use the following command:<pre>df.groupby('Species').agg({'Sepalwidth' : 'mean'}).show()</pre><div><img alt="" src="img/Image39999.jpg"/></div><h6>Figure 4.18: Iris DataFrame, calculating mean sepal width</h6></li>
+				<li>Now, let's calculate the number of rows for each species by using the following command:<pre>df.groupby('Species').count().show()</pre><div><img alt="Figure 4.19: Iris DataFrame, calculating number of rows for each species" src="img/C12913_04_19.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.19: Iris DataFrame, calculating number of rows for each species</h6>
 			<h4>Note</h4>
-			<p class="callout">In the second code snippet, the count can also be used with the <strong class="inline">.agg</strong> function; however, the method we used is more popular.</p>
+			<pre>.agg</strong> function; however, the method we used is more popular.</pre>
 			<h3 id="_idParaDest-117"><a id="_idTextAnchor127"/>Activity 10: Data Manipulation with Spark DataFrames</h3>
 			<p>In this activity, we will use the concepts learned in the previous sections to manipulate the data in the Spark DataFrame created using the Iris dataset. We will perform basic data manipulation steps to test our ability to work with data in a Spark DataFrame. Feel free to use any open source dataset for this activity. Make sure the dataset you use has both numerical and categorical variables:</p>
 			<ol>
@@ -179,39 +191,47 @@
 			<h3 id="_idParaDest-119"><a id="_idTextAnchor129"/>Exercise 35: Creating a Bar Chart</h3>
 			<p>In this exercise, we will try to plot the number of records available for each species using a bar chart. We will have to first aggregate the data and count the number of records for each species. We can then convert this aggregated data into a regular pandas DataFrame and use Matplotlib and Seaborn packages to create any kind of plots of it that we wish:</p>
 			<ol>
-				<li value="1">First, calculate the number of rows for each flower species and convert the result to a pandas DataFrame:<p class="snippet">data = df.groupby('Species').count().toPandas()</p></li>
-				<li>Now, create a bar plot from the resulting pandas DataFrame:<p class="snippet">import seaborn as sns</p><p class="snippet">import matplotlib.pyplot as plt</p><p class="snippet">sns.barplot( x = data['Species'], y = data['count'])</p><p class="snippet">plt.xlabel('Species')</p><p class="snippet">plt.ylabel('count')</p><p class="snippet">plt.title('Number of rows per species')</p><p>The plot is as foll<a id="_idTextAnchor130"/>ows:</p><div class="IMG---Figure" id="_idContainer093"><img alt="Figure 4.20: Bar plot for Iris DataFrame after calculating the number of rows for each flower species" src="image/C12913_04_20.jpg"/></div></li>
+				<li value="1">First, calculate the number of rows for each flower species and convert the result to a pandas DataFrame:<pre>data = df.groupby('Species').count().toPandas()</pre></li>
+				<li>Now, create a bar plot from the resulting pandas DataFrame:<pre>import seaborn as sns
+import matplotlib.pyplot as plt
+sns.barplot( x = data['Species'], y = data['count'])
+plt.xlabel('Species')
+plt.ylabel('count')
+plt.title('Number of rows per species')</pre><p>The plot is as foll<a id="_idTextAnchor130"/>ows:</p><div><img alt="Figure 4.20: Bar plot for Iris DataFrame after calculating the number of rows for each flower species" src="img/C12913_04_20.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.20: Bar plot for Iris DataFrame after calculating the number of rows for each flower species</h6>
 			<h3 id="_idParaDest-120"><a id="_idTextAnchor131"/>Exercise 36: Creating a Linear Model Plot</h3>
 			<p>In this exercise, we will plot the data points of two different variables and fit a straight line on them. This is similar to fitting a linear model on two variables and can help identify correlations between the two variables:</p>
 			<ol>
-				<li value="1">Create a <strong class="inline">data</strong> object from the pandas DataFrame:<p class="snippet">data = df.toPandas()</p><p class="snippet">sns.lmplot(x = "Sepallength", y = "Sepalwidth", data = data)</p></li>
-				<li>Plot the DataFrame using the following command:<p class="snippet">plt.show()</p><div class="IMG---Figure" id="_idContainer094"><img alt="Figure 4.21: Linear model plot for Iris DataFrame" src="image/C12913_04_21.jpg"/></div></li>
+				<li value="1">Create a <code>data</code> object from the pandas DataFrame:<pre>data = df.toPandas()
+sns.lmplot(x = "Sepallength", y = "Sepalwidth", data = data)</pre></li>
+				<li>Plot the DataFrame using the following command:<pre>plt.show()</pre><div><img alt="Figure 4.21: Linear model plot for Iris DataFrame" src="img/C12913_04_21.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.21: Line<a id="_idTextAnchor132"/>ar model plot for Iris DataFrame</h6>
 			<h3 id="_idParaDest-121"><a id="_idTextAnchor133"/>Exercise 37: Creating a KDE Plot and a Boxplot</h3>
 			<p>In this exercise, we will create a <strong class="bold">kernel density estimation</strong> (<strong class="bold">KDE</strong>) plot, followed by a <strong class="bold">boxplot</strong>. Follow these instructions:</p>
 			<ol>
-				<li value="1">First, plot a KDE plot that shows us the distribution of a variable. Make sure it gives us an idea of the skewness and the kurtosis of a variable:<p class="snippet">import seaborn as sns</p><p class="snippet">data = df.toPandas()</p><p class="snippet">sns.kdeplot(data.Sepalwidth, shade = True)</p><p class="snippet">plt.show()</p><div class="IMG---Figure" id="_idContainer095"><img alt="Figure 4.22: KDE plot for the Iris DataFrame" src="image/C12913_04_22.jpg"/></div><h6>Figure 4.22: KDE plot for t<a id="_idTextAnchor134"/>he Iris DataFrame</h6></li>
-				<li>Now, plot the boxplots for the Iris dataset using the following command:<p class="snippet">sns.boxplot(x = "Sepallength", y = "Sepalwidth", data = data)</p><p class="snippet">plt.show()</p><div class="IMG---Figure" id="_idContainer096"><img alt="Figure 4.23: Boxplot for the Iris DataFrame" src="image/C12913_04_23.jpg"/></div></li>
+				<li value="1">First, plot a KDE plot that shows us the distribution of a variable. Make sure it gives us an idea of the skewness and the kurtosis of a variable:<pre>import seaborn as sns
+data = df.toPandas()
+sns.kdeplot(data.Sepalwidth, shade = True)
+plt.show()</pre><div><img alt="Figure 4.22: KDE plot for the Iris DataFrame" src="img/C12913_04_22.jpg"/></div><h6>Figure 4.22: KDE plot for t<a id="_idTextAnchor134"/>he Iris DataFrame</h6></li>
+				<li>Now, plot the boxplots for the Iris dataset using the following command:<pre>sns.boxplot(x = "Sepallength", y = "Sepalwidth", data = data)
+plt.show()</pre><div><img alt="Figure 4.23: Boxplot for the Iris DataFrame" src="img/C12913_04_23.jpg"/></div></li>
 			</ol>
 			<h6>Figure 4.23: Boxplot for the<a id="_idTextAnchor135"/> Iris DataFrame</h6>
 			<p>Boxplots are a good way to look at the data distribution and locate outliers. They represent the distribution using the 1st quartile, the median, the 3rd quartile, and the interquartile range (25th to 75th percentile).</p>
 			<h3 id="_idParaDest-122"><a id="_idTextAnchor136"/>Activity 11: Graphs in Spark</h3>
-			<p>In this activity, we will use the plotting libraries of Python to visually explore our data using different kind of plots. For this activity, we are using the <strong class="inline">mtcars</strong> dataset from Kaggle (<a href="https://www.kaggle.com/ruiromanini/mtcars">https://www.kaggle.com/ruiromanini/mtcars</a>):</p>
+			<p>In this activity, we will use the plotting libraries of Python to visually explore our data using different kind of plots. For this activity, we are using the <code>mtcars</code> dataset from Kaggle (<a href="https://www.kaggle.com/ruiromanini/mtcars">https://www.kaggle.com/ruiromanini/mtcars</a>):</p>
 			<ol>
 				<li value="1">Import all the required packages and libraries in the Jupyter Notebook.</li>
-				<li>Read the data into Spark object from the <strong class="inline">mtcars</strong> dataset.</li>
-				<li>Visualize the discrete frequency distribution of any continuous numeric variable from your dataset using a histogram:<div class="IMG---Figure" id="_idContainer097"><img alt="Figure 4.24: Histogram for the Iris DataFrame" src="image/C12913_04_24.jpg"/></div><h6>Figure 4.24: Histogram for the Iris DataFrame</h6></li>
-				<li>Visualize the percentage share of the categories in the dataset using a pie chart:<div class="IMG---Figure" id="_idContainer098"><img alt="Figure 4.25: Pie chart for the Iris DataFrame" src="image/C12913_04_25.jpg"/></div><h6>Figure 4.25: Pie chart for the Iris DataFrame</h6></li>
-				<li>Plot the distribution of a continuous variable across the categories of a categorical variable using a boxplot:<div class="IMG---Figure" id="_idContainer099"><img alt="Figure 4.26: Boxplot for the Iris DataFrame" src="image/Image40067.jpg"/></div><h6>Figure 4.26: Boxplot for the Iris DataFrame</h6></li>
-				<li>Visualize the values of a continuous numeric variable using a line chart:<div class="IMG---Figure" id="_idContainer100"><img alt="Figure 4.27: Line chart for the Iris DataFrame" src="image/C12913_04_27.jpg"/></div><h6>Figure 4.27: Line chart for the Iris DataFrame</h6></li>
+				<li>Read the data into Spark object from the <code>mtcars</code> dataset.</li>
+				<li>Visualize the discrete frequency distribution of any continuous numeric variable from your dataset using a histogram:<div><img alt="Figure 4.24: Histogram for the Iris DataFrame" src="img/C12913_04_24.jpg"/></div><h6>Figure 4.24: Histogram for the Iris DataFrame</h6></li>
+				<li>Visualize the percentage share of the categories in the dataset using a pie chart:<div><img alt="Figure 4.25: Pie chart for the Iris DataFrame" src="img/C12913_04_25.jpg"/></div><h6>Figure 4.25: Pie chart for the Iris DataFrame</h6></li>
+				<li>Plot the distribution of a continuous variable across the categories of a categorical variable using a boxplot:<div><img alt="Figure 4.26: Boxplot for the Iris DataFrame" src="img/Image40067.jpg"/></div><h6>Figure 4.26: Boxplot for the Iris DataFrame</h6></li>
+				<li>Visualize the values of a continuous numeric variable using a line chart:<div><img alt="Figure 4.27: Line chart for the Iris DataFrame" src="img/C12913_04_27.jpg"/></div><h6>Figure 4.27: Line chart for the Iris DataFrame</h6></li>
 				<li>Plot the values of multiple continuous numeric variables on the same line chart:</li>
 			</ol>
-			<div>
-				<div class="IMG---Figure" id="_idContainer101">
-					<img alt="Figure 4.28: Line chart for the Iris DataFrame plotting multiple continuous numeric variables" src="image/C12913_04_28.jpg"/>
+			<div><div><img alt="Figure 4.28: Line chart for the Iris DataFrame plotting multiple continuous numeric variables" src="img/C12913_04_28.jpg"/>
 				</div>
 			</div>
 			<h6>Figure 4.28: Line chart for the Iris DataFrame plotting multiple continuous numeric variables</h6>

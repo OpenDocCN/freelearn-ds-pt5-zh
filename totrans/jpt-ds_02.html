@@ -1,31 +1,25 @@
-<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Working with Analytical Data on Jupyter</h1>
-                </header>
+<html><head></head><body><div><h1 class="header-title">Working with Analytical Data on Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Jupyter does none of the heavy lifting for analyzing data: all the work is done by programs written in a selected language. Jupyter provides the framework to run a variety of programming language modules. So, we have a choice how we analyze data in Jupyter.</p>
 <p class="calibre5">A popular choice for data analysis programming is Python. Jupyter does have complete support for Python programming. We will look at a variety of programming solutions that might tax such a support system and see how Jupyter fairs.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Data scraping with a Python notebook</h1>
-                </header>
+<div><h1 class="header-title">Data scraping with a Python notebook</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">A common tool for data analysis is gathering the data from a public source such as a website. Python is adept at scraping websites for data. Here, we look at an example that loads stock price information from Google Finance data.</p>
 <p class="calibre5">In particular, given a stock symbol, we want to retrieve the last year of price ranges for that symbol.</p>
@@ -33,8 +27,8 @@
 <p class="calibre5"><a href="https://www.google.com/finance/historical?q=NASDAQ:AMD" target="_blank" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9">https://www.google.com/finance/historical?q=NASDAQ:AMD</a></p>
 <p class="calibre5">Here, <kbd class="calibre21">NASDAQ</kbd> is the stock exchange that carries the AMD security. On the resultant Google page, there is a table of data points of interest, as seen in the following partial screenshot.</p>
 <p class="calibre5">Like many sites that you will be attempting to access, there is a lot of other information on the page as well, like headers and footers and ads, as you can see in the following screenshot. The web pages are built for human readers. Fortunately, Google and these other companies realize you are scraping their data and keep the data in the same format, so you will not have to change scripts.</p>
-<div class="packt_figure"><img class="image-border18" src="Images/e182ed98-6941-4bd4-a5f8-a0e0e9b8d940.png"/></div>
-<div class="packt_infobox">Be forewarned that you may be blocked from access to a page or an entire site if you were to access the site too frequently. Frequency is a matter for discussion with the particular site you are accessing. Again, the sites know that you are scraping and are okay with that occurring as long as it doesn't interfere with their normal human web traffic.</div>
+<div><img class="image-border18" src="img/e182ed98-6941-4bd4-a5f8-a0e0e9b8d940.png"/></div>
+<p>Be forewarned that you may be blocked from access to a page or an entire site if you were to access the site too frequently. Frequency is a matter for discussion with the particular site you are accessing. Again, the sites know that you are scraping and are okay with that occurring as long as it doesn't interfere with their normal human web traffic.</p>
 <p class="calibre5">There is a clear table on that web page. If we look at the underlying HTML used to generate the web page, we find a lot of header, footer, and sidebar information but, more importantly, we find an HTML <kbd class="calibre21">div</kbd> tag with the id <kbd class="calibre21">price_data</kbd>. Within that <kbd class="calibre21">div</kbd> tag, we see an HTML table where each row has the value of <kbd class="calibre21">date</kbd>, <kbd class="calibre21">opening price</kbd>, <kbd class="calibre21">high</kbd>, <kbd class="calibre21">low</kbd>, <kbd class="calibre21">close</kbd>, and <kbd class="calibre21">volume</kbd> for that data as seen on screen.</p>
 <p class="calibre5">We can use a standard Python library package, <kbd class="calibre21">lxml</kbd>, to load and parse the web page text into constituent HTML Python components that we can work with.</p>
 <p class="calibre5">Then, for each day of data, we pull out the columns information and add it to our data list.</p>
@@ -42,45 +36,39 @@
 <p class="calibre5">The Python script used is as follows:</p>
 <pre class="commandlinepackt"><strong class="calibre3">from lxml import html <br class="calibre2"/></strong><strong class="calibre3">import requests<br class="calibre2"/></strong><strong class="calibre3">from time import sleep<br class="calibre2"/></strong><strong class="calibre3"># setup the URL for the symbol we are interested in<br class="calibre2"/></strong><strong class="calibre3">exchange = "NASDAQ"<br class="calibre2"/></strong><strong class="calibre3">ticker = "AMD"<br class="calibre2"/></strong><strong class="calibre3">url = "https://www.google.com/finance/historical?q=%s:%s"%(exchange,ticker)<br class="calibre2"/></strong><strong class="calibre3"># retrieve the web page<br class="calibre2"/></strong><strong class="calibre3">response = requests.get(url)<br class="calibre2"/></strong><strong class="calibre3">print ("Retrieving prices for %s from %s"%(ticker,url))<br class="calibre2"/></strong><strong class="calibre3"># give it a few seconds in case there is some delay<br class="calibre2"/></strong><strong class="calibre3">sleep(3)<br class="calibre2"/></strong><strong class="calibre3"># convert the text into an HTML Document<br class="calibre2"/></strong><strong class="calibre3">parser = html.fromstring(response.text)<br class="calibre2"/></strong><strong class="calibre3"># find the HTML DIV tag that has id 'prices'<br class="calibre2"/></strong><strong class="calibre3">price_store = parser.get_element_by_id("prices")<br class="calibre2"/></strong><strong class="calibre3"># we will store our price information in the price_data list<br class="calibre2"/></strong><strong class="calibre3">price_data = []<br class="calibre2"/></strong><strong class="calibre3"># find the HTML TABLE element within the prices DIV<br class="calibre2"/></strong><strong class="calibre3">for table in price_store:<br class="calibre2"/></strong><strong class="calibre3">    #every row (skip first row headings) of table has<br class="calibre2"/></strong><strong class="calibre3">    #  date, open, high, low, close, volume<br class="calibre2"/></strong><strong class="calibre3">    for row in table[1:]:<br class="calibre2"/></strong><strong class="calibre3">        #store tuples for a day together<br class="calibre2"/></strong><strong class="calibre3">        day = {"date":row[0].text.strip('\n'), \<br class="calibre2"/></strong><strong class="calibre3">               "open":row[1].text.strip('\n'), \<br class="calibre2"/></strong><strong class="calibre3">               "high":row[2].text.strip('\n'), \<br class="calibre2"/></strong><strong class="calibre3">               "low":row[3].text.strip('\n'), \<br class="calibre2"/></strong><strong class="calibre3">               "close":row[4].text.strip('\n'), \<br class="calibre2"/></strong><strong class="calibre3">               "volume":row[5].text.strip('\n')}<br class="calibre2"/></strong><strong class="calibre3">       <br class="calibre2"/></strong><strong class="calibre3">        #add day's information to our set<br class="calibre2"/></strong><strong class="calibre3">        price_data.append(day)<br class="calibre2"/></strong><strong class="calibre3">print ("The last day of pricing information we have is:")<br class="calibre2"/></strong><strong class="calibre3">print (price_data[0])</strong></pre>
 <p class="calibre5">Running this script in a Jupyter console, we see results as in the following partial screenshot:</p>
-<div class="packt_figure"><img class="image-border19" src="Images/99fd09bc-4410-420c-9fbb-3fa54d6a5061.png"/></div>
+<div><img class="image-border19" src="img/99fd09bc-4410-420c-9fbb-3fa54d6a5061.png"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using heavy-duty data processing functions in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using heavy-duty data processing functions in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Python has several groups of processing functions that can tax computer system power. Let us use some of these in Jupyter and determine if the functionality performs as expected.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using NumPy functions in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using NumPy functions in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">NumPy is a package in Python providing multidimensional arrays and routines for array processing. We bring in the NumPy package using <kbd class="calibre21">import * from numpy</kbd> statement. In particular, the NumPy package defines the <kbd class="calibre21">array</kbd> keyword, referencing a NumPy object with extensive functionality.</p>
 <p class="calibre5">The NumPy array processing functions run from the mundane, such as <kbd class="calibre21">min()</kbd> and <kbd class="calibre21">max()</kbd> functions (which provide the minimum and maximum values over the array dimensions provided), to more interesting utility functions for producing histograms and calculating correlations using the elements of a data frame.</p>
@@ -106,7 +94,7 @@
 
 <strong class="calibre3"># sum across the 2nd axis</strong>  <br class="calibre2"/><strong class="calibre3">print("sum across 2nd axis", a.sum(axis = 1))</strong></pre>
 <p class="calibre5">If we transfer this script into a Python notebook, we see a display like the following when we execute the cell:</p>
-<div class="packt_figure"><img class="image-border20" src="Images/ec44e745-7bc8-4ad1-857f-9a797fc90400.png"/></div>
+<div><img class="image-border20" src="img/ec44e745-7bc8-4ad1-857f-9a797fc90400.png"/></div>
 <p class="calibre5">We can use the use the following script to work over arrays with the more interesting <kbd class="calibre21">histogram</kbd> and <kbd class="calibre21">correlate</kbd> functions:</p>
 <pre class="commandlinepackt"><strong class="calibre3">import numpy as np</strong>
 <strong class="calibre3">import random</strong>
@@ -139,25 +127,22 @@
 <li class="calibre20">And, finally, determining the correlation between the two columns (which should be a very high correlation)</li>
 </ul>
 <p class="calibre5">After entering this script into a Jupyter Notebook and executing the cell, we have an output as follows. It makes sense that the buckets are very close in size:</p>
-<div class="packt_figure"><img class="image-border21" src="Images/0f075102-b8aa-4769-84f1-785978d00395.png"/></div>
+<div><img class="image-border21" src="img/0f075102-b8aa-4769-84f1-785978d00395.png"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using pandas in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using pandas in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">pandas is an open source library of high-performance data analysis tools available in Python. Of particular interest are the functions to:</p>
 <ul class="calibre19">
@@ -168,22 +153,19 @@
 </ul>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Use pandas to read text files in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Use pandas to read text files in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">The most common type of text file that will have analysis data is a CSV file. There are a large variety of datasets available on the internet in this format. We will look at the Titanic survivor data found at <a href="https://vincentarelbundock.github.io/Rdatasets/csv/datasets/Titanic.csv" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9">https://vincentarelbundock.github.io/Rdatasets/csv/datasets/Titanic.csv</a>.</p>
 <p class="calibre5">Like most of the pandas, the function call is very easy to use:</p>
@@ -197,25 +179,22 @@
 <li class="calibre20">And change index field(s) (Python always wants to keep a main indexing field within a data frame to speed access)</li>
 </ul>
 <p class="calibre5">The resultant script execution under Jupyter is shown in the following screenshot. (Note, I am only printing the first and last 30 rows of the table using the <kbd class="calibre21">head</kbd> function):</p>
-<div class="packt_figure"><img class="aligncenter" src="Images/1207b94f-8cab-48e3-b966-6f5aa8939dc6.png"/></div>
+<div><img class="aligncenter" src="img/1207b94f-8cab-48e3-b966-6f5aa8939dc6.png"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Use pandas to read Excel files in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Use pandas to read Excel files in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Similarly, we can load Microsoft Excel files just as easily. For example, the Excel file for the same Titanic dataset is available at <kbd class="calibre21">vandebilt.edu</kbd> (full link in following script). We have the following script:</p>
 <pre class="commandlinepackt"><strong class="calibre3">import pandas as pd</strong>
@@ -228,25 +207,22 @@
 <li class="calibre20">Specify the handling of NA values</li>
 </ul>
 <p class="calibre5">The resultant flow under Jupyter is as follows. The dataset looks very similar to the prior CSV file read in.</p>
-<div class="packt_figure"><img class="image-border22" src="Images/784da942-bd77-4059-97a0-f2a5fb3ed3b1.png"/></div>
+<div><img class="image-border22" src="img/784da942-bd77-4059-97a0-f2a5fb3ed3b1.png"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using pandas to work with data frames</h1>
-                </header>
+<div><h1 class="header-title">Using pandas to work with data frames</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Once we have a data frame available, there are several pandas available to further process the data. We will look at pandas to:</p>
 <ul class="calibre19">
@@ -256,22 +232,19 @@
 </ul>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using the groupby function in a data frame</h1>
-                </header>
+<div><h1 class="header-title">Using the groupby function in a data frame</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">The <kbd class="calibre21">groupby</kbd> function can be used to group (and count) the number of records in a data frame that meet your criteria.</p>
 <p class="calibre5">Continuing with our Titanic dataset, we can use <kbd class="calibre21">groupby</kbd> to count the number of people by age.</p>
@@ -285,25 +258,22 @@
 <strong class="calibre3">ages = df[['age']].groupby('age')['age'].count()</strong>
 <strong class="calibre3">print (ages)</strong>  </pre>
 <p class="calibre5">The resultant display under Jupyter is as follows. I had not realized there were so many babies on board.</p>
-<div class="packt_figure"><img class="image-border23" src="Images/ee2eacb5-02ba-4c5a-b30e-3a63167043fa.png"/></div>
+<div><img class="image-border23" src="img/ee2eacb5-02ba-4c5a-b30e-3a63167043fa.png"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Manipulating columns in a data frame</h1>
-                </header>
+<div><h1 class="header-title">Manipulating columns in a data frame</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">An interesting column manipulation is to sort. We can sort the prior age count data to determine the most common ages for travelers on the boat using the <kbd class="calibre21">sort_values</kbd> function.</p>
 <p class="calibre5">The script is as follows:</p>
@@ -316,25 +286,22 @@
 <strong class="calibre3">print("The most common ages")</strong>
 <strong class="calibre3">print (ages.sort_values(ascending=False))</strong>  </pre>
 <p class="calibre5">The resultant Jupyter display is as follows. From the data, there were many younger travelers on board. In light of this, it makes more sense why there were so many babies as well.</p>
-<div class="packt_figure"><img class="image-border24" src="Images/3d0961a3-ca9c-4f1e-99a9-a17d339f55e0.png"/></div>
+<div><img class="image-border24" src="img/3d0961a3-ca9c-4f1e-99a9-a17d339f55e0.png"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Calculating outliers in a data frame</h1>
-                </header>
+<div><h1 class="header-title">Calculating outliers in a data frame</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">We can calculate outliers using standard calculations as to whether the absolute value of the difference from the mean value is greater than 1.96 times the standard deviation. (This assumes a normal Gaussian distribution of the data).</p>
 <p class="calibre5">For example, using the same Titanic dataset loaded previously, we can determine which passengers were outliers based on age.</p>
@@ -360,22 +327,19 @@
 <p class="calibre5">So, given there were about 1,300 passengers, we have about 5% outliers, which means that there may be a normal distribution of the ages.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using SciPy in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using SciPy in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">SciPy is an open source library for mathematics, science and, engineering. With such a wide scope, there are many areas we can explore using SciPy:</p>
 <ul class="calibre19">
@@ -388,25 +352,22 @@
 </ul>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using SciPy integration in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using SciPy integration in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">A standard mathematical process is integrating an equation. SciPy accomplishes this using a callback function to iteratively calculate out the integration of your function. For example, suppose that we wanted to determine the integral of the following equation:</p>
-<p class="calibre35"><img src="Images/aadc0eca-28f9-4f32-978f-4a7ca3b28e47.jpg" class="calibre36"/></p>
+<p class="calibre35"><img src="img/aadc0eca-28f9-4f32-978f-4a7ca3b28e47.jpg" class="calibre36"/></p>
 <p class="calibre5">We would use a script like the following. We are using the definition of <em class="calibre18">pi</em> from the standard <kbd class="calibre21">math</kbd> package.</p>
 <pre class="commandlinepackt"><strong class="calibre3">from scipy.integrate import quad</strong>
 <strong class="calibre3">import math</strong>
@@ -418,7 +379,7 @@
 <strong class="calibre3">b = 1</strong>
 <strong class="calibre3">quad(integrand, 0, 1, args=(a,b))</strong></pre>
 <p class="calibre5">Again, this coding is very clean and simple, yet almost impossible to do in many languages. Running this script in Jupyter we see the results quickly:</p>
-<div class="packt_figure"><img class="image-border25" src="Images/1c39a9d5-6658-40b1-b999-675acc1602c6.png"/></div>
+<div><img class="image-border25" src="img/1c39a9d5-6658-40b1-b999-675acc1602c6.png"/></div>
 <p class="calibre5">I was curious how the <kbd class="calibre21">integrand</kbd> function is used during the execution. I am using this to exercise a call back function. To see this work, I added some debugging information to the script where we count how many iterations occur and what display the values called each time:</p>
 <pre class="commandlinepackt"><strong class="calibre3">from scipy.integrate import quad</strong>
 <strong class="calibre3">import math</strong>
@@ -435,29 +396,26 @@
 <strong class="calibre3">print(quad(integrand, 0, 1, args=(a,b)))</strong><br class="calibre2"/><strong class="calibre3">print(counter)</strong></pre>
 <p class="calibre5">We are using a counter at the global level, hence when referencing inside the <kbd class="calibre21">integrand</kbd> function we use the <kbd class="calibre21">global</kbd> keyword. Otherwise, Python assumes it is a local variable to the function.</p>
 <p class="calibre5">The results are as follows:</p>
-<div class="packt_figure"><img class="image-border26" src="Images/8b47fd44-b89b-45d9-bd3c-7e8fc7bcce26.png"/></div>
+<div><img class="image-border26" src="img/8b47fd44-b89b-45d9-bd3c-7e8fc7bcce26.png"/></div>
 <p class="calibre5">The function was called 21 times to narrow down the solution.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using SciPy optimization in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using SciPy optimization in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">With optimization, we are looking to determine a maximum or minimum value of a function over several variables. So, let's use an equation with an interesting curve in it:</p>
-<div class="calibre37"><img src="Images/4c9e403b-e373-4669-bc1a-210fe5388368.jpg" class="calibre38"/></div>
+<div><img src="img/4c9e403b-e373-4669-bc1a-210fe5388368.jpg" class="calibre38"/></div>
 <p class="calibre5">If we take that curve and plot it to see if there is an apparent minimum value, we can use a script like the following that generates a plot as the result. (The <kbd class="calibre21">%mathplotlib inline</kbd> makes the plot appear inline of the Jupyter session, rather than creating the plot in a new window.)</p>
 <pre class="commandlinepackt"><strong class="calibre3">%matplotlib inline</strong>
 <strong class="calibre3">from scipy import optimize</strong>
@@ -470,25 +428,22 @@
 <strong class="calibre3">x = np.linspace(-100, 50, 100)</strong>
 <strong class="calibre3">plt.plot(x, f(x));</strong>  </pre>
 <p class="calibre5">Running this script in Jupyter, we see there is a natural minimum at <em class="calibre18">x = 0</em>.</p>
-<div class="packt_figure"><img src="Images/0577e502-0d66-4039-8009-30049bede251.png" class="calibre39"/></div>
+<div><img src="img/0577e502-0d66-4039-8009-30049bede251.png" class="calibre39"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using SciPy interpolation in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using SciPy interpolation in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">With interpolation, we are taking a guess at a value for a function given a set of discrete points. For example, suppose that your test results showed something like this:</p>
 <pre class="commandlinepackt"><strong class="calibre3">%matplotlib inline</strong>
@@ -497,86 +452,77 @@
 <strong class="calibre3">x = [1, 3, 5, 7]</strong>
 <strong class="calibre3">y = [0.5, 0.4, 0.35, 0.29]</strong>
 <strong class="calibre3">plt.plot(x,y)</strong></pre>
-<div class="packt_figure"><img class="image-border27" src="Images/4a9e616f-54a9-473d-bb9b-3c28b62ab5d9.png"/></div>
+<div><img class="image-border27" src="img/4a9e616f-54a9-473d-bb9b-3c28b62ab5d9.png"/></div>
 <p class="calibre5">In this case, we could interpolate the result of the function when <em class="calibre18">x</em> is <kbd class="calibre21">4</kbd> using a script like this:</p>
 <pre class="commandlinepackt"><strong class="calibre3">from scipy.interpolate import interp1d 
 g = interp1d(x, y) 
 print (g(4))</strong> </pre>
 <p class="calibre5">This gives us the result of <kbd class="calibre21">0.375</kbd>, which sounds correct.</p>
-<div class="packt_figure"><img class="image-border28" src="Images/de8525db-3992-48ed-a8dd-9dc2fa806e57.png"/></div>
+<div><img class="image-border28" src="img/de8525db-3992-48ed-a8dd-9dc2fa806e57.png"/></div>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using SciPy Fourier Transforms in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using SciPy Fourier Transforms in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">There is a set of functions for <strong class="calibre7">FFT</strong> (<strong class="calibre7">Fourier Transforms</strong>) in SciPy. They are easy to use, given the amount of processing that needs to take place.</p>
 <p class="calibre5">We can perform a FFT using coding as follows:</p>
 <pre class="commandlinepackt"><strong class="calibre3">from scipy.fftpack import fft<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">x = np.array([2.0, 1.0, 2.0, 1.0, 2.0])<br class="calibre2"/></strong><strong class="calibre3">fft(x) 
 </strong></pre>
 <p class="calibre5">Here, we have a small dataset to analyze. The data points represent a small signal set we have to evaluate. When taken under Jupyter, we get a display as the following:</p>
-<div class="packt_figure"><img class="image-border29" src="Images/7ab8711b-d747-421a-a21b-d25bdb9a252f.png"/></div>
+<div><img class="image-border29" src="img/7ab8711b-d747-421a-a21b-d25bdb9a252f.png"/></div>
 <p class="calibre5">Note that even for this small set of data, the transform operation was busy for several seconds.</p>
 <p class="calibre5">We could also use a generated dataset as in this coding:</p>
 <pre class="commandlinepackt"><strong class="calibre3">from scipy.fftpack import fft<br class="calibre2"/></strong><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3"># how many points<br class="calibre2"/></strong><strong class="calibre3">n = 100<br class="calibre2"/></strong><strong class="calibre3">spacing = 1.0 / 250.0<br class="calibre2"/></strong><strong class="calibre3">x = np.linspace(0.0, n*spacing, n)<br class="calibre2"/></strong><strong class="calibre3">y = np.sin(30.0 * np.pi * x) + 0.5 * np.sin(7.0 * np.pi * x)<br class="calibre2"/></strong><strong class="calibre3">yf = fft(y)<br class="calibre2"/></strong><strong class="calibre3">xf = np.linspace(0.0, 1.0/(2.0*spacing), n//2)<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">#plot the data to get a visual<br class="calibre2"/></strong><strong class="calibre3">import matplotlib.pyplot as plt<br class="calibre2"/></strong><strong class="calibre3">plt.plot(xf, 2.0/n * np.abs(yf[0:n//2]))<br class="calibre2"/></strong><strong class="calibre3">plt.grid()<br class="calibre2"/></strong><strong class="calibre3">plt.show()</strong></pre>
 <p class="calibre5">Running this script under Jupyter generates this graphic of the data points in a new screen:</p>
-<p class="packt_figure1"><img class="image-border30" src="Images/c13afe26-ec8e-41d7-a8d9-5a22c5865b81.png"/></p>
+<p class="packt_figure1"><img class="image-border30" src="img/c13afe26-ec8e-41d7-a8d9-5a22c5865b81.png"/></p>
 <p class="calibre5">This looks along the lines of what we expected, with a big and small wave in the display.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Using SciPy linear algebra in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Using SciPy linear algebra in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">There is a complete set of linear algebra functions available. For example, we can solve a linear system with steps such as the following:</p>
 <pre class="commandlinepackt"><strong class="calibre3">import numpy as np<br class="calibre2"/></strong><strong class="calibre3">from scipy import linalg<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">A = np.array([[1, 1], [2, 3]])<br class="calibre2"/></strong><strong class="calibre3">print ("A array")<br class="calibre2"/></strong><strong class="calibre3">print (A)<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">b = np.array([[1], [2]])<br class="calibre2"/></strong><strong class="calibre3">print ("b array")<br class="calibre2"/></strong><strong class="calibre3">print (b)<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3">solution = np.linalg.solve(A, b)<br class="calibre2"/></strong><strong class="calibre3">print ("solution ")<br class="calibre2"/></strong><strong class="calibre3">print (solution)<br class="calibre2"/></strong><strong class="calibre3"> <br class="calibre2"/></strong><strong class="calibre3"># validate results<br class="calibre2"/></strong><strong class="calibre3">print ("validation of solution (should be a 0 matrix)")<br class="calibre2"/></strong><strong class="calibre3">print (A.dot(solution) – b)</strong></pre>
 <p class="calibre5">Here, the output under Jupyter looks like the following:</p>
-<div class="packt_figure"><img class="image-border31" src="Images/26926c8e-fedc-4bfa-96ba-22eca3a35238.png"/></div>
-<div class="packt_infobox">We validate the results with the final 0 matrix.</div>
+<div><img class="image-border31" src="img/26926c8e-fedc-4bfa-96ba-22eca3a35238.png"/></div>
+<p>We validate the results with the final 0 matrix.</p>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Expanding on panda data frames in Jupyter</h1>
-                </header>
+<div><h1 class="header-title">Expanding on panda data frames in Jupyter</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">There are more functions built-in for working with data frames than we have used so far. If we were to take one of the data frames from a prior example in this chapter, the Titanic dataset from an Excel file, we could use additional functions to help portray and work with the dataset.</p>
 <p class="calibre5">As a repeat, we load the dataset using the script:</p>
@@ -584,10 +530,10 @@ print (g(4))</strong> </pre>
 <strong class="calibre3">df = pd.read_excel('http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic3.xls')</strong></pre>
 <p class="calibre5">We can then inspect the data frame using the <kbd class="calibre21">info</kbd> function, which displays the characteristics of the data frame:</p>
 <pre class="commandlinepackt"><strong class="calibre3">df.info()</strong>  </pre>
-<div class="packt_figure"><img class="image-border32" src="Images/f46e0060-01bc-493f-a215-d7739984ed03.png"/></div>
+<div><img class="image-border32" src="img/f46e0060-01bc-493f-a215-d7739984ed03.png"/></div>
 <p class="calibre5">Some of the interesting points are as follows:</p>
 <ul class="calibre19">
-<li class="calibre20"><span class="calibre4">1309 entries</span></li>
+<li class="calibre20">1309 entries</li>
 <li class="calibre20">14 columns</li>
 <li class="calibre20">Not many fields with valid data in the <kbd class="calibre21">body</kbd> column—most were lost</li>
 <li class="calibre20">Does give a good overview of the types of data involved</li>
@@ -595,10 +541,10 @@ print (g(4))</strong> </pre>
 <p class="calibre5">We can also use the <kbd class="calibre21">describe</kbd> function, which gives us a statistical breakdown of the number columns in the data frame.</p>
 <pre class="commandlinepackt"><strong class="calibre3">df.describe()</strong>  </pre>
 <p class="calibre5">This produces the following tabular display:</p>
-<p class="packt_figure1"><img class="image-border33" src="Images/8aa2a54b-aac2-419b-b1fd-a2dc906e93e0.png"/></p>
+<p class="packt_figure1"><img class="image-border33" src="img/8aa2a54b-aac2-419b-b1fd-a2dc906e93e0.png"/></p>
 <p class="calibre5">For each numerical column we have:</p>
 <ul class="calibre19">
-<li class="calibre20"><span class="calibre4">Count</span></li>
+<li class="calibre20">Count</li>
 <li class="calibre20">Mean</li>
 <li class="calibre20">Standard deviation</li>
 <li class="calibre20">25, 50, and 75 percentile points</li>
@@ -606,102 +552,90 @@ print (g(4))</strong> </pre>
 </ul>
 <p class="calibre5">We can slice rows of interest using the syntax <kbd class="calibre21">df[12:13]</kbd>, where the first number (defaults to first row in data frame) is the first row to slice off and the second number (defaults to the last row in the data frame) is the last row to slice off.</p>
 <p class="calibre5">Running this slice operation we get the expected results:</p>
-<p class="packt_figure1"><img class="image-border34" src="Images/60ee61b4-aadf-4f9e-aadf-d77f71632457.png"/></p>
+<p class="packt_figure1"><img class="image-border34" src="img/60ee61b4-aadf-4f9e-aadf-d77f71632457.png"/></p>
 <p class="calibre5">Since we are effectively creating a new data frame when we select columns from a data frame, we can then use the <kbd class="calibre21">head</kbd> function against that as well:</p>
-<p class="packt_figure1"><img class="image-border35" src="Images/12b482b9-82b2-4cd5-bfc9-cca0209d49ee.png"/></p>
+<p class="packt_figure1"><img class="image-border35" src="img/12b482b9-82b2-4cd5-bfc9-cca0209d49ee.png"/></p>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Sorting and filtering data frames in Jupyter/IPython</h1>
-                </header>
+<div><h1 class="header-title">Sorting and filtering data frames in Jupyter/IPython</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Data frames automatically allow you to easily sort and filter the dataset involved, using existing functionality within the data frames themselves.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Filtering a data frame</h1>
-                </header>
+<div><h1 class="header-title">Filtering a data frame</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">We can select/filter specific rows based on criteria (using the same Titanic data frame):</p>
 <pre class="commandlinepackt"><strong class="calibre3">print(df[df.age &lt; 5])</strong>  </pre>
-<p class="calibre5"><span class="calibre8">This means that we look into the data frame and select the rows where the age of the person is below five years old. (Again, this is creating a new data frame that can be manipulated as needed.)</span></p>
-<p class="packt_figure1"><img class="image-border36" src="Images/8f6445e5-cde0-4077-8a65-b10fa6fb6979.png"/></p>
+<p class="calibre5">This means that we look into the data frame and select the rows where the age of the person is below five years old. (Again, this is creating a new data frame that can be manipulated as needed.)</p>
+<p class="packt_figure1"><img class="image-border36" src="img/8f6445e5-cde0-4077-8a65-b10fa6fb6979.png"/></p>
 <p class="calibre5">If you think about this, you can apply almost any filter to a data frame. Then you can do things like select part of one data frame and combine/join with parts of another data frame. Very quickly, you end up with SQL-like manipulations that can be performed on database tables. With that point of view, you are open to a much wider spectrum of data manipulation than would appear in the base data frame.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Sorting a data frame</h1>
-                </header>
+<div><h1 class="header-title">Sorting a data frame</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">Sorting in most languages means re-organizing the dataset that you are working with. In data frames, sorting can be accomplished by selecting another index to access the data frame. All data frames start out with a basic incremental row index built-in by NumPy. You can change the index used to access the data frame and effectively sort the data frame in the manner that you want.</p>
 <p class="calibre5">If we look at the display of the (Titanic) data frame, we notice the unnamed first column of ordinal values:</p>
-<p class="packt_figure1"><img class="image-border37" src="Images/cbed97cf-346a-445f-b8f5-54b02741ad09.png"/></p>
+<p class="packt_figure1"><img class="image-border37" src="img/cbed97cf-346a-445f-b8f5-54b02741ad09.png"/></p>
 <p class="calibre5">If we were to assign another index to use on the data frame, we would sort the data frame by that index. For example:</p>
 <pre class="commandlinepackt"><strong class="calibre3">df.set_index('name').head()</strong></pre>
-<p class="packt_figure1"><img class="image-border38" src="Images/0535072b-540f-44fb-a0bf-0b4bf25a8981.png"/></p>
+<p class="packt_figure1"><img class="image-border38" src="img/0535072b-540f-44fb-a0bf-0b4bf25a8981.png"/></p>
 <p class="calibre5">Remember, since we have not assigned this new data frame (with the name index) we still have our original data frame intact.</p>
 <p class="calibre5">Along the lines of the prior section, there is actually a sorting operation that can be performed against a data frame as well, using the <kbd class="calibre21">sort_values</kbd> method. For example, if we were to use the following script:</p>
 <pre class="commandlinepackt"><strong class="calibre3">print(df.sort_values(by='home.dest', ascending=True).head())</strong>  </pre>
 <p class="calibre5">This script takes the data frame, sorts it by the <kbd class="calibre21">home.dest</kbd> column in ascending order and prints the first five records (in that order)</p>
 <p class="calibre5">We would see results as follows:</p>
-<p class="packt_figure1"><img src="Images/645bc13d-ee0b-4aa5-a08f-3f51844b5cd3.png" class="calibre40"/></p>
+<p class="packt_figure1"><img src="img/645bc13d-ee0b-4aa5-a08f-3f51844b5cd3.png" class="calibre40"/></p>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     </div>
 
 
 
   
-<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
-
-                            <header class="calibre2">
-                    <h1 class="header-title">Summary</h1>
-                </header>
+<div><h1 class="header-title">Summary</h1>
+                
             
-            <article class="calibre2">
+            
                 
 <p class="calibre5">In this chapter, we looked at some of the more compute intensive tasks that might be performed in Jupyter. We used Python to scrape a website to gather data for analysis. We used Python NumPy, pandas, and SciPy functions for in-depth computation of results. We went further into pandas and explored manipulating data frames. Lastly, we saw examples of sorting and filtering data frames.</p>
 <p class="calibre5">In the next chapter, we will make some predictions and use visualization to validate our predictions.</p>
@@ -710,10 +644,10 @@ print (g(4))</strong> </pre>
 <p class="calibre5"/>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </div>
 
 

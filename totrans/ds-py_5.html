@@ -1,11 +1,8 @@
-<html><head></head><body><div id="sbo-rt-content"><div id="_idContainer212" class="Content">
-			<h1 id="_idParaDest-144"><em class="italics"><a id="_idTextAnchor159"/>Chapter 6</em></h1>
+<html><head></head><body><div><div><h1 id="_idParaDest-144"><em class="italics"><a id="_idTextAnchor159"/>Chapter 6</em></h1>
 		</div>
-		<div id="_idContainer213" class="Content">
-			<h1 id="_idParaDest-145"><a id="_idTextAnchor160"/>Decoding Images</h1>
+		<div><h1 id="_idParaDest-145"><a id="_idTextAnchor160"/>Decoding Images</h1>
 		</div>
-		<div id="_idContainer214" class="Content">
-			<h2>Learning Objectives</h2>
+		<div><h2>Learning Objectives</h2>
 			<p>By the end of this chapter, you will be able to:</p>
 			<ul>
 				<li class="bullets">Create models that can classify images into different categories</li>
@@ -15,8 +12,7 @@
 			</ul>
 			<p>This chapter will cover various concepts on how to read and process images.</p>
 		</div>
-		<div id="_idContainer253" class="Content">
-			<h2 id="_idParaDest-146"><a id="_idTextAnchor161"/>Introduction</h2>
+		<div><h2 id="_idParaDest-146"><a id="_idTextAnchor161"/>Introduction</h2>
 			<p>So far, we have only been working with numbers and text. In this chapter, we will learn how to use machine learning to decode images and extract meaningful information, such as the type of object present in an image, or the number written in an image. Have you ever stopped to think about how our brains interpret the images they receive from our eyes? After millions of years of evolution, our brains have become highly efficient and accurate at recognizing objects and patterns from the images they get from our eyes. We have been able to replicate the function of our eyes using cameras, but making computers recognize patterns and objects in images is a really tough job. The field associated with understanding what is present in images is known as computer vision. The field of computer vision has witnessed tremendous research and advancements in the past few years. The introduction of Convoluted Neural Networks (CNNs) and the ability to train neural networks on GPUs were the biggest of these breakthroughs. Today, CNNs are used anywhere we have a computer vision problem, for example, self-driving cars, facial recognition, object detection, object tracking, and creating fully autonomous robots. In this chapter, we will learn how these CNNs work and how big an improvement they are compared to traditional methods.</p>
 			<h2 id="_idParaDest-147"><a id="_idTextAnchor162"/>Images</h2>
 			<p>The digital cameras that we have today store images as a big matrix of numbers. These are what we call digital images. A single number on this matrix refers to a single pixel in the image. Individual numbers refer to the intensity of the color at that pixel. For a grayscale image, these values vary from 0 to 255, where 0 is black and 255 is white. For a colored image, this matrix is three-dimensional, where each dimension has values for red, green, and blue. The values in the matrices refer to the intensities of the respective colors. We use these values as input to our computer vision programs or data science models to perform predictions and recognitions.</p>
@@ -30,44 +26,55 @@
 			<p>In this exercise, we will perform classification on the <strong class="keyword">Modified National Institute of Standards and Technology database</strong> (<strong class="keyword">MNIST</strong>) dataset. MNIST is a dataset of handwritten digits that have been normalized to fit into a 28 x 28 pixel bounding box. There are 60,000 training images and 10,000 testing images in this dataset. In case of the fully connected network, we feed the individual pixels as features to the network, and then train it as a normal neural network, much like the first neural network we trained in <em class="italics">Chapter 5</em>,<em class="italics"> Mastering Structured Data</em>. </p>
 			<p>To complete this exercise, complete the following steps:</p>
 			<ol>
-				<li>Load the required libraries, as illustrated here:<p class="snippet">import numpy as np</p><p class="snippet">import matplotlib.pyplot as plt</p><p class="snippet">from sklearn.preprocessing import LabelBinarizer</p><p class="snippet">from keras.datasets import mnist</p><p class="snippet">from keras.models import Sequential</p><p class="snippet">from keras.layers import Dense</p></li>
-				<li>Load the MNIST dataset using the Keras library:<p class="snippet">(x_train, y_train), (x_test, y_test) = mnist.load_data()</p></li>
-				<li>From the shape of the dataset, you can figure out that the data is available in 2D format. The first element is the number of images available, whereas the next two elements are the width and height of the images:<p class="snippet">x_train.shape</p><p>The output is as follows: </p><div id="_idContainer215" class="IMG---Figure"><img src="Images/C13322_06_01.jpg" alt="Figure 6.1: Width and height of images&#13;&#10;" width="506" height="28"/></div><h6>Figure 6.1: Width and height of images</h6></li>
-				<li>Plot the first image to see what kind of data you are dealing with:<p class="snippet">plt.imshow(x_test[0], cmap=plt.get_cmap(‘gray'))</p><p class="snippet">plt.show()</p><div id="_idContainer216" class="IMG---Figure"><img src="Images/C13322_06_02.jpg" alt="Figure 6.2: Sample image of the MNIST dataset&#13;&#10;" width="646" height="252"/></div><h6>Figure 6.2: Sample image of the MNIST dataset</h6></li>
-				<li>Convert the 2D data into 1D data so that our neural network can take it as input (28 x 28 pixels = 784):<p class="snippet">x_train = x_train.reshape(60000, 784)</p><p class="snippet">x_test = x_test.reshape(10000, 784)</p></li>
-				<li>Convert the target variable to a one-hot vector so that our network does not form unnecessary connections between the different target variables:<p class="snippet">label_binarizer = LabelBinarizer()</p><p class="snippet">label_binarizer.fit(range(10))</p><p class="snippet">y_train = label_binarizer.transform(y_train)</p><p class="snippet">y_test = label_binarizer.transform(y_test)</p></li>
-				<li>Create the model. Make a small two-layer network; you can experiment with other architectures. You will learn more about cross-entropy loss in the following section:<p class="snippet">model = Sequential()</p><p class="snippet">model.add(Dense(units=32, activation='relu', input_dim=784))</p><p class="snippet">model.add(Dense(units=32, activation='relu'))</p><p class="snippet">model.add(Dense(units=10, activation='softmax'))</p><p class="snippet">model.compile(loss='categorical_crossentropy', optimizer='adam', metrics = [‘acc'])</p><p class="snippet">model.summary()</p><div id="_idContainer217" class="IMG---Figure"><img src="Images/C13322_06_03.jpg" alt="Figure 6.3: Model architecture of the dense network&#13;&#10;" width="823" height="327"/></div><h6>Figure 6.3: Model architecture of the dense network</h6></li>
-				<li>Train the model and check the final accuracy:<p class="snippet">model.fit(x_train, y_train, validation_data = (x_test, y_test), epochs=40, batch_size=32)</p><p class="snippet">score = model.evaluate(x_test, y_test)</p><p class="snippet">print(“Accuracy: {0:.2f}%”.format(score[1]*100))</p><p>The output is as follows:</p></li>
+				<li>Load the required libraries, as illustrated here:<pre>import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelBinarizer
+from keras.datasets import mnist
+from keras.models import Sequential
+from keras.layers import Dense</pre></li>
+				<li>Load the MNIST dataset using the Keras library:<pre>(x_train, y_train), (x_test, y_test) = mnist.load_data()</pre></li>
+				<li>From the shape of the dataset, you can figure out that the data is available in 2D format. The first element is the number of images available, whereas the next two elements are the width and height of the images:<pre>x_train.shape</pre><p>The output is as follows: </p><div><img src="img/C13322_06_01.jpg" alt="Figure 6.1: Width and height of images&#13;&#10;" width="506" height="28"/></div><h6>Figure 6.1: Width and height of images</h6></li>
+				<li>Plot the first image to see what kind of data you are dealing with:<pre>plt.imshow(x_test[0], cmap=plt.get_cmap(‘gray'))
+plt.show()</pre><div><img src="img/C13322_06_02.jpg" alt="Figure 6.2: Sample image of the MNIST dataset&#13;&#10;" width="646" height="252"/></div><h6>Figure 6.2: Sample image of the MNIST dataset</h6></li>
+				<li>Convert the 2D data into 1D data so that our neural network can take it as input (28 x 28 pixels = 784):<pre>x_train = x_train.reshape(60000, 784)
+x_test = x_test.reshape(10000, 784)</pre></li>
+				<li>Convert the target variable to a one-hot vector so that our network does not form unnecessary connections between the different target variables:<pre>label_binarizer = LabelBinarizer()
+label_binarizer.fit(range(10))
+y_train = label_binarizer.transform(y_train)
+y_test = label_binarizer.transform(y_test)</pre></li>
+				<li>Create the model. Make a small two-layer network; you can experiment with other architectures. You will learn more about cross-entropy loss in the following section:<pre>model = Sequential()
+model.add(Dense(units=32, activation='relu', input_dim=784))
+model.add(Dense(units=32, activation='relu'))
+model.add(Dense(units=10, activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics = [‘acc'])
+model.summary()</pre><div><img src="img/C13322_06_03.jpg" alt="Figure 6.3: Model architecture of the dense network&#13;&#10;" width="823" height="327"/></div><h6>Figure 6.3: Model architecture of the dense network</h6></li>
+				<li>Train the model and check the final accuracy:<pre>model.fit(x_train, y_train, validation_data = (x_test, y_test), epochs=40, batch_size=32)
+score = model.evaluate(x_test, y_test)
+print(“Accuracy: {0:.2f}%”.format(score[1]*100))</pre><p>The output is as follows:</p></li>
 			</ol>
-			<div>
-				<div id="_idContainer218" class="IMG---Figure">
-					<img src="Images/C13322_06_04.jpg" alt="Figure 6.4: Model accuracy&#13;&#10;" width="698" height="33"/>
+			<div><div><img src="img/C13322_06_04.jpg" alt="Figure 6.4: Model accuracy&#13;&#10;" width="698" height="33"/>
 				</div>
 			</div>
 			<h6>Figure 6.4: Model accuracy</h6>
 			<p>Congratulations! You have now created a model that can predict the number on an image with 93.57% accuracy. You can plot different test images and see your network's result using the following code. Change the value of the image variable to get different images:</p>
-			<p class="snippet">image = 6</p>
-			<p class="snippet">plt.imshow(x_test[image].reshape(28,28), </p>
-			<p class="snippet">cmap=plt.get_cmap(‘gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">y_pred = model.predict(x_test)</p>
-			<p class="snippet">print(“Prediction: {0}”.format(np.argmax(y_pred[image])))</p>
-			<div>
-				<div id="_idContainer219" class="IMG---Figure">
-					<img src="Images/C13322_06_05.jpg" alt="Figure 6.5: An MNIST image with prediction from dense network&#13;&#10;" width="816" height="356"/>
+			<pre>image = 6
+plt.imshow(x_test[image].reshape(28,28), 
+cmap=plt.get_cmap(‘gray'))
+plt.show()
+y_pred = model.predict(x_test)
+print(“Prediction: {0}”.format(np.argmax(y_pred[image])))</pre>
+			<div><div><img src="img/C13322_06_05.jpg" alt="Figure 6.5: An MNIST image with prediction from dense network&#13;&#10;" width="816" height="356"/>
 				</div>
 			</div>
 			<h6>Figure 6.5: An MNIST image with prediction from dense network</h6>
 			<p>You can visualize only the incorrect predictions to understand where your model fails:</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]</p>
-			<p class="snippet">image = 4</p>
-			<p class="snippet">plt.imshow(x_test[incorrect_indices[image]].reshape(28,28), </p>
-			<p class="snippet">cmap=plt.get_cmap(‘gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print(“Prediction: {0}”.format(np.argmax(y_pred[incorrect_indices[image]])))</p>
-			<div>
-				<div id="_idContainer220" class="IMG---Figure">
-					<img src="Images/C13322_06_06.jpg" alt="Figure 6.6: Incorrectly classified example from the dense network&#13;&#10;" width="841" height="353"/>
+			<pre>incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]
+image = 4
+plt.imshow(x_test[incorrect_indices[image]].reshape(28,28), 
+cmap=plt.get_cmap(‘gray'))
+plt.show()
+print(“Prediction: {0}”.format(np.argmax(y_pred[incorrect_indices[image]])))</pre>
+			<div><div><img src="img/C13322_06_06.jpg" alt="Figure 6.6: Incorrectly classified example from the dense network&#13;&#10;" width="841" height="353"/>
 				</div>
 			</div>
 			<h6>Figure 6.6: Incorrectly classified example from the dense network</h6>
@@ -77,9 +84,7 @@
 			<p>The first few layers of a CNN are convolutional, where the network applies different filters to the image to find useful patterns in the image; then there's the pooling layers, which help down-sample the output of the convolutional layers. The activation layer controls which signal flows from one layer to the next, emulating the neurons in our brain. The last few layers in the network are dense layers; these are the same layers we used for the previous exercise.</p>
 			<h3 id="_idParaDest-150"><a id="_idTextAnchor165"/>Convolutional Layer</h3>
 			<p>The convolutional layer consists of multiple filters that learn to activate when they see a certain feature, edge, or color in the initial layers, and eventually faces, honeycombs, and wheels. These filters are exactly like the Instagram filters that we are all so used to. Filters change the appearance of the image by altering the pixels in a certain manner. Let's take a filter that detects horizontal edges as an example.</p>
-			<div>
-				<div id="_idContainer221" class="IMG---Figure">
-					<img src="Images/C13322_06_07.jpg" alt="Figure 6.7: Horizontal edge detection filter&#13;&#10;" width="724" height="291"/>
+			<div><div><img src="img/C13322_06_07.jpg" alt="Figure 6.7: Horizontal edge detection filter&#13;&#10;" width="724" height="291"/>
 				</div>
 			</div>
 			<h6>Figure 6.7: Horizontal edge detection filter</h6>
@@ -93,9 +98,7 @@
 			</ul>
 			<h2 id="_idParaDest-151"><a id="_idTextAnchor166"/>Pooling Layer</h2>
 			<p><strong class="keyword">Pooling layers</strong> reduce the size of the input image to reduce the amount of computation and parameters in the network. Pooling layers are inserted periodically between convolutional layers to control overfitting. The most common variant of pooling is 2 x 2 max pooling with a stride of 2. This variant performs down-sampling of the input to keep only the maximum value of the four pixels in the output. The depth dimension remains unchanged. </p>
-			<div>
-				<div id="_idContainer222" class="IMG---Figure">
-					<img src="Images/C13322_06_08.jpg" alt="Figure 6.8: Max pooling operation&#13;&#10;" width="502" height="162"/>
+			<div><div><img src="img/C13322_06_08.jpg" alt="Figure 6.8: Max pooling operation&#13;&#10;" width="502" height="162"/>
 				</div>
 			</div>
 			<h6>Figure 6.8: Max pooling operation</h6>
@@ -116,16 +119,12 @@
 			<p class="callout">For more information, read the Adam paper: https://arxiv.org/abs/1412.6980v8 </p>
 			<h2 id="_idParaDest-153"><a id="_idTextAnchor168"/>Cross-entropy Loss</h2>
 			<p><strong class="keyword">Cross-entropy loss</strong> is used when we are working with a classification problem where the output of each class is a probability value between 0 and 1. The loss here increases as the model deviates from the actual value; it follows a negative log graph. This helps when the model predicts probabilities that are far from the actual value. For example, if the probability of the true label is 0.05, we penalize the model with a huge loss. On the other hand, if the probability of the true label is 0.40, we penalize it with a smaller loss.</p>
-			<div>
-				<div id="_idContainer223" class="IMG---Figure">
-					<img src="Images/C13322_06_09.jpg" alt="Figure 6.9: Graph of log loss versus probability&#13;&#10;" width="653" height="324"/>
+			<div><div><img src="img/C13322_06_09.jpg" alt="Figure 6.9: Graph of log loss versus probability&#13;&#10;" width="653" height="324"/>
 				</div>
 			</div>
 			<h6>Figure 6.9: Graph of log loss versus probability</h6>
 			<p>The preceding graph shows that the loss increases exponentially as the predictions get further from the true label. The formula that the cross-entropy loss follows is as follows:</p>
-			<div>
-				<div id="_idContainer224" class="IMG---Figure">
-					<img src="Images/C13322_06_10.jpg" alt="Figure 6.10: Cross entropy loss formula&#13;&#10;" width="443" height="64"/>
+			<div><div><img src="img/C13322_06_10.jpg" alt="Figure 6.10: Cross entropy loss formula&#13;&#10;" width="443" height="64"/>
 				</div>
 			</div>
 			<h6>Figure 6.10: Cross entropy loss formula</h6>
@@ -133,32 +132,45 @@
 			<h3 id="_idParaDest-154"><a id="_idTextAnchor169"/>Exercise 51: Classify MNIST Using a CNN</h3>
 			<p>In this exercise, we will perform classification on the <strong class="keyword">Modified National Institute of Standards and Technology (MNIST</strong>) dataset using a CNN instead of the fully connected layers used in <em class="italics">Exercise 50</em>. We feed the network the complete image as input and get the number on the image as output:</p>
 			<ol>
-				<li value="1">Load the MNIST dataset using the Keras library:<p class="snippet">from keras.datasets import mnist</p><p class="snippet">(x_train, y_train), (x_test, y_test) = mnist.load_data()</p></li>
-				<li>Convert the 2D data into 3D data with the third dimension having only one layer, which is how Keras requires the input:<p class="snippet">x_train = x_train.reshape(-1, 28, 28, 1)</p><p class="snippet">x_test = x_test.reshape(-1, 28, 28, 1)</p></li>
-				<li>Convert the target variable to a one-hot vector so that our network does not form an unnecessary connection between the different target variables:<p class="snippet">from sklearn.preprocessing import LabelBinarizer</p><p class="snippet">label_binarizer = LabelBinarizer()</p><p class="snippet">label_binarizer.fit(range(10))</p><p class="snippet">y_train = label_binarizer.transform(y_train)</p><p class="snippet">y_test = label_binarizer.transform(y_test)</p></li>
-				<li>Create the model. Here, we make a small CNN. You can experiment with other architectures:<p class="snippet">from keras.models import Model, Sequential</p><p class="snippet">from keras.layers import Dense, Conv2D, MaxPool2D, Flatten</p><p class="snippet">model = Sequential()</p><p>Add the convolutional layers:</p><p class="snippet">model.add(Conv2D(32, kernel_size=3, </p><p class="snippet">padding=”same”,input_shape=(28, 28, 1),    activation = ‘relu'))</p><p class="snippet">model.add(Conv2D(32, kernel_size=3, activation = ‘relu'))</p><p>Add the pooling layer:</p><p class="snippet">model.add(MaxPool2D(pool_size=(2, 2)))</p></li>
-				<li>Flatten the 2D matrices into 1D vectors:<p class="snippet">model.add(Flatten())</p></li>
-				<li>Use dense layers as the final layers for the model:<p class="snippet">model.add(Dense(128, activation = “relu”))</p><p class="snippet">model.add(Dense(10, activation = “softmax”))</p><p class="snippet">model.compile(loss='categorical_crossentropy', optimizer='adam', </p><p class="snippet">metrics = [‘acc'])</p><p class="snippet">model.summary()</p><p>To understand this fully, look at the output of the model in the following screenshot:</p><div id="_idContainer225" class="IMG---Figure"><img src="Images/C13322_06_11.jpg" alt="Figure 6.11: Model architecture of the CNN&#13;&#10;" width="729" height="466"/></div><h6>Figure 6.11: Model architecture of the CNN</h6></li>
-				<li>Train the model and check the final accuracy:<p class="snippet">model.fit(x_train, y_train, validation_data = (x_test, y_test), </p><p class="snippet">epochs=10, batch_size=1024)</p><p class="snippet">score = model.evaluate(x_test, y_test)</p><p class="snippet">print(“Accuracy: {0:.2f}%”.format(score[1]*100))</p><p>The output is as follows:</p></li>
+				<li value="1">Load the MNIST dataset using the Keras library:<pre>from keras.datasets import mnist
+(x_train, y_train), (x_test, y_test) = mnist.load_data()</pre></li>
+				<li>Convert the 2D data into 3D data with the third dimension having only one layer, which is how Keras requires the input:<pre>x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)</pre></li>
+				<li>Convert the target variable to a one-hot vector so that our network does not form an unnecessary connection between the different target variables:<pre>from sklearn.preprocessing import LabelBinarizer
+label_binarizer = LabelBinarizer()
+label_binarizer.fit(range(10))
+y_train = label_binarizer.transform(y_train)
+y_test = label_binarizer.transform(y_test)</pre></li>
+				<li>Create the model. Here, we make a small CNN. You can experiment with other architectures:<pre>from keras.models import Model, Sequential
+from keras.layers import Dense, Conv2D, MaxPool2D, Flatten
+model = Sequential()</pre><p>Add the convolutional layers:</p><pre>model.add(Conv2D(32, kernel_size=3, 
+padding=”same”,input_shape=(28, 28, 1),    activation = ‘relu'))
+model.add(Conv2D(32, kernel_size=3, activation = ‘relu'))</pre><p>Add the pooling layer:</p><pre>model.add(MaxPool2D(pool_size=(2, 2)))</pre></li>
+				<li>Flatten the 2D matrices into 1D vectors:<pre>model.add(Flatten())</pre></li>
+				<li>Use dense layers as the final layers for the model:<pre>model.add(Dense(128, activation = “relu”))
+model.add(Dense(10, activation = “softmax”))
+model.compile(loss='categorical_crossentropy', optimizer='adam', 
+metrics = [‘acc'])
+model.summary()</pre><p>To understand this fully, look at the output of the model in the following screenshot:</p><div><img src="img/C13322_06_11.jpg" alt="Figure 6.11: Model architecture of the CNN&#13;&#10;" width="729" height="466"/></div><h6>Figure 6.11: Model architecture of the CNN</h6></li>
+				<li>Train the model and check the final accuracy:<pre>model.fit(x_train, y_train, validation_data = (x_test, y_test), 
+epochs=10, batch_size=1024)
+score = model.evaluate(x_test, y_test)
+print(“Accuracy: {0:.2f}%”.format(score[1]*100))</pre><p>The output is as follows:</p></li>
 			</ol>
-			<div>
-				<div id="_idContainer226" class="IMG---Figure">
-					<img src="Images/C13322_06_12.jpg" alt="Figure 6.12: Final model accuracy&#13;&#10;" width="504" height="32"/>
+			<div><div><img src="img/C13322_06_12.jpg" alt="Figure 6.12: Final model accuracy&#13;&#10;" width="504" height="32"/>
 				</div>
 			</div>
 			<h6>Figure 6.12: Final model accuracy</h6>
 			<p>Congratulations! You have now created a model that can predict the number on an image with 98.62% accuracy. You can plot different test images and see your network's result using the code given in <em class="italics">Exercise 50</em>. Also, plot the incorrect predictions to see where the model went wrong:</p>
-			<p class="snippet">import numpy as np</p>
-			<p class="snippet">import matplotlib.pyplot as plt</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]</p>
-			<p class="snippet">image = 4</p>
-			<p class="snippet">plt.imshow(x_test[incorrect_indices[image]].reshape(28,28), </p>
-			<p class="snippet">cmap=plt.get_cmap(‘gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print(“Prediction: {0}”.format(np.argmax(y_pred[incorrect_indices[image]])))</p>
-			<div>
-				<div id="_idContainer227" class="IMG---Figure">
-					<img src="Images/C13322_06_13.jpg" alt="Figure 6.13: Incorrect prediction of the model; the true label is 2&#13;&#10;" width="695" height="353"/>
+			<pre>import numpy as np
+import matplotlib.pyplot as plt
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]
+image = 4
+plt.imshow(x_test[incorrect_indices[image]].reshape(28,28), 
+cmap=plt.get_cmap(‘gray'))
+plt.show()
+print(“Prediction: {0}”.format(np.argmax(y_pred[incorrect_indices[image]])))</pre>
+			<div><div><img src="img/C13322_06_13.jpg" alt="Figure 6.13: Incorrect prediction of the model; the true label is 2&#13;&#10;" width="695" height="353"/>
 				</div>
 			</div>
 			<h6>Figure 6.13: Incorrect prediction of the model; the true label is 2</h6>
@@ -169,85 +181,97 @@
 			<p><strong class="keyword">Dropout</strong> is a regularization technique that we use to prevent overfitting in our neural network models. We ignore randomly selected neurons from the network while training. This prevents the activations of those neurons continuing down the line, and the weight updates are not applied to them during back propagation. The weights of neurons are tuned to identify specific features; neurons that neighbor them become dependent on this, which can lead to overfitting because these neurons can get specialized to the training data. When neurons are randomly dropped, the neighboring neurons step in and learn the representation, leading to multiple different representations being learned by the network. This make the network generalize better and prevents the model from overfitting. One import thing to keep in mind is that dropout layers should not be used when you are performing predictions or testing your model. This would make the model lose valuable information and would lead to a loss in performance. Keras takes care of this by itself.</p>
 			<p>When using the dropout layer, it is recommended to create larger networks because it gives the model more opportunities to learn. We generally use a dropout probability between 0.2 and 0.5. This probability refers to the probability by which a neuron will be dropped from training. A dropout layer after every layer is found to give good results, so you can start by placing dropout layers with a probability of 0.2 after every layer and then fine-tune from there. </p>
 			<p>To create a dropout layer in Keras with a probability of 0.5, you can use the following function:</p>
-			<p class="snippet">keras.layers.Dropout(0.5)</p>
-			<div>
-				<div id="_idContainer228" class="IMG---Figure">
-					<img src="Images/C13322_06_14.jpg" alt="Figure 6.14: Visualizing dropout in a dense neural network&#13;&#10;" width="1800" height="600"/>
+			<pre>keras.layers.Dropout(0.5)</pre>
+			<div><div><img src="img/C13322_06_14.jpg" alt="Figure 6.14: Visualizing dropout in a dense neural network&#13;&#10;" width="1800" height="600"/>
 				</div>
 			</div>
 			<h6>Figure 6.14: Visualizing dropout in a dense neural network</h6>
 			<h3 id="_idParaDest-157"><a id="_idTextAnchor172"/>L1 and L2 Regularization</h3>
 			<p><strong class="keyword">L2</strong> is the most common type of regularization, followed by <strong class="keyword">L1</strong>. These regularizers work by adding a term to the loss of the model to get the final cost function. This added term leads to a decrease in the weights of the model. This in turn leads to a model that generalizes well. </p>
 			<p>The cost function of L1 regularization looks like this:</p>
-			<div>
-				<div id="_idContainer229" class="IMG---Figure">
-					<img src="Images/C13322_06_15.jpg" alt="Figure 6.15: Cost function of L1 regularization&#13;&#10;" width="540" height="43"/>
+			<div><div><img src="img/C13322_06_15.jpg" alt="Figure 6.15: Cost function of L1 regularization&#13;&#10;" width="540" height="43"/>
 				</div>
 			</div>
 			<h6>Figure 6.15: Cost function of L1 regularization</h6>
 			<p>Here, λ is the regularization parameter. L1 regularization leads to weights that are very close to zero. This makes the neurons with L1 regularization become dependent only on the most important inputs and ignore the noisy inputs.</p>
 			<p>The cost function of L2 regularization looks like this:</p>
-			<div>
-				<div id="_idContainer230" class="IMG---Figure">
-					<img src="Images/C13322_06_16.jpg" alt="Figure 6.16: Cost function of L2 regularization&#13;&#10;" width="521" height="50"/>
+			<div><div><img src="img/C13322_06_16.jpg" alt="Figure 6.16: Cost function of L2 regularization&#13;&#10;" width="521" height="50"/>
 				</div>
 			</div>
 			<h6>Figure 6.16: Cost function of L2 regularization</h6>
 			<p>L2 regularization heavily penalizes high-weight vectors and prefers weights that are diffused. L2 regularization is also known as weight decay because it forces the weights of a network to decay towards zero but, unlike L1 regularization, not exactly to zero. We can combine L1 and L2 and implement them together. To implement these regularizers, you can use the following functions in Keras:</p>
-			<p class="snippet">keras.regularizers.l1(0.01)</p>
-			<p class="snippet">keras.regularizers.l2(0.01)</p>
-			<p class="snippet">keras.regularizers.l1_l2(l1=0.01, l2=0.01)</p>
+			<pre>keras.regularizers.l1(0.01)
+keras.regularizers.l2(0.01)
+keras.regularizers.l1_l2(l1=0.01, l2=0.01)</pre>
 			<h3 id="_idParaDest-158"><a id="_idTextAnchor173"/>Batch Normalization</h3>
 			<p>In <em class="italics">Chapter 1</em>, <em class="italics">Introduction to Data Science and Data Pre processing</em> we learned how to perform normalization and how it helped speed up the training of our machine learning models. Here, we will extend that same normalization to the individual layers of the neural network. <strong class="keyword">Batch normalization</strong> allows layers to learn independently of other layers. It does this by normalizing the inputs to a layer to have a fixed mean and variance; this prevents the changes in parameters of previous layers from affecting the input of the layer too much. It also has a slight regularization effect; much like dropout, it prevents overfitting, but it does that by introducing noise into the values of the mini batches. When using batch normalization, make sure to use a lower dropout, which is better because dropout leads to a loss of information. However, do not remove dropout and rely completely on batch normalization, because a combination of the two has been seen to work better. While using batch normalization, a higher learning rate can be used because it makes sure that no action is too high or too low. </p>
-			<div>
-				<div id="_idContainer231" class="IMG---Figure">
-					<img src="Images/C13322_06_17.jpg" alt="Figure 6.17: Batch normalization equation&#13;&#10;" width="582" height="103"/>
+			<div><div><img src="img/C13322_06_17.jpg" alt="Figure 6.17: Batch normalization equation&#13;&#10;" width="582" height="103"/>
 				</div>
 			</div>
 			<h6>Figure 6.17: Batch normalization equation</h6>
 			<p>Here, (xi) is the input to the layer and y is the normalized input. μ is the batch mean and σ2 is the batch's standard deviation. Batch normalization introduces two new (x_i ) ̂the loss.</p>
 			<p>To create a batch normalization layer in Keras, you can use the following function:</p>
-			<p class="snippet">keras.layers.BatchNormalization()</p>
+			<pre>keras.layers.BatchNormalization()</pre>
 			<h3 id="_idParaDest-159"><a id="_idTextAnchor174"/>Exercise 52: Improving Image Classification Using Regularization Using CIFAR-10 images </h3>
 			<p>In this exercise, we will perform classification on the Canadian Institute for Advanced Research (CIFAR-10) dataset. It consists of 60,000 32 x 32 color images in 10 classes. The 10 different classes represent birds, airplanes, cats, cars, frogs, deer, dogs, trucks, ships, and horses. It is one of the most widely used datasets for machine learning research, mainly in the field of CNNs. Due to the low resolution of the images, models can be trained much quicker on these images. We will use this dataset to implement some of the regularization techniques we learned in the previous section:</p>
 			<h4>Note</h4>
 			<p class="callout">To get the raw CIFAR-10 files and CIFAR-100 dataset, visit <a href="">https://www.cs.toronto.edu/~kriz/cifar.html</a>.</p>
 			<ol>
-				<li value="1">Load the CIFAR-10 dataset using the Keras library:<p class="snippet">from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization</p><p class="snippet">from keras.datasets import cifar10</p><p class="snippet">(x_train, y_train), (x_test, y_test) = cifar10.load_data()</p></li>
-				<li>Check the dimensions of the data:<p class="snippet">x_train.shape</p><p>The output is as follows: </p><div id="_idContainer232" class="IMG---Figure"><img src="Images/C13322_06_18.jpg" alt="Figure 6.18: Dimensions of x&#13;&#10;" width="550" height="30"/></div><h6>Figure 6.18: Dimensions of x</h6><p>Similar dimensions, for <strong class="inline">y</strong>:</p><p class="snippet">y_train.shape</p><p>The output is as follows: </p><div id="_idContainer233" class="IMG---Figure"><img src="Images/C13322_06_19.jpg" alt="Figure 6.19: Dimensions of y&#13;&#10;" width="457" height="29"/></div><h6>Figure 6.19: Dimensions of y</h6><p>As these are color images, they have three channels.</p></li>
-				<li>Convert the data to the format that Keras requires:<p class="snippet">x_train = x_train.reshape(-1, 32, 32, 3)</p><p class="snippet">x_test = x_test.reshape(-1, 32, 32, 3)</p></li>
-				<li>Convert the target variable to a one-hot vector so that our network does not form unnecessary connections between the different target variables:<p class="snippet">from sklearn.preprocessing import LabelBinarizer</p><p class="snippet">label_binarizer = LabelBinarizer()</p><p class="snippet">label_binarizer.fit(range(10))</p><p class="snippet">y_train = label_binarizer.transform(y_train)</p><p class="snippet">y_test = label_binarizer.transform(y_test)</p></li>
-				<li>Create the model. Here, we make a small CNN without regularization first:<p class="snippet">from keras.models import Sequential</p><p class="snippet">model = Sequential()</p><p>Add the convolutional layers:</p><p class="snippet">model.add(Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32,32,3)))    </p><p class="snippet">model.add(Conv2D(32, (3, 3), activation='relu'))</p><p>Add the pooling layer:</p><p class="snippet">model.add(MaxPool2D(pool_size=(2, 2)))</p></li>
-				<li>Flatten the 2D matrices into 1D vectors:<p class="snippet">model.add(Flatten())</p></li>
-				<li>Use dense layers as the final layers for the model and compile the model:<p class="snippet">model.add(Dense(512, activation='relu'))</p><p class="snippet">model.add(Dense(10, activation='softmax'))</p><p class="snippet">model.compile(loss='categorical_crossentropy', optimizer='adam', </p><p class="snippet">metrics = [‘acc'])</p></li>
-				<li>Train the model and check the final accuracy:<p class="snippet">model.fit(x_train, y_train, validation_data = (x_test, y_test), </p><p class="snippet">epochs=10, batch_size=512)</p></li>
-				<li>Now check the accuracy of the model:<p class="snippet">score = model.evaluate(x_test, y_test)</p><p class="snippet">print(“Accuracy: {0:.2f}%”.format(score[1]*100))</p><p>The output is as follows:</p><div id="_idContainer234" class="IMG---Figure"><img src="Images/C13322_06_20.jpg" alt="Figure 6.20: Accuracy of model&#13;&#10;" width="744" height="48"/></div><h6>Figure 6.20: Accuracy of model</h6></li>
-				<li>Now create the same model, but with regularization. You can experiment with other architectures as well:<p class="snippet">model = Sequential()</p><p>Add the convolutional layers:</p><p class="snippet">model.add(Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32,32,3)))    </p><p class="snippet">model.add(Conv2D(32, (3, 3), activation='relu'))   </p><p>Add the pooling layer:</p><p class="snippet">model.add(MaxPool2D(pool_size=(2, 2)))</p></li>
-				<li>Add the batch normalization layer along with a dropout layer:<p class="snippet">model.add(BatchNormalization())</p><p class="snippet">model.add(Dropout(0.10))</p></li>
-				<li>Flatten the 2D matrices into 1D vectors:<p class="snippet">model.add(Flatten())</p></li>
-				<li>Use dense layers as the final layers for the model and compile the model:<p class="snippet">model.add(Dense(512, activation='relu'))</p><p class="snippet">model.add(Dropout(0.5))</p><p class="snippet">model.add(Dense(10, activation='softmax'))</p><p class="snippet">model.compile(loss='categorical_crossentropy', optimizer='adam', </p><p class="snippet">metrics = [‘acc'])</p><p class="snippet">model.summary()</p><div id="_idContainer235" class="IMG---Figure"><img src="Images/C13322_06_21.jpg" alt="Figure 6.21: Architecture of the CNN with regularization&#13;&#10;" width="869" height="576"/></div><h6>Figure 6.21: Architecture of the CNN with regularization</h6></li>
-				<li>Train the model and check the final accuracy:<p class="snippet">model.fit(x_train, y_train, validation_data = (x_test, y_test), </p><p class="snippet">epochs=10, batch_size=512)</p><p class="snippet">score = model.evaluate(x_test, y_test)</p><p class="snippet">print(“Accuracy: {0:.2f}%”.format(score[1]*100))</p><p>The output is as follows:</p></li>
+				<li value="1">Load the CIFAR-10 dataset using the Keras library:<pre>from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization
+from keras.datasets import cifar10
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()</pre></li>
+				<li>Check the dimensions of the data:<pre>x_train.shape</pre><p>The output is as follows: </p><div><img src="img/C13322_06_18.jpg" alt="Figure 6.18: Dimensions of x&#13;&#10;" width="550" height="30"/></div><h6>Figure 6.18: Dimensions of x</h6><p>Similar dimensions, for <code>y</code>:</p><pre>y_train.shape</pre><p>The output is as follows: </p><div><img src="img/C13322_06_19.jpg" alt="Figure 6.19: Dimensions of y&#13;&#10;" width="457" height="29"/></div><h6>Figure 6.19: Dimensions of y</h6><p>As these are color images, they have three channels.</p></li>
+				<li>Convert the data to the format that Keras requires:<pre>x_train = x_train.reshape(-1, 32, 32, 3)
+x_test = x_test.reshape(-1, 32, 32, 3)</pre></li>
+				<li>Convert the target variable to a one-hot vector so that our network does not form unnecessary connections between the different target variables:<pre>from sklearn.preprocessing import LabelBinarizer
+label_binarizer = LabelBinarizer()
+label_binarizer.fit(range(10))
+y_train = label_binarizer.transform(y_train)
+y_test = label_binarizer.transform(y_test)</pre></li>
+				<li>Create the model. Here, we make a small CNN without regularization first:<pre>from keras.models import Sequential
+model = Sequential()</pre><p>Add the convolutional layers:</p><pre>model.add(Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32,32,3)))    
+model.add(Conv2D(32, (3, 3), activation='relu'))</pre><p>Add the pooling layer:</p><pre>model.add(MaxPool2D(pool_size=(2, 2)))</pre></li>
+				<li>Flatten the 2D matrices into 1D vectors:<pre>model.add(Flatten())</pre></li>
+				<li>Use dense layers as the final layers for the model and compile the model:<pre>model.add(Dense(512, activation='relu'))
+model.add(Dense(10, activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', 
+metrics = [‘acc'])</pre></li>
+				<li>Train the model and check the final accuracy:<pre>model.fit(x_train, y_train, validation_data = (x_test, y_test), 
+epochs=10, batch_size=512)</pre></li>
+				<li>Now check the accuracy of the model:<pre>score = model.evaluate(x_test, y_test)
+print(“Accuracy: {0:.2f}%”.format(score[1]*100))</pre><p>The output is as follows:</p><div><img src="img/C13322_06_20.jpg" alt="Figure 6.20: Accuracy of model&#13;&#10;" width="744" height="48"/></div><h6>Figure 6.20: Accuracy of model</h6></li>
+				<li>Now create the same model, but with regularization. You can experiment with other architectures as well:<pre>model = Sequential()</pre><p>Add the convolutional layers:</p><pre>model.add(Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32,32,3)))    
+model.add(Conv2D(32, (3, 3), activation='relu'))   </pre><p>Add the pooling layer:</p><pre>model.add(MaxPool2D(pool_size=(2, 2)))</pre></li>
+				<li>Add the batch normalization layer along with a dropout layer:<pre>model.add(BatchNormalization())
+model.add(Dropout(0.10))</pre></li>
+				<li>Flatten the 2D matrices into 1D vectors:<pre>model.add(Flatten())</pre></li>
+				<li>Use dense layers as the final layers for the model and compile the model:<pre>model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(10, activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', 
+metrics = [‘acc'])
+model.summary()</pre><div><img src="img/C13322_06_21.jpg" alt="Figure 6.21: Architecture of the CNN with regularization&#13;&#10;" width="869" height="576"/></div><h6>Figure 6.21: Architecture of the CNN with regularization</h6></li>
+				<li>Train the model and check the final accuracy:<pre>model.fit(x_train, y_train, validation_data = (x_test, y_test), 
+epochs=10, batch_size=512)
+score = model.evaluate(x_test, y_test)
+print(“Accuracy: {0:.2f}%”.format(score[1]*100))</pre><p>The output is as follows:</p></li>
 			</ol>
-			<div>
-				<div id="_idContainer236" class="IMG---Figure">
-					<img src="Images/C13322_06_22.jpg" alt="Figure 6.22: Final accuracy output&#13;&#10;" width="550" height="26"/>
+			<div><div><img src="img/C13322_06_22.jpg" alt="Figure 6.22: Final accuracy output&#13;&#10;" width="550" height="26"/>
 				</div>
 			</div>
 			<h6>Figure 6.22: Final accuracy output</h6>
 			<p>Congratulations! You made use of regularization to make your model work better than before. If you do not see an improvement in your model, train it for longer, so set it for more epochs. You will also see that you can train for a lot more epochs without worrying about overfitting. </p>
 			<p>You can plot different test images and see your network's result using the code given in <em class="italics">Exercise 50</em>. Also, plot the incorrect predictions to see where the model went wrong:</p>
-			<p class="snippet">import numpy as np</p>
-			<p class="snippet">import matplotlib.pyplot as plt</p>
-			<p class="snippet">y_pred = model.predict(x_test)</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]</p>
-			<p class="snippet">labels = [‘airplane', ‘automobile', ‘bird', ‘cat', ‘deer', ‘dog', ‘frog', ‘horse', ‘ship', ‘truck']</p>
-			<p class="snippet">image = 3</p>
-			<p class="snippet">plt.imshow(x_test[incorrect_indices[image]].reshape(32,32,3))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print(“Prediction: {0}”.format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</p>
-			<div>
-				<div id="_idContainer237" class="IMG---Figure">
-					<img src="Images/C13322_06_23.jpg" alt="Figure 6.23: Incorrect prediction of the model&#13;&#10;" width="807" height="365"/>
+			<pre>import numpy as np
+import matplotlib.pyplot as plt
+y_pred = model.predict(x_test)
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]
+labels = [‘airplane', ‘automobile', ‘bird', ‘cat', ‘deer', ‘dog', ‘frog', ‘horse', ‘ship', ‘truck']
+image = 3
+plt.imshow(x_test[incorrect_indices[image]].reshape(32,32,3))
+plt.show()
+print(“Prediction: {0}”.format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</pre>
+			<div><div><img src="img/C13322_06_23.jpg" alt="Figure 6.23: Incorrect prediction of the model&#13;&#10;" width="807" height="365"/>
 				</div>
 			</div>
 			<h6>Figure 6.23: Incorrect prediction of the model</h6>
@@ -258,79 +282,67 @@
 			<p>In the case of images, the scale of the pixels is of the same order and in the range 0 to 255. Therefore, this normalization step is optional, but it might help speed up the learning process. To reiterate, centering the data and scaling it to the same order helps the network by ensuring that the gradients do not go out of control. A neural network shares parameters (neurons). If inputs are not scaled to the same order, it would make it difficult for the network to learn. </p>
 			<h3 id="_idParaDest-162"><a id="_idTextAnchor177"/>Converting to Grayscale</h3>
 			<p>Depending on the kind of dataset and problem you have, you can convert your images from RGB to greyscale. This helps the network work much more quickly because it has a lot fewer parameters to learn. Depending on the type of problem, you might not want to do this because it leads to a loss in information provided by the colors of the image. To convert an RGB image to a grayscale image, use the <strong class="bold">Pillow</strong> library:</p>
-			<p class="snippet">from PIL import Image</p>
-			<p class="snippet">image = Image.open(‘rgb.png').convert(‘LA')</p>
-			<p class="snippet">image.save(‘greyscale.png')</p>
-			<div>
-				<div id="_idContainer238" class="IMG---Figure">
-					<img src="Images/C13322_06_24.jpg" alt="Figure 6.24: Image of a car converted to grayscale&#13;&#10;" width="438" height="120"/>
+			<pre>from PIL import Image
+image = Image.open(‘rgb.png').convert(‘LA')
+image.save(‘greyscale.png')</pre>
+			<div><div><img src="img/C13322_06_24.jpg" alt="Figure 6.24: Image of a car converted to grayscale&#13;&#10;" width="438" height="120"/>
 				</div>
 			</div>
 			<h6>Figure 6.24: Image of a car converted to grayscale</h6>
 			<h3 id="_idParaDest-163"><a id="_idTextAnchor178"/>Getting All Images to the Same Size</h3>
 			<p>When working with real-life datasets, you will often come across a major challenge in that not all the images in your dataset will be the same size. You can perform one of the following steps depending on the situation to get around the issue:</p>
 			<ul>
-				<li><strong class="bold">Upsampling</strong>: You can upsample smaller images to fix a specific size. If the aspect ratio doesn't match the size that you have decided upon, you can crop the image. There will be some loss of information, but you can get around this by taking different centers while cropping and introducing these new images to the dataset. This will make the model more robust. To do this, utilize the following code:<p class="snippet">from PIL import Image</p><p class="snippet">img = Image.open(‘img.jpg')</p><p class="snippet">scale_factor = 1.5</p><p class="snippet">new_img = img.resize((int(img.size[0]* scale_factor),int(img.size[1]* scale_factor)), Image.BICUBIC)</p><p>The second parameter of the <strong class="inline">resize</strong> function is the algorithm that will be used to get new pixels of the resized image. The bicubic algorithm is fast and is one of the best pixel resampling algorithms for upsampling.</p></li>
+				<li><code>resize</code> function is the algorithm that will be used to get new pixels of the resized image. The bicubic algorithm is fast and is one of the best pixel resampling algorithms for upsampling.</p></li>
 			</ul>
-			<div>
-				<div id="_idContainer239" class="IMG---Figure">
-					<img src="Images/C13322_06_25.jpg" alt="Figure 7.25: Upsampled image of a car&#13;&#10;" width="511" height="223"/>
+			<div><div><img src="img/C13322_06_25.jpg" alt="Figure 7.25: Upsampled image of a car&#13;&#10;" width="511" height="223"/>
 				</div>
 			</div>
 			<h6>Figure 6.25: Upsampled image of a car</h6>
 			<ul>
-				<li><strong class="bold">Downsampling</strong>: Similar to upsampling, you can perform downsampling on large images to make then smaller and then crop to fit the size that you have selected. You can use the following code to downsample images:<p class="snippet">scale_factor = 0.5</p><p class="snippet">new_img = img.resize(</p><p class="snippet">(int(img.size[0]* scale_factor ),</p><p class="snippet"> int(img.size[1]* scale_factor)),</p><p class="snippet">Image.ANTIALIAS)</p><p>The second parameter of the <strong class="inline">resize</strong> function is the algorithm that will be used to get the new pixels of the resized image, as mentioned previously. The antialiasing algorithm helps smoothen out the pixelated images. It works better than bicubic but is much slower. Antialiasing is one of the best pixel resampling algorithms for downsampling.</p></li>
+				<li><code>resize</code> function is the algorithm that will be used to get the new pixels of the resized image, as mentioned previously. The antialiasing algorithm helps smoothen out the pixelated images. It works better than bicubic but is much slower. Antialiasing is one of the best pixel resampling algorithms for downsampling.</p></li>
 			</ul>
-			<div>
-				<div id="_idContainer240" class="IMG---Figure">
-					<img src="Images/C13322_06_26.jpg" alt="Figure 6.26: Down sampled image of a car&#13;&#10;" width="566" height="223"/>
+			<div><div><img src="img/C13322_06_26.jpg" alt="Figure 6.26: Down sampled image of a car&#13;&#10;" width="566" height="223"/>
 				</div>
 			</div>
 			<h6>Figure 6.26: Down sampled image of a car</h6>
 			<ul>
-				<li><strong class="bold">Crop</strong>: This is another method to make all images of the same size is to crop them. As mentioned before, you can use different centers to prevent the loss of information. You can use the following code to crop your images:<p class="snippet">area = (1000, 500, 2500, 2000)</p><p class="snippet">cropped_img = img.crop(area)</p></li>
+				<li><strong class="bold">Crop</strong>: This is another method to make all images of the same size is to crop them. As mentioned before, you can use different centers to prevent the loss of information. You can use the following code to crop your images:<pre>area = (1000, 500, 2500, 2000)
+cropped_img = img.crop(area)</pre></li>
 			</ul>
-			<div>
-				<div id="_idContainer241" class="IMG---Figure">
-					<img src="Images/C13322_06_27.jpg" alt="Figure 6.27: Cropped image of a car&#13;&#10;" width="557" height="252"/>
+			<div><div><img src="img/C13322_06_27.jpg" alt="Figure 6.27: Cropped image of a car&#13;&#10;" width="557" height="252"/>
 				</div>
 			</div>
 			<h6>Figure 6.27: Cropped image of a car</h6>
 			<ul>
-				<li><strong class="bold">Padding</strong>: Padding adds a layer of zeros or ones around the image to increase the size of the image. To perform padding, use the following code:<p class="snippet">size = (2000,2000)</p><p class="snippet">back = Image.new(“RGB”, size, “white”)</p><p class="snippet">offset = (250, 250)</p><p class="snippet">back.paste(cropped_img, offset)</p></li>
+				<li><strong class="bold">Padding</strong>: Padding adds a layer of zeros or ones around the image to increase the size of the image. To perform padding, use the following code:<pre>size = (2000,2000)
+back = Image.new(“RGB”, size, “white”)
+offset = (250, 250)
+back.paste(cropped_img, offset)</pre></li>
 			</ul>
-			<div>
-				<div id="_idContainer242" class="IMG---Figure">
-					<img src="Images/C13322_06_28.jpg" alt="Figure 6.28: Padded image of a cropped car&#13;&#10;" width="562" height="252"/>
+			<div><div><img src="img/C13322_06_28.jpg" alt="Figure 6.28: Padded image of a cropped car&#13;&#10;" width="562" height="252"/>
 				</div>
 			</div>
 			<h6>Figure 6.28: Padded image of a cropped car</h6>
 			<h3 id="_idParaDest-164"><a id="_idTextAnchor179"/>Other Useful Image Operations</h3>
 			<p>The <strong class="bold">Pillow</strong> library has many functions for modifying and creating new images. These will be helpful for creating new images from our existing training data.</p>
 			<p>To flip an image, we can use the following code:</p>
-			<p class="snippet">img.transpose(Image.FLIP_LEFT_RIGHT)</p>
-			<div>
-				<div id="_idContainer243" class="IMG---Figure">
-					<img src="Images/C13322_06_29.jpg" alt="Figure 6.29: Flipped image of a cropped car&#13;&#10;" width="571" height="223"/>
+			<pre>img.transpose(Image.FLIP_LEFT_RIGHT)</pre>
+			<div><div><img src="img/C13322_06_29.jpg" alt="Figure 6.29: Flipped image of a cropped car&#13;&#10;" width="571" height="223"/>
 				</div>
 			</div>
 			<h6>Figure 6.29: Flipped image of a cropped car</h6>
 			<p>To rotate an image by 45 degrees, we can use the following code:</p>
-			<p class="snippet">img.rotate(45)</p>
-			<div>
-				<div id="_idContainer244" class="IMG---Figure">
-					<img src="Images/C13322_06_30.jpg" alt="Figure 6.30: The cropped car image rotated 45 degrees&#13;&#10;" width="571" height="223"/>
+			<pre>img.rotate(45)</pre>
+			<div><div><img src="img/C13322_06_30.jpg" alt="Figure 6.30: The cropped car image rotated 45 degrees&#13;&#10;" width="571" height="223"/>
 				</div>
 			</div>
 			<h6>Figure 6.30: The cropped car image rotated 45 degrees</h6>
 			<p>To shift an image by 1,000 pixels, we can use the following code:</p>
-			<p class="snippet">import PIL</p>
-			<p class="snippet">width, height = img.size</p>
-			<p class="snippet">image = PIL.ImageChops.offset(img, 1000, 0)</p>
-			<p class="snippet">image.paste((0), (0, 0, 1000, height))</p>
-			<div>
-				<div id="_idContainer245" class="IMG---Figure">
-					<img src="Images/C13322_06_31.jpg" alt="Figure 6.31: Rotated image of the cropped car&#13;&#10;" width="506" height="223"/>
+			<pre>import PIL
+width, height = img.size
+image = PIL.ImageChops.offset(img, 1000, 0)
+image.paste((0), (0, 0, 1000, height))</pre>
+			<div><div><img src="img/C13322_06_31.jpg" alt="Figure 6.31: Rotated image of the cropped car&#13;&#10;" width="506" height="223"/>
 				</div>
 			</div>
 			<h6>Figure 6.31: Rotated image of the cropped car</h6>
@@ -338,22 +350,20 @@
 			<p>In this activity, we will attempt to predict if the provided image is of a cat or a dog. The cats and dogs dataset (<a href="">https://github.com/TrainingByPackt/Data-Science-with-Python/tree/master/Chapter06</a>) from Microsoft contains 25,000 color images of cats and dogs. Let's look at the following scenario: You work at a veterinary clinic with two vets, one that specializes in dogs and one in cats. You want to automate the appointments of the doctors by figuring out if the next client is a dog or a cat. To do this, you create a CNN model:</p>
 			<ol>
 				<li value="1">Load the dog versus cat dataset and preprocess the images. </li>
-				<li>Use the image filenames to find the cat or dog label for each image. The first images should look like this:<div id="_idContainer246" class="IMG---Figure"><img src="Images/C13322_06_32.jpg" alt="Figure 6.32: First images of the dog and cat class&#13;&#10;" width="498" height="207"/></div><h6>Figure 6.32: First images of the dog and cat class</h6></li>
+				<li>Use the image filenames to find the cat or dog label for each image. The first images should look like this:<div><img src="img/C13322_06_32.jpg" alt="Figure 6.32: First images of the dog and cat class&#13;&#10;" width="498" height="207"/></div><h6>Figure 6.32: First images of the dog and cat class</h6></li>
 				<li>Get the images in the correct shape to be trained.</li>
 				<li>Create a CNN that makes use of regularization.<h4>Note</h4><p class="callout">The solution for this activity can be found on page 369.</p></li>
 			</ol>
 			<p>You should find that the test set accuracy for this model is 70.4%. The training set accuracy is really high, around 96. This means that the model has started to overfit. Improving the model to get the best possible accuracy is left for you as an exercise. You can plot the incorrectly predicted images using the code from previous exercises to get a sense of how well the model performs:</p>
-			<p class="snippet">import matplotlib.pyplot as plt</p>
-			<p class="snippet">y_pred = model.predict(x_test)</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]</p>
-			<p class="snippet">labels = [‘dog', ‘cat']</p>
-			<p class="snippet">image = 5</p>
-			<p class="snippet">plt.imshow(x_test[incorrect_indices[image]].reshape(50,50),  cmap=plt.get_cmap(‘gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print(“Prediction: {0}”.format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</p>
-			<div>
-				<div id="_idContainer247" class="IMG---Figure">
-					<img src="Images/C13322_06_33.jpg" alt="Figure 6.33: Incorrect prediction of a dog by the regularized CNN model&#13;&#10;" width="617" height="352"/>
+			<pre>import matplotlib.pyplot as plt
+y_pred = model.predict(x_test)
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]
+labels = [‘dog', ‘cat']
+image = 5
+plt.imshow(x_test[incorrect_indices[image]].reshape(50,50),  cmap=plt.get_cmap(‘gray'))
+plt.show()
+print(“Prediction: {0}”.format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</pre>
+			<div><div><img src="img/C13322_06_33.jpg" alt="Figure 6.33: Incorrect prediction of a dog by the regularized CNN model&#13;&#10;" width="617" height="352"/>
 				</div>
 			</div>
 			<h6>Figure 6.33: Incorrect prediction of a dog by the regularized CNN model</h6>
@@ -361,46 +371,42 @@
 			<p>While training machine learning models, we data scientists often run into the problem of imbalanced classes and a lack of training data. This leads to sub-par models that perform poorly when deployed in real-life scenarios. One easy way to deal with these problems is data augmentation. There are multiple ways of performing data augmentation, such as rotating the image, shifting the object, cropping an image, shearing to distort the image, and zooming in to a part of the image, as well as more complex methods such as using Generative Adversarial Networks (GANs) to generate new images. GANs are simply two neural networks that are competing with each other. A generator network tries to make images that are similar to the already existing images, while a discriminator network tries to determine if the image was generated or was part of the original data. After the training is complete, the generator network is able to create images that are not a part of the original data but are so similar that they can be mistaken for images that were actually captured by a camera. </p>
 			<h4>Note </h4>
 			<p class="callout">You can learn more about GANs in this paper: https://arxiv.org/abs/1406.2661.</p>
-			<div>
-				<div id="_idContainer248" class="IMG---Figure">
-					<img src="Images/C13322_06_34.jpg" alt="Figure 6.34: On the left is a fake image generated by a GAN, whereas the one on the right is an image of a real person&#13;&#10;" width="1762" height="604"/>
+			<div><div><img src="img/C13322_06_34.jpg" alt="Figure 6.34: On the left is a fake image generated by a GAN, whereas the one on the right is an image of a real person&#13;&#10;" width="1762" height="604"/>
 				</div>
 			</div>
 			<h6>Figure 6.34: On the left is a fake image generated by a GAN, whereas the one on the right is an image of a real person</h6>
 			<h4>Note</h4>
 			<p class="callout">Credits: http://www.whichfaceisreal.com</p>
 			<p>Coming back to the traditional methods of performing image augmentation, we perform the operations mentioned previously, such as flipping images, and then train our model on both the original and the transformed image. Let's say we have the following flipped image of a cat on the left:</p>
-			<div>
-				<div id="_idContainer249" class="IMG---Figure">
-					<img src="Images/C13322_06_35.jpg" alt="Figure 6.35: Normal picture of the cat on the right and flipped image on the left&#13;&#10;" width="1378" height="534"/>
+			<div><div><img src="img/C13322_06_35.jpg" alt="Figure 6.35: Normal picture of the cat on the right and flipped image on the left&#13;&#10;" width="1378" height="534"/>
 				</div>
 			</div>
 			<h6>Figure 6.35: Normal picture of the cat on the right and flipped image on the left</h6>
 			<p>Now, a machine learning model trained on this left image would have a hard time recognizing the flipped image on the right as that of a cat because it is facing the other way. This is because the convolutional layers are trained to detect images of cats looking to the left only. It has created rules about the position of the different features of a body. </p>
-			<p>Thus, we train our model on all the augmented images. Data augmentation is the key to getting the best results from a CNN model. We make use of the <strong class="inline">ImageDataGenerator</strong> class in Keras to perform image augmentations easily. You will learn more about generators in the next section.</p>
+			<p>Thus, we train our model on all the augmented images. Data augmentation is the key to getting the best results from a CNN model. We make use of the <code>ImageDataGenerator</code> class in Keras to perform image augmentations easily. You will learn more about generators in the next section.</p>
 			<h2 id="_idParaDest-167"><a id="_idTextAnchor182"/>Generators</h2>
-			<p>In the previous chapter, we discussed how big datasets could lead to problems in training due to the limitations in RAM. This problem is a bigger issue when working with images. Keras has implemented generators that help us get batches of input images and their corresponding labels while training on the fly. These generators also help us perform data augmentation on images before using them for training. First, we will see how we can make use of the <strong class="inline">ImageDataGenerator</strong> class to generate augmented images for our model.</p>
-			<p>To implement data augmentation, we just need to change our <em class="italics">Exercise 3</em> code a little bit. We will substitute <strong class="inline">model.fit()</strong> with the following:</p>
-			<p class="snippet">BATCH_SIZE = 32</p>
-			<p class="snippet">aug = ImageDataGenerator(rotation_range=20, </p>
-			<p class="snippet">width_shift_range=0.2, height_shift_range=0.2, </p>
-			<p class="snippet">shear_range=0.15, zoom_range=0.15,</p>
-			<p class="snippet">horizontal_flip=True, vertical_flip=True, </p>
-			<p class="snippet">fill_mode=”nearest”)</p>
-			<p class="snippet"> </p>
-			<p class="snippet">log = model.fit_generator(</p>
-			<p class="snippet">aug.flow(x_train, y_train, batch_size= BATCH_SIZE),</p>
-			<p class="snippet">validation_data=( x_test, y_test), steps_per_epoch=len(x_train) // BATCH_SIZE, epochs=10)</p>
-			<p>Let's now look at what <strong class="inline">ImageDataGenerator</strong> is actually doing:</p>
+			<p>In the previous chapter, we discussed how big datasets could lead to problems in training due to the limitations in RAM. This problem is a bigger issue when working with images. Keras has implemented generators that help us get batches of input images and their corresponding labels while training on the fly. These generators also help us perform data augmentation on images before using them for training. First, we will see how we can make use of the <code>ImageDataGenerator</code> class to generate augmented images for our model.</p>
+			<p>To implement data augmentation, we just need to change our <em class="italics">Exercise 3</em> code a little bit. We will substitute <code>model.fit()</code> with the following:</p>
+			<pre>BATCH_SIZE = 32
+aug = ImageDataGenerator(rotation_range=20, 
+width_shift_range=0.2, height_shift_range=0.2, 
+shear_range=0.15, zoom_range=0.15,
+horizontal_flip=True, vertical_flip=True, 
+fill_mode=”nearest”)
+ 
+log = model.fit_generator(
+aug.flow(x_train, y_train, batch_size= BATCH_SIZE),
+validation_data=( x_test, y_test), steps_per_epoch=len(x_train) // BATCH_SIZE, epochs=10)</pre>
+			<p>Let's now look at what <code>ImageDataGenerator</code> is actually doing:</p>
 			<ul>
-				<li><strong class="inline">rotation_range</strong>: This parameter defines the maximum degrees by which the image can be rotated. This rotation is random and can be of any value less than the amount mentioned. This ensures that no two images are the same.</li>
-				<li><strong class="inline">width_shift_range</strong>/<strong class="inline">height_shift_range</strong>: This value defines the amount by which the image can be shifted. If the value is less than 1, then the value is assumed to be a fraction of the total width. If it is more than 1, it is taken as pixel. The range will be in the interval (<strong class="inline">-shift_range</strong>, <strong class="inline">+ shift_range</strong>).</li>
-				<li><strong class="inline">shear_range</strong>: This is the shearing angle in degrees (counter-clockwise direction).</li>
-				<li><strong class="inline">zoom_range</strong>: The value here can either be [<strong class="inline">lower_range</strong>, <strong class="inline">upper_range</strong>] or be a float, in which case the range would be [<strong class="inline">1-zoom_range</strong>, <strong class="inline">1+zoom_range</strong>]. This is the range for the random zooming.</li>
-				<li><strong class="inline">horizontal_flip</strong> / <strong class="inline">vertical_flip</strong>: A true value here makes the generator randomly flip the image horizontally or vertically. </li>
-				<li><strong class="inline">fill_mode</strong>: This helps us decide what to put in the whitespaces created by the rotation and searing process.<p><strong class="inline">constant</strong>: This fills the white space with a constant value that has to be defined using the <strong class="inline">cval</strong> parameter.</p><p><strong class="inline">nearest</strong>: This fills the whitespace with the nearest pixel. </p><p><strong class="inline">reflect</strong>: This causes a reflection effect, much like a mirror. </p><p><strong class="inline">wrap</strong>: This causes the image to wrap around and fill the whitespace. </p></li>
+				<li><code>rotation_range</code>: This parameter defines the maximum degrees by which the image can be rotated. This rotation is random and can be of any value less than the amount mentioned. This ensures that no two images are the same.</li>
+				<li><code>width_shift_range</code>/<code>height_shift_range</code>: This value defines the amount by which the image can be shifted. If the value is less than 1, then the value is assumed to be a fraction of the total width. If it is more than 1, it is taken as pixel. The range will be in the interval (<code>-shift_range</code>, <code>+ shift_range</code>).</li>
+				<li><code>shear_range</code>: This is the shearing angle in degrees (counter-clockwise direction).</li>
+				<li><code>zoom_range</code>: The value here can either be [<code>lower_range</code>, <code>upper_range</code>] or be a float, in which case the range would be [<code>1-zoom_range</code>, <code>1+zoom_range</code>]. This is the range for the random zooming.</li>
+				<li><code>horizontal_flip</code> / <code>vertical_flip</code>: A true value here makes the generator randomly flip the image horizontally or vertically. </li>
+				<li><code>fill_mode</code>: This helps us decide what to put in the whitespaces created by the rotation and searing process.<p><code>constant</code>: This fills the white space with a constant value that has to be defined using the <code>cval</code> parameter.</p><p><code>nearest</code>: This fills the whitespace with the nearest pixel. </p><p><code>reflect</code>: This causes a reflection effect, much like a mirror. </p><p><code>wrap</code>: This causes the image to wrap around and fill the whitespace. </p></li>
 			</ul>
-			<p>The generator is applying the preceding operations randomly on all the images it encounters. This ensures that the model does not see the same image twice and mitigates overfitting. We have to use the <strong class="inline">fit_generator()</strong> function instead of the <strong class="inline">fit()</strong> function when working with generators. We pass a suitable batch size to the generator depending on the amount of free RAM we have for training.</p>
+			<p>The generator is applying the preceding operations randomly on all the images it encounters. This ensures that the model does not see the same image twice and mitigates overfitting. We have to use the <code>fit_generator()</code> function instead of the <code>fit()</code> function when working with generators. We pass a suitable batch size to the generator depending on the amount of free RAM we have for training.</p>
 			<p>The default Keras generator has a bit of memory overhead; to remove this, you can create your own generator. To do this, you will have to make sure you implement these four parts of the generator:</p>
 			<ol>
 				<li value="1">Read the input image (or any other data).</li>
@@ -409,56 +415,76 @@
 				<li>Generate output in the form that Keras expects.</li>
 			</ol>
 			<p>An example code to help you create your own generator is given here:</p>
-			<p class="snippet">def custom_image_generator(images, labels, batch_size = 128):    </p>
-			<p class="snippet">    while True:</p>
-			<p class="snippet">          # Randomly select images for the batch           batch_images = np.random.choice(images, </p>
-			<p class="snippet">                                     size = batch_size)          batch_input = []          batch_output = []           </p>
-			<p class="snippet">          # Read image, perform preprocessing and get labels</p>
-			<p class="snippet">          for image in batch_images:</p>
-			<p class="snippet">               # Function that reads and returns the image</p>
-			<p class="snippet">              input = get_input(image)</p>
-			<p class="snippet">              # Function that gets the label of the image</p>
-			<p class="snippet">                output = get_output(image,labels =labels)</p>
-			<p class="snippet">              # Function that pre-processes and augments the image</p>
-			<p class="snippet">                input = preprocess_image(input)</p>
-			<p class="snippet">              batch_input += [input]              batch_output += [output]</p>
-			<p class="snippet">          </p>
-			<p class="snippet">          batch_x = np.array( batch_input )          batch_y = np.array( batch_output )          </p>
-			<p class="snippet">            # Return a tuple of (images,labels) to feed the network           yield(batch_x, batch_y)</p>
-			<p>Implementing <strong class="inline">get_input</strong>, <strong class="inline">get_output</strong>, and <strong class="inline">preprocess_image</strong> is left as an exercise.</p>
+			<pre>def custom_image_generator(images, labels, batch_size = 128):    
+    while True:
+          # Randomly select images for the batch           batch_images = np.random.choice(images, 
+                                     size = batch_size)          batch_input = []          batch_output = []           
+          # Read image, perform preprocessing and get labels
+          for image in batch_images:
+               # Function that reads and returns the image
+              input = get_input(image)
+              # Function that gets the label of the image
+                output = get_output(image,labels =labels)
+              # Function that pre-processes and augments the image
+                input = preprocess_image(input)
+              batch_input += [input]              batch_output += [output]
+          
+          batch_x = np.array( batch_input )          batch_y = np.array( batch_output )          
+            # Return a tuple of (images,labels) to feed the network           yield(batch_x, batch_y)</pre>
+			<p>Implementing <code>get_input</code>, <code>get_output</code>, and <code>preprocess_image</code> is left as an exercise.</p>
 			<h3 id="_idParaDest-168"><a id="_idTextAnchor183"/>Exercise 53: Classify CIFAR-10 Images with Image Augmentation</h3>
 			<p>In this exercise, we will perform classification on the CIFAR-10 (Canadian Institute for Advanced Research) dataset, similar to <em class="italics">Exercise 52</em>. Here, we will make use of generators to augment the training data. We will rotate, shift, and flip the images randomly:</p>
 			<ol>
-				<li value="1">Load the CIFAR-10 dataset using the Keras library:<p class="snippet">from keras.datasets import cifar10</p><p class="snippet">(x_train, y_train), (x_test, y_test) = cifar10.load_data()</p></li>
-				<li>Convert the data to the format that Keras requires:<p class="snippet">x_train = x_train.reshape(-1, 32, 32, 3)</p><p class="snippet">x_test = x_test.reshape(-1, 32, 32, 3)</p></li>
-				<li>Convert the target variable to a one-hot vector so that our network does not form unnecessary connections between the different target variables:<p class="snippet">from sklearn.preprocessing import LabelBinarizer</p><p class="snippet">label_binarizer = LabelBinarizer()</p><p class="snippet">label_binarizer.fit(range(10))</p><p class="snippet">y_train = label_binarizer.transform(y_train)</p><p class="snippet">y_test = label_binarizer.transform(y_test)</p></li>
-				<li>Create the model. We will use the network from <em class="italics">Exercise 3</em>:<p class="snippet">from keras.models import Sequential</p><p class="snippet">model = Sequential()</p><p>Add the convolutional layers:</p><p class="snippet">from keras.layers import Dense, Dropout, Conv2D, MaxPool2D, Flatten, BatchNormalization</p><p class="snippet">model.add(Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32,32,3)))</p><p class="snippet">model.add(Conv2D(32, (3, 3), activation='relu'))</p><p>Add the pooling layer:</p><p class="snippet">model.add(MaxPool2D(pool_size=(2, 2)))</p><p>Add the batch normalization layer, along with a dropout layer:</p><p class="snippet">model.add(BatchNormalization())</p><p class="snippet">model.add(Dropout(0.10))</p></li>
-				<li>Flatten the 2D matrices into 1D vectors:<p class="snippet">model.add(Flatten())</p></li>
-				<li>Use dense layers as the final layers for the model:<p class="snippet">model.add(Dense(512, activation='relu'))</p><p class="snippet">model.add(Dropout(0.5))</p><p class="snippet">model.add(Dense(10, activation='softmax'))</p></li>
-				<li>Compile the model using the following code:<p class="snippet">model.compile(loss='categorical_crossentropy', optimizer='adam', </p><p class="snippet">metrics = [‘acc'])</p></li>
-				<li>Create the data generator and pass it the augmentations you want on the data:<p class="snippet">from keras.preprocessing.image import ImageDataGenerator</p><p class="snippet">datagen = ImageDataGenerator(</p><p class="snippet">    rotation_range=45,</p><p class="snippet">    width_shift_range=0.2,  </p><p class="snippet">    height_shift_range=0.2,  </p><p class="snippet">    horizontal_flip=True)</p></li>
-				<li>Train the model:<p class="snippet">BATCH_SIZE = 128</p><p class="snippet">model_details = model.flow(datagen.flow(x_train, y_train, batch_size = BATCH_SIZE),</p><p class="snippet">                    steps_per_epoch = len(x_train) // BATCH_SIZE, </p><p class="snippet">                    epochs = 10, </p><p class="snippet">                    validation_data= (x_test, y_test),</p><p class="snippet">                    verbose=1)</p></li>
-				<li>Check the final accuracy of the model:<p class="snippet">score = model.evaluate(x_test, y_test)</p><p class="snippet">print(“Accuracy: {0:.2f}%”.format(score[1]*100))</p><p>The output is shown as follows: </p></li>
+				<li value="1">Load the CIFAR-10 dataset using the Keras library:<pre>from keras.datasets import cifar10
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()</pre></li>
+				<li>Convert the data to the format that Keras requires:<pre>x_train = x_train.reshape(-1, 32, 32, 3)
+x_test = x_test.reshape(-1, 32, 32, 3)</pre></li>
+				<li>Convert the target variable to a one-hot vector so that our network does not form unnecessary connections between the different target variables:<pre>from sklearn.preprocessing import LabelBinarizer
+label_binarizer = LabelBinarizer()
+label_binarizer.fit(range(10))
+y_train = label_binarizer.transform(y_train)
+y_test = label_binarizer.transform(y_test)</pre></li>
+				<li>Create the model. We will use the network from <em class="italics">Exercise 3</em>:<pre>from keras.models import Sequential
+model = Sequential()</pre><p>Add the convolutional layers:</p><pre>from keras.layers import Dense, Dropout, Conv2D, MaxPool2D, Flatten, BatchNormalization
+model.add(Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32,32,3)))
+model.add(Conv2D(32, (3, 3), activation='relu'))</pre><p>Add the pooling layer:</p><pre>model.add(MaxPool2D(pool_size=(2, 2)))</pre><p>Add the batch normalization layer, along with a dropout layer:</p><pre>model.add(BatchNormalization())
+model.add(Dropout(0.10))</pre></li>
+				<li>Flatten the 2D matrices into 1D vectors:<pre>model.add(Flatten())</pre></li>
+				<li>Use dense layers as the final layers for the model:<pre>model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(10, activation='softmax'))</pre></li>
+				<li>Compile the model using the following code:<pre>model.compile(loss='categorical_crossentropy', optimizer='adam', 
+metrics = [‘acc'])</pre></li>
+				<li>Create the data generator and pass it the augmentations you want on the data:<pre>from keras.preprocessing.image import ImageDataGenerator
+datagen = ImageDataGenerator(
+    rotation_range=45,
+    width_shift_range=0.2,  
+    height_shift_range=0.2,  
+    horizontal_flip=True)</pre></li>
+				<li>Train the model:<pre>BATCH_SIZE = 128
+model_details = model.flow(datagen.flow(x_train, y_train, batch_size = BATCH_SIZE),
+                    steps_per_epoch = len(x_train) // BATCH_SIZE, 
+                    epochs = 10, 
+                    validation_data= (x_test, y_test),
+                    verbose=1)</pre></li>
+				<li>Check the final accuracy of the model:<pre>score = model.evaluate(x_test, y_test)
+print(“Accuracy: {0:.2f}%”.format(score[1]*100))</pre><p>The output is shown as follows: </p></li>
 			</ol>
-			<div>
-				<div id="_idContainer250" class="IMG---Figure">
-					<img src="Images/C13322_06_36.jpg" alt="" width="592" height="24"/>
+			<div><div><img src="img/C13322_06_36.jpg" alt="" width="592" height="24"/>
 				</div>
 			</div>
 			<h6>Figure 6.36: Model accuracy output</h6>
 			<p>Congratulations! You have made use of data augmentation to make your model recognize a wider range of images. You must have noticed that the accuracy of your model decreased. This is due to the low number of epochs we trained the model on. Models in which we use data augmentatio n need to be trained for more epochs. You will also see that you can train for a lot more epochs without worrying about overfitting. This is because every epoch, the model is seeing a new image from the dataset. Images are rarely repeated, if ever. You will definitely see an improvement if you run the model for more epochs. Experiment with more architectures and augmentations. </p>
 			<p>Here you can see an incorrectly classified image. By checking the incorrectly identified images, you can gauge the performance of the model and can figure out where it is performing poorly.</p>
-			<p class="snippet">y_pred = model.predict(x_test)</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]</p>
-			<p class="snippet">labels = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']</p>
-			<p class="snippet">image = 2</p>
-			<p class="snippet">plt.imshow(x_test[incorrect_indices[image]].reshape(32,32,3))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</p>
+			<pre>y_pred = model.predict(x_test)
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(y_test,axis=1))[0]
+labels = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+image = 2
+plt.imshow(x_test[incorrect_indices[image]].reshape(32,32,3))
+plt.show()
+print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</pre>
 			<p>See the following screenshot to check the incorrect prediction:</p>
-			<div>
-				<div id="_idContainer251" class="IMG---Figure">
-					<img src="Images/C13322_06_37.jpg" alt="Figure 6.37: Incorrect prediction from the CNN model that was trained on augmented data&#13;&#10;" width="654" height="349"/>
+			<div><div><img src="img/C13322_06_37.jpg" alt="Figure 6.37: Incorrect prediction from the CNN model that was trained on augmented data&#13;&#10;" width="654" height="349"/>
 				</div>
 			</div>
 			<h6>Figure 6.37: Incorrect prediction from the CNN model that was trained on augmented data</h6>
@@ -470,18 +496,16 @@
 				<li>Create a CNN that will identify if the image provided is of a cat or a dog. Make sure to make use of regularization.<h4>Note</h4><p class="callout">The solution for this activity can be found on page 373.</p></li>
 			</ol>
 			<p>You should find that the test set accuracy for this model <a id="_idTextAnchor185"/>is around 72%, which is an improvement on the model in <em class="italics">Activity 17</em>. You will observe that the training accuracy is really high, at around 98%. This means that this model has started to overfit, much like the one in <em class="italics">Activity 17</em>. This could be due to a lack of data augmentation. Try changing the data augmentation parameters to see if there is any change in accuracy. Alternatively, you can modify the architecture of the neural network to get better results. You can plot the incorrectly predicted images to get a sense of how well the model performs.</p>
-			<p class="snippet">import matplotlib.pyplot as plt</p>
-			<p class="snippet">y_pred = model.predict(validation_data[0])</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(validation_data[1],axis=1))[0]</p>
-			<p class="snippet">labels = ['dog', 'cat']</p>
-			<p class="snippet">image = 7</p>
-			<p class="snippet">plt.imshow(validation_data[0][incorrect_indices[image]].reshape(50,50), cmap=plt.get_cmap('gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</p>
+			<pre>import matplotlib.pyplot as plt
+y_pred = model.predict(validation_data[0])
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(validation_data[1],axis=1))[0]
+labels = ['dog', 'cat']
+image = 7
+plt.imshow(validation_data[0][incorrect_indices[image]].reshape(50,50), cmap=plt.get_cmap('gray'))
+plt.show()
+print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</pre>
 			<p>An example is shown in the following screenshot:</p>
-			<div>
-				<div id="_idContainer252" class="IMG---Figure">
-					<img src="Images/C13322_06_38.jpg" alt="Figure 6.38: Incorrect prediction of a cat by the data augmentation CNN model &#13;&#10;" width="809" height="353"/>
+			<div><div><img src="img/C13322_06_38.jpg" alt="Figure 6.38: Incorrect prediction of a cat by the data augmentation CNN model &#13;&#10;" width="809" height="353"/>
 				</div>
 			</div>
 			<h6>Figure 6.38: Incorrect prediction of a cat by the data augmentation CNN model </h6>

@@ -1,12 +1,9 @@
 <html><head></head><body>
-		<div class="Content" id="_idContainer063">
-			<h1 id="_idParaDest-78"><em class="italics"><a id="_idTextAnchor083"/>Chapter 3</em></h1>
+		<div><h1 id="_idParaDest-78"><em class="italics"><a id="_idTextAnchor083"/>Chapter 3</em></h1>
 		</div>
-		<div class="Content" id="_idContainer064">
-			<h1 id="_idParaDest-79"><a id="_idTextAnchor084"/>Working with Big Data Frameworks</h1>
+		<div><h1 id="_idParaDest-79"><a id="_idTextAnchor084"/>Working with Big Data Frameworks</h1>
 		</div>
-		<div class="Content" id="_idContainer065">
-			<h2>Learning Objectives</h2>
+		<div><h2>Learning Objectives</h2>
 			<p>By the end of this chapter, you will be able to:</p>
 			<ul>
 				<li class="bullets">Explain the HDFS and YARN Hadoop components </li>
@@ -19,8 +16,7 @@
 			</ul>
 			<p>In this chapter, we will explore big data tools such as Hadoop and Spark.</p>
 		</div>
-		<div class="Content" id="_idContainer070">
-			<h2 id="_idParaDest-80"><a id="_idTextAnchor085"/>Introduction</h2>
+		<div><h2 id="_idParaDest-80"><a id="_idTextAnchor085"/>Introduction</h2>
 			<p>We saw in the previous chapters how to work with data using pandas and Matplotlib for visualization and the other tools in the Python data science stack. So far, the datasets that we have used have been relatively small and with a relatively simple structure. Real-life datasets can be orders of magnitude larger than can fit into the memory of a single machine, the time to process these datasets can be long, and the usual software tools may not be up to the task. This is the usual definition of what big data is: an amount of data that does not fit into memory or cannot be processed or analyzed in a reasonable amount of time by common software methods. What is big data for some may not be big data for others, and this definition can vary depending on who you ask.</p>
 			<p>Big Data is also associated with the 3 V’s (later extended to 4 V’s):</p>
 			<ul>
@@ -40,9 +36,7 @@
 				<li><strong class="bold">Hadoop MapReduce</strong>: a large-scale parallel processing engine</li>
 				<li><strong class="bold">Hadoop Distributed File System</strong> (<strong class="bold">HDFS</strong>): as the name suggests, HDFS is a file system that can be distributed over several machines, using local disks, to create a large storage pool:</li>
 			</ul>
-			<div>
-				<div class="IMG---Figure" id="_idContainer066">
-					<img alt="Figure 3.1: Architecture of HDFS" src="image/C12913_03_01.jpg"/>
+			<div><div><img alt="Figure 3.1: Architecture of HDFS" src="img/C12913_03_01.jpg"/>
 				</div>
 			</div>
 			<h6>Figure 3.1: Architecture of HDFS</h6>
@@ -51,17 +45,17 @@
 			<h3 id="_idParaDest-82">M<a id="_idTextAnchor087"/>anipulating Data with the HDFS</h3>
 			<p>The HDFS is a distributed file system with an important distinction: it was designed to run on thousands of computers that were not built specially for it—so-called <strong class="bold">commodity hardware</strong>. It doesn’t require any special networking gear or special disks, it can run on common hardware. Another idea that permeates HDFS is that it is resilient: hardware will always fail, so instead of trying to prevent failure, the HDFS works around this by being extremely fault-tolerant. It assumes that failures will occur considering its scale, so the HDFS implements fault detection for fast and automatic recovery. It is also portable, running in diverse platforms, and can hold single files with terabytes of data.</p>
 			<p>One of the big advantages from a user perspective is that the HDFS supports traditional hierarchical file structure organization (folders and files in a tree structure), so users can create folders inside folders and files inside folders on each level, simplifying its use and operation. Files and folders can be moved around, deleted, and renamed, so users do not need to know about data replication or <strong class="bold">NameNode</strong>/<strong class="bold">DataNode</strong> architecture to use the HDFS; it would look similar to a Linux filesystem. Before demonstrating how to access files, we need to explain a bit about the addresses used to access Hadoop data. For example, the URI for accessing files in HDFS has the following format:</p>
-			<p class="snippet">hdfs://hadoopnamenode.domainname/path/to/file</p>
-			<p>Where <strong class="inline">namenode.domainname</strong> is the address configured in Hadoop. Hadoop user guide (<a href="https://exitcondition.com/install-hadoop-windows/">https://exitcondition.com/install-hadoop-windows/</a>) details a bit more on how to access different parts of the Hadoop system. Let’s look at a few examples to better understand how all this works.</p>
+			<pre>hdfs://hadoopnamenode.domainname/path/to/file</pre>
+			<p>Where <code>namenode.domainname</code> is the address configured in Hadoop. Hadoop user guide (<a href="https://exitcondition.com/install-hadoop-windows/">https://exitcondition.com/install-hadoop-windows/</a>) details a bit more on how to access different parts of the Hadoop system. Let’s look at a few examples to better understand how all this works.</p>
 			<h3 id="_idParaDest-83">E<a id="_idTextAnchor088"/>xercise 16: Manipulating Files in the HDFS</h3>
-			<p>An analyst just received a large dataset to analyze and it’s stored on an HDFS system. How would this analyst list, copy, rename, and move these files? Let’s assume that the analyst received a file with raw data, named <strong class="inline">new_data.csv</strong>:</p>
+			<p>An analyst just received a large dataset to analyze and it’s stored on an HDFS system. How would this analyst list, copy, rename, and move these files? Let’s assume that the analyst received a file with raw data, named <code>new_data.csv</code>:</p>
 			<ol>
-				<li>Let’s start checking the current directories and files using the following command on the terminal if you are on Linux based system or command prompt if you are on Windows system:<p class="snippet">hdfs dfs -ls /</p></li>
-				<li>We have a local file on disk, called <strong class="inline">new_data.csv</strong>, which we want to copy to the HDFS data folder:<p class="snippet">hdfs dfs -put C:/Users/admin/Desktop/Lesson03/new_data.csv /</p></li>
-				<li>Notice that the last part of the command is the path inside HDFS. Now, create a folder in HDFS using the command <strong class="inline">mkdir</strong>:<p class="snippet">hdfs dfs -mkdir /data</p></li>
-				<li>And move the file to a data folder in HDFS:<p class="snippet">hdfs dfs -mv /data_file.csv /data</p></li>
-				<li>Change the name of the CSV file:<p class="snippet">hdfs dfs -mv /data/new_data.csv /data/other_data.csv</p></li>
-				<li>Use the following command to check whether the file is present in the current location or not:<p class="snippet">hadoop fs -ls /data</p><p>The output is as follows:</p><p class="snippet">other_data.csv</p><h4>Note</h4><p class="callout">Commands after the HDFS part have the same name as commands in the Linux shell.</p></li>
+				<li>Let’s start checking the current directories and files using the following command on the terminal if you are on Linux based system or command prompt if you are on Windows system:<pre>hdfs dfs -ls /</pre></li>
+				<li>We have a local file on disk, called <code>new_data.csv</code>, which we want to copy to the HDFS data folder:<pre>hdfs dfs -put C:/Users/admin/Desktop/Lesson03/new_data.csv /</pre></li>
+				<li>Notice that the last part of the command is the path inside HDFS. Now, create a folder in HDFS using the command <code>mkdir</code>:<pre>hdfs dfs -mkdir /data</pre></li>
+				<li>And move the file to a data folder in HDFS:<pre>hdfs dfs -mv /data_file.csv /data</pre></li>
+				<li>Change the name of the CSV file:<pre>hdfs dfs -mv /data/new_data.csv /data/other_data.csv</pre></li>
+				<li>Use the following command to check whether the file is present in the current location or not:<pre>hadoop fs -ls /data</pre><p>The output is as follows:</p><pre>other_data.csv</pre><h4>Note</h4><p class="callout">Commands after the HDFS part have the same name as commands in the Linux shell.</p></li>
 			</ol>
 			<p>Knowing how to manipulate files and directories with the HDFS is an important part of big data analysis, but usually, direct manipulation is done only on ingestion. To analyze data, HDFS is not directly used, and tools such as Spark are more powerful. Let’s see how to use Spark in sequence.</p>
 			<h2 id="_idParaDest-84">S<a id="_idTextAnchor089"/>park</h2>
@@ -69,9 +63,7 @@
 			<p>Spark was designed to tackle some problems with the Hadoop architecture when used for analysis, such as data streaming, SQL over files stored on HDFS and machine learning. It can distribute data over all computing nodes in a cluster in a way that decreases the latency of each computing step. Another Spark difference is its flexibility: there are interfaces for Java, Scala, SQL, R and Python, and libraries for different problems, such as MLlib for machine learning, GraphX for graph computation, and Spark Streaming, for streaming workloads.</p>
 			<p>Spark uses the worker abstraction, having a driver process that receives user input to start parallel executions, and worker processes that reside on the cluster nodes, executing tasks. It has a built-in cluster management tool and supports other tools, such as Hadoop YARN and Apache Mesos (and even Kubernetes), integrating into different environments and resource distribution scenarios.</p>
 			<p>Spark can also be very fast, because it first tries to distribute data over all nodes and keep it in memory instead of relying only on data on disk. It can handle datasets larger than the total available memory, shifting data between memory and disk, but making the process slower than if the entire dataset fitted in the total available memory of all nodes:</p>
-			<div>
-				<div class="IMG---Figure" id="_idContainer067">
-					<img alt="Figure 3.2: Working mechanism of Spark" src="image/C12913_03_02.jpg"/>
+			<div><div><img alt="Figure 3.2: Working mechanism of Spark" src="img/C12913_03_02.jpg"/>
 				</div>
 			</div>
 			<h6>Figure 3.2: Working mechanism of Spark</h6>
@@ -91,17 +83,42 @@
 			<h3 id="_idParaDest-86">Ex<a id="_idTextAnchor091"/>ercise 17: Performing DataFrame Operations in Spark</h3>
 			<p>Let’s start using Spark to perform input/output and simple aggregation operations. The Spark interface, as we said before, was inspired by the pandas interface. What we learned in <em class="italics">Chapter 2</em>, <em class="italics">Statistical Visualizations Using Matplotlib and Seaborn</em>, can be applied here, making it easier to carry out more complex analysis faster, including aggregations, statistics, computation, and visualization on aggregated data later on. We want to read a CSV file, as we did before, to perform some analysis on it:</p>
 			<ol>
-				<li value="1">First, let’s use the following command on Jupyter notebook to create a Spark session:<p class="snippet">from pyspark.sql import SparkSession</p><p class="snippet">&gt;&gt;&gt; spark = SparkSession \</p><p class="snippet">    .builder \</p><p class="snippet">    .appName(“Python Spark Session”) \</p><p class="snippet">    .getOrCreate()</p></li>
-				<li>Now, let’s use the following command to read the data from the <strong class="inline">mydata.csv</strong> file:<p class="snippet">df = spark.read.csv(‘/data/mydata.csv’, header=True)</p></li>
-				<li>As we said before, Spark evaluation is lazy, so if we want to show what values are inside the DataFrame, we need to call the action, as illustrated here:<p class="snippet">df.show()</p><p class="snippet">+------+----+-------+</p><p class="snippet">|  name| age| height|</p><p class="snippet">+------+----+-------+</p><p class="snippet">|  Jonh|  22|   1.80|</p><p class="snippet">|Hughes|  34|   1.96|</p><p class="snippet">|  Mary|  27|   1.56|</p><p class="snippet">+------+----+-------+</p><h4>Note</h4><p class="callout">This is not necessary with pandas: printing the DataFrame would work directly.</p></li>
+				<li value="1">First, let’s use the following command on Jupyter notebook to create a Spark session:<pre>from pyspark.sql import SparkSession
+&gt;&gt;&gt; spark = SparkSession \
+    .builder \
+    .appName(“Python Spark Session”) \
+    .getOrCreate()</pre></li>
+				<li>Now, let’s use the following command to read the data from the <code>mydata.csv</code> file:<pre>df = spark.read.csv(‘/data/mydata.csv’, header=True)</pre></li>
+				<li>As we said before, Spark evaluation is lazy, so if we want to show what values are inside the DataFrame, we need to call the action, as illustrated here:<pre>df.show()
++------+----+-------+
+|  name| age| height|
++------+----+-------+
+|  Jonh|  22|   1.80|
+|Hughes|  34|   1.96|
+|  Mary|  27|   1.56|
++------+----+-------+</pre><h4>Note</h4><p class="callout">This is not necessary with pandas: printing the DataFrame would work directly.</p></li>
 			</ol>
 			<h3 id="_idParaDest-87"><a id="_idTextAnchor092"/>Exercise 18: Accessing Data with Spark</h3>
-			<p>After reading our DataFrame and showing its contents, we want to start manipulating the data so that we can do an analysis. We can access data using the same NumPy selection syntax, providing the column name as <strong class="bold">input</strong>. Note that the object that is returned is of type <strong class="inline">Column</strong>:</p>
+			<p>After reading our DataFrame and showing its contents, we want to start manipulating the data so that we can do an analysis. We can access data using the same NumPy selection syntax, providing the column name as <code>Column</code>:</p>
 			<ol>
-				<li value="1">Let’s select one column from the DataFrame that we ingested in the previous exercise:<p class="snippet">df[‘age’].Column[‘age’]</p><p>This is different from what we’ve seen with pandas. The method that selects values from columns in a Spark DataFrame is <strong class="inline">select</strong>. So, let’s see what happens when we use this method.</p></li>
-				<li>Using the same DataFrame again, use the <strong class="inline">select</strong> method to select the name column:<p class="snippet">df.select(df[‘name’])DataFrame[age: string]</p></li>
-				<li>Now, it changed from <strong class="inline">Column</strong> to <strong class="inline">DataFrame</strong>. Because of that, we can use the methods for DataFrames. Use the <strong class="inline">show</strong> method for showing the results from the <strong class="inline">select</strong> method for <strong class="inline">age</strong>:<p class="snippet">df.select(df[‘age’]).show()</p><p class="snippet">+---+</p><p class="snippet">|age|</p><p class="snippet">+---+</p><p class="snippet">| 22|</p><p class="snippet">| 34|</p><p class="snippet">| 27|</p><p class="snippet">+---+</p></li>
-				<li>Let’s select more than one column. We can use the names of the columns to do this:<p class="snippet">df.select(df[‘age’], df[‘height’]).show()</p><p class="snippet">+---+------+</p><p class="snippet">|age|height|</p><p class="snippet">+---+------+</p><p class="snippet">| 22|  1.80|</p><p class="snippet">| 34|  1.96|</p><p class="snippet">| 27|  1.56|</p><p class="snippet">+---+------+</p></li>
+				<li value="1">Let’s select one column from the DataFrame that we ingested in the previous exercise:<pre>df[‘age’].Column[‘age’]</pre><p>This is different from what we’ve seen with pandas. The method that selects values from columns in a Spark DataFrame is <code>select</code>. So, let’s see what happens when we use this method.</p></li>
+				<li>Using the same DataFrame again, use the <code>select</code> method to select the name column:<pre>df.select(df[‘name’])DataFrame[age: string]</pre></li>
+				<li>Now, it changed from <code>Column</code> to <code>DataFrame</code>. Because of that, we can use the methods for DataFrames. Use the <code>show</code> method for showing the results from the <code>select</code> method for <code>age</code>:<pre>df.select(df[‘age’]).show()
++---+
+|age|
++---+
+| 22|
+| 34|
+| 27|
++---+</pre></li>
+				<li>Let’s select more than one column. We can use the names of the columns to do this:<pre>df.select(df[‘age’], df[‘height’]).show()
++---+------+
+|age|height|
++---+------+
+| 22|  1.80|
+| 34|  1.96|
+| 27|  1.56|
++---+------+</pre></li>
 			</ol>
 			<p>This is extensible for other columns, selecting by name, with the same syntax. We will look at more complex operations, such as <strong class="bold">aggregations with GroupBy</strong>, in the next chapter.</p>
 			<h3 id="_idParaDest-88"><a id="_idTextAnchor093"/>Exercise 19: Reading Data from the Local Filesystem and the HDFS</h3>
@@ -123,16 +140,22 @@
 			</ul>
 			<p>Based on a URL scheme, as an exercise, let’s read data from different places and formats:</p>
 			<ol>
-				<li value="1">Import the necessary libraries on the Jupyter notebook:<p class="snippet">from pyspark.sql import SparkSession</p><p class="snippet">spark = SparkSession \</p><p class="snippet">    .builder \</p><p class="snippet">    .appName(“Python Spark Session”) \</p><p class="snippet">    .getOrCreate()</p></li>
-				<li>Let’s assume that we have to get some data from a JSON file, which is common for data collected from APIs on the web. To read a file directly from HDFS, use the following URL:<p class="snippet">df = spark.read.json(‘hdfs://hadoopnamenode/data/myjsonfile.json’)</p><p>Note that, with this kind of URL, we have to provide the full address of the HDFS endpoint. We could also use only the simplified path, assuming that Spark was configured with the right options.</p></li>
-				<li>Now, read the data into the Spark object using the following command:<p class="snippet">df = spark.read.json(‘hdfs://data/myjsonfile.json’)</p></li>
-				<li>So, we choose the format on the <strong class="inline">read</strong> method and the storage system on the access URL. The same method is used to access JDBC connections, but usually, we have to provide a user and a password to connect. Let’s see how to connect to a PostgreSQL database:<p class="snippet">url = “jdbc:postgresql://posgreserver:5432/mydatabase”</p><p class="snippet">properties = {“user”: “my_postgre_user”,  password: “mypassword”, “driver”: “org.postgresql.Driver”}</p><p class="snippet">df = spark.read.jdbc(url, table = “mytable”, properties = properties)</p></li>
+				<li value="1">Import the necessary libraries on the Jupyter notebook:<pre>from pyspark.sql import SparkSession
+spark = SparkSession \
+    .builder \
+    .appName(“Python Spark Session”) \
+    .getOrCreate()</pre></li>
+				<li>Let’s assume that we have to get some data from a JSON file, which is common for data collected from APIs on the web. To read a file directly from HDFS, use the following URL:<pre>df = spark.read.json(‘hdfs://hadoopnamenode/data/myjsonfile.json’)</pre><p>Note that, with this kind of URL, we have to provide the full address of the HDFS endpoint. We could also use only the simplified path, assuming that Spark was configured with the right options.</p></li>
+				<li>Now, read the data into the Spark object using the following command:<pre>df = spark.read.json(‘hdfs://data/myjsonfile.json’)</pre></li>
+				<li>So, we choose the format on the <code>read</code> method and the storage system on the access URL. The same method is used to access JDBC connections, but usually, we have to provide a user and a password to connect. Let’s see how to connect to a PostgreSQL database:<pre>url = “jdbc:postgresql://posgreserver:5432/mydatabase”
+properties = {“user”: “my_postgre_user”,  password: “mypassword”, “driver”: “org.postgresql.Driver”}
+df = spark.read.jdbc(url, table = “mytable”, properties = properties)</pre></li>
 			</ol>
 			<h3 id="_idParaDest-89"><a id="_idTextAnchor094"/>Exercise 20: Writing Data Back to the HDFS and PostgreSQL</h3>
 			<p>As we saw with pandas, after performing some operations and transformations, let’s say that we want to write the results back to the local file system. This can be very useful when we finish an analysis and want to share the results with other teams, or we want to show our data and results using other tools:</p>
 			<ol>
-				<li value="1">We can use the <strong class="inline">write</strong> method directly on the HDFS from the DataFrame:<p class="snippet">df.write.csv(‘results.csv’, header=True)</p></li>
-				<li>For the relational database, use the same URL and properties dictionary as illustrated here:<p class="snippet">df = spark.write.jdbc(url, table = “mytable”, properties = properties)</p><p>This gives Spark great flexibility in manipulating large datasets and combining them for analysis.</p><h4>Note</h4><p class="callout">Spark can be used as an intermediate tool to transform data, including aggregations or fixing data issues, and saving in a different format for other applications.</p></li>
+				<li value="1">We can use the <code>write</code> method directly on the HDFS from the DataFrame:<pre>df.write.csv(‘results.csv’, header=True)</pre></li>
+				<li>For the relational database, use the same URL and properties dictionary as illustrated here:<pre>df = spark.write.jdbc(url, table = “mytable”, properties = properties)</pre><p>This gives Spark great flexibility in manipulating large datasets and combining them for analysis.</p><h4>Note</h4><p class="callout">Spark can be used as an intermediate tool to transform data, including aggregations or fixing data issues, and saving in a different format for other applications.</p></li>
 			</ol>
 			<h2 id="_idParaDest-90"><a id="_idTextAnchor095"/>Writing Parquet Files</h2>
 			<p>The Parquet data format (<a href="https://parquet.apache.org/">https://parquet.apache.org/</a>) is binary, columnar storage that can be used by different tools, including Hadoop and Spark. It was built to support compression, to enable higher performance and storage use. Its column-oriented design helps with data selection for performance, as only the data in the required columns are retrieved, instead of searching for the data and discarding values in rows that are not required, reducing the retrieval time for big data scenarios, where the data is distributed and on disk. Parquet files can also be read and written by external applications, with a C++ library, and even directly from pandas.</p>
@@ -140,10 +163,10 @@
 			<p>When considering more complex queries in Spark, storing the data in Parquet format can increase performance, especially when the queries need to search a massive dataset. Compression helps to decrease the data volume that needs to be communicated when an operation is being done in Spark, decreasing the network I/O. It also supports schemas and nested schemas, similar to JSON, and Spark can read the schema directly from the file. </p>
 			<p>The Parquet writer in Spark has several options, such as mode (append, overwrite, ignore or error, the default option) and compression, a parameter to choose the compression algorithm. The available algorithms are as follows:</p>
 			<ul>
-				<li><strong class="inline">gzip</strong></li>
-				<li><strong class="inline">lzo</strong></li>
-				<li><strong class="inline">brottli</strong></li>
-				<li><strong class="inline">lz4</strong></li>
+				<li><code>gzip</code></li>
+				<li><code>lzo</code></li>
+				<li><code>brottli</code></li>
+				<li><code>lz4</code></li>
 				<li>Snappy</li>
 				<li>Uncompressed</li>
 			</ul>
@@ -151,74 +174,74 @@
 			<h3 id="_idParaDest-91"><a id="_idTextAnchor096"/>Exercise 21: Writing Parquet Files</h3>
 			<p>Let’s say that we received lots of CSV files and we need to do some analysis on them. We also need to reduce the data volume size. We can do that using Spark and Parquet. Before starting our analysis, let’s convert the CSV files to Parquet:</p>
 			<ol>
-				<li value="1">First, read the CSV files from the HDFS:<p class="snippet">df = spark.read.csv(‘hdfs:/data/very_large_file.csv’, header=True)</p></li>
-				<li>Write the CSV files in the DataFrame back to the HDFS, but now in Parquet format:<p class="snippet">df.write.parquet(‘hdfs:/data/data_file’, compression=”snappy”)</p></li>
-				<li>Now read the Parquet file to a new DataFrame:<p class="snippet">df_pq = spark.read.parquet(“hdfs:/data/data_file”)</p><h4>Note</h4><p class="callout">The <strong class="inline">write.parquet</strong> method creates a folder named <strong class="inline">data_file</strong> with a file with a long name such as <strong class="inline">part-00000-1932c1b2-e776-48c8-9c96-2875bf76769b-c000.snappy.parquet</strong>.</p></li>
+				<li value="1">First, read the CSV files from the HDFS:<pre>df = spark.read.csv(‘hdfs:/data/very_large_file.csv’, header=True)</pre></li>
+				<li>Write the CSV files in the DataFrame back to the HDFS, but now in Parquet format:<pre>df.write.parquet(‘hdfs:/data/data_file’, compression=”snappy”)</pre></li>
+				<li>Now read the Parquet file to a new DataFrame:<pre>df_pq = spark.read.parquet(“hdfs:/data/data_file”)</pre><h4>Note</h4><p class="callout">The <code>write.parquet</code> method creates a folder named <code>data_file</code> with a file with a long name such as <code>part-00000-1932c1b2-e776-48c8-9c96-2875bf76769b-c000.snappy.parquet</code>.</p></li>
 			</ol>
 			<h3 id="_idParaDest-92">In<a id="_idTextAnchor097"/>creasing Analysis Performance with Parquet and Partitions</h3>
 			<p>An important concept that Parquet supports and that can also increase the performance of queries is partitioning. The idea behind partitioning is that data is split into divisions that can be accessed faster. The partition key is a column with the values used to split the dataset. Partitioning is useful when there are divisions in your data that are meaningful to work on separately. For example, if your data is based on time intervals, a partition column could be the year value. That way, when a query uses a filter value based on the year, only the data in the partition that matches the requested year is read, instead of the entire dataset.</p>
 			<p>Partitions can also be nested and are represented by a directory structure in Parquet. So, let’s say that we also want to partition by the column month. The folder structure of the Parquet dataset would be similar to the following:</p>
-			<p class="snippet">hdfs -fs ls /data/data_file</p>
-			<p class="snippet">year=2015</p>
-			<p class="snippet">year=2016</p>
-			<p class="snippet">year=2017</p>
-			<p class="snippet">hdfs -fs ls /data/data_file/year=2017</p>
-			<p class="snippet">month=01</p>
-			<p class="snippet">month=02</p>
-			<p class="snippet">month=03</p>
-			<p class="snippet">month=04</p>
-			<p class="snippet">month=05</p>
-			<p>Partitioning allows better performance when partitions are filtered, as only the data in the chosen partition will be read, increasing performance. To save partitioned files, the <strong class="inline">partitionBy</strong> option should be used, either in the <strong class="inline">parquet</strong> command or as the previous command chained to the write operation:</p>
-			<p class="snippet">df.write.parquet(“hdfs:/data/data_file_partitioned”, partitionBy=[“year”, “month”])</p>
+			<pre>hdfs -fs ls /data/data_file
+year=2015
+year=2016
+year=2017
+hdfs -fs ls /data/data_file/year=2017
+month=01
+month=02
+month=03
+month=04
+month=05</pre>
+			<p>Partitioning allows better performance when partitions are filtered, as only the data in the chosen partition will be read, increasing performance. To save partitioned files, the <code>partitionBy</code> option should be used, either in the <code>parquet</code> command or as the previous command chained to the write operation:</p>
+			<pre>df.write.parquet(“hdfs:/data/data_file_partitioned”, partitionBy=[“year”, “month”])</pre>
 			<p>The alternative method is:</p>
-			<p class="snippet">df.write.partittionBy([“year”, “month”]).format(“parquet”).save(“hdfs:/data/data_file_partitioned”)</p>
+			<pre>df.write.partittionBy([“year”, “month”]).format(“parquet”).save(“hdfs:/data/data_file_partitioned”)</pre>
 			<p>The latter format can be used with the previous operations. When reading partitioned data, Spark can infer the partition structure from the directory structure.</p>
 			<p>An analyst can considerably improve the performance of their queries if partitioning is used correctly. But partitioning can hinder performance if partition columns are not chosen correctly. For example, if there is only one year in the dataset, partitioning per year will not provide any benefits. If there is a column with too many distinct values, partitioning using this column could also create problems, creating too many partitions that would not improve speed and may even slow things down.</p>
 			<h3 id="_idParaDest-93">Ex<a id="_idTextAnchor098"/>ercise 22: Creating a Partitioned Dataset</h3>
 			<p>We discovered in our preliminary analysis that the data has date columns, one for the year, one for the month, and one for the day. We will be aggregating this data to get the minimum, mean, and maximum values per year, per month, and per day. Let’s create a partitioned dataset saved in Parquet from our database:</p>
 			<ol>
-				<li value="1">Define a PostgreSQL connection:<p class="snippet">url = “jdbc:postgresql://posgreserver:5432/timestamped_db”</p><p class="snippet">properties = {“user”: “my_postgre_user”,  password: “mypassword”, “driver”: “org.postgresql.Driver”}</p></li>
-				<li>Read the data from PostgreSQL to a DataFrame, using the JDBC connector:<p class="snippet">df = spark.read.jdbc(url, table = “sales”, properties = properties)</p></li>
-				<li>And let’s convert this into partitioned Parquet:<p class="snippet">df.write.parquet(“hdfs:/data/data_file_partitioned”, partitionBy=[“year”, “month”, “day”], compression=”snappy”)</p></li>
+				<li value="1">Define a PostgreSQL connection:<pre>url = “jdbc:postgresql://posgreserver:5432/timestamped_db”
+properties = {“user”: “my_postgre_user”,  password: “mypassword”, “driver”: “org.postgresql.Driver”}</pre></li>
+				<li>Read the data from PostgreSQL to a DataFrame, using the JDBC connector:<pre>df = spark.read.jdbc(url, table = “sales”, properties = properties)</pre></li>
+				<li>And let’s convert this into partitioned Parquet:<pre>df.write.parquet(“hdfs:/data/data_file_partitioned”, partitionBy=[“year”, “month”, “day”], compression=”snappy”)</pre></li>
 			</ol>
 			<p>The use of Spark as an intermediary for different data sources, and considering its data processing and transformation capabilities, makes it an excellent tool for combining and analyzing data.</p>
 			<h2 id="_idParaDest-94">Ha<a id="_idTextAnchor099"/>ndling Unstructured Data</h2>
 			<p>Unstructured data usually refers to data that doesn’t have a fixed format. CSV files are structured, for example, and JSON files can also be considered structured, although not tabular. Computer logs, on the other hand, don’t have the same structure, as different programs and daemons will output messages without a common pattern. Images are also another example of unstructured data, like free text.</p>
 			<p>We can leverage Spark’s flexibility for reading data to parse unstructured formats and extract the required information into a more structured format, allowing analysis. This step is usually called <strong class="bold">pre-processing</strong> or <strong class="bold">data wrangling</strong>.</p>
 			<h3 id="_idParaDest-95">Ex<a id="_idTextAnchor100"/>ercise 23: Parsing Text and Cleaning </h3>
-			<p>In this exercise, we will read a text file, split it into lines and remove the words <strong class="inline">the</strong> and <strong class="inline">a</strong> from the string given string:</p>
+			<p>In this exercise, we will read a text file, split it into lines and remove the words <code>the</code> and <code>a</code> from the string given string:</p>
 			<ol>
-				<li value="1">Read the text file <strong class="inline">shake.txt</strong> (<a href="https://raw.githubusercontent.com/TrainingByPackt/Big-Data-Analysis-with-Python/master/Lesson03/data/shake.txt">https://raw.githubusercontent.com/TrainingByPackt/Big-Data-Analysis-with-Python/master/Lesson03/data/shake.txt</a>) into the Spark object using the <strong class="inline">text</strong> method:<p class="snippet">from operator import add</p><p class="snippet">rdd_df = spark.read.text(“/shake.txt”).rdd</p></li>
-				<li>Extract the lines from the text using the following command:<p class="snippet">lines = rdd_df.map(lambda line: line[0])</p></li>
-				<li>This splits each line in the file as an entry in the list. To check the result, you can use the <strong class="inline">collect</strong> method, which gathers all data back to the driver process:<p class="snippet">lines.collect()</p></li>
-				<li>Now, let’s count the number of lines, using the <strong class="inline">count</strong> method: <p class="snippet">lines.count()</p><h4>Note</h4><p class="callout">Be careful when using the <strong class="inline">collect</strong> method! If the DataFrame or RDD being collected is larger than the memory of the local driver, Spark will throw an error.</p></li>
-				<li>Now, let’s first split each line into words, breaking it by the space around it, and combining all elements, removing words in uppercase:<p class="snippet">splits = lines.flatMap(lambda x: x.split(‘ ‘))</p><p class="snippet">lower_splits = splits.map(lambda x: x.lower().strip())</p></li>
-				<li>Let’s also remove the words <strong class="inline">the</strong> and <strong class="inline">a</strong>, and punctuations like ‘<strong class="inline">.</strong>’, ‘<strong class="inline">,</strong>’ from the given string:<p class="snippet">prep = [‘the’, ‘a’, ‘,’, ‘.’]</p></li>
-				<li>Use the following command to remove the stop words from our token list:<p class="snippet">tokens = lower_splits.filter(lambda x: x and x not in prep)</p><p>We can now process our token list and count the unique words. The idea is to generate a list of tuples, where the first element is the token and the second element is the count of that particular token.</p></li>
-				<li>Let’s map our token to a list: <p class="snippet">token_list = tokens.map(lambda x: [x, 1])</p></li>
-				<li>Use the <strong class="inline">reduceByKey</strong> operation, which will apply the operation to each of the lists:<p class="snippet">count = token_list.reduceByKey(add).sortBy(lambda x: x[1], ascending=False)</p><p class="snippet">count.collect()</p><p>The output is as follows:</p></li>
+				<li value="1">Read the text file <code>shake.txt</code> (<a href="https://raw.githubusercontent.com/TrainingByPackt/Big-Data-Analysis-with-Python/master/Lesson03/data/shake.txt">https://raw.githubusercontent.com/TrainingByPackt/Big-Data-Analysis-with-Python/master/Lesson03/data/shake.txt</a>) into the Spark object using the <code>text</code> method:<pre>from operator import add
+rdd_df = spark.read.text(“/shake.txt”).rdd</pre></li>
+				<li>Extract the lines from the text using the following command:<pre>lines = rdd_df.map(lambda line: line[0])</pre></li>
+				<li>This splits each line in the file as an entry in the list. To check the result, you can use the <code>collect</code> method, which gathers all data back to the driver process:<pre>lines.collect()</pre></li>
+				<li>Now, let’s count the number of lines, using the <code>count</code> method: <pre>lines.count()</pre><h4>Note</h4><p class="callout">Be careful when using the <code>collect</code> method! If the DataFrame or RDD being collected is larger than the memory of the local driver, Spark will throw an error.</p></li>
+				<li>Now, let’s first split each line into words, breaking it by the space around it, and combining all elements, removing words in uppercase:<pre>splits = lines.flatMap(lambda x: x.split(‘ ‘))
+lower_splits = splits.map(lambda x: x.lower().strip())</pre></li>
+				<li>Let’s also remove the words <code>the</code> and <code>a</code>, and punctuations like ‘<code>.</code>’, ‘<code>,</code>’ from the given string:<pre>prep = [‘the’, ‘a’, ‘,’, ‘.’]</pre></li>
+				<li>Use the following command to remove the stop words from our token list:<pre>tokens = lower_splits.filter(lambda x: x and x not in prep)</pre><p>We can now process our token list and count the unique words. The idea is to generate a list of tuples, where the first element is the token and the second element is the count of that particular token.</p></li>
+				<li>Let’s map our token to a list: <pre>token_list = tokens.map(lambda x: [x, 1])</pre></li>
+				<li>Use the <code>reduceByKey</code> operation, which will apply the operation to each of the lists:<pre>count = token_list.reduceByKey(add).sortBy(lambda x: x[1], ascending=False)
+count.collect()</pre><p>The output is as follows:</p></li>
 			</ol>
-			<div>
-				<div class="IMG---Figure" id="_idContainer068">
-					<img alt="Figure 3.3: Parsing Text and Cleaning" src="image/C12913_03_03.jpg"/>
+			<div><div><img alt="Figure 3.3: Parsing Text and Cleaning" src="img/C12913_03_03.jpg"/>
 				</div>
 			</div>
 			<h6>Figure 3.3: Parsing Text and Cleaning</h6>
 			<h4>Note</h4>
-			<p class="callout">Remember, <strong class="inline">collect()</strong>collects all data back to the driver node! Always check whether there is enough memory by using tools such as <strong class="inline">top</strong> and <strong class="inline">htop</strong>.</p>
+			<p class="callout">Remember, <code>collect()</code>collects all data back to the driver node! Always check whether there is enough memory by using tools such as <code>top</code> and <code>htop</code>.</p>
 			<h3 id="_idParaDest-96"><a id="_idTextAnchor101"/>Activity 8: Removing Stop Words from Text</h3>
-			<p>In this activity, we will read a text file, split it into lines and remove the <strong class="inline">stopwords</strong> from the text:</p>
+			<p>In this activity, we will read a text file, split it into lines and remove the <code>stopwords</code> from the text:</p>
 			<ol>
-				<li value="1">Read the text file <strong class="inline">shake.txt</strong> as used in Exercise 8. </li>
+				<li value="1">Read the text file <code>shake.txt</code> as used in Exercise 8. </li>
 				<li>Extract the lines from the text and create a list with each line. </li>
 				<li>Split each line into words, breaking it by the space around it and remove words in uppercase.</li>
 				<li>Remove the stop words: ‘of’, ‘a’, ‘and’, ‘to’ from our token list.</li>
 				<li>Process the token list and count the unique words, generating list of tuples made up of the token and its count. </li>
-				<li>Map our tokens to a list using the <strong class="inline">reduceByKey</strong> operation.<p>The output is as follows:</p></li>
+				<li>Map our tokens to a list using the <code>reduceByKey</code> operation.<p>The output is as follows:</p></li>
 			</ol>
-			<div>
-				<div class="IMG---Figure" id="_idContainer069">
-					<img alt="Figure 3.4: Removing Stop Words from Text" src="image/C12913_03_04.jpg"/>
+			<div><div><img alt="Figure 3.4: Removing Stop Words from Text" src="img/C12913_03_04.jpg"/>
 				</div>
 			</div>
 			<h6>Figure 3.4: Removing Stop Words from Text</h6>

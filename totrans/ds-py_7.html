@@ -1,11 +1,8 @@
-<html><head></head><body><div id="sbo-rt-content"><div id="_idContainer296" class="Content">
-			<h1 id="_idParaDest-188"><em class="italics"><a id="_idTextAnchor205"/>Chapter 8</em></h1>
+<html><head></head><body><div><div><h1 id="_idParaDest-188"><em class="italics"><a id="_idTextAnchor205"/>Chapter 8</em></h1>
 		</div>
-		<div id="_idContainer297" class="Content">
-			<h1 id="_idParaDest-189"><a id="_idTextAnchor206"/>Tips and Tricks of the Trade</h1>
+		<div><h1 id="_idParaDest-189"><a id="_idTextAnchor206"/>Tips and Tricks of the Trade</h1>
 		</div>
-		<div id="_idContainer298" class="Content">
-			<h2>Learning Objectives</h2>
+		<div><h2>Learning Objectives</h2>
 			<p>By the end of this chapter, you will be able to:</p>
 			<ul>
 				<li class="bullets">Create better deep learning models faster with the help of transfer learning</li>
@@ -17,8 +14,7 @@
 			</ul>
 			<p>This final chapter shall describe concepts of transfer learning and show you how to use training logs effectively.</p>
 		</div>
-		<div id="_idContainer314" class="Content">
-			<h2 id="_idParaDest-190"><a id="_idTextAnchor207"/>Introduction</h2>
+		<div><h2 id="_idParaDest-190"><a id="_idTextAnchor207"/>Introduction</h2>
 			<p>Now that we have covered almost every topic that you need to be able to kick-start your data science journey, we will introduce you to some tools and tricks that data scientists use to become more efficient and create better machine learning systems. You will first learn about transfer learning, which helps you train models even when there is a lack of data. Then, we will move on to important tools and tricks that you can make use of to become a better data scientist.</p>
 			<h2 id="_idParaDest-191"><a id="_idTextAnchor208"/>Transfer Learning</h2>
 			<p>Training a complex neural network is hard and time-consuming due to the amount of data required for training. Transfer learning helps data scientists transfer part of the knowledge gained by one network to another. This is similar to how humans transfer knowledge from one person to another so that everyone does not have to start learning every new thing from scratch. Transfer learning helps data scientists train neural networks faster and with fewer data points. There are two ways to perform transfer learning depending on the situation. They are as follows:</p>
@@ -28,9 +24,7 @@
 			</ul>
 			<p>As discussed in <em class="italics">Chapter 6</em>,<em class="italics"> Decoding Images</em>, different layers of a neural network learn different features of an image. For example, the first layer might learn to recognize horizontal lines, and a few layers later, the network might learn to recognize eyes. This is the reason why transfer learning works for images; the feature extractor that we get can be used to extract information from new images of the same distribution. Now, you must be wondering why we don't use transfer learning for every problem we have. </p>
 			<p>Let's try to understand this with the following diagram. Here, original dataset refers to the dataset used to train the network we will transfer knowledge from:</p>
-			<div>
-				<div id="_idContainer299" class="IMG---Figure">
-					<img src="Images/C13322_08_01.jpg" alt="Figure 8.1: Steps to take for transfer learning in different conditions&#13;&#10;" width="795" height="514"/>
+			<div><div><img src="img/C13322_08_01.jpg" alt="Figure 8.1: Steps to take for transfer learning in different conditions&#13;&#10;" width="795" height="514"/>
 				</div>
 			</div>
 			<h6>Figure 8.1: Steps to take for transfer learning in different conditions</h6>
@@ -44,54 +38,134 @@
 			<p>Transfer learning has been successful for only two types of datasets—image and natural language (textual data) datasets. Word embedding, which we covered in <em class="italics">Chapter 7</em>, is an example of transfer learning. We will now see how to make use of transfer learning for image data.</p>
 			<h3 id="_idParaDest-192"><a id="_idTextAnchor209"/>Transfer Learning for Image Data</h3>
 			<p>In this section, we will load a pre-trained model using Keras and perform transfer learning. You will learn how to handle the two cases where the dataset is like the pre-trained model's dataset. To start transfer learning, we first must load a pre-trained model. We will load the Inception model using Keras:</p>
-			<p class="snippet">import keras</p>
-			<p class="snippet">base_model = keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet')</p>
-			<p><strong class="inline">include_top=False</strong> removes the first fully connected layer of the network, allowing us to input images of any size that we want instead of relying on the image size of the original dataset. <strong class="inline">weights='imagenet'</strong> assures that the pre-trained weights are loaded. If none is passed to <strong class="inline">weights</strong>, then the initialization of the weights will be random. The Inception model was a huge improvement over existing <strong class="keyword">convolutional neural network</strong> (<strong class="keyword">CNN</strong>) classifiers. Prior to Inception, the best models just stacked multiple convolution layers, hoping to get better performance. Inception, on the other hand, was complex as it used a lot of tricks to push performance both in terms of the accuracy and the time taken to predict.</p>
-			<div>
-				<div id="_idContainer300" class="IMG---Figure">
-					<img src="Images/C13322_08_02.jpg" alt="Figure 8.2: Single cell of the Inception network&#13;&#10;" width="1800" height="918"/>
+			<pre>import keras
+base_model = keras.applications.inception_v3.InceptionV3(include_top=False, weights='imagenet')</pre>
+			<p><code>include_top=False</code> removes the first fully connected layer of the network, allowing us to input images of any size that we want instead of relying on the image size of the original dataset. <code>weights='imagenet'</code> assures that the pre-trained weights are loaded. If none is passed to <code>weights</code>, then the initialization of the weights will be random. The Inception model was a huge improvement over existing <strong class="keyword">convolutional neural network</strong> (<strong class="keyword">CNN</strong>) classifiers. Prior to Inception, the best models just stacked multiple convolution layers, hoping to get better performance. Inception, on the other hand, was complex as it used a lot of tricks to push performance both in terms of the accuracy and the time taken to predict.</p>
+			<div><div><img src="img/C13322_08_02.jpg" alt="Figure 8.2: Single cell of the Inception network&#13;&#10;" width="1800" height="918"/>
 				</div>
 			</div>
 			<h6>Figure 8.2: Single cell of the Inception network</h6>
 			<p>The first case we will look at is a small dataset that is similar to the original dataset. In this case, we need to first freeze the layers of the pre-trained model. To do this, we simply make all the layers of this base model untrainable:</p>
-			<p class="snippet">for layer in base_model.layers:</p>
-			<p class="snippet">    layer.trainable = False</p>
-			<p>The next case is a large dataset that is similar to the original dataset. In this case, we need to train the model by taking the pre-trained weights to be the starting point. In this case, we do not make any modifications and simply train the whole model, which is a combination of <strong class="inline">base_model</strong> along with some additional dense layers depending on our problem. For example, if the problem is a two class classification problem we need to have the last dense layer to have 2 outputs. Another thing that we can do in this case is freeze the weights of the first few layers so that the training happens faster. Freezing the first few layers is helpful as these layers learn simple shapes, which can be applicable in any kind of problem. To freeze the first five layers in Keras, use the following code:</p>
-			<p class="snippet">for layer in base_model.layers[:5]:   layer.trainable = False</p>
+			<pre>for layer in base_model.layers:
+    layer.trainable = False</pre>
+			<p>The next case is a large dataset that is similar to the original dataset. In this case, we need to train the model by taking the pre-trained weights to be the starting point. In this case, we do not make any modifications and simply train the whole model, which is a combination of <code>base_model</code> along with some additional dense layers depending on our problem. For example, if the problem is a two class classification problem we need to have the last dense layer to have 2 outputs. Another thing that we can do in this case is freeze the weights of the first few layers so that the training happens faster. Freezing the first few layers is helpful as these layers learn simple shapes, which can be applicable in any kind of problem. To freeze the first five layers in Keras, use the following code:</p>
+			<pre>for layer in base_model.layers[:5]:   layer.trainable = False</pre>
 			<h3 id="_idParaDest-193"><a id="_idTextAnchor210"/>Exercise 58: Using InceptionV3 to Compare and Classify Images</h3>
 			<p>In this exercise, we will make use of the InceptionV3 model provided by Keras to perform classification between cats and dogs. We will use the same dataset (<a href="">https://github.com/TrainingByPackt/Data-Science-with-Python/tree/master/Chapter08</a>) we used in <em class="italics">Chapter 6</em>,<em class="italics"> Decoding Images</em> and compare our results. We will freeze the Inception convolutional layers so that we do not have to retrain them:</p>
 			<ol>
-				<li>Fi<a id="_idTextAnchor211"/>rst, create functions to read the image and its label from the filename. Here, the <strong class="inline">PATH </strong>variable contains the path to the training dataset:<p class="snippet">from PIL import Image</p><p class="snippet">def get_input(file):</p><p class="snippet">    return Image.open(PATH+file)</p><p class="snippet">def get_output(file):	</p><p class="snippet">    class_label = file.split('.')[0]</p><p class="snippet">    if class_label == 'dog': label_vector = [1,0]</p><p class="snippet">    elif class_label == 'cat': label_vector = [0,1]</p><p class="snippet">    return label_vector</p></li>
-				<li>Set the size and channel of the images:<p class="snippet">SIZE = 200</p><p class="snippet">CHANNELS = 3</p></li>
-				<li>Then, create a function to preprocess the images:<p class="snippet">def preprocess_input(image):</p><p class="snippet">    </p><p class="snippet">    # Data preprocessing</p><p class="snippet">    image = image.resize((SIZE,SIZE))</p><p class="snippet">    image = np.array(image).reshape(SIZE,SIZE,CHANNELS)</p><p class="snippet">    </p><p class="snippet">    # Normalize image</p><p class="snippet">    image = image/255.0</p><p class="snippet">    </p><p class="snippet">    return image</p></li>
-				<li>Now create a generator function that reads the images and labels and processes the images:<p class="snippet">import numpy as np</p><p class="snippet">def custom_image_generator(images, batch_size = 128):</p><p class="snippet">    </p><p class="snippet">    while True:</p><p class="snippet">        # Randomly select images for the batch</p><p class="snippet">        batch_images = np.random.choice(images, size = batch_size)</p><p class="snippet">        batch_input = []</p><p class="snippet">        batch_output = [] </p><p class="snippet">        </p><p class="snippet">        # Read image, perform preprocessing and get labels</p><p class="snippet">        for file in batch_images:</p><p class="snippet">            # Function that reads and returns the image</p><p class="snippet">            input_image = get_input(file)</p><p class="snippet">            # Function that gets the label of the image</p><p class="snippet">            label = get_output(file)</p><p class="snippet">            # Function that pre-processes and augments the image</p><p class="snippet">            image = preprocess_input(input_image)</p><p class="snippet">            batch_input.append(image)</p><p class="snippet">            batch_output.append(label)</p><p class="snippet">        batch_x = np.array(batch_input)</p><p class="snippet">        batch_y = np.array(batch_output)</p><p class="snippet">        # Return a tuple of (images,labels) to feed the network</p><p class="snippet">        yield(batch_x, batch_y)</p></li>
-				<li>Next, we will read the validation data. Create a function to read the images and their labels:<p class="snippet">from tqdm import tqdm</p><p class="snippet">def get_data(files):</p><p class="snippet">    data_image = []</p><p class="snippet">    labels = []</p><p class="snippet">    for image in tqdm(files):</p><p class="snippet">        label_vector = get_output(image)</p><p class="snippet">        </p><p class="snippet">        img = Image.open(PATH + image)</p><p class="snippet">        img = img.resize((SIZE,SIZE))</p><p class="snippet">        </p><p class="snippet">        labels.append(label_vector)</p><p class="snippet">        img = np.asarray(img).reshape(SIZE,SIZE,CHANNELS)</p><p class="snippet">        img = img/255.0</p><p class="snippet">        data_image.append(img)</p><p class="snippet">        </p><p class="snippet">    data_x = np.array(data_image)</p><p class="snippet">    data_y = np.array(labels)</p><p class="snippet">        </p><p class="snippet">    return (data_x, data_y)</p></li>
-				<li>Read the validation files:<p class="snippet">from random import shuffle</p><p class="snippet">files = os.listdir(PATH)</p><p class="snippet">random.shuffle(files)</p><p class="snippet">train = files[:7000]</p><p class="snippet">test = files[7000:]</p><p class="snippet">validation_data = get_data(test)</p></li>
-				<li>Plot a few images from the dataset to see whether you loaded the files correctly:<p class="snippet">import matplotlib.pyplot as plt</p><p class="snippet">plt.figure(figsize=(20,10))</p><p class="snippet">columns = 5</p><p class="snippet">for i in range(columns):</p><p class="snippet">    plt.subplot(5 / columns + 1, columns, i + 1)</p><p class="snippet">    plt.imshow(validation_data[0][i])</p><p>The sample images are as follows:</p><div id="_idContainer301" class="IMG---Figure"><img src="Images/C13322_08_03.jpg" alt="" width="1038" height="206"/></div><h6>Figure 8.3: Sample images from the loaded dataset</h6></li>
-				<li>Load the Inception model and pass the shape of the input images:<p class="snippet">from keras.applications.inception_v3 import InceptionV3</p><p class="snippet">base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(200,200,3))</p></li>
-				<li>Freeze the Inception model layers so that training is not performed on them:<p class="snippet">for layer in base_model.layers:</p><p class="snippet">    layer.trainable = False</p></li>
-				<li>Now add the output dense layer according to our problem. Here <strong class="inline">keep_prob</strong> is the ratio of nodes to be kept while training. So, the dropout rate will be <strong class="inline">1 – keep_prob</strong>:<p class="snippet">from keras.layers import GlobalAveragePooling2D, Dense, Dropout</p><p class="snippet">from keras.models import Model</p><p class="snippet">x = base_model.output</p><p class="snippet">x = GlobalAveragePooling2D()(x)</p><p class="snippet">x = Dense(256, activation='relu')(x)</p><p class="snippet">keep_prob = 0.5</p><p class="snippet">x = Dropout(rate = 1 - keep_prob)(x)</p><p class="snippet">predictions = Dense(2, activation='softmax')(x)</p><p class="snippet">model = Model(inputs=base_model.input, outputs=predictions)</p></li>
-				<li>Next, compile the model to make it ready for training:<p class="snippet">model.compile(loss='categorical_crossentropy', </p><p class="snippet">              optimizer='adam',</p><p class="snippet">              metrics = ['accuracy'])</p><p>And then perform training of the model:</p><p class="snippet">EPOCHS = 5</p><p class="snippet">BATCH_SIZE = 128</p><p class="snippet">model_details = model.fit_generator(custom_image_generator(train, batch_size = BATCH_SIZE),</p><p class="snippet">                    steps_per_epoch = len(train) // BATCH_SIZE, </p><p class="snippet">                    epochs = EPOCHS, </p><p class="snippet">                    validation_data= validation_data,</p><p class="snippet">                    verbose=1)</p></li>
-				<li>Evaluate the model and get the accuracy:<p class="snippet">score = model.evaluate(validation_data[0], validation_data[1])</p><p class="snippet">print("Accuracy: {0:.2f}%".format(score[1]*100))</p><p>The accuracy is as follows:</p></li>
+				<li>Fi<a id="_idTextAnchor211"/>rst, create functions to read the image and its label from the filename. Here, the <code>PATH </code>variable contains the path to the training dataset:<pre>from PIL import Image
+def get_input(file):
+    return Image.open(PATH+file)
+def get_output(file):	
+    class_label = file.split('.')[0]
+    if class_label == 'dog': label_vector = [1,0]
+    elif class_label == 'cat': label_vector = [0,1]
+    return label_vector</pre></li>
+				<li>Set the size and channel of the images:<pre>SIZE = 200
+CHANNELS = 3</pre></li>
+				<li>Then, create a function to preprocess the images:<pre>def preprocess_input(image):
+    
+    # Data preprocessing
+    image = image.resize((SIZE,SIZE))
+    image = np.array(image).reshape(SIZE,SIZE,CHANNELS)
+    
+    # Normalize image
+    image = image/255.0
+    
+    return image</pre></li>
+				<li>Now create a generator function that reads the images and labels and processes the images:<pre>import numpy as np
+def custom_image_generator(images, batch_size = 128):
+    
+    while True:
+        # Randomly select images for the batch
+        batch_images = np.random.choice(images, size = batch_size)
+        batch_input = []
+        batch_output = [] 
+        
+        # Read image, perform preprocessing and get labels
+        for file in batch_images:
+            # Function that reads and returns the image
+            input_image = get_input(file)
+            # Function that gets the label of the image
+            label = get_output(file)
+            # Function that pre-processes and augments the image
+            image = preprocess_input(input_image)
+            batch_input.append(image)
+            batch_output.append(label)
+        batch_x = np.array(batch_input)
+        batch_y = np.array(batch_output)
+        # Return a tuple of (images,labels) to feed the network
+        yield(batch_x, batch_y)</pre></li>
+				<li>Next, we will read the validation data. Create a function to read the images and their labels:<pre>from tqdm import tqdm
+def get_data(files):
+    data_image = []
+    labels = []
+    for image in tqdm(files):
+        label_vector = get_output(image)
+        
+        img = Image.open(PATH + image)
+        img = img.resize((SIZE,SIZE))
+        
+        labels.append(label_vector)
+        img = np.asarray(img).reshape(SIZE,SIZE,CHANNELS)
+        img = img/255.0
+        data_image.append(img)
+        
+    data_x = np.array(data_image)
+    data_y = np.array(labels)
+        
+    return (data_x, data_y)</pre></li>
+				<li>Read the validation files:<pre>from random import shuffle
+files = os.listdir(PATH)
+random.shuffle(files)
+train = files[:7000]
+test = files[7000:]
+validation_data = get_data(test)</pre></li>
+				<li>Plot a few images from the dataset to see whether you loaded the files correctly:<pre>import matplotlib.pyplot as plt
+plt.figure(figsize=(20,10))
+columns = 5
+for i in range(columns):
+    plt.subplot(5 / columns + 1, columns, i + 1)
+    plt.imshow(validation_data[0][i])</pre><p>The sample images are as follows:</p><div><img src="img/C13322_08_03.jpg" alt="" width="1038" height="206"/></div><h6>Figure 8.3: Sample images from the loaded dataset</h6></li>
+				<li>Load the Inception model and pass the shape of the input images:<pre>from keras.applications.inception_v3 import InceptionV3
+base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(200,200,3))</pre></li>
+				<li>Freeze the Inception model layers so that training is not performed on them:<pre>for layer in base_model.layers:
+    layer.trainable = False</pre></li>
+				<li>Now add the output dense layer according to our problem. Here <code>keep_prob</code> is the ratio of nodes to be kept while training. So, the dropout rate will be <code>1 – keep_prob</code>:<pre>from keras.layers import GlobalAveragePooling2D, Dense, Dropout
+from keras.models import Model
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(256, activation='relu')(x)
+keep_prob = 0.5
+x = Dropout(rate = 1 - keep_prob)(x)
+predictions = Dense(2, activation='softmax')(x)
+model = Model(inputs=base_model.input, outputs=predictions)</pre></li>
+				<li>Next, compile the model to make it ready for training:<pre>model.compile(loss='categorical_crossentropy', 
+              optimizer='adam',
+              metrics = ['accuracy'])</pre><p>And then perform training of the model:</p><pre>EPOCHS = 5
+BATCH_SIZE = 128
+model_details = model.fit_generator(custom_image_generator(train, batch_size = BATCH_SIZE),
+                    steps_per_epoch = len(train) // BATCH_SIZE, 
+                    epochs = EPOCHS, 
+                    validation_data= validation_data,
+                    verbose=1)</pre></li>
+				<li>Evaluate the model and get the accuracy:<pre>score = model.evaluate(validation_data[0], validation_data[1])
+print("Accuracy: {0:.2f}%".format(score[1]*100))</pre><p>The accuracy is as follows:</p></li>
 			</ol>
-			<div>
-				<div id="_idContainer302" class="IMG---Figure">
-					<img src="Images/C13322_08_04.jpg" alt="Figure 8.4: The accuracy of the model&#13;&#10;" width="676" height="21"/>
+			<div><div><img src="img/C13322_08_04.jpg" alt="Figure 8.4: The accuracy of the model&#13;&#10;" width="676" height="21"/>
 				</div>
 			</div>
 			<h6>Figure 8.4: The accuracy of the model</h6>
 			<p>As you can see earlier, the model gets an accuracy of 97.8%, which is much higher than the 73% accuracy we achieved in <em class="italics">Chapter 6</em>,<em class="italics"> Decoding Images</em>. You can play around with the model we appended to the Inception model to see whether you can improve the accuracy. You can plot the incorrectly predicted images to get a sense of how well the model performs.</p>
-			<p class="snippet">y_pred = model.predict(validation_data[0])</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(validation_data[1],axis=1))[0]</p>
-			<p class="snippet">labels = ['dog', 'cat']</p>
-			<p class="snippet">image = 5</p>
-			<p class="snippet">plt.imshow(validation_data[0][incorrect_indices[image]].reshape(SIZE, SIZE, CHANNELS),  cmap=plt.get_cmap('gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</p>
+			<pre>y_pred = model.predict(validation_data[0])
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(validation_data[1],axis=1))[0]
+labels = ['dog', 'cat']
+image = 5
+plt.imshow(validation_data[0][incorrect_indices[image]].reshape(SIZE, SIZE, CHANNELS),  cmap=plt.get_cmap('gray'))
+plt.show()
+print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</pre>
 			<p>The incorrectly predicted image is as follows:</p>
-			<div>
-				<div id="_idContainer303" class="IMG---Figure">
-					<img src="Images/C13322_08_05.jpg" alt="Figure 8.5: The incorrectly predicted sample&#13;&#10;" width="619" height="348"/>
+			<div><div><img src="img/C13322_08_05.jpg" alt="Figure 8.5: The incorrectly predicted sample&#13;&#10;" width="619" height="348"/>
 				</div>
 			</div>
 			<h6>Figure 8.5: The incorrectly predicted sample</h6>
@@ -105,19 +179,17 @@
 			</ol>
 			<p>You should see that this model gets us an accuracy of 95.4%, which is much higher than the 73% accuracy we achieved in <em class="italics">Chapter 6</em>, <em class="italics">Decoding Images</em>. </p>
 			<p>You m<a id="_idTextAnchor213"/>ust have noticed the preceding code was similar to <em class="italics">Exercise 58</em>, but here we did not freeze the layers. The model definitely benefited from taking the weights from the Inception model as the starting point. You can plot the incorrectly predicted images to get a sense of how well the model performs:</p>
-			<p class="snippet">y_pred = model.predict(validation_data[0])</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(validation_data[1],axis=1))[0]</p>
-			<p class="snippet">labels = ['dog', 'cat']</p>
-			<p class="snippet">image = 5</p>
-			<p class="snippet">plt.imshow(validation_data[0][incorrect_indices[image]].reshape(SIZE, SIZE, CHANNELS),  cmap=plt.get_cmap('gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</p>
+			<pre>y_pred = model.predict(validation_data[0])
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(validation_data[1],axis=1))[0]
+labels = ['dog', 'cat']
+image = 5
+plt.imshow(validation_data[0][incorrect_indices[image]].reshape(SIZE, SIZE, CHANNELS),  cmap=plt.get_cmap('gray'))
+plt.show()
+print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</pre>
 			<h4>Note</h4>
 			<p class="callout">The solution for this activity can be found on page 387.</p>
 			<p>The incorrectly predicted image is as follows:</p>
-			<div>
-				<div id="_idContainer304" class="IMG---Figure">
-					<img src="Images/C13322_08_06.jpg" alt="Figure 8.6: The incorrectly predicted sample from the dataset&#13;&#10;" width="658" height="346"/>
+			<div><div><img src="img/C13322_08_06.jpg" alt="Figure 8.6: The incorrectly predicted sample from the dataset&#13;&#10;" width="658" height="346"/>
 				</div>
 			</div>
 			<h6>Figure 8.6: The incorrectly predicted sample from the dataset</h6>
@@ -142,21 +214,21 @@
 			</ul>
 			<p>A best practice is to always start with <strong class="keyword">exploratory data analysis</strong> (<strong class="keyword">EDA</strong>). EDA helps us become intimately familiar with the dataset. It helps identify the best model as well as the variables that can be used for machine learning. Another important aspect of EDA is to check the data for anomalies. This helps us to ensure that the data reached us without any errors. The results of EDA can be shared with the stakeholders to confirm the validity of the data. Data scientists might need to revisit the EDA step multiple times while working on a project.</p>
 			<p>Another thing to keep in mind is the application of your model. It is important to know whether your model will perform real-time processing or batch processing. This will help you choose your tools and models accordingly. For example, if real-time processing is a priority, then you would probably use a model that will produce results in less than a second, whereas if the application requires batch processing, then you can use complex neural network models that take more than a couple seconds to produce the predictions.</p>
-			<p>Next, we will look into some best practices for handling training and performing hyperparameter tuning. Always shuffle your data before splitting it into training and testing sets. Another thing that can help converge faster is shuffling the training data during training. The <strong class="inline">fit</strong> function of Keras has a handy parameter called <strong class="bold">shuffle</strong>, which accepts a Boolean input which can be set to <strong class="inline">True</strong> to shuffle the training data before every epoch. An important parameter to keep in mind is the random number seed; This helps data scientists create reproducible results even with the random shuffles and splits. To set the seed for Keras, use the following:</p>
-			<p class="snippet">from numpy.random import seed</p>
-			<p class="snippet">seed(1)</p>
-			<p class="snippet">from tensorflow import set_random_seed</p>
-			<p class="snippet">set_random_seed(1)</p>
+			<p>Next, we will look into some best practices for handling training and performing hyperparameter tuning. Always shuffle your data before splitting it into training and testing sets. Another thing that can help converge faster is shuffling the training data during training. The <code>fit</code> function of Keras has a handy parameter called <code>True</code> to shuffle the training data before every epoch. An important parameter to keep in mind is the random number seed; This helps data scientists create reproducible results even with the random shuffles and splits. To set the seed for Keras, use the following:</p>
+			<pre>from numpy.random import seed
+seed(1)
+from tensorflow import set_random_seed
+set_random_seed(1)</pre>
 			<p>The first two lines set the random seed for NumPy, and the next two lines set the seed for TensorFlow, which is the backend Keras uses.</p>
 			<p>If you are working with a large dataset, start with a subset of data and create the model. Try to overfit this model by making the network deeper or more complex. You can use regularization to limit the model from overfitting the data. When you are confident with the model, use the complete training data and tweak the created model to improve the performance of the model.</p>
 			<p>Dropout is a very powerful regularizer; you should experiment with different dropout rates as the optimal dropout rate varies from dataset to dataset. If the dropout probability is too low, there will be no effect. On the other hand, if it is too high, the model will start to underfit. Dropout rates between 20% and 50% usually perform the best.</p>
 			<p>The learning rate is an important hyperparameter. Having a high learning rate will lead to the model overshooting the optimal solution, while having a low learning rate will cause the model to learn very slowly. As mentioned in <em class="italics">Chapter 5</em>, <em class="italics">Mastering Structured Data</em>, we can start with a high learning rate and reduce the learning rate after a few steps. </p>
-			<p>This helps us reach the optimal point faster and due to the reduction in step size preventing the model from overshooting the solution. To perform this reduction in the learning rate, we can use the <strong class="inline">ReduceLROnPlateau</strong> callback from Keras. The callback reduces the learning rate by a predefined factor if the selected metric stops improving.</p>
+			<p>This helps us reach the optimal point faster and due to the reduction in step size preventing the model from overshooting the solution. To perform this reduction in the learning rate, we can use the <code>ReduceLROnPlateau</code> callback from Keras. The callback reduces the learning rate by a predefined factor if the selected metric stops improving.</p>
 			<h4>Note</h4>
 			<p class="callout">To learn further on the dataset, refer to the documentation at <a href="">https://keras.io/callbacks/#reducelronplateau</a>.</p>
-			<p class="snippet">from keras.callbacks import ReduceLROnPlateau</p>
-			<p class="snippet">ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, min_delta=0.0001, min_lr=0)</p>
-			<p>We pass the quantity to be monitored into the <strong class="inline">monitor</strong> parameter. The <strong class="inline">factor</strong> refers to the factor by which the learning rate must be reduced; the new learning rate will be equal to the learning rate multiplied by the factor. <strong class="inline">patience</strong> is the number of epochs the callback will wait before changing the learning rate. <strong class="inline">min_delta</strong> refers to the threshold for measuring the improvement of the model on the monitored metric. <strong class="inline">min_lr</strong> refers to the lower bound on the learning rate.</p>
+			<pre>from keras.callbacks import ReduceLROnPlateau
+ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, min_delta=0.0001, min_lr=0)</pre>
+			<p>We pass the quantity to be monitored into the <code>monitor</code> parameter. The <code>factor</code> refers to the factor by which the learning rate must be reduced; the new learning rate will be equal to the learning rate multiplied by the factor. <code>patience</code> is the number of epochs the callback will wait before changing the learning rate. <code>min_delta</code> refers to the threshold for measuring the improvement of the model on the monitored metric. <code>min_lr</code> refers to the lower bound on the learning rate.</p>
 			<h3 id="_idParaDest-198"><a id="_idTextAnchor217"/>pandas Profiling</h3>
 			<p>In the initial chapters, you learned different ways to explore structured datasets. EDA plays an important role when it comes to creating models for structured data. The steps used to perform EDA, such as null value identification, correlation, and counting unique values, rarely change, so it is better to create a function that will do all this for us without writing a lot of code. The pandas profiling library does just that: it takes a dataframe and performs analysis on the data and presents the results in an interactive output. </p>
 			<p>The output contains the following information for the relevant columns:</p>
@@ -168,65 +240,55 @@
 				<li><strong class="bold">Histogram: </strong>This contains information on a plot of the frequency of values of different features of the dataset.</li>
 				<li><strong class="bold">Correlations</strong>: These highlight highly correlated variables and suggests removal. </li>
 			</ul>
-			<p>To use pandas profiling, simply pass a data frame to the <strong class="inline">pandas_profiling</strong> object. Use the following code: </p>
-			<p class="snippet">import pandas_profiling</p>
-			<p class="snippet">pandas_profiling.ProfileReport(df)</p>
+			<p>To use pandas profiling, simply pass a data frame to the <code>pandas_profiling</code> object. Use the following code: </p>
+			<pre>import pandas_profiling
+pandas_profiling.ProfileReport(df)</pre>
 			<p>The following screenshot displays a part of the pandas profiling output for the telecom churn dataset we worked on in <em class="italics">Chapter 5</em>,<em class="italics"> Mastering Structured Data</em></p>
-			<div>
-				<div id="_idContainer305" class="IMG---Figure">
-					<img src="Images/C13322_08_07.jpg" alt="Figure 8.7: A screenshot of the pandas profiling output&#13;&#10;" width="1051" height="765"/>
+			<div><div><img src="img/C13322_08_07.jpg" alt="Figure 8.7: A screenshot of the pandas profiling output&#13;&#10;" width="1051" height="765"/>
 				</div>
 			</div>
 			<h6>Figure 8.7: A screenshot of the pandas profiling output</h6>
 			<p>You can use this to explore  datasets we worked on in the previous chapters. pandas profiling offers interactive output, so you are encouraged to go ahead and play around with the output. </p>
 			<h3 id="_idParaDest-199"><a id="_idTextAnchor218"/>TensorBoard</h3>
 			<p><strong class="keyword">TensorBoard</strong> is a web app that can be used to view training logs and visualize your model's accuracy and loss metrics. It was originally created to work with TensorFlow, but we can make use of TensorBoard using the <strong class="bold">TensorBoard callback</strong> in Keras. To start visualizing, create the Keras callback. Use the following code to do so:</p>
-			<p class="snippet">import keras</p>
-			<p class="snippet">keras.callbacks.TensorBoard(log_dir='./logs', update_freq='epoch')</p>
-			<p>Keep a note of the log directory that you specify here; you will need this later. You can pass '<strong class="inline">batch</strong>', '<strong class="inline">epoch</strong>', or an integer in <strong class="inline">update_freq</strong>; this refers to how often the logs should be written. The next step is to start TensorBoard; to do that, open a terminal and run the following command:</p>
-			<p class="snippet">tensorboard --logdir logs --port 6607</p>
-			<p>Now start training. Do not forget to pass the callback to the <strong class="inline">fit</strong> function. The first tab of TensorBoard shows the training logs of the model. You can create multiple folders inside the log folder to get the logs of different models on the same graph for comparison:</p>
-			<div>
-				<div id="_idContainer306" class="IMG---Figure">
-					<img src="Images/C13322_08_08.jpg" alt="Figure 8.8: A screenshot showing the TensorBoard dashboard&#13;&#10;" width="881" height="934"/>
+			<pre>import keras
+keras.callbacks.TensorBoard(log_dir='./logs', update_freq='epoch')</pre>
+			<p>Keep a note of the log directory that you specify here; you will need this later. You can pass '<code>batch</code>', '<code>epoch</code>', or an integer in <code>update_freq</code>; this refers to how often the logs should be written. The next step is to start TensorBoard; to do that, open a terminal and run the following command:</p>
+			<pre>tensorboard --logdir logs --port 6607</pre>
+			<p>Now start training. Do not forget to pass the callback to the <code>fit</code> function. The first tab of TensorBoard shows the training logs of the model. You can create multiple folders inside the log folder to get the logs of different models on the same graph for comparison:</p>
+			<div><div><img src="img/C13322_08_08.jpg" alt="Figure 8.8: A screenshot showing the TensorBoard dashboard&#13;&#10;" width="881" height="934"/>
 				</div>
 			</div>
 			<h6>Figure 8.8: A screenshot showing the TensorBoard dashboard</h6>
 			<p>In the second tab, you can visualize the model that you have created. The following figure shows the model that we created in the first activity of the previous chapter:</p>
-			<div>
-				<div id="_idContainer307" class="IMG---Figure">
-					<img src="Images/C13322_08_09.jpg" alt="Figure 8.9: The model as interpreted by Keras&#13;&#10;" width="734" height="903"/>
+			<div><div><img src="img/C13322_08_09.jpg" alt="Figure 8.9: The model as interpreted by Keras&#13;&#10;" width="734" height="903"/>
 				</div>
 			</div>
 			<h6>Figure 8.9: The model as interpreted by Keras</h6>
 			<p>Another way to visualize training logs in Jupyter Notebook is to plot them using Matplotlib:</p>
-			<p class="snippet">import matplotlib.pyplot as plt</p>
-			<p class="snippet">plt.plot(model_details.history['acc'])</p>
-			<p class="snippet">plt.plot(model_details.history['val_acc'])</p>
-			<p class="snippet">plt.title('Cats vs. Dogs model accuracy')</p>
-			<p class="snippet">plt.ylabel('Accuracy')</p>
-			<p class="snippet">plt.xlabel('Epoch')</p>
-			<p class="snippet">plt.legend(['Train set', 'Dev set'], loc='upper left')</p>
-			<p class="snippet">plt.show()</p>
+			<pre>import matplotlib.pyplot as plt
+plt.plot(model_details.history['acc'])
+plt.plot(model_details.history['val_acc'])
+plt.title('Cats vs. Dogs model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train set', 'Dev set'], loc='upper left')
+plt.show()</pre>
 			<p>The following figure shows the model accuracy plot for the train and test set for our cats versus dogs model from <em class="italics">Activity 1</em>:</p>
-			<div>
-				<div id="_idContainer308" class="IMG---Figure">
-					<img src="Images/C13322_08_10.jpg" alt="Figure 8.10: The accuracy log of the model&#13;&#10;" width="524" height="271"/>
+			<div><div><img src="img/C13322_08_10.jpg" alt="Figure 8.10: The accuracy log of the model&#13;&#10;" width="524" height="271"/>
 				</div>
 			</div>
 			<h6>Figure 8.10: The accuracy log of the model</h6>
 			<p>The accuracy log given above shows how the training and development set accuracy increased over different epochs. As you can see, the development set accuracy is more volatile than the training set accuracy. This is because the model hasn't seen these examples, towards the initial epochs this volatility will be high but as we create a robust model after having trained it for a larger number of epochs, the accuracy will become less volatile.</p>
-			<p class="snippet">plt.plot(model_details.history['loss'])</p>
-			<p class="snippet">plt.plot(model_details.history['val_loss'])</p>
-			<p class="snippet">plt.title('Cats vs. Dogs model loss')</p>
-			<p class="snippet">plt.ylabel('Loss')</p>
-			<p class="snippet">plt.xlabel('Epoch')</p>
-			<p class="snippet">plt.legend(['Train set', 'Test set'], loc='upper left')</p>
-			<p class="snippet">plt.show()</p>
+			<pre>plt.plot(model_details.history['loss'])
+plt.plot(model_details.history['val_loss'])
+plt.title('Cats vs. Dogs model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train set', 'Test set'], loc='upper left')
+plt.show()</pre>
 			<p>The following figure shows the model loss plot for the train and test set for our cats-versus-dogs model from <em class="italics">Activity 21</em>:</p>
-			<div>
-				<div id="_idContainer309" class="IMG---Figure">
-					<img src="Images/C13322_08_11.jpg" alt="Figure 8.11: Loss log of the model&#13;&#10;" width="508" height="271"/>
+			<div><div><img src="img/C13322_08_11.jpg" alt="Figure 8.11: Loss log of the model&#13;&#10;" width="508" height="271"/>
 				</div>
 			</div>
 			<h6>Figure 8.11: Loss log of the model</h6>
@@ -242,40 +304,72 @@
 			<h3 id="_idParaDest-201"><a id="_idTextAnchor220"/>Exercise 59: Get a Well-Performing Network Using Auto-Keras</h3>
 			<p>In this exercise, we will make use of the Auto-Keras library to find the most optimal network and parameters for the cats-vs-dogs dataset (<a href="">https://github.com/TrainingByPackt/Data-Science-with-Python/tree/master/Chapter08</a>).</p>
 			<ol>
-				<li value="1">First, create a function to load the image labels:<p class="snippet">def get_label(file):</p><p class="snippet">    class_label = file.split('.')[0]</p><p class="snippet">    if class_label == 'dog': label_vector = 0</p><p class="snippet">    elif class_label == 'cat': label_vector = 1</p><p class="snippet">    return label_vector</p></li>
-				<li>Set <strong class="inline">SIZE</strong> which is the dimension of the square image input. <p class="snippet">SIZE = 50</p></li>
-				<li>Then create a function that reads images and their labels. Here <strong class="inline">PATH </strong>variable contains the path to the training dataset.<p class="snippet">import os</p><p class="snippet">from PIL import Image</p><p class="snippet">import numpy as np</p><p class="snippet">from random import shuffle</p><p class="snippet">def get_data():</p><p class="snippet">    data = []</p><p class="snippet">    files = os.listdir(PATH)</p><p class="snippet">    for image in tqdm(files):</p><p class="snippet">        label_vector = get_label(image)</p><p class="snippet">        </p><p class="snippet">        img = Image.open(PATH + image).convert('L')</p><p class="snippet">        img = img.resize((SIZE,SIZE))</p><p class="snippet">        </p><p class="snippet">        data.append([np.asarray(img),np.array(label_vector)])</p><p class="snippet">        </p><p class="snippet">    shuffle(data)</p><p class="snippet">    return data</p></li>
-				<li>Load the data and divide it into train and test sets:<p class="snippet">data = get_data()</p><p class="snippet">train = data[:7000]</p><p class="snippet">test = data[7000:]</p><p class="snippet">x_train = [data[0] for data in train]</p><p class="snippet">y_train = [data[1] for data in train]</p><p class="snippet">x_test = [data[0] for data in test]</p><p class="snippet">y_test = [data[1] for data in test]</p><p class="snippet">x_train = np.array(x_train).reshape(-1,SIZE,SIZE,1)</p><p class="snippet">x_test = np.array(x_test).reshape(-1,SIZE,SIZE,1)</p></li>
-				<li>Now, let's start with AutoML<p>First, create an array with the training time for autokeras. It will terminate the process of finding the best possible model once this time is elapsed:</p><p class="snippet">TRAINING_TIME = 60 * 60 * 1 # 1 hour</p><p>We will give autokeras an hour to find the best possible method.</p></li>
-				<li>Create an image classifier model using autokeras and perform training for the time specified in the previous step:<p class="snippet">import autokeras as ak</p><p class="snippet">model = ak.ImageClassifier(verbose=True)</p><p class="snippet">model.fit(x_train, y_train, time_limit=TRAINING_TIME)</p><p class="snippet">model.final_fit(x_train, y_train, x_test, y_test, retrain=True)</p></li>
-				<li>The output will be as follows:<div id="_idContainer310" class="IMG---Figure"><img src="Images/C13322_08_12.jpg" alt="" width="1067" height="600"/></div><h6>Figure 8.12: Image classifier model</h6></li>
-				<li>Next, we save our model so that we can use it again:<p class="snippet">model.export_autokeras_model("model.h5")</p></li>
-				<li>Load the trained model and perform predictions using it:<p class="snippet">from autokeras.utils import pickle_from_file</p><p class="snippet">model = pickle_from_file("model.h5")</p><p class="snippet">predictions = model.predict(x_test)</p></li>
-				<li>Evaluate the accuracy of the model created by autokeras:<p class="snippet">score = model.evaluate(x_test, y_test)</p><p class="snippet">print("\nScore: {}".format(score))</p></li>
-				<li>The accuracy of the model is as follows:<div id="_idContainer311" class="IMG---Figure"><img src="Images/C13322_08_13.jpg" alt="Figure 8.13: Model final accuracy&#13;&#10;" width="486" height="23"/></div><h6>Figure 8.13: Model final accuracy</h6></li>
+				<li value="1">First, create a function to load the image labels:<pre>def get_label(file):
+    class_label = file.split('.')[0]
+    if class_label == 'dog': label_vector = 0
+    elif class_label == 'cat': label_vector = 1
+    return label_vector</pre></li>
+				<li>Set <code>SIZE</code> which is the dimension of the square image input. <pre>SIZE = 50</pre></li>
+				<li>Then create a function that reads images and their labels. Here <code>PATH </code>variable contains the path to the training dataset.<pre>import os
+from PIL import Image
+import numpy as np
+from random import shuffle
+def get_data():
+    data = []
+    files = os.listdir(PATH)
+    for image in tqdm(files):
+        label_vector = get_label(image)
+        
+        img = Image.open(PATH + image).convert('L')
+        img = img.resize((SIZE,SIZE))
+        
+        data.append([np.asarray(img),np.array(label_vector)])
+        
+    shuffle(data)
+    return data</pre></li>
+				<li>Load the data and divide it into train and test sets:<pre>data = get_data()
+train = data[:7000]
+test = data[7000:]
+x_train = [data[0] for data in train]
+y_train = [data[1] for data in train]
+x_test = [data[0] for data in test]
+y_test = [data[1] for data in test]
+x_train = np.array(x_train).reshape(-1,SIZE,SIZE,1)
+x_test = np.array(x_test).reshape(-1,SIZE,SIZE,1)</pre></li>
+				<li>Now, let's start with AutoML<p>First, create an array with the training time for autokeras. It will terminate the process of finding the best possible model once this time is elapsed:</p><pre>TRAINING_TIME = 60 * 60 * 1 # 1 hour</pre><p>We will give autokeras an hour to find the best possible method.</p></li>
+				<li>Create an image classifier model using autokeras and perform training for the time specified in the previous step:<pre>import autokeras as ak
+model = ak.ImageClassifier(verbose=True)
+model.fit(x_train, y_train, time_limit=TRAINING_TIME)
+model.final_fit(x_train, y_train, x_test, y_test, retrain=True)</pre></li>
+				<li>The output will be as follows:<div><img src="img/C13322_08_12.jpg" alt="" width="1067" height="600"/></div><h6>Figure 8.12: Image classifier model</h6></li>
+				<li>Next, we save our model so that we can use it again:<pre>model.export_autokeras_model("model.h5")</pre></li>
+				<li>Load the trained model and perform predictions using it:<pre>from autokeras.utils import pickle_from_file
+model = pickle_from_file("model.h5")
+predictions = model.predict(x_test)</pre></li>
+				<li>Evaluate the accuracy of the model created by autokeras:<pre>score = model.evaluate(x_test, y_test)
+print("\nScore: {}".format(score))</pre></li>
+				<li>The accuracy of the model is as follows:<div><img src="img/C13322_08_13.jpg" alt="Figure 8.13: Model final accuracy&#13;&#10;" width="486" height="23"/></div><h6>Figure 8.13: Model final accuracy</h6></li>
 				<li>We successfully made use of autokeras to create an image classifier that detects if the provided image is of a cat or a dog. The accuracy that we get with this model is 72% after an hour of running it which is pretty good considering that we got a 73% accuracy for the model that we created in <em class="italics">Chapter 6</em>,<em class="italics"> Decoding Images</em>,<em class="italics"> Activity 22</em>. This shows the power of autoML but, sometimes we do not get good enough results in an acceptable time frame. </li>
 			</ol>
 			<h3 id="_idParaDest-202"><a id="_idTextAnchor221"/>Model Visualization Using Keras</h3>
 			<p>So far, we have created a bunch of neural network models but haven't visualized any of them. Keras has a very handy utility function that plots any model. To create a plot first define the model, we will take the model created in <em class="italics">Chapter 6</em>,<em class="italics"> Decoding images</em>, as shown in the following code:</p>
-			<p class="snippet">model = Sequential()</p>
-			<p class="snippet">    </p>
-			<p class="snippet">model.add(Conv2D(48, (3, 3), activation='relu', padding='same', input_shape=(50,50,1)))    </p>
-			<p class="snippet">model.add(Conv2D(48, (3, 3), activation='relu'))    </p>
-			<p class="snippet">model.add(MaxPool2D(pool_size=(2, 2)))</p>
-			<p class="snippet">model.add(BatchNormalization())</p>
-			<p class="snippet">model.add(Dropout(0.10))</p>
-			<p class="snippet">model.add(Flatten())</p>
-			<p class="snippet">model.add(Dense(512, activation='relu'))</p>
-			<p class="snippet">model.add(Dropout(0.5))</p>
-			<p class="snippet">model.add(Dense(2, activation='softmax'))</p>
-			<p class="snippet">model.summary()</p>
-			<p>And then save the model as an image using <strong class="inline">plot_model</strong>, as shown in the following code.</p>
-			<p class="snippet">from keras.utils import plot_model</p>
-			<p class="snippet">plot_model(model, to_file='model.png', show_shapes=True)</p>
-			<p>The <strong class="inline">show_shapes</strong> argument gives the visualization the input and output shapes of the layers. The saved image is as follows:</p>
-			<div>
-				<div id="_idContainer312" class="IMG---Figure">
-					<img src="Images/C13322_08_14.jpg" alt="Figure 8.14: Model visualization created by Keras&#13;&#10;" width="919" height="1056"/>
+			<pre>model = Sequential()
+    
+model.add(Conv2D(48, (3, 3), activation='relu', padding='same', input_shape=(50,50,1)))    
+model.add(Conv2D(48, (3, 3), activation='relu'))    
+model.add(MaxPool2D(pool_size=(2, 2)))
+model.add(BatchNormalization())
+model.add(Dropout(0.10))
+model.add(Flatten())
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(2, activation='softmax'))
+model.summary()</pre>
+			<p>And then save the model as an image using <code>plot_model</code>, as shown in the following code.</p>
+			<pre>from keras.utils import plot_model
+plot_model(model, to_file='model.png', show_shapes=True)</pre>
+			<p>The <code>show_shapes</code> argument gives the visualization the input and output shapes of the layers. The saved image is as follows:</p>
+			<div><div><img src="img/C13322_08_14.jpg" alt="Figure 8.14: Model visualization created by Keras&#13;&#10;" width="919" height="1056"/>
 				</div>
 			</div>
 			<h6>Figure 8.14: Model visualization created by Keras</h6>
@@ -289,17 +383,15 @@
 				<li>Visualize the training using TensorBoard.<h4>Note</h4><p class="callout">The solution for this activity can be found on page 391.</p></li>
 			</ol>
 			<p>You can plot the incorrectly predicted images to get a sense of how well the model performs using the following snippet:</p>
-			<p class="snippet">y_pred = model.predict(test_data[0])</p>
-			<p class="snippet">incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(test_data[1],axis=1))[0]</p>
-			<p class="snippet">labels = ['dog', 'cat']</p>
-			<p class="snippet">image = 5</p>
-			<p class="snippet">plt.imshow(test_data[0][incorrect_indices[image]].reshape(SIZE, SIZE, CHANNELS),  cmap=plt.get_cmap('gray'))</p>
-			<p class="snippet">plt.show()</p>
-			<p class="snippet">print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</p>
+			<pre>y_pred = model.predict(test_data[0])
+incorrect_indices = np.nonzero(np.argmax(y_pred,axis=1) != np.argmax(test_data[1],axis=1))[0]
+labels = ['dog', 'cat']
+image = 5
+plt.imshow(test_data[0][incorrect_indices[image]].reshape(SIZE, SIZE, CHANNELS),  cmap=plt.get_cmap('gray'))
+plt.show()
+print("Prediction: {0}".format(labels[np.argmax(y_pred[incorrect_indices[image]])]))</pre>
 			<p>The incorrectly predicted image is as follows:</p>
-			<div>
-				<div id="_idContainer313" class="IMG---Figure">
-					<img src="Images/C13322_08_15.jpg" alt="Figure 8.15: The incorrectly predicted sample&#13;&#10;" width="753" height="353"/>
+			<div><div><img src="img/C13322_08_15.jpg" alt="Figure 8.15: The incorrectly predicted sample&#13;&#10;" width="753" height="353"/>
 				</div>
 			</div>
 			<h6>Figure 8.15: <a id="_idTextAnchor223"/>The incorrectly predicted sample</h6>

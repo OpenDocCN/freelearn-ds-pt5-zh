@@ -1,15 +1,15 @@
 <html><head></head><body>
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Multiuser Jupyter Notebooks</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>Jupyter Notebooks have the inherent ability to be modifiable by users when the user enters data or makes a selection. However, there is an issue with the standard implementation of the Notebook server software that does not account for more than one person working with a Notebook at the same time. The Notebook server software is the underlying Jupyter software that displays the page and interacts with the user—it follows the directions in your Notebook for display and interaction.</p>
 <p>A Notebook server, really a specialized internet web server, typically creates a new path or thread of execution for each user to allow for multiple users. A problem arises when a lower-level subroutine, used for all instances, does not properly account for multiple users where each has their own set of data.</p>
-<div class="packt_infobox">Note that some of the coding/installs in this chapter may not work in a Windows environment.</div>
+<p>Note that some of the coding/installs in this chapter may not work in a Windows environment.</p>
 <p>In this chapter we will explore the following:</p>
 <ul>
 <li>Give an example of the issue that occurs when multiple users access the same Notebook in a standard Jupyter installation</li>
@@ -18,19 +18,19 @@
 </ul>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">A sample interactive Notebook</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>For this chapter, we will use a simple Notebook that asks the user for some information, and displays certain information.</p>
 <p class="mce-root"/>
@@ -39,73 +39,73 @@
 def myfunction(x): 
     return x 
 interact(myfunction, x= "Hello World "); </pre>
-<p>The script presents a textbox to the user with the original value of the box containing the <kbd>Hello World</kbd> string. As the user interacts with the input field and changes the value, then the value of the <kbd>x</kbd> <span>variable </span>in the script changes accordingly and is displayed on screen. For example, I have changed the value to letter <kbd>A</kbd>:</p>
-<p class="CDPAlignCenter CDPAlign"><img src="assets/95189c02-c525-470c-9c6f-96e9c00acae7.png"/></p>
+<p>The script presents a textbox to the user with the original value of the box containing the <kbd>Hello World</kbd> string. As the user interacts with the input field and changes the value, then the value of the <kbd>x</kbd> variable in the script changes accordingly and is displayed on screen. For example, I have changed the value to letter <kbd>A</kbd>:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="img/95189c02-c525-470c-9c6f-96e9c00acae7.png"/></p>
 <p>We can see the multiuser problem: if we just open the same page in another browser window (copy the URL, open a new browser window, paste in the URL, and hit the <em>Enter</em> key), we get the exact same display. The new window should have started with a new script, just prompting you with the default <kbd>Hello World</kbd> message. However, since the Jupyter server software is only expecting one user, there is only one copy of the <kbd>x</kbd> variable, so it displays its value.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">JupyterHub</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>Once Jupyter Notebooks were shared, it became obvious that the multiuser problem had to be solved. A new version of the Jupyter software was developed called <strong>JupyterHub</strong>. JupyterHub was specifically designed to handle multiple users, giving each user their own set of variables to work with. Actually, the system will give each user a whole new instance of the Jupyter software to each user—a <strong>brute-force</strong> approach, but it works.</p>
 <p>When JupyterHub starts, it begins a hub or controlling agent. The hub will start an instance of a listener or proxy for Jupyter requests. When the proxy gets requests for Jupyter, it turns them over to the hub. If the hub decides this is a new user, it will generate a new instance of the Jupyter server and attach all further interactions between that user and Jupyter to their own version of the server.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Installation</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>JupyterHub requires Python 3.3 or better, and we will use the Python tool <kbd>pip3</kbd> to install JupyterHub. You can check the version of Python you are running by just entering <kbd>Python</kbd> on a command line and the prologue will echo out the current version. For example, see the following:</p>
 <pre><strong>Python</strong> 
 <strong>Python 3.6.0a4 (v3.6.0a4:017cf260936b, Aug 15 2016, 13:38:16) </strong> 
 <strong>[GCC 4.2.1 (Apple Inc. build 5666) (dot 3)] on darwin</strong> 
 <strong>Type "help", "copyright", "credits" or "license" for more information.</strong> </pre>
-<p>If you need to upgrade to a new version, refer to the instructions on <a href="http://python.org" target="_blank">http://python.org</a> since they are specific to the operating system and version of <span>Python</span>.</p>
+<p>If you need to upgrade to a new version, refer to the instructions on <a href="http://python.org" target="_blank">http://python.org</a> since they are specific to the operating system and version of Python.</p>
 <p>JupyterHub is installed much like other software using the following commands:</p>
 <pre><strong>npm install -g configurable-http-proxy<br/>pip3 install jupyterhub</strong></pre>
 <p>First, installing the proxy. <kbd>-g</kbd> on the proxy install means to make that software available to all users:</p>
 <pre><strong>npm install -g configurable-http-proxy</strong> 
 <strong>/usr/local/bin/configurable-http-proxy -&gt; /usr/local/lib/node_modules/configurable-http-proxy/bin/configurable-http-proxy</strong> 
 <strong>/usr/local/lib</strong> 
-<strong><span>└─┬ configurable-http-proxy@1.3.0 </span></strong> 
-<strong><span>  ├─┬ commander@2.9.0 </span></strong> 
-<strong><span>  │ └── graceful-readlink@1.0.1 </span></strong> 
-<strong><span>  ├─┬ http-proxy@1.13.3 </span></strong> 
-<strong><span>  │ ├── eventemitter3@1.2.0 </span></strong> 
-<strong><span>  │ └── requires-port@1.0.0 </span></strong> 
-<strong><span>  ├─┬ lynx@0.2.0 </span></strong> 
-<strong><span>  │ ├── mersenne@0.0.3 </span></strong> 
-<strong><span>  │ └── statsd-parser@0.0.4 </span></strong> 
-<strong><span>  ├── strftime@0.9.2 </span></strong> 
-<strong><span>  └─┬ winston@2.2.0 </span></strong> 
-<strong><span>    ├── async@1.0.0 </span></strong> 
-<strong><span>    ├── colors@1.0.3 </span></strong> 
-<strong><span>    ├── cycle@1.0.3 </span></strong> 
-<strong><span>    ├── eyes@0.1.8 </span></strong> 
-<strong><span>    ├── isstream@0.1.2 </span></strong> 
-<strong><span>    ├── pkginfo@0.3.1 </span></strong> 
-<strong><span>    └── stack-trace@0.0.9 </span></strong> 
+<strong>└─┬ configurable-http-proxy@1.3.0 </strong> 
+<strong>  ├─┬ commander@2.9.0 </strong> 
+<strong>  │ └── graceful-readlink@1.0.1 </strong> 
+<strong>  ├─┬ http-proxy@1.13.3 </strong> 
+<strong>  │ ├── eventemitter3@1.2.0 </strong> 
+<strong>  │ └── requires-port@1.0.0 </strong> 
+<strong>  ├─┬ lynx@0.2.0 </strong> 
+<strong>  │ ├── mersenne@0.0.3 </strong> 
+<strong>  │ └── statsd-parser@0.0.4 </strong> 
+<strong>  ├── strftime@0.9.2 </strong> 
+<strong>  └─┬ winston@2.2.0 </strong> 
+<strong>    ├── async@1.0.0 </strong> 
+<strong>    ├── colors@1.0.3 </strong> 
+<strong>    ├── cycle@1.0.3 </strong> 
+<strong>    ├── eyes@0.1.8 </strong> 
+<strong>    ├── isstream@0.1.2 </strong> 
+<strong>    ├── pkginfo@0.3.1 </strong> 
+<strong>    └── stack-trace@0.0.9 </strong> 
  </pre>
 <p>Then, we install JupyterHub:</p>
 <pre><strong>pip3.6 install jupyterhub</strong> 
@@ -127,19 +127,19 @@ interact(myfunction, x= "Hello World "); </pre>
 <strong>...</strong> </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Operation</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>We can now start JupyterHub directly from the command line:</p>
 <pre><strong>jupyterhub</strong> </pre>
@@ -173,8 +173,8 @@ interact(myfunction, x= "Hello World "); </pre>
 <strong>14:43:15.867 - info: [ConfigProxy] Proxying http://*:8000 to http://127.0.0.1:8081</strong> 
 <strong>14:43:15.871 - info: [ConfigProxy] Proxy API at http://127.0.0.1:8001/api/routes</strong> 
 <strong>[I 2016-08-28 14:43:15.900 JupyterHub app:1254] JupyterHub is now running at http://127.0.0.1:8000/</strong> </pre>
-<p><span>If we now go to that URL shown (<kbd>http://127.0.0.1:8000/</kbd><a href="http://127.0.0.1:8000/)">)</a> on the last line of the output, we get to a login screen for JupyterHub:</span></p>
-<p class="CDPAlignCenter CDPAlign"><img src="assets/5fac8f6f-82a7-40b7-899f-b42e16f53726.png"/></p>
+<p>If we now go to that URL shown (<kbd>http://127.0.0.1:8000/</kbd><a href="http://127.0.0.1:8000/)">)</a> on the last line of the output, we get to a login screen for JupyterHub:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="img/5fac8f6f-82a7-40b7-899f-b42e16f53726.png"/></p>
 <p class="mce-root"/>
 <p>So, we have avoided requiring SSL, but we still need to configure the users for the system.</p>
 <p>The JupyterHub software uses a configuration file to determine how it should work. You can generate a configuration file using JupyterHub, providing default values using the following command:</p>
@@ -278,19 +278,19 @@ interact(myfunction, x= "Hello World "); </pre>
 </table>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Continuing with operations</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>I made no changes to the configuration file to get my installation up and running. By default, the configuration uses the PEM system, which will hook into the operating system you are running on to pass in credentials (as if they were logging into the machine) for validation.</p>
 <p>If you are seeing the <kbd>JupyterHub single-user server requires notebook &gt;= 4.0</kbd> message in the console log when trying to log in to your JupyterHub installation, you need to update the base Jupyter using the command:</p>
@@ -301,28 +301,28 @@ interact(myfunction, x= "Hello World "); </pre>
 <pre><strong>jupyterhub --no-ssl</strong></pre>
 <p class="mce-root"/>
 <p>Log in to the login screen (shown previously) using the same credentials you use to log in to the machine (remember JupyterHub is using PEM, which calls into your operating system to validate credentials). You will end up in something that looks very much like your standard Jupyter home page:</p>
-<p class="CDPAlignCenter CDPAlign"><span><img src="assets/1abdd1d2-e0c6-4eab-b1e0-2a06d59ebb96.png"/></span></p>
+<p class="CDPAlignCenter CDPAlign"><img src="img/1abdd1d2-e0c6-4eab-b1e0-2a06d59ebb96.png"/></p>
 <p>It looks very similar, except there are now two additional buttons in the top right of the screen:</p>
 <ul>
-<li> <span class="packt_screen">Control Panel</span></li>
-<li> <span class="packt_screen">Logout</span></li>
+<li> Control Panel</li>
+<li> Logout</li>
 </ul>
-<p>Clicking on the <span class="packt_screen">Logout</span> button logs you out of JupyterHub and redirects you to the login screen.</p>
-<p>Clicking on the <span class="packt_screen">Control Panel</span> button brings you to a new screen with two options, shown as follows:</p>
+<p>Clicking on the Logout button logs you out of JupyterHub and redirects you to the login screen.</p>
+<p>Clicking on the Control Panel button brings you to a new screen with two options, shown as follows:</p>
 <ul>
-<li> <span class="packt_screen">Stop My Server</span></li>
-<li> <span class="packt_screen">My Server</span></li>
+<li> Stop My Server</li>
+<li> My Server</li>
 </ul>
-<p class="CDPAlignCenter CDPAlign"><img src="assets/84688a22-6847-4380-abe5-3181dfe5b590.png" style="width:47.17em;height:7.83em;"/></p>
-<p>Clicking on the <span class="packt_screen">Stop My Server</span> button stops your Jupyter installation and brings you to a page with one button: <span class="packt_screen">My Server</span> (as shown in the following section). You may also have noticed the changes that have occurred in the console log of your command line:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="img/84688a22-6847-4380-abe5-3181dfe5b590.png" style="width:47.17em;height:7.83em;"/></p>
+<p>Clicking on the Stop My Server button stops your Jupyter installation and brings you to a page with one button: My Server (as shown in the following section). You may also have noticed the changes that have occurred in the console log of your command line:</p>
 <pre><strong>[I 2016-08-28 20:22:16.578 JupyterHub log:100] 200 GET /hub/api/authorizations/cookie/jupyter-hub-token-dtoomey/[secret] (dtoomey@127.0.0.1) 13.31ms</strong> 
 <strong>[I 2016-08-28 20:23:01.181 JupyterHub orm:178] Removing user dtoomey from proxy</strong> 
 <strong>[I 2016-08-28 20:23:01.186 dtoomey notebookapp:1083] Shutting down kernels</strong> 
 <strong>[I 2016-08-28 20:23:01.417 JupyterHub base:367] User dtoomey server took 0.236 seconds to stop</strong> 
 <strong>[I 2016-08-28 20:23:01.422 JupyterHub log:100] 204 DELETE /hub/api/users/dtoomey/server (dtoomey@127.0.0.1) 243.06ms</strong> 
  </pre>
-<p class="CDPAlignCenter CDPAlign"><img src="assets/67f342c6-ec25-48ef-82b8-2fa350c05948.png" style="width:44.17em;height:7.25em;"/></p>
-<p>Clicking on the <span class="packt_screen">My Server</span> button brings you back to the Jupyter home page. If you had hit the <span class="packt_screen">Stop My Server</span> button earlier, then the underlying Jupyter software would be restarted, as you may notice in the console output (which I have shown as follows):</p>
+<p class="CDPAlignCenter CDPAlign"><img src="img/67f342c6-ec25-48ef-82b8-2fa350c05948.png" style="width:44.17em;height:7.25em;"/></p>
+<p>Clicking on the My Server button brings you back to the Jupyter home page. If you had hit the Stop My Server button earlier, then the underlying Jupyter software would be restarted, as you may notice in the console output (which I have shown as follows):</p>
 <pre><strong>I 2016-08-28 20:26:16.356 JupyterHub base:306] User dtoomey server took 1.007 seconds to start</strong> 
 <strong>[I 2016-08-28 20:26:16.356 JupyterHub orm:159] Adding user dtoomey to proxy /user/dtoomey =&gt; http://127.0.0.1:50972</strong> 
 <strong>[I 2016-08-28 20:26:16.372 dtoomey log:47] 302 GET /user/dtoomey (127.0.0.1) 0.73ms</strong> 
@@ -330,73 +330,73 @@ interact(myfunction, x= "Hello World "); </pre>
 <strong>[I 2016-08-28 20:26:16.413 JupyterHub log:100] 200 GET /hub/api/authorizations/cookie/jupyter-hub-token-dtoomey/[secret] (dtoomey@127.0.0.1) 10.75ms</strong> </pre>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">JupyterHub summary</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>So, in summary, with JupyterHub we have an installation of Jupyter that will maintain a separate instance of the Jupyter software for each user and thereby avoid any collision on variable values. The software knows whether to instantiate a new instance of Jupyter since the user logs in to the application and the system maintains a user list.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Docker</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>Docker is another mechanism that can be used to allow multiple users of the same Notebook without collision. Docker is a system that allows you to construct sets of applications into an image that can be run in a container. Docker runs in most environments. Docker allows for many instances of an image to be run in the same machine, but to maintain a separate address space. So, each user of a Docker image has their own instance of the software and their own set of data/variables.</p>
 <p>Each image is a complete stack of software necessary to run, for example, a web server, web application(s), APIs, and more.</p>
 <p>It is not a large leap to think of an image of your Notebook. The image contains Jupyter server code and your Notebook. The result is a completely intact unit that does not share any space with another's instance.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Installation</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>Installing Docker involves downloading the latest file (the <kbd>docker.dmg</kbd> file for a macOS and the <kbd>.exe</kbd> file install for Windows) and then copying the Docker applications into your <kbd>Applications</kbd> folder. <strong>Docker QuickStart</strong> <strong>Terminal</strong> is the go-to application of use to most developers. Docker QuickStart will start Docker on your local machine, allocate an IP address / port number for addressing the Docker application(s), and bring you into the Docker Terminal. Once QuickStart has completed, if you have installed your image, you could access your application (in this case, your Jupyter Notebook).</p>
 <p>From the Docker Terminal, you can load images, remove images, check status, and more.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Starting Docker</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>If you run <kbd>Docker QuickStart</kbd>, you will be brought to the Docker Terminal window with a display like the following:</p>
 <pre><strong>bash --login '/Applications/Docker/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh'</strong> 
@@ -428,7 +428,7 @@ interact(myfunction, x= "Hello World "); </pre>
  
  
 <strong>docker is configured to use the default machine with IP 192.168.99.100</strong> 
-<strong><span>For help getting started, check out the docs at <a href="https://docs.docker.com">https://docs.docker.com</a></span></strong> </pre>
+<strong>For help getting started, check out the docs at <a href="https://docs.docker.com">https://docs.docker.com</a></strong> </pre>
 <p>(The odd graphic near the end of the display is a character representation of a whale—the logo for Docker.)</p>
 <p>You can see the following from the output:</p>
 <ul>
@@ -438,19 +438,19 @@ interact(myfunction, x= "Hello World "); </pre>
 </ul>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Building your Jupyter image for Docker</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>Docker knows about images that contain the entire software stack necessary to run an application. We need to build an image with a Notebook and place this in Docker.</p>
 <p class="mce-root"/>
@@ -488,52 +488,52 @@ interact(myfunction, x= "Hello World "); </pre>
 <li>Lastly, Docker assigns random names to every running image <kbd>modest_bardeen</kbd> (not sure why they do this).</li>
 </ul>
 <p>If we try to access Docker Jupyter at this point, we will be asked to set up security for the system, as in this display:</p>
-<p class="CDPAlignCenter CDPAlign"><strong><span><img src="assets/bd6c29f8-ecfb-4afe-a91c-2a4f0bbe1b98.png" style="width:32.83em;height:52.08em;"/></span></strong></p>
+<p class="CDPAlignCenter CDPAlign"><strong><img src="img/bd6c29f8-ecfb-4afe-a91c-2a4f0bbe1b98.png" style="width:32.83em;height:52.08em;"/></strong></p>
 <p class="CDPAlignLeft CDPAlign">Once we have set up security, we should be able to access the Notebook from a browser at <kbd>http:// 127.0.0.1:8888</kbd>. We saw the preceding IP address when Docker started (<kbd>0.0.0.0</kbd>) and we are using port <kbd>8888</kbd> as we specified:</p>
-<p class="CDPAlignCenter CDPAlign"><strong><span><img src="assets/312cafba-1a33-43c6-8aad-01f904ed7bec.png"/></span></strong></p>
-<p class="CDPAlignLeft CDPAlign">You can see the URL in the top-left corner. Beneath that, we have a standard empty Notebook. The Docker image used has all of the latest versions, so you do not have to do anything special to get updated software or components for your Notebook. You can see the language options available by pulling down the <span class="packt_screen">New</span> menu:</p>
-<p class="CDPAlignCenter CDPAlign"><strong><span><img src="assets/40a025d2-d91b-4f11-b81a-084e30b8a581.png" style="width:18.42em;height:22.33em;"/></span></strong></p>
+<p class="CDPAlignCenter CDPAlign"><strong><img src="img/312cafba-1a33-43c6-8aad-01f904ed7bec.png"/></strong></p>
+<p class="CDPAlignLeft CDPAlign">You can see the URL in the top-left corner. Beneath that, we have a standard empty Notebook. The Docker image used has all of the latest versions, so you do not have to do anything special to get updated software or components for your Notebook. You can see the language options available by pulling down the New menu:</p>
+<p class="CDPAlignCenter CDPAlign"><strong><img src="img/40a025d2-d91b-4f11-b81a-084e30b8a581.png" style="width:18.42em;height:22.33em;"/></strong></p>
 <p class="mce-root"/>
 <p class="mce-root"/>
 
-
-            </article>
 
             
-        </section>
+
+            
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Docker summary</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p class="mce-root">We have installed Docker, and we have created an image with our Notebook. We have also placed the Docker image into Docker, and we have accessed our Docker Notebook image.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     
 
-        <section>
+        
 
-                            <header>
+                            
                     <h1 class="header-title">Summary</h1>
-                </header>
+                
             
-            <article>
+            
                 
 <p>In this chapter, we learned how to expose a Notebook so that multiple users can use a Notebook at the same time. We saw an example of an error occurring. We installed a Jupyter server that addresses the problem, and we used Docker to alleviate the issue as well.</p>
 <p>In the next chapter, we will look at some upcoming feature enhancements for Jupyter.</p>
 
 
-            </article>
+            
 
             
-        </section>
+        
     </body></html>

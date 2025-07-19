@@ -1164,6 +1164,9 @@
   id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 'GraphX ([https://spark.apache.org/graphx/](https://spark.apache.org/graphx/))
+    是一个为与 Spark 配合使用而设计的分布式图处理库。像我们在前一章中使用的 MLlib 库一样，GraphX 提供了一组基于 Spark RDD 的抽象。通过将图的顶点和边表示为
+    RDD，GraphX 能够以可扩展的方式处理非常大的图。 '
 - en: 'We''ve seen in previous chapters how to process a large dataset using MapReduce
     and Hadoop. Hadoop is an example of a data-parallel system: the dataset is divided
     into groups that are processed in parallel. Spark is also a data-parallel system:
@@ -1171,10 +1174,13 @@
   id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面的章节中，我们已经了解了如何使用 MapReduce 和 Hadoop 处理大规模数据集。Hadoop 是一种数据并行系统：数据集被分成若干组并行处理。Spark
+    同样是一个数据并行系统：RDD 被分布在集群中并行处理。
 - en: '![Distributed graph computation with GraphX](img/7180OS_08_300.jpg)'
   id: totrans-175
   prefs: []
   type: TYPE_IMG
+  zh: '![GraphX 分布式图计算](img/7180OS_08_300.jpg)'
 - en: Data-parallel systems are appropriate ways of scaling data processing when your
     data closely resembles a table. Graphs, which may have complex internal structure,
     are not most efficiently represented as tables. Although graphs can be represented
@@ -1184,6 +1190,7 @@
   id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据并行系统适合在数据呈现表格形式时进行数据处理扩展。图形可能具有复杂的内部结构，不适合作为表格来表示。虽然图形可以表示为边列表，但正如我们所见，以这种方式存储的图形在处理时可能涉及复杂的连接操作和过度的数据传输，因数据之间的紧密联系。
 - en: The growing scale and significance of graph data has driven the development
     of numerous new graph-parallel systems. By restricting the types of computation
     that can be expressed and introducing techniques to partition and distribute graphs,
@@ -1192,26 +1199,32 @@
   id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 图数据的规模和重要性的增长推动了众多新的图并行系统的发展。通过限制可表达的计算类型并引入图的分区和分布技术，这些系统能够比一般的数据并行系统更高效地执行复杂的图算法，速度提高了几个数量级。
 - en: Note
   id: totrans-178
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Several libraries bring graph-parallel computation to Hadoop, including Hama,
     ([https://hama.apache.org/](https://hama.apache.org/)) and Giraph ([http://giraph.apache.org/](http://giraph.apache.org/)).
   id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 有几个库将图并行计算引入 Hadoop，包括 Hama ([https://hama.apache.org/](https://hama.apache.org/))
+    和 Giraph ([http://giraph.apache.org/](http://giraph.apache.org/))。
 - en: The GraphX library brings graph-parallel computation to Spark. One of the advantages
     of using Spark as the engine for graph processing is that its in-memory computation
     model is well-suited to the iterative nature of many graph algorithms.
   id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: GraphX 库将图并行计算引入 Spark。使用 Spark 作为图处理引擎的一个优点是，其内存计算模型非常适合许多图算法的迭代特性。
 - en: '![Distributed graph computation with GraphX](img/7180OS_08_310.jpg)'
   id: totrans-181
   prefs: []
   type: TYPE_IMG
+  zh: '![GraphX 分布式图计算](img/7180OS_08_310.jpg)'
 - en: This diagram illustrates the challenge of processing graphs in parallel where
     the nodes may be interconnected. By processing the data within the graph topology,
     GraphX avoids excessive data movement and duplication. GraphX extends Spark's
@@ -1220,11 +1233,14 @@
   id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 该图展示了在节点可能相互连接的情况下并行处理图形的挑战。通过在图拓扑结构内处理数据，GraphX 避免了过多的数据移动和冗余。GraphX 通过引入弹性分布式图（Resilient
+    Distributed Graph，简称 RDG）扩展了 Spark 的 RDD 抽象，并提供了一组用于查询和转换图形的函数，这些函数能够以结构化感知的方式处理图形。
 - en: Creating RDGs with Glittering
   id: totrans-183
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 Glittering 创建 RDG
 - en: Spark and GraphX are libraries that are predominantly written in Scala. In this
     chapter, we'll be using the Clojure library Glittering ([https://github.com/henrygarner/glittering](https://github.com/henrygarner/glittering))
     to interact with GraphX. In much the same way that Sparkling provides a thin Clojure
@@ -1232,6 +1248,9 @@
   id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark 和 GraphX 是主要用 Scala 编写的库。在本章中，我们将使用 Clojure 库 Glittering ([https://github.com/henrygarner/glittering](https://github.com/henrygarner/glittering))
+    来与 GraphX 交互。就像 Sparkling 为 Spark 提供了一个简洁的 Clojure 包装器一样，Glittering 也为 GraphX
+    提供了一个简洁的 Clojure 包装器。
 - en: 'Our first task will be to create a graph. Graphs can be instantiated in two
     ways: either by supplying two RDD representations (one containing the edges and
     the other the vertices), or simply by supplying an RDD of edges. If only the edges
@@ -1325,22 +1344,27 @@
   id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们可以看到顶点 A、B 和 C 都参与了一个三角形，而顶点 D 则没有参与。B 和 C 都跟随 A，但 C 也跟随 B。在社交网络分析的背景下，三角形计数是衡量朋友的朋友是否相互认识的指标。在紧密的社区中，我们预计三角形的数量会很高。
 - en: 'Triangle counting is already implemented by GraphX and is accessible as the
     `triangle-count` function in the `glittering.algorithms` namespace. Before we
     use this particular algorithm, GraphX requires us to do two things:'
   id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 三角形计数已经在 GraphX 中实现，并可以作为 `glittering.algorithms` 命名空间中的 `triangle-count` 函数访问。在使用这个特定的算法之前，GraphX
+    要求我们做两件事：
 - en: Point the edges in the "canonical" direction.
   id: totrans-198
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将边指向“标准”方向。
 - en: Ensure the graph is partitioned.
   id: totrans-199
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确保图被划分。
 - en: Both of these steps are the artifacts of the way triangle counting is implemented
     in GraphX. GraphX allows there to be multiple edges between two vertices, but
     triangle counting seeks only to count the distinct edges. The previous two steps
@@ -1349,12 +1373,15 @@
   id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个步骤都是 GraphX 中三角形计数实现的副产品。GraphX 允许两个顶点之间有多个边，但三角形计数只计算不同的边。前两个步骤确保 GraphX
+    能够在执行算法之前高效地计算出不同的边。
 - en: 'The canonical direction of an edge always points from a smaller node ID to
     a larger node ID. We can achieve this by ensuring all the edges are created in
     this direction when we first construct our edge RDD:'
   id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 边的标准方向始终是从较小的节点 ID 指向较大的节点 ID。我们可以通过确保在首次构建边 RDD 时所有边都按照这个方向创建来实现这一点：
 - en: '[PRE26]'
   id: totrans-202
   prefs: []
@@ -1367,11 +1394,13 @@
   id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过在创建边之前先对 `from` 和 `to` ID 进行排序，我们确保 `from` ID 总是小于 `to` ID。这是使去重更高效的第一步。第二步是为图选择一个划分策略。下一节将描述我们的选择。
 - en: GraphX partitioning strategies
   id: totrans-204
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: GraphX 划分策略
 - en: 'GraphX is built for distributed computation and so it must partition graphs
     across multiple machines. In general, there are two approaches that you could
     take while partitioning graphs: the ''edge cut'' and ''vertex cut'' approach.
@@ -1379,10 +1408,12 @@
   id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: GraphX 是为分布式计算而构建的，因此必须将图划分到多个机器上。通常，在划分图时，您可以采取两种方法：'边切割'和'顶点切割'方法。每种方法都有不同的权衡。
 - en: '![GraphX partitioning strategies](img/7180OS_08_340.jpg)'
   id: totrans-206
   prefs: []
   type: TYPE_IMG
+  zh: '![GraphX 划分策略](img/7180OS_08_340.jpg)'
 - en: The edge cut strategy may seem the most "natural" way to partition a graph.
     By splitting the graph along the edges, it ensures that each vertex is assigned
     to exactly one partition indicated by the shade of gray. This presents an issue
@@ -1392,6 +1423,7 @@
   id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: 边切割策略可能看起来是划分图的最“自然”方式。通过沿着边划分图，它确保每个顶点都被分配到一个分区，并通过灰色阴影表示出来。然而，这对于表示跨分区的边会产生问题。任何沿边进行的计算都必然需要从一个分区发送到另一个分区，而最小化网络通信是实现高效图算法的关键。
 - en: GraphX implements the "vertex cut" approach, which ensures that the edges are
     assigned to partitions and that the vertices may be shared across partitions.
     This appears to simply move the network communication to a different part of the
@@ -1401,12 +1433,15 @@
   id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: GraphX 实现了“顶点切割”方法，确保边被分配到分区，并且顶点可以跨分区共享。这似乎只是将网络通信转移到图的另一个部分——从边转移到顶点——但是 GraphX
+    提供了多种策略，允许我们确保顶点以最适合我们想要应用的算法的方式进行划分。
 - en: Glittering provides the `partition-by` function, which accepts a keyword representing
     the strategy to partition the graph. Accepted values are `:edge-partition-1d`,
     `:edge-partition-2d`, `:canonical-random-vertex-cut`, and `:random-vertex-cut`.
   id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: Glittering提供了`partition-by`函数，该函数接受一个表示划分图策略的关键字。接受的值有`:edge-partition-1d`、`:edge-partition-2d`、`:canonical-random-vertex-cut`和`:random-vertex-cut`。
 - en: Your choice about which partitioning strategy to use is based on the structure
     of the graph and the algorithm you will apply. The `:edge-partition-1d` strategy
     ensures that all the edges with the same source are partitioned together. This
@@ -1417,6 +1452,7 @@
   id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: 你选择使用哪个划分策略取决于图的结构和你将应用的算法。`:edge-partition-1d`策略确保所有具有相同源的边被划分到一起。这意味着按源节点聚合边的操作（例如，计数出边）将所有所需的数据都集中在单台机器上。虽然这样可以最小化网络流量，但也意味着在幂律图中，少数几个分区可能会收到整体边数的相当大一部分。
 - en: The `:random-vertex-cut` partitioning strategy splits a graph into edges based
     on both the source and destination vertices. This can help to create more balanced
     partitions at the cost of run-time performance, as a single source or destination
@@ -1426,6 +1462,7 @@
   id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: '`:random-vertex-cut`划分策略根据源节点和目标节点将图形划分为边。这有助于创建更平衡的分区，但以运行时性能为代价，因为单一的源或目标节点可能会分布到集群中的多个机器上。即使是连接相同节点对的边，也可能根据边的方向分布在两台机器上。为了忽略方向而对边进行分组，我们可以使用`:canonical-random-vertex-cut`。'
 - en: Finally, `:edge-partition-2d` partitions edges by both their source and destination
     vertex using a more sophisticated partitioning strategy. As with the `:canonical-random-vertex-cut`,
     nodes sharing both a source and a destination will be partitioned together. In
@@ -1436,11 +1473,13 @@
   id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，`:edge-partition-2d`通过源节点和目标节点使用更复杂的划分策略来划分边。与`:canonical-random-vertex-cut`一样，共享源节点和目标节点的节点将被一起划分。此外，该策略对每个节点可能分布的分区数量设置了上限。当一个算法汇总共享源节点和目标节点的边的信息，以及源或目标节点的独立信息时，这可能是最有效的策略。
 - en: Running the built-in triangle counting algorithm
   id: totrans-213
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 运行内建的三角形计数算法
 - en: 'We''ve already seen how to load our edges in the canonical direction. The next
     step is to choose a partitioning strategy, and we''ll go for `:random-vertex-cut`.
     The following example shows the full sequence of loading and partitioning the
@@ -1448,6 +1487,7 @@
   id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经看过如何以标准方向加载边。下一步是选择一个划分策略，我们将选择`:random-vertex-cut`。以下示例展示了加载和划分图形的完整过程，执行三角形计数并使用Incanter可视化结果：
 - en: '[PRE27]'
   id: totrans-215
   prefs: []
@@ -1462,21 +1502,25 @@
   id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: '`triangle-count`的输出是一个新图，其中每个顶点的属性是该顶点参与的三角形数量。顶点的ID保持不变。我们只关心三角形计数本身——返回图的顶点属性——因此我们从顶点中提取`values`。`spark/collect`函数将所有值收集到一个Clojure序列中，因此我们不希望在非常大的图上执行此操作。'
 - en: 'Having gathered the count of triangles, we calculate the frequency of each
     count and visualize the result on a log-log scatter plot using Incanter. The output
     is shown next:'
   id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: 在收集到三角形计数后，我们计算每个计数的频率，并使用Incanter在对数-对数散点图上可视化结果。输出如下所示：
 - en: '![Running the built-in triangle counting algorithm](img/7180OS_08_350.jpg)'
   id: totrans-218
   prefs: []
   type: TYPE_IMG
+  zh: '![运行内建的三角形计数算法](img/7180OS_08_350.jpg)'
 - en: Once again, we see the effect of a power law distribution. A few nodes connect
     a very large number of triangles.
   id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们再次看到了幂律分布的影响。少数节点连接了大量的三角形。
 - en: Running a built-in algorithm has allowed us to see how to create and manipulate
     a graph, but the real power of GraphX is the way it allows us to express this
     sort of computation efficiently for ourselves. In the next section, we'll see
@@ -1484,50 +1528,60 @@
   id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行内置算法让我们了解了如何创建和操作图，但 GraphX 的真正力量在于它如何让我们以高效的方式自己表达这种计算。在下一部分，我们将看到如何使用底层函数实现三角形计数。
 - en: Implement triangle counting with Glittering
   id: totrans-221
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 用 Glittering 实现三角形计数
 - en: 'There are many ways to count the number of triangles in a graph, but GraphX
     implements the algorithm in the following way:'
   id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: 计数图中三角形的方式有很多种，但 GraphX 以以下方式实现算法：
 - en: Compute the set of neighbors for each vertex.
   id: totrans-223
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算每个顶点的邻居集合。
 - en: For each edge, compute the intersection of the vertices at either end.
   id: totrans-224
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于每条边，计算两端顶点的交点。
 - en: Send the count of the intersection to both vertices.
   id: totrans-225
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将交集的计数发送到两个顶点。
 - en: Compute the sum of the counts for each vertex.
   id: totrans-226
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算每个顶点的计数总和。
 - en: Divide by two, since each triangle is counted twice.
   id: totrans-227
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 除以二，因为每个三角形被计算了两次。
 - en: 'The following diagram shows the steps on our simple graph consisting of only
     one triangle:'
   id: totrans-228
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下图示展示了我们简单图中只包含一个三角形的步骤：
 - en: '![Implement triangle counting with Glittering](img/7180OS_08_355.jpg)'
   id: totrans-229
   prefs: []
   type: TYPE_IMG
+  zh: '![用 Glittering 实现三角形计数](img/7180OS_08_355.jpg)'
 - en: The algorithm ignores the direction of the edges and, as mentioned previously,
     expects the edges between any two nodes to be distinct. We'll therefore continue
     to work on the partitioned graph with the canonical edges we defined in the previous
@@ -1535,6 +1589,7 @@
   id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: 算法忽略边的方向，正如前面提到的，它要求任意两个节点之间的边是唯一的。因此，我们将继续在上一部分定义的规范边的分区图上工作。
 - en: 'The full code to perform triangle counting isn''t very long, so it''s presented
     in full next. It''s representative of most of the algorithms we''ll cover for
     the rest of the chapter so, once we''ve presented the code, we''ll walk through
@@ -1542,6 +1597,7 @@
   id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: 执行三角形计数的完整代码并不长，所以下文将完整展示。它代表了我们在本章其余部分将要介绍的大多数算法，因此，在展示代码之后，我们将逐步讲解每一个步骤：
 - en: '[PRE28]'
   id: totrans-232
   prefs: []
@@ -1557,11 +1613,13 @@
   id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使算法正常工作，输入图必须具有不同的边。一旦规范图被划分，我们通过在图上调用`(g/group-edges (fn [a b] a) graph)`来确保边是唯一的。`group-edges`函数类似于`reduce`，它对共享相同起始节点和结束节点的边集合进行归约。我们仅选择保留第一条边。边的属性在三角形计数中并不起作用，重要的是存在一条边。
 - en: Step one – collecting neighbor IDs
   id: totrans-234
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 步骤一——收集邻居 ID
 - en: At step one, we want to collect the neighbor IDs for each vertex. Glittering
     makes this operation available as the `g/collect-neighbor-ids` function. We can
     choose to collect only the incoming or outgoing edges with `:in` or `:out`, respectively,
@@ -1569,6 +1627,7 @@
   id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: 在步骤一，我们想要收集每个顶点的邻居 ID。Glittering 提供了作为`g/collect-neighbor-ids`函数的这个操作。我们可以选择只收集传入或传出的边，分别使用`:in`或`:out`，或者收集任一方向的边，使用`:either`。
 - en: The `g/collect-neighbor-ids` function returns a pair RDD with the key being
     the vertex ID in question and the value being the sequence of neighbor IDs. Like
     MLlib in the previous chapter, the RDD is not the `JavaRDD` class that Sparkling
@@ -1580,17 +1639,22 @@
   id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: '`g/collect-neighbor-ids`函数返回一个对RDD，键是相关的顶点 ID，值是邻居 ID 的序列。像上一章的 MLlib 一样，RDD
+    不是 Sparkling 所期望的 `JavaRDD` 类，因此我们必须进行相应的转换。完成转换后，将邻居 ID 序列转换为集合就像在对 RDD 中的每个值调用`set`一样简单。步骤一的结果是一个包含节点
+    ID 和邻居 ID 集合的 PairRDD，因此我们已经将图转换为一系列以 `adjacent` 为值存储的集合。'
 - en: Note
   id: totrans-237
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: This graph representation, as a sequence of sets of connected vertices, is commonly
     known as an adjacency list. Along with the edge list, it's one of the two primary
     means of representing graphs.
   id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种图表示方式作为一组连接顶点的集合，通常称为邻接列表。与边列表一起，它是表示图的两种主要方式之一。
 - en: 'Step two requires us to assign values to the graph edges though, so we''ll
     want to preserve the graph structure. We use the `g/outer-join-vertices` function
     to combine `adjacent` and the original graph. Given a graph and a pair RDD indexed
@@ -1603,11 +1667,15 @@
   id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二步要求我们给图的边分配值，因此我们需要保留图的结构。我们使用 `g/outer-join-vertices` 函数将 `adjacent` 和原始图合并。给定一个图和一个按顶点
+    ID 索引的对 RDD，`outer-join-vertices` 允许我们提供一个函数，其返回值将被分配为图中每个顶点的属性。该函数接收三个参数：顶点 ID、当前顶点属性和与顶点
+    ID 在被外连接到图的对 RDD 中关联的值。在之前的代码中，我们返回了邻接顶点集作为新的顶点属性。
 - en: Steps two, three, and four – aggregate messages
   id: totrans-240
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第二、三、四步 – 聚合消息
 - en: 'The next several steps are handled by one function, `g/aggregate-messages`,
     the workhorse function of GraphX''s graph-parallel implementation. It requires
     two arguments: a message sending function and a message combining function. In
@@ -1616,10 +1684,13 @@
   id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来的几个步骤由一个函数`g/aggregate-messages`处理，这是 GraphX 图并行实现的核心函数。它需要两个参数：一个消息发送函数和一个消息合并函数。通过它们的协同工作，这两个函数类似于为图并行计算中的顶点中心视图适配的
+    map 和 reduce。
 - en: '![Steps two, three, and four – aggregate messages](img/7180OS_08_360.jpg)'
   id: totrans-242
   prefs: []
   type: TYPE_IMG
+  zh: '![第二、三、四步 – 聚合消息](img/7180OS_08_360.jpg)'
 - en: The send message function is responsible for sending messages along edges. The
     function is called once for each edge, but it can send multiple messages to either
     the source or destination vertex. The input to the function is a triplet (an edge
@@ -1630,6 +1701,8 @@
   id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: 发送消息函数负责沿边发送消息。该函数每次为每条边调用一次，但可以向源顶点或目标顶点发送多个消息。该函数的输入是一个三元组（包含两个连接顶点的边），并返回一组消息。消息是一个键值对，其中键是
+    `:src` 或 `:dst` 之一，值是要发送的消息。在前面的示例中，这是通过使用 `:src` 和 `:dst` 键实现的映射。
 - en: The merge message function is responsible for combining all the messages for
     a particular vertex. In the earlier code, each message is a number and therefore
     the merge function has a sequence of numbers to merge. We can achieve this simply
@@ -1637,11 +1710,13 @@
   id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: 合并消息函数负责合并特定顶点的所有消息。在之前的代码中，每条消息是一个数字，因此合并函数有一组数字需要合并。我们可以简单地通过将 `+` 作为合并函数来实现这一点。
 - en: Step five – dividing the counts
   id: totrans-245
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第五步 – 除以计数
 - en: The final step of triangle counting is to divide the counts we have calculated
     for each vertex ID by two, since each triangle is counted twice. In the earlier
     code, we do this while simultaneously updating the vertex attributes with the
@@ -1649,17 +1724,21 @@
   id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 三角形计数的最终步骤是将我们为每个顶点 ID 计算出的计数除以二，因为每个三角形被计算了两次。在之前的代码中，我们在更新顶点属性时，同时使用 `outer-join-vertices`
+    来执行此操作，更新的顶点属性为三角形计数。
 - en: Running the custom triangle counting algorithm
   id: totrans-247
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 运行自定义三角形计数算法
 - en: 'With all of the earlier steps in place, we can run our custom triangle counting
     algorithm using Glittering. Let''s first run it on one of our Twitter follow graphs
     from the beginning of the chapter to see the result we get:'
   id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面所有步骤都完成后，我们可以使用 Glittering 运行自定义的三角形计数算法。我们先在章节开头的一个 Twitter 关注图上运行它，看看我们得到的结果：
 - en: '[PRE29]'
   id: totrans-249
   prefs: []
@@ -1670,12 +1749,14 @@
   id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是一个元组序列，顶点 ID 作为键，连接的三角形数量作为值。
 - en: 'If we want to see how many triangles were there in the entire Twitter dataset,
     we could extract the values from the resulting graph (the values), add them up,
     and then divide them by three. Let''s do this now:'
   id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们想知道整个 Twitter 数据集中有多少个三角形，我们可以从结果图中提取值（这些值），将它们加起来，然后除以三。我们现在就来做这个：
 - en: '[PRE30]'
   id: totrans-252
   prefs: []
@@ -1686,6 +1767,7 @@
   id: totrans-253
   prefs: []
   type: TYPE_NORMAL
+  zh: 该算法运行不应该太长时间。我们自定义的三角形计数代码足够高效，可以在整个合并的 Twitter 数据集上运行。
 - en: If `aggregate-messages` is like a single step of MapReduce programming, we'll
     often end up performing it iteratively. Many graph algorithms will want to run
     to convergence. In fact, GraphX provides an alternative function that we will
@@ -1694,11 +1776,14 @@
   id: totrans-254
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果 `aggregate-messages` 类似于 MapReduce 编程的单步操作，我们通常会反复执行它。许多图算法会希望运行到收敛。实际上，GraphX
+    提供了一种替代函数，我们在这种情况下可以使用它，叫做 **Pregel API**。我们将在下一节中详细讨论它。
 - en: The Pregel API
   id: totrans-255
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Pregel API
 - en: The Pregel API is GraphX's main abstraction to express custom, iterative, graph-parallel
     computation. It's named after Google's internal system for running large-scale
     graph processing, about which they published a paper in 2010\. You may remember
@@ -1706,6 +1791,8 @@
   id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: Pregel API 是 GraphX 表达自定义、迭代、图并行计算的主要抽象。它以谷歌内部运行大规模图处理的系统命名，谷歌在2010年发布了关于该系统的论文。你可能还记得，这也是建设在
+    Königsberg 镇上的那条河流。
 - en: Google's Pregel paper popularized the "think like a vertex" approach to graph
     parallel computation. Pregel's model fundamentally uses the message passing between
     the vertices in the graph organized into a series of steps called **supersteps**.
@@ -1717,6 +1804,8 @@
   id: totrans-257
   prefs: []
   type: TYPE_NORMAL
+  zh: 谷歌的 Pregel 论文推广了“像顶点一样思考”的图并行计算方法。Pregel 的模型本质上使用了图中顶点之间的消息传递，组织成一系列称为 **超级步骤**
+    的步骤。在每个超级步骤开始时，Pregel 在每个顶点上运行用户指定的函数，传递在前一个超级步骤中发送给它的所有消息。顶点函数有机会处理每一条消息，并将消息发送到其他顶点。顶点还可以“投票终止”计算，当所有顶点都投票终止时，计算将结束。
 - en: 'The `pregel` function implemented by Glittering implements a very similar approach
     to graph processing. The primary difference is that the vertices don''t vote to
     halt: the computation terminates either when there are no more messages being
@@ -1724,6 +1813,7 @@
   id: totrans-258
   prefs: []
   type: TYPE_NORMAL
+  zh: Glittering 实现的 `pregel` 函数采用了与图处理非常相似的方法。主要的区别是顶点不会投票终止：计算将在没有消息发送或超过指定迭代次数时终止。
 - en: 'While the aggregate-messages function introduced in the previous section makes
     use of two symbiotic functions to express its intent, the `pregel` function makes
     use of three related functions, applied iteratively, to implement graph algorithms.
@@ -1734,55 +1824,66 @@
   id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然上一节中介绍的 aggregate-messages 函数使用了两个互补的函数来表达其意图，但 `pregel` 函数使用了三个相关的函数，迭代地应用于图算法。前两个是我们之前遇到的消息函数和消息合并器，第三个是“顶点程序”：一个处理每个顶点接收消息的函数。该函数的返回值将作为下一个超级步骤的顶点属性。
 - en: 'Let''s see how the `pregel` function works in practice by implementing an algorithm
     we''ve already covered in this chapter: connected components.'
   id: totrans-260
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过实现本章已讲解的一个算法：**连通组件**，来实际看看`pregel`函数是如何工作的。
 - en: Connected components with the Pregel API
   id: totrans-261
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 Pregel API 处理连通组件
 - en: 'Connected components can be expressed as an iterative algorithm in the following
     way:'
   id: totrans-262
   prefs: []
   type: TYPE_NORMAL
+  zh: 连通组件可以用以下方式表示为迭代算法：
 - en: Initialize all vertex attributes to the vertex ID.
   id: totrans-263
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化所有顶点属性为顶点 ID。
 - en: For each edge, determine whether the source or destination vertex attribute
     is the lowest.
   id: totrans-264
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于每条边，确定源顶点或目标顶点属性中的最小值。
 - en: Down each edge, send the lower of the two attributes to the opposite vertex.
   id: totrans-265
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 沿着每条边，将两个属性中较小的一个发送到对面的顶点。
 - en: For each vertex, update attribute to be the lowest of the incoming messages.
   id: totrans-266
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于每个顶点，将其属性更新为传入消息中的最小值。
 - en: Repeat until the node attributes no longer change.
   id: totrans-267
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复直到节点属性不再变化。
 - en: As before, we can visualize the process on a simple graph of four nodes.
   id: totrans-268
   prefs: []
   type: TYPE_NORMAL
+  zh: 如之前所示，我们可以在一个简单的四节点图上可视化这个过程。
 - en: '![Connected components with the Pregel API](img/7180OS_08_370.jpg)'
   id: totrans-269
   prefs: []
   type: TYPE_IMG
+  zh: '![使用Pregel API的连通分量](img/7180OS_08_370.jpg)'
 - en: 'We can see how in six steps the graph has converged to a state where all the
     nodes have the lowest connected vertex ID as their attribute. Since the messages
     only travel along the edges, any nodes that don''t share any edges will converge
@@ -1793,6 +1894,7 @@
   id: totrans-270
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到，经过六个步骤，图已收敛到一个状态，其中所有节点的属性都为最低的连通顶点ID。由于消息仅沿着边传递，任何没有共享边的节点将会收敛到不同的值。因此，算法收敛后，所有共享相同属性的顶点将属于同一连通分量。首先让我们看看完成的代码，然后我们会立即按步骤讲解代码：
 - en: '[PRE31]'
   id: totrans-271
   prefs: []
@@ -1803,11 +1905,13 @@
   id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`g/pregel`函数是实现迭代连通分量算法所需要的全部。
 - en: Step one – map vertices
   id: totrans-273
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第一步 – 映射顶点
 - en: Initializing all the vertex attributes to the vertex ID is handled outside of
     the `pregel` function by the `g/map-vertices` function. We pass it a function
     of two arguments, the vertex ID and vertex attribute, and it returns the vertex
@@ -1815,11 +1919,13 @@
   id: totrans-274
   prefs: []
   type: TYPE_NORMAL
+  zh: 初始化所有顶点属性为顶点ID的操作是由`g/map-vertices`函数在`pregel`函数之外处理的。我们传递给它一个包含两个参数的函数，分别是顶点ID和顶点属性，它返回需要分配为顶点属性的顶点ID。
 - en: Steps two and three – the message function
   id: totrans-275
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第二步和第三步 – 消息函数
 - en: 'Glittering''s `pregel` function expects to receive a map specifying at least
     three functions: a message function, a combiner function, and a vertex function.
     We''ll discuss the last of these in more detail shortly. However, the first of
@@ -1829,6 +1935,7 @@
   id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: Glittering的`pregel`函数期望接收一个至少指定了三个函数的映射：消息函数、合并器函数和顶点函数。我们稍后将更详细地讨论最后一个函数。然而，第一个函数负责第二步和第三步：对于每条边，确定哪个连接节点具有较低的属性，并将此值发送到对方节点。
 - en: 'We introduced the message function along with the custom triangle counting
     function earlier in the chapter. This function receives the edge as a map and
     returns a map in return describing the messages to be sent. This time, only one
@@ -1838,17 +1945,20 @@
   id: totrans-277
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在本章早些时候介绍了消息函数以及自定义的三角形计数函数。此函数接收边作为映射，并返回描述将要发送的消息的映射。这一次，仅发送一条消息：如果源属性较低，则将`src-attr`属性发送到目标节点；如果目标属性较低，则将`dst-attr`属性发送到源节点。
 - en: 'The combiner function aggregates all the incoming messages for a vertex. The
     combiner function for the connected components is simply the `min` function: we''re
     only interested in the minimum value sent to each vertex.'
   id: totrans-278
   prefs: []
   type: TYPE_NORMAL
+  zh: 合并器函数聚合所有传入顶点的消息。对于连通分量的合并器函数，简单地使用`min`函数：我们只关心发送给每个顶点的最小值。
 - en: Step four – update the attributes
   id: totrans-279
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第四步 – 更新属性
 - en: In step four, each vertex updates its attribute to equal the lowest of its current
     attribute and the value of all the received messages. If any of its incoming messages
     is lower than its current attribute, it will update its attribute to equal the
@@ -1857,6 +1967,7 @@
   id: totrans-280
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第四步中，每个顶点将其属性更新为当前属性和所有接收到的消息中的最小值。如果任何传入消息低于当前属性，它将更新其属性为最小值。此步骤由顶点程序处理，这是Pregel的三个共生函数中的第三个。
 - en: 'The vertex function for connected components is also trivial: for each vertex,
     we want to return the lower of the current vertex attribute and the lowest incoming
     message (as determined by the combiner function in the previous step). The return
@@ -1864,11 +1975,13 @@
   id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: 连通分量的顶点函数也很简单：对于每个顶点，我们希望返回当前顶点属性和所有接收到的消息中的最低值（由上一步骤的合并器函数确定）。返回值将作为下一次超级步骤中的顶点属性使用。
 - en: Step five – iterate to convergence
   id: totrans-282
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第五步 – 迭代直到收敛
 - en: Step five is something we get "for free" with the `pregel` function. We didn't
     specify the maximum number of iterations, so the three functions just described
     will be run repeatedly until there are no more messages to be sent. For this reason
@@ -1879,16 +1992,20 @@
   id: totrans-283
   prefs: []
   type: TYPE_NORMAL
+  zh: 第五步是通过 `pregel` 函数免费获得的。我们没有指定最大迭代次数，因此刚才描述的三个函数将会重复运行，直到没有更多消息需要发送。因此，（出于效率考虑）重要的是我们的消息函数只在必要时发送消息。这就是为什么我们之前消息函数中的
+    `cond` 值确保如果源和目标属性已经相等，我们就不会发送消息。
 - en: Running connected components
   id: totrans-284
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 运行连接组件
 - en: 'Having implemented the previous connected components function, we use it in
     the following example:'
   id: totrans-285
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实现了之前的连接组件函数后，我们将在以下示例中使用它：
 - en: '[PRE32]'
   id: totrans-286
   prefs: []
@@ -1900,17 +2017,20 @@
   id: totrans-287
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过将图转换回 RDD，我们可以以数据并行的方式进行分析。例如，我们可以通过计算共享相同属性的节点数来确定所有连接组件的大小。
 - en: Calculating the size of the largest connected component
   id: totrans-288
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 计算最大连接组件的大小
 - en: 'In the next example, we''ll use the same connected components function, but
     count the size of each connected component. We''ll achieve this with Sparkling''s
     `count-by-value` function:'
   id: totrans-289
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一个示例中，我们将使用相同的连接组件函数，但计算每个连接组件的大小。我们将通过 Sparkling 的 `count-by-value` 函数来实现：
 - en: '[PRE33]'
   id: totrans-290
   prefs: []
@@ -1924,12 +2044,14 @@
   id: totrans-291
   prefs: []
   type: TYPE_NORMAL
+  zh: 像前面示例中那样的代码是使用 GraphX 和 Glittering 的巨大好处之一。我们可以将表示为边列表的平面数据转换成图结构，以执行迭代图算法，然后将结果转换回平面结构以计算聚合：所有操作都在一个管道中完成。
 - en: The example's response indicates that all of our vertices—81,306 of them—are
     in one large connected component. This shows that everyone in the graph is connected
     to everyone else, either as a friend or a follower.
   id: totrans-292
   prefs: []
   type: TYPE_NORMAL
+  zh: 示例的响应表明，所有的顶点——81,306个——都在一个大的连接组件中。这表明图中的每个人都与其他人相连，无论是朋友还是关注者。
 - en: While it's useful to know that there are no isolated groups of users, it would
     be more interesting to understand how the users are organized within the connected
     component. If certain groups of users tend to be more densely connected to each
@@ -1937,26 +2059,31 @@
   id: totrans-293
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然知道没有孤立的用户群体很有用，但理解用户在连接组件中的组织方式会更有趣。如果某些用户群体之间的连接更加密集，那么我们可以认为这些用户形成了一个社区。
 - en: Detecting communities with label propagation
   id: totrans-294
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用标签传播检测社区
 - en: A community can be defined informally as a group of vertices that are more strongly
     connected to each other than they are to the vertices outside the community.
   id: totrans-295
   prefs: []
   type: TYPE_NORMAL
+  zh: 社区可以非正式地定义为一组顶点，这些顶点之间的连接比与社区外部顶点的连接要强得多。
 - en: Note
   id: totrans-296
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: If every vertex is connected to every other vertex within the community, then
     we would call the community a clique.
   id: totrans-297
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果每个顶点都与社区中的其他每个顶点相连，那么我们将称这个社区为团体（clique）。
 - en: Communities therefore correspond to increased density in the graph. We could
     think of communities within the Twitter network as groups of followers who tend
     to also follow each other's followers. Smaller communities might correspond to
@@ -1965,6 +2092,7 @@
   id: totrans-298
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，社区对应于图中的密度增加。我们可以将 Twitter 网络中的社区视为关注者群体，这些群体也倾向于关注彼此的关注者。较小的社区可能对应于友谊小组，而较大的社区更可能对应于共享兴趣小组。
 - en: Community detection is a general technique and there are many algorithms that
     are capable of identifying communities. Depending on the algorithm, communities
     may overlap so that a user could be associated with more than one community. The
@@ -1973,50 +2101,60 @@
   id: totrans-299
   prefs: []
   type: TYPE_NORMAL
+  zh: 社区检测是一种通用技术，有许多算法能够识别社区。根据算法的不同，社区可能会重叠，这样一个用户可能会关联到多个社区。我们接下来要看的算法叫做**标签传播**，它将每个用户分配到最多一个社区。
 - en: 'Label propagation can be implemented iteratively with the following steps:'
   id: totrans-300
   prefs: []
   type: TYPE_NORMAL
+  zh: 标签传播可以通过以下步骤进行迭代实现：
 - en: Initialize all the vertex attributes to equal the vertex ID.
   id: totrans-301
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将所有顶点属性初始化为顶点 ID。
 - en: For each edge, send the source and destination attributes to the opposing node.
   id: totrans-302
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于每条边，发送源顶点和目标顶点的属性到对方节点。
 - en: For each vertex, calculate the frequency of each incoming attribute.
   id: totrans-303
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于每个顶点，计算每个传入属性的频率。
 - en: For each vertex, update the attribute to be the most frequent of the incoming
     attributes.
   id: totrans-304
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于每个顶点，更新属性为传入属性中最频繁的那个。
 - en: Repeat until convergence or until maximum iteration count is reached.
   id: totrans-305
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复进行，直到收敛或达到最大迭代次数。
 - en: The steps of the algorithm are shown next on a graph with two communities. Each
     community is also a clique, but this is not a requirement for label propagation
     to work in general.
   id: totrans-306
   prefs: []
   type: TYPE_NORMAL
+  zh: 算法的步骤接下来展示在一个包含两个社区的图中。每个社区也是一个团体，但这并不是标签传播有效的必要条件。
 - en: '![Detecting communities with label propagation](img/7180OS_08_380.jpg)'
   id: totrans-307
   prefs: []
   type: TYPE_IMG
+  zh: '![通过标签传播检测社区](img/7180OS_08_380.jpg)'
 - en: 'The code for label propagation using the `pregel` function is as follows:'
   id: totrans-308
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`pregel`函数进行标签传播的代码如下：
 - en: '[PRE34]'
   id: totrans-309
   prefs: []
@@ -2026,33 +2164,39 @@
   id: totrans-310
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，让我们一步步解析代码。
 - en: Step one – map vertices
   id: totrans-311
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第一步 – 映射顶点
 - en: Step one for label propagation is identical to step one for the connected components
     algorithm we defined earlier. We use the `g/map-vertices` function to update each
     vertex attribute to equal the vertex ID.
   id: totrans-312
   prefs: []
   type: TYPE_NORMAL
+  zh: 标签传播的第一步与我们之前定义的连通组件算法的第一步相同。我们使用`g/map-vertices`函数来更新每个顶点的属性，使其等于顶点 ID。
 - en: Step two – send the vertex attribute
   id: totrans-313
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第二步 – 发送顶点属性
 - en: In step two, we send the opposing vertex attribute along each edge. Step three
     will require us to count the most frequent of the incoming attributes, so each
     message is a map of attribute to the value "1".
   id: totrans-314
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第二步中，我们沿每条边发送对方顶点的属性。第三步将要求我们统计所有传入属性中最频繁的那个，因此每条消息都是一个将属性映射到值“1”的映射。
 - en: Step three – aggregate value
   id: totrans-315
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第三步 – 聚合值
 - en: The combiner function receives all the messages for a vertex and produces an
     aggregate value. Since the messages are maps of attribute value to the number
     "1", we can use Clojure's `merge-with` function to combine the messages together
@@ -2060,11 +2204,13 @@
   id: totrans-316
   prefs: []
   type: TYPE_NORMAL
+  zh: 合并函数接收顶点的所有消息，并生成一个聚合值。由于消息是属性值到数字“1”的映射，我们可以使用Clojure的`merge-with`函数将消息合并，并使用`+`运算符。结果将是一个属性到频率的映射。
 - en: Step four – vertex function
   id: totrans-317
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第四步 – 顶点函数
 - en: Step four is handled by the vertex function. Given the frequency counts of all
     the incoming attributes, we want to pick the most frequent one. The `(apply max-key
     val msg)` expression returns the key/value pair from the map associated with the
@@ -2073,11 +2219,13 @@
   id: totrans-318
   prefs: []
   type: TYPE_NORMAL
+  zh: 第四步由顶点函数处理。给定所有传入属性的频率计数，我们需要选择最频繁的一个。`(apply max-key val msg)`表达式返回与最大值（即最高频率）关联的键/值对。我们将此值传递给`key`，以返回与该值关联的属性。
 - en: Step five – set the maximum iterations count
   id: totrans-319
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第五步 – 设置最大迭代次数
 - en: As with the connected components algorithm, iteration is the default behavior
     of the `pregel` function while there are messages to be sent. Unlike the connected
     components algorithm, we don't have a conditional clause in the earlier `message`
@@ -2086,11 +2234,13 @@
   id: totrans-320
   prefs: []
   type: TYPE_NORMAL
+  zh: 与连通组件算法一样，当还有消息需要发送时，`pregel`函数的默认行为是迭代。不同于连通组件算法的是，在之前的`message`函数中我们没有条件语句。为了避免无限循环，我们在`pregel`的选项映射中传递了`:max-iterations`的值为10。
 - en: Running label propagation
   id: totrans-321
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 运行标签传播
 - en: 'The following example makes use of the previous code to perform label propagation
     on the full Twitter dataset. We calculate the size of each community with Sparkling''s
     `count-by-value` function and calculate the frequencies of the counts. The resulting
@@ -2099,6 +2249,7 @@
   id: totrans-322
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下示例利用之前的代码在完整的Twitter数据集上执行标签传播。我们使用Sparkling的`count-by-value`函数计算每个社区的大小，并计算计数的频率。然后，使用Incanter将结果的直方图可视化在对数-对数散点图上，以显示社区大小的分布：
 - en: '[PRE35]'
   id: totrans-323
   prefs: []
@@ -2108,10 +2259,12 @@
   id: totrans-324
   prefs: []
   type: TYPE_NORMAL
+  zh: 此代码生成以下图表：
 - en: '![Running label propagation](img/7180OS_08_390.jpg)'
   id: totrans-325
   prefs: []
   type: TYPE_IMG
+  zh: '![运行标签传播](img/7180OS_08_390.jpg)'
 - en: 'As we may have come to expect, the distribution of community sizes is also
     a power law: small communities are much more common than larger communities. The
     largest communities have around 10,000 members, while the smallest consist of
@@ -2122,6 +2275,8 @@
   id: totrans-326
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所预期的那样，社区规模的分布也是一个幂律分布：小型社区远比大型社区更为常见。最大型的社区大约有 10,000 名成员，而最小型的社区仅包含一个成员。我们开始逐步揭示
+    Twitter 图的结构：我们可以感知用户是如何分组的，并假设较大的社区可能代表那些由共同兴趣联系在一起的群体。
 - en: In the final pages of this chapter, let's see whether we can establish what
     unites the largest of these communities. There are numerous ways we could go about
     this. If we had access to the tweets themselves, we could perform text analysis
@@ -2131,6 +2286,8 @@
   id: totrans-327
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章的最后几页，让我们看看是否能够确定这些最大社区的共同点。有许多方法可以实现这一目标。如果我们可以访问推文本身，我们可以进行文本分析，就像我们在[第六章](ch06.xhtml
+    "第6章. 聚类")中进行的*聚类*分析那样，看看这些群体中是否有特定的词汇或语言更常使用。
 - en: This chapter is about network analysis though, so let's just use the structure
     of the graph to identify the most influential accounts in each community. The
     list of the top ten most influential accounts might give us some indication of
@@ -2138,11 +2295,13 @@
   id: totrans-328
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章主要讲解网络分析，因此我们只需使用图的结构来识别每个社区中最具影响力的账户。最具影响力的十大账户列表可能会为我们提供一些关于哪些内容在粉丝中产生共鸣的线索。
 - en: Measuring community influence using PageRank
   id: totrans-329
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 PageRank 测量社区影响力
 - en: One simplistic way of measuring influence within a community is to calculate
     how many incoming edges a particular vertex has. On Twitter, this would correspond
     to an account with a large number of followers. Such accounts represent the most
@@ -2150,6 +2309,7 @@
   id: totrans-330
   prefs: []
   type: TYPE_NORMAL
+  zh: 测量社区内影响力的一种简单方法是计算特定顶点的入边数量。在 Twitter 上，这相当于一个拥有大量粉丝的账户。这些账户代表了网络中最“受欢迎”的用户。
 - en: Counting incoming edges is a simplistic way to measure influence because it
     treats all the incoming edges as being equal. In social graphs, this is often
     not the case, as certain followers will themselves be popular accounts and therefore
@@ -2157,11 +2317,13 @@
   id: totrans-331
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅计算入边数量是一种简单的影响力衡量方法，因为它将所有入边视为平等的。在社交图中，情况通常并非如此，因为某些粉丝本身就是受欢迎的账户，因此他们的关注比那些没有粉丝的用户更为重要。
 - en: Note
   id: totrans-332
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: PageRank was developed at Stanford University in 1996 by Larry Page and Sergey
     Brin as part of the research project that ultimately became Google. PageRank works
     by counting both the number and quality of links to a page to determine a rough
@@ -2169,6 +2331,8 @@
   id: totrans-333
   prefs: []
   type: TYPE_NORMAL
+  zh: PageRank 由拉里·佩奇（Larry Page）和谢尔盖·布林（Sergey Brin）于1996年在斯坦福大学开发，作为最终形成 Google
+    的研究项目的一部分。PageRank 通过计算指向页面的链接数量和质量来估算该网站的重要性。
 - en: 'The importance of an account is therefore based on two things: the number of
     followers and the importance of each of those followers. The importance of each
     follower is calculated in the same way. PageRank therefore has a recursive definition:
@@ -2177,11 +2341,13 @@
   id: totrans-334
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，账户的重要性基于两个因素：粉丝的数量以及每个粉丝的重要性。每个粉丝的重要性按相同方式计算。PageRank 因此具有递归定义：看起来我们必须先计算粉丝的重要性，才能计算账户的重要性，以此类推。
 - en: The flow formulation
   id: totrans-335
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 流量公式
 - en: Fortunately, it's possible to calculate PageRank iteratively. First, we initialize
     all the vertices to have the same weight. This could be a weight of one; in which
     case, the sum of all the weights equals the number of vertices *N*. Or, it could
@@ -2192,6 +2358,9 @@
   id: totrans-336
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，PageRank 可以通过迭代的方式计算。首先，我们初始化所有顶点的权重相同。可以设置权重为 1；这种情况下，所有权重的总和等于顶点数 *N*。或者，也可以将权重设置为
+    ![流量公式](img/7180OS_08_02.jpg)；在这种情况下，所有权重的总和等于 1。虽然这不改变基本的算法，但后者通常更受欢迎，因为它意味着
+    PageRank 的结果可以被解释为概率。我们将实现前者。
 - en: 'This initial weight is the PageRank *r* of each account at the start of the
     algorithm. At iteration one, each account sends an equal proportion of its own
     rank to all the pages it follows. After this step, the rank of account *j* and
@@ -2200,16 +2369,20 @@
   id: totrans-337
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个初始权重是每个账户在算法开始时的 PageRank *r*。在第一次迭代中，每个账户将自己排名的一部分平均分配给它所关注的每个页面。经过这一步，账户
+    *j* 和 *r*j 的排名被定义为所有传入排名的总和。我们可以通过以下方程表达这一点：
 - en: '![The flow formulation](img/7180OS_08_03.jpg)'
   id: totrans-338
   prefs: []
   type: TYPE_IMG
+  zh: '![流量公式](img/7180OS_08_03.jpg)'
 - en: Here, *r*[i] is the rank of a follower and *ni* is the count of accounts they
     follow. Account *j* receives a proportion of the rank, ![The flow formulation](img/7180OS_08_04.jpg),
     from all of their followers.
   id: totrans-339
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里，*r*[i] 是关注者的排名，*ni* 是他们关注的账户数。账户 *j* 会从所有粉丝那里接收到一个比例的排名，![流量公式](img/7180OS_08_04.jpg)。
 - en: 'If this were all there was to PageRank, then the accounts with no followers
     would already have zero rank and, at every iteration, the most popular pages would
     just get more and more popular. PageRank therefore also includes a damping factor.
@@ -2219,23 +2392,29 @@
   id: totrans-340
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果 PageRank 就只有这些内容，那么没有粉丝的账户将会直接拥有零排名，并且在每次迭代中，最受欢迎的页面将会变得越来越受欢迎。因此，PageRank
+    还包括一个阻尼因子。这个因子确保即使是最不受欢迎的账户也能保留一定的权重，从而使得算法能够收敛到稳定值。这个可以通过修改前面的方程来表示：
 - en: '![The flow formulation](img/7180OS_08_05.jpg)'
   id: totrans-341
   prefs: []
   type: TYPE_IMG
+  zh: '![流量公式](img/7180OS_08_05.jpg)'
 - en: Here, *d* is the damping factor. A common damping factor to use is 85 percent.
   id: totrans-342
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里，*d* 是阻尼因子。一个常用的阻尼因子是 85%。
 - en: 'The effect of the damping factor for a group of eleven accounts is visualized
     in the following diagram:'
   id: totrans-343
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下图展示了阻尼因子对一组十一个账户的影响：
 - en: '![The flow formulation](img/7180OS_08_400.jpg)'
   id: totrans-344
   prefs: []
   type: TYPE_IMG
+  zh: '![流量公式](img/7180OS_08_400.jpg)'
 - en: Without the damping factor, all the weight would eventually accrue on accounts
     **A**, **B**, and **C**. With the damping factor, even the small accounts with
     no follows continue to receive a small percentage of the overall weight. Even
@@ -2244,17 +2423,21 @@
   id: totrans-345
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果没有阻尼因子，所有的权重最终都会积累到账户 **A**、**B** 和 **C** 上。加入阻尼因子后，即使是没有关注任何人的小账户也会继续收到整体权重的一个小比例。尽管账户
+    **E** 的粉丝更多，账户 **C** 的排名却更高，因为它被高排名账户所关注。
 - en: Implementing PageRank with Glittering
   id: totrans-346
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用 Glittering 实现 PageRank
 - en: 'We implement PageRank with the `pregel` function in the following example code.
     The structure of the code should be familiar to you by now, although we will be
     making use of several new Glittering functions:'
   id: totrans-347
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过以下示例代码使用 `pregel` 函数实现 PageRank。代码的结构你应该已经很熟悉了，尽管我们将使用一些新的 Glittering 函数：
 - en: '[PRE36]'
   id: totrans-348
   prefs: []
@@ -2268,6 +2451,8 @@
   id: totrans-349
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们以通常的方式开始，使用 `outer-join-vertices` 将每个节点的 `out-degrees` 与其自身连接。经过这一步，所有节点的属性都等于其出链数。然后，我们使用
+    `map-triplets` 将所有的 `edge` 属性设置为其源顶点属性的倒数。最终效果是每个顶点的排名在它的所有出边之间平均分配。
 - en: 'After this initialization step, we use `map-edges` to set the attribute of
     each node to the default value: a vector of two zeros. The vector contains the
     current page rank and the difference between this iteration''s rank and the previous
@@ -2276,11 +2461,14 @@
   id: totrans-350
   prefs: []
   type: TYPE_NORMAL
+  zh: 在此初始化步骤之后，我们使用 `map-edges` 将每个节点的属性设置为默认值：一个包含两个零的向量。这个向量包含当前的 PageRank 和该迭代的排名与前一迭代排名之间的差异。根据差异的大小，我们的
+    `message` 函数可以决定是否继续迭代。
 - en: Sort by highest influence
   id: totrans-351
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 按最高影响力排序
 - en: 'Before we run PageRank on the communities identified by label propagation,
     we''ll implement a utility function to list just the top 10 accounts in descending
     order of their ranks. The `top-n-by-pagerank` function will allow us to only show
@@ -2288,6 +2476,8 @@
   id: totrans-352
   prefs: []
   type: TYPE_NORMAL
+  zh: 在对标签传播确定的社区运行 PageRank 之前，我们将实现一个实用功能，列出排名前 10 的账户，并按排名降序排列。`top-n-by-pagerank`
+    函数将允许我们仅显示排名最高的账户：
 - en: '[PRE37]'
   id: totrans-353
   prefs: []
@@ -2299,11 +2489,13 @@
   id: totrans-354
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次强调，我们可以轻松地在图和表格表示之间转换，从而实现这种数据操作，这正是使用 Glittering 和 Sparkling 进行图分析的主要优势之一。
 - en: 'Finally, it will also be useful to have a function that returns the most frequently
     occurring node attributes appearing in the first line:'
   id: totrans-355
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，最好有一个返回出现在第一行中最频繁出现的节点属性的函数：
 - en: '[PRE38]'
   id: totrans-356
   prefs: []
@@ -2314,11 +2506,13 @@
   id: totrans-357
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据标签传播的输出，这个函数将按大小递减的顺序返回社区 ID 的序列。
 - en: Running PageRank to determine community influencers
   id: totrans-358
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 运行 PageRank 确定社区影响者
 - en: 'At last, we can bring together all the earlier code to identify the most resonant
     interests of the communities identified by label propagation. Unlike the other
     algorithms we''ve implemented with Glittering so far, we''re sending our messages
@@ -2328,6 +2522,8 @@
   id: totrans-359
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们可以将之前的所有代码整合起来，以识别通过标签传播算法确定的社区的最具共鸣的兴趣。与我们迄今为止在 Glittering 中实现的其他算法不同，我们在这里发送消息的方向是跟随方向，而不是标准方向。因此，在下一个示例中，我们将使用
+    `load-edgelist` 加载图，它保留了跟随方向：
 - en: '[PRE39]'
   id: totrans-360
   prefs: []
@@ -2339,6 +2535,7 @@
   id: totrans-361
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码运行会花费一些时间，但最终会返回一个序列，列出每个十个最受欢迎社区图中的最重要节点，如下例所示：
 - en: '[PRE40]'
   id: totrans-362
   prefs: []
@@ -2351,11 +2548,14 @@
   id: totrans-363
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个元组的第一个元素是我们为该顶点计算的 PageRank，第二个元素是节点 ID。Twitter 的顶点 ID 对应于 Twitter 自己的 ID。由于账户未经过匿名化处理，我们可以查找它们对应的
+    Twitter 账户。
 - en: Note
   id: totrans-364
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: At the time of writing, we can look up a Twitter account by ID using Twitter's
     Intent API available at `https://twitter.com/intent/user?user_id={$USER_ID}`.
     Substituting `{$USER_ID}` for Twitter's numeric ID will return the basic profile
@@ -2363,6 +2563,8 @@
   id: totrans-365
   prefs: []
   type: TYPE_NORMAL
+  zh: 在写作时，我们可以通过 Twitter 的 Intent API 查找 Twitter 账户 ID，API 地址为 `https://twitter.com/intent/user?user_id={$USER_ID}`。用
+    Twitter 的数字 ID 替换 `{$USER_ID}`，将返回基本的个人资料信息。
 - en: The accounts with the highest PageRank in community one are American comic and
     talk show host Conan O'Brien with Barack Obama, Felicia Day, and Neil Patrick
     Harris. We could broadly categorize these people as American celebrities. It's
@@ -2371,18 +2573,22 @@
   id: totrans-366
   prefs: []
   type: TYPE_NORMAL
+  zh: 社区一中排名最高的 PageRank 账户包括美国漫画家和脱口秀主持人 Conan O'Brien、巴拉克·奥巴马、Felicia Day 和 Neil
+    Patrick Harris。我们可以大致将这些人归类为美国名人。不可否认的是，在 Twitter 上，最大的社区聚集了那些拥有最大账户和最广泛影响力的人。
 - en: Moving down the list, the second-largest community features among its top influencers
     the band Paramore, its members Hayley and Taylor, as well as Lady Gaga. This community
     clearly has a very specific set of musical interests.
   id: totrans-367
   prefs: []
   type: TYPE_NORMAL
+  zh: 接着向下看，第二大社区的顶级影响者包括乐队 Paramore、成员 Hayley 和 Taylor，以及 Lady Gaga。显然，这个社区有一套非常特定的音乐兴趣。
 - en: Communities three and four both appear to have a strong gaming bias featuring
     X-Box, PlayStation, Steam, and Markus Persson (the creator of Minecraft) as their
     top influencers.
   id: totrans-368
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三和第四个社区似乎都具有较强的游戏偏好，主要特点是X-Box、PlayStation、Steam，以及Minecraft的创始人Markus Persson，都是它们的主要影响力人物。
 - en: Bear in mind that we've already established that the whole graph is a part of
     one connected component, so we're not looking at disjoint sets of users. Using
     a combination of label propagation and PageRank, we are able to determine the
@@ -2390,11 +2596,13 @@
   id: totrans-369
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住，我们已经确定整个图是一个连通分量的一部分，因此我们并没有查看断开的用户集合。通过结合标签传播和PageRank，我们能够确定具有相关兴趣的Twitter用户群体。
 - en: Summary
   id: totrans-370
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: 'In this chapter, we''ve learned about graphs: a useful abstraction to model
     a huge variety of phenomena. We started the chapter using the Clojure library
     Loom to visualize and traverse small graphs of Twitter followers. We learned about
@@ -2406,6 +2614,7 @@
   id: totrans-371
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一章中，我们学习了图形：一种用于建模各种现象的有用抽象。我们首先使用Clojure库Loom来可视化和遍历Twitter粉丝的一个小图形。我们了解了两种不同的图遍历方法，深度优先搜索和广度优先搜索，并研究了改变边权重对Dijkstra算法和Prim算法发现路径的影响。我们还观察了整个图的密度，并绘制了度分布，以观察随机图和无尺度图之间的差异。
 - en: 'We introduced GraphX and the Clojure library Glittering as a means of processing
     large graphs in a scalable way using Spark. In addition to providing several built-in
     graph algorithms, Glittering also exposes GraphX''s Pregel API: a set of three
@@ -2417,6 +2626,8 @@
   id: totrans-372
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们介绍了GraphX和Clojure库Glittering，作为一种使用Spark以可扩展的方式处理大规模图形的方法。除了提供几个内置的图算法外，Glittering还暴露了GraphX的Pregel
+    API：一组三种共生函数，用于以顶点为中心的方式表达图算法。我们展示了这种计算模型如何用于表示三角形计数、连通分量、标签传播，最后是PageRank算法，并将标签传播和PageRank步骤链在一起，以确定一组Twitter社区的顶级影响力人物。
 - en: This was our last chapter using parallel computing techniques. In the next chapter,
     we'll focus on local data processing, but we'll continue the thread of recursive
     analysis. We'll cover methods to deal with time series data—ordered sequences
@@ -2425,3 +2636,4 @@
   id: totrans-373
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们使用并行计算技术的最后一章。在下一章中，我们将重点讨论本地数据处理，但我们仍然会延续递归分析的主题。我们将介绍处理时间序列数据的方法——按时间顺序排列的观察序列——并展示如何利用递归函数来生成预测。

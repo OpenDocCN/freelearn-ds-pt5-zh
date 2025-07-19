@@ -3,81 +3,97 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第8章 聚类与分类
 - en: 'This chapter demonstrates algorithms that intelligently cluster and categorize
     data:'
   id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章展示了智能地聚类和分类数据的算法：
 - en: Implementing the k-means clustering algorithm
   id: totrans-2
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实现k-means聚类算法
 - en: Implementing hierarchical clustering
   id: totrans-3
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实现层次聚类
 - en: Using a hierarchical clustering library
   id: totrans-4
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用层次聚类库
 - en: Finding the number of clusters
   id: totrans-5
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 寻找聚类的数量
 - en: Clustering words by their lexemes
   id: totrans-6
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 按词根对单词进行聚类
 - en: Classifying the parts of speech of words
   id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对词汇进行词性分类
 - en: Identifying key words in a corpus of text
   id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在文本语料库中识别关键字
 - en: Training a parts-of-speech tagger
   id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 训练一个词性标注器
 - en: Implementing a decision tree classifier
   id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实现决策树分类器
 - en: Implementing a k-Nearest Neighbors classifier
   id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实现k-最近邻分类器
 - en: Visualizing points using Graphics.EasyPlot
   id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用Graphics.EasyPlot可视化数据点
 - en: Introduction
   id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: '![Introduction](img/ch08.jpg)'
   id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![介绍](img/ch08.jpg)'
 - en: Computer algorithms are becoming better and better at analyzing large datasets.
     As their performance enhances, their ability to detect interesting patterns in
     data also improves.
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算机算法在分析大型数据集方面变得越来越优秀。随着性能的提升，它们检测数据中有趣模式的能力也在增强。
 - en: The first few algorithms in this chapter demonstrate how to look at thousands
     of points and identify clusters. A **cluster** is simply a congregation of points
     defined by how closely they lie together. This measure of "closeness" is entirely
@@ -85,6 +101,7 @@
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章前几个算法展示了如何查看成千上万的数据点并识别聚类。**聚类**只是通过数据点之间的紧密程度来定义的一个集合。这个“紧密度”的度量完全由我们决定。其中一种最常用的紧密度度量是欧几里得距离。
 - en: We can understand clusters by looking up at the night sky and pointing at stars
     that appear together. Our ancestors found it convenient to name "clusters" of
     stars, of which we refer to as constellations. We will be finding our own constellations
@@ -92,21 +109,25 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过仰望夜空并指向看似聚集在一起的星星来理解聚类。我们的祖先发现将星星“聚集”命名为星座很方便。我们将会在数据点的“天空”中找到属于自己的星座。
 - en: This chapter also focuses on classifying words. We will label words by their
     parts of speech as well as topic.
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章还重点介绍了词汇的分类。我们将根据词语的词性以及主题为其标注标签。
 - en: We will implement our own decision tree to classify practical data. Lastly,
     we will visualize clusters and points using plotting libraries.
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将实现自己的决策树来分类实际数据。最后，我们将使用绘图库可视化聚类和数据点。
 - en: Implementing the k-means clustering algorithm
   id: totrans-20
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实现k-means聚类算法
 - en: The k-means clustering algorithm partitions data into k different groups. These
     k groupings are called clusters, and the location of these clusters are adjusted
     iteratively. We compute the arithmetic mean of all the points in a group to obtain
@@ -114,26 +135,31 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: k-means聚类算法将数据划分为k个不同的组。这些k个组叫做聚类，而这些聚类的位置是通过迭代调整的。我们计算组内所有点的算术平均值，以获得一个质心点，并用它替代之前的聚类位置。
 - en: 'Hopefully, after this succinct explanation, the name *k-means clustering* no
     longer sounds completely foreign. One of the best places to learn more about this
     algorithm is on Coursera: [https://class.coursera.org/ml-003/lecture/78](https://class.coursera.org/ml-003/lecture/78).'
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望通过这个简明的解释，*k-means聚类*这个名字不再听起来完全陌生。了解更多关于该算法的最佳途径之一是在Coursera上：[https://class.coursera.org/ml-003/lecture/78](https://class.coursera.org/ml-003/lecture/78)。
 - en: How to do it…
   id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何做到这一点……
 - en: 'Create a new file, which we call `Main.hs`, and perform the following steps:'
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建一个新文件，命名为`Main.hs`，并执行以下步骤：
 - en: 'Import the following built-in libraries:'
   id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 导入以下内置库：
 - en: '[PRE0]'
   id: totrans-26
   prefs:
@@ -145,6 +171,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义如下所示的点的类型同义词：
 - en: '[PRE1]'
   id: totrans-28
   prefs:
@@ -156,6 +183,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义两点之间的欧几里得距离函数：
 - en: '[PRE2]'
   id: totrans-30
   prefs:
@@ -168,6 +196,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义k-means算法中的分配步骤。每个点将被分配到其最接近的质心：
 - en: '[PRE3]'
   id: totrans-32
   prefs:
@@ -180,6 +209,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义k-means算法中的重新定位步骤。每个质心都被重新定位到其对应点的算术平均值：
 - en: '[PRE4]'
   id: totrans-34
   prefs:
@@ -191,6 +221,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 反复运行k-means算法，直到质心不再移动：
 - en: '[PRE5]'
   id: totrans-36
   prefs:

@@ -1009,6 +1009,7 @@
   id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么我们决定在这里使用正则表达式而不是基于树的解析器？主要有两个原因：
 - en: Because the e-mails we downloaded are not HTML, they cannot easily be described
     as a tree of nodes with parents and children. Therefore, a parse tree-based solution
     such as BeautifulSoup is not the best choice.
@@ -1016,23 +1017,27 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于我们下载的电子邮件不是 HTML 格式，因此它们不能轻松地描述为具有父节点和子节点的树状结构。因此，基于解析树的解决方案（如 BeautifulSoup）不是最好的选择。
 - en: Because e-mail headers are structured and very predictable (especially the three
     headers we are looking for here), a regex solution is acceptable.
   id: totrans-136
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于电子邮件头部是结构化且非常可预测的（尤其是我们在这里寻找的三个头部），因此使用正则表达式解决方案是可以接受的。
 - en: Program output
   id: totrans-137
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 程序输出
 - en: 'The output of this program is to print three numbers that estimate the mean,
     standard deviation, and median time in hours for replies to messages on this Google
     Group. When I run this code, my results are as follows:'
   id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 该程序的输出是打印出三个数字，估算该 Google Group 上消息的回复时间的均值、标准差和中位数（单位：小时）。当我运行此代码时，我得到的结果如下：
 - en: '[PRE9]'
   id: totrans-139
   prefs: []
@@ -1045,11 +1050,14 @@
   id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着，发布到 BigQuery Google Group 上的消息的中位响应时间大约为 18 小时。现在，让我们考虑如何从另一种来源提取类似的数据：网络论坛。你认为在网络论坛上回答问题的速度会更快、更慢，还是与
+    Google Group 相当？
 - en: Part two – cleaning data from web forums
   id: totrans-141
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第二部分 – 清理来自网络论坛的数据
 - en: The web forums we will study for this project are from a company called **DocuSign**.
     They also moved their developer support to Stack Overflow, but they have an archive
     of their older web-based developer forum still online. I poked around on their
@@ -1059,11 +1067,14 @@
   id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在这个项目中研究的网络论坛来自一家名为**DocuSign**的公司。他们也将开发者支持转移到了 Stack Overflow，但他们仍然保留着一个旧版的基于网页的开发者论坛存档。我在他们的网站上四处寻找，直到发现了如何下载那些旧论坛中的一些消息。这里展示的过程比
+    Google Groups 示例要复杂一些，但你将学到很多关于如何自动收集数据的知识。
 - en: Step one – collect some RSS that points us to HTML files
   id: totrans-143
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 步骤一 – 收集一些指向 HTML 文件的 RSS
 - en: The DocuSign developer forum has thousands of messages on it. We would like
     to have a list of the URLs for all those messages or discussion threads so that
     we can write some code to download them all automatically, and extract the reply
@@ -1071,26 +1082,31 @@
   id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: DocuSign 开发者论坛上有成千上万的消息。我们希望能够获得所有这些消息或讨论帖子的 URL 列表，以便我们编写代码自动下载它们，并高效提取回复时间。
 - en: To do this, first we will need a list of all the URLs for the discussions. I
     found that the archive of DocuSign's old Dev-Zone developer site is located at
     [https://community.docusign.com/t5/DevZone-Archives-Read-Only/ct-p/dev_zone](https://community.docusign.com/t5/DevZone-Archives-Read-Only/ct-p/dev_zone).
   id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 为此，首先我们需要获取所有讨论的 URL 列表。我发现 DocuSign 旧版 Dev-Zone 开发者网站的存档位于[https://community.docusign.com/t5/DevZone-Archives-Read-Only/ct-p/dev_zone](https://community.docusign.com/t5/DevZone-Archives-Read-Only/ct-p/dev_zone)。
 - en: 'The site looks like this in the browser:'
   id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 该网站在浏览器中的显示如下：
 - en: '![Step one – collect some RSS that points us to HTML files](img/image00280.jpeg)'
   id: totrans-147
   prefs: []
   type: TYPE_IMG
+  zh: '![步骤一 – 收集一些指向 HTML 文件的 RSS](img/image00280.jpeg)'
 - en: We definitely do not want to click through each one of those forums and then
     click into each message and save it manually. That would take forever, and it
     would be extremely boring. Is there a better way?
   id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们绝对不希望点击进入每一个论坛，再进入每条消息并手动保存。这会花费很长时间，而且极其无聊。有没有更好的方法？
 - en: 'The DocuSign website''s **Help** pages indicate that it is possible to download
     a **Really Simple Syndication** (**RSS**) file showing the newest threads and
     messages in each forum. We can use the RSS files to automatically collect the
@@ -1100,6 +1116,8 @@
   id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: '**DocuSign**网站的**帮助**页面表明，可以下载一个**真正简单的聚合**（**RSS**）文件，显示每个论坛中最新的讨论和消息。我们可以使用这些
+    RSS 文件自动收集网站上许多讨论的 URL。我们感兴趣的 RSS 文件仅与开发者支持论坛相关（而不是公告或销售论坛）。这些 RSS 文件可以通过以下网址获得：'
 - en: '[https://community.docusign.com/docusign/rss/board?board.id=upcoming_releases](https://community.docusign.com/docusign/rss/board?board.id=upcoming_releases)'
   id: totrans-150
   prefs:

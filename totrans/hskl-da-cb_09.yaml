@@ -3,89 +3,107 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第9章。并行与并发设计
 - en: 'In this chapter, we will cover the following recipes:'
   id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章将涵盖以下食谱：
 - en: Using the Haskell Runtime System (RTS) options
   id: totrans-2
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用Haskell运行时系统（RTS）选项
 - en: Evaluating a procedure in parallel
   id: totrans-3
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 并行评估程序
 - en: Controlling parallel algorithms in sequence
   id: totrans-4
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 按顺序控制并行算法
 - en: Forking I/O actions for concurrency
   id: totrans-5
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为并发操作分叉I/O动作
 - en: Communicating with a forked I/O action
   id: totrans-6
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 与分叉的I/O操作通信
 - en: Killing forked threads
   id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 终止分叉线程
 - en: Parallelizing pure functions using the Par monad
   id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用Par单子并行化纯函数
 - en: Mapping over a list in parallel
   id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 并行映射列表
 - en: Accessing tuple elements in parallel
   id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 并行访问元组元素
 - en: Implementing MapReduce to count word frequencies
   id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实现MapReduce以计算单词频率
 - en: Manipulating images in parallel using Repa
   id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用Repa并行处理图像
 - en: Benchmarking runtime performance in Haskell
   id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Haskell中的运行时性能基准测试
 - en: Using the criterion package to measure performance
   id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用criterion包来测量性能
 - en: Benchmarking runtime performance in the terminal
   id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在终端中进行运行时性能基准测试
 - en: Introduction
   id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: '![Introduction](img/ch09.jpg)'
   id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![介绍](img/ch09.jpg)'
 - en: One of the greatest accomplishments in the study of data analysis is the intelligent
     approach to parallel and concurrent design. As we collect more and more data,
     we are able to discover more and more patterns. However, this comes at a price
@@ -94,6 +112,7 @@
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据分析研究中的一项伟大成就是对并行和并发设计的智能应用。随着我们收集越来越多的数据，我们能够发现越来越多的模式。然而，这也以时间和空间为代价。更多的数据可能需要更多的计算时间或更多的内存空间。这是一个非常现实的问题，本章将尝试解决它。
 - en: The first few recipes will cover how to evoke pure procedures in parallel and
     in sequence. The following recipes on forking will deal with concurrency using
     I/O actions. We will then delve deeper by learning how to access a list and tuple
@@ -102,6 +121,7 @@
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 前几个食谱将介绍如何并行和顺序地调用纯程序。接下来的分叉食谱将涉及使用I/O动作的并发。然后，我们将深入学习如何并行访问列表和元组元素。接着，我们将在Haskell中实现MapReduce来高效解决一个费时的问题。
 - en: We will end the review of parallel and concurrent design by learning how to
     benchmark runtime performance. Sometimes, the easiest way to discover if code
     is successfully running in parallel is by timing it against a nonparallel version
@@ -111,11 +131,13 @@
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将通过学习如何进行运行时性能基准测试，结束对并行和并发设计的回顾。有时候，发现代码是否成功地并行运行的最简单方法是将其与非并行版本的代码进行时间对比。如果两者的计算时间看起来相同，那么很可能出现了问题。要么代码没有并行运行，要么激活并行的成本超过了其带来的好处。
 - en: Using the Haskell Runtime System options
   id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用Haskell运行时系统选项
 - en: The **Runtime System** (**RTS**) in Haskell configures special options such
     as scheduling, profiling, and managing storage for a compiled Haskell program.
     In order to write multithreaded code, we must specify our own RTS options as outlined
@@ -123,21 +145,25 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell中的**运行时系统**（**RTS**）配置了如调度、分析和管理已编译Haskell程序存储等特殊选项。为了编写多线程代码，我们必须按照本食谱中概述的方式指定自己的RTS选项。
 - en: For further reading, the GHC Commentary on the official Haskell Wiki web page
     has a very detailed explanation of the runtime system available at [https://ghc.haskell.org/trac/ghc/wiki/Commentary/Rts](https://ghc.haskell.org/trac/ghc/wiki/Commentary/Rts).
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 如需进一步阅读，GHC官方Haskell Wiki网页上的GHC评论部分提供了关于运行时系统的详细说明，网址为[https://ghc.haskell.org/trac/ghc/wiki/Commentary/Rts](https://ghc.haskell.org/trac/ghc/wiki/Commentary/Rts)。
 - en: How to do it…
   id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何操作……
 - en: 'Open a terminal, compile a code, and run it using the RTS option. Imagine that
     our file is named `Main.hs`, and issue the following commands:'
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 打开终端，编译代码，并使用RTS选项运行它。假设我们的文件名为`Main.hs`，然后执行以下命令：
 - en: '[PRE0]'
   id: totrans-26
   prefs: []
@@ -148,11 +174,13 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 它是如何工作的……
 - en: In order to make use of multiple threads, we must compile our code with the
     `threaded` and `rtsopts` flags enabled.
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了利用多个线程，我们必须在编译代码时启用`threaded`和`rtsopts`标志。
 - en: Now that it is compiled with `rtsopts`, we can run our program with special
     instructions placed between the `+RTS` and `-RTS` flags. If there is a `+RTS`
     flag without a `–RTS` flag, then we assume that the RTS options continue until

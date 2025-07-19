@@ -1,0 +1,200 @@
+<html><head></head><body>
+        <section>
+
+                            <header class="header-title chapter-title">
+                    Linear Algebra
+                </header>
+            
+            <article>
+                
+<p class="mce-root"><span>Both linear algebra and statistics are the foundation for any kind of data analysis activity. Statistics help us to get an initial descriptive understanding and make inferences from data. In the previous chapter, we have understood descriptive and inferential statistical measures for data analysis. On the other side, linear algebra is one of the fundamental mathematical subjects that is the core foundation for any data professional. Linear algebra is useful for working with vectors and matrices. Most of the data is available in the form of either a vector or a matrix. In-depth knowledge of linear algebra helps data analysts and data scientists understand the workflow of machine learning and deep learning algorithms, giving them the flexibility to design and modify the algorithms as per your business needs. For example, if you want to work with <strong>principal component analysis</strong> (<strong>PCA</strong>) you must know the basics of Eigenvalues and Eigenvectors, or if you want to develop a recommender system you must know <strong>singular value decomposition</strong> (<strong>SVD</strong>). A solid background in mathematics and statistics will facilitate a smoother transition into the world of data analytics.</span></p>
+<p>This chapter mainly focuses on the core concepts of linear algebra, such as <span>polynomials, determinant, matrix inverse; solving linear equations; eigenvalues and eigenvectors; SVD; random numbers; binomial and normal distributions; normality tests; and masked arrays. We can also perform these operations in Python using the NumPy and SciPy packages. </span><span>NumPy and SciPy both offer the <kbd>linalg</kbd> package for linear algebra operations.</span></p>
+<p>In this chapter, we will cover the following topics:</p>
+<ul>
+<li>Fitting to polynomials with NumPy</li>
+<li>Determinant</li>
+<li>Finding the rank of a matrix</li>
+<li>Matrix inverse using NumPy</li>
+<li>Solving linear equations using NumPy</li>
+<li>Decomposing a matrix using SVD</li>
+<li>Eigenvectors and Eigenvalues using NumPy</li>
+</ul>
+<ul>
+<li>Generating random numbers</li>
+<li>Binomial distribution</li>
+<li>Normal distribution</li>
+<li>Testing normality of data using SciPy</li>
+<li>Creating a masked array using the <kbd>numpy.ma</kbd> subpackage</li>
+</ul>
+<h1 id="uuid-87d6136c-404b-4ed7-898b-e63759cdaad4">Technical requirements</h1>
+<p>For this chapter, the following technical information is available:</p>
+<ul>
+<li>You can find the code and the dataset at the following GitHub link: <a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter04">https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter04</a>.</li>
+<li>All the code blocks are available in <kbd>ch4.ipynb</kbd>.</li>
+<li>In this chapter, we will use the NumPy, SciPy, Matplotlib, and Seaborn <span>Python libraries.</span></li>
+</ul>
+<h1 id="uuid-605eb8f7-9cce-4f8b-9f09-8e86c335d5db" class="">Fitting to polynomials with NumPy</h1>
+<p>Polynomials are mathematical expressions with non-negative strategies. Examples of polynomial functions are linear, quadratic, cubic, and quartic functions. NumPy offers the <kbd>polyfit()</kbd> function to generate polynomials using least squares. This function takes <em>x</em>-coordinate, <em>y-</em>coordinate, and degree as parameters, and returns a list of polynomial coefficients.</p>
+<p>NumPy also offers <kbd>polyval()</kbd> to evaluate the polynomial at given values. This function takes coefficients of polynomials and arrays of points and returns resultant values of polynomials. Another function is <kbd>linspace()</kbd>, which generates a sequence of equally separated values. It takes the start, stop, and the number of values between the start-stop range and returns equally separated values in the closed interval.</p>
+<p>Let's see an example to generate and evaluate polynomials using NumPy, as follows:</p>
+<pre># Import required libraries NumPy, polynomial and matplotlib<br/>import numpy as np<br/>import matplotlib.pyplot as plt<br/><br/># Generate two random vectors<br/>v1=np.random.rand(10)<br/>v2=np.random.rand(10)<br/><br/># Creates a sequence of equally separated values<br/>sequence = np.linspace(v1.min(),v1.max(), num=len(v1)*10)<br/><br/># Fit the data to polynomial fit data with 4 degrees of the polynomial<br/>coefs = np.polyfit(v1, v2, 3)<br/><br/># Evaluate polynomial on given sequence<br/>polynomial_sequence = np.polyval(coefs,sequence)<br/><br/># plot the polynomial curve<br/>plt.plot(sequence, polynomial_sequence)<br/><br/># Show plot<br/>plt.show()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/c79900f3-28a4-4245-a644-e23c87980cf7.png"/></div>
+<p>The graph shown in the preceding screenshot will change in each iteration using the program written previously. The reason for this fluctuation is the random value generation of vectors.</p>
+<p>Let's jump on to the next topic: <em>Determinant</em>. We will perform most of the linear algebra operations using the <kbd>numpy.linalg</kbd> subpackage. NumPy offers the <kbd>linalg</kbd> subpackage for linear algebra. We can use linear algebra for matrix operations such as inverse, rank, eigenvalues, eigenvectors, solving linear equations, and performing linear regression.</p>
+<h1 id="uuid-636259ee-ceaf-4949-b3c1-8e68700aef87">Determinant</h1>
+<p>The determinant is the most essential concept of linear algebra. It is a scalar value that is calculated from a square matrix. The determinant is a fundamental operation that helps us in the inverse matrix and in solving linear equations. Determinants are only calculated for square matrices. A square matrix has an equal number of rows and columns. The <kbd>numpy.linalg</kbd> subpackage provides the <kbd>det()</kbd> function for calculating the determinant of a given input matrix. Let's compute the determinant in the following code block:</p>
+<pre># Import numpy<br/>import numpy as np<br/><br/># Create matrix using NumPy<br/>mat=np.mat([[2,4],[5,7]])<br/>print("Matrix:\n",mat)<br/><br/># Calculate determinant<br/>print("Determinant:",np.linalg.det(mat))<br/><br/></pre>
+<p><span>This results in the following output:</span></p>
+<pre>Matrix:<br/>[[2 4]<br/>[5 7]]<br/>Determinant: -5.999999999999998</pre>
+<p>In the preceding code block, we have calculated the determinant of a given matrix using the <kbd>np.linalg.det()</kbd> method. Let's understand one more concept of linear algebra, which is rank, and compute it using the <kbd>numpy.linalg</kbd> subpackage.</p>
+<h1 id="uuid-b2e633e1-c019-4b58-b42e-0ae2b790dc05">Finding the rank of a matrix</h1>
+<p class="mce-root">Rank is a very important concept when it comes to solving linear equations. The rank of a matrix represents the amount of information that is kept in the matrix. A lower rank means less information, and a higher rank means a high amount of information. Rank can be defined as the number of independent rows or columns of a matrix. The <kbd>numpy.linalg</kbd> subpackage provides the <kbd>matrix_rank()</kbd> function. The <kbd>matrix_rank()</kbd> function takes the matrix as input and returns the computed rank of the matrix. Let's see an example of the <kbd>matrix_rank()</kbd> function in the following code block:</p>
+<pre># import required libraries<br/>import numpy as np<br/>from numpy.linalg import matrix_rank<br/><br/># Create a matrix<br/>mat=np.array([[5, 3, 1],[5, 3, 1],[1, 0, 5]])<br/><br/># Compute rank of matrix<br/>print("Matrix: \n", mat)<br/>print("Rank:",matrix_rank(mat))<br/><br/></pre>
+<p><span>This results in the following output:</span></p>
+<pre>Matrix:<br/>[[5 3 1]<br/>[5 3 1]<br/>[1 0 5]]<br/>Rank: 2</pre>
+<p>In the preceding code block, the <kbd>matrix_rank()</kbd> function of <kbd>numpy.linalg</kbd> is used to generate the rank of the matrix. Let's see another important concept of linear algebra: matrix inverse.</p>
+<h1 id="uuid-d21e6189-53be-480a-821e-4e81a8aa0936">Matrix inverse using NumPy</h1>
+<p>A matrix is a rectangular sequence of numbers, expressions, and symbols organized in rows and columns. The multiplication of a square matrix and its inverse is equal to the identity matrix I. We can write it using the following equation:</p>
+<p class="CDPAlignCenter CDPAlign">AA<sup>-1</sup>= I</p>
+<p>The <kbd>numpy.linalg</kbd> subpackage provides a function for an inverse operation: the <kbd>inv()</kbd> function. <span>Let's invert a matrix using the <kbd>numpy.linalg</kbd> subpackage. First, we create a matrix using the <kbd>mat()</kbd> function and then find the inverse of the matrix using the <kbd>inv()</kbd> function, as illustrated in the following code block:</span></p>
+<pre># Import numpy<br/>import numpy as np<br/><br/># Create matrix using NumPy<br/>mat=np.mat([[2,4],[5,7]])<br/>print("Input Matrix:\n",mat)<br/><br/># Find matrix inverse<br/>inverse = np.linalg.inv(mat)<br/>print("Inverse:\n",inverse)<br/><br/></pre>
+<p><span>This results in the following output:</span></p>
+<pre>Input Matrix:<br/>[[2 4]<br/>[5 7]]<br/>Inverse:<br/>[[-1.16666667 0.66666667]<br/>[ 0.83333333 -0.33333333]]</pre>
+<p>In the preceding code block, we have computed the inverse of a matrix using the <kbd>inv()</kbd> function of the <kbd>numpy.linalg</kbd> subpackage.</p>
+<div class="packt_infobox">If the given <span>input matrix is not a square matrix and a singular matrix, it will raise</span> a <kbd>LinAlgError</kbd> error. If you <span>want, you can test the <kbd>inv()</kbd> function manually. I will leave this as an activity for you.</span></div>
+<h1 id="uuid-cc06a7af-1d33-4c95-a280-edabde844226">Solving linear equations using NumPy</h1>
+<p><span>Matrix operations can transform one vector into another vector. These operations will help us to find the solution for linear equations. NumPy provides the <kbd>solve()</kbd> function to solve linear equations in the form of Ax=B. Here, A is the n*n matrix, B is a one-dimensional array and x is the unknown one-dimensional vector. We will also use the <kbd>dot()</kbd> function to compute the dot product of two floating-point number arrays.</span></p>
+<p>Let's solve an example of linear equations, as follows:</p>
+<ol>
+<li>Create matrix A and array B for a given equation, like this:</li>
+</ol>
+<p class="CDPAlignCenter CDPAlign"><span>x1+x2 = 200<br/>
+3x1+2x2 = 450</span></p>
+<p style="padding-left: 60px" class="mce-root">This is illustrated in the following code block</p>
+<pre style="padding-left: 60px"># Create matrix A and Vector B using NumPy<br/>A=np.mat([[1,1],[3,2]])<br/>print("Matrix A:\n",A)<br/><br/>B = np.array([200,450])<br/>print("Vector B:", B)</pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Matrix A:<br/>[[1 1]<br/>[3 2]]<br/>Vector B: [200 450]</pre>
+<p style="padding-left: 60px" class="mce-root">In the preceding code block, we have created a 2*2 matrix and a vector.</p>
+<ol start="2">
+<li>Solve <span>a linear equation using</span> the <kbd>solve()</kbd> function, like this:</li>
+</ol>
+<pre style="padding-left: 60px"># Solve linear equations<br/>solution = np.linalg.solve(A, B)<br/>print("Solution vector x:", solution)<br/><br/></pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Solution vector x: [ 50. 150.]</pre>
+<p style="padding-left: 60px" class="mce-root"><span>In the preceding code block, we have solved a linear equation using the <kbd>solve()</kbd> function of the <kbd>numpy.linalg</kbd> subpackage.</span></p>
+<ol start="3">
+<li>Check the solution using the <kbd>dot()</kbd> function, like this:</li>
+</ol>
+<pre style="padding-left: 60px"># Check the solution<br/>print("Result:",np.dot(A,solution))<br/><br/></pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Result: [[200. 450.]]</pre>
+<p><span>In the preceding code block, we have assessed the solution using the <kbd>dot()</kbd> function. You can see the dot product of A and the solution is equivalent to B. Till now, we have seen the determinant, rank, inverse, and how to solve linear equations. Let's jump to SVD for matrix decomposition.</span></p>
+<h1 id="uuid-b2362d68-a882-4ab4-9082-1cd801f7c7b4">Decomposing a matrix using SVD</h1>
+<p>Matrix decomposition is the process of splitting a matrix into parts. It is also known as matrix factorization. There are lots of matrix decomposition methods available such as <strong>lower-upper</strong> (<strong>LU</strong>) decomposition, <strong>QR</strong> decomposition (where <strong>Q</strong> is orthogonal and <strong>R</strong> is upper-triangular), Cholesky decomposition, and SVD.</p>
+<p>Eigenanalysis decomposes a matrix into vectors and values. SVD decomposes a matrix into the following parts: singular vectors and singular values. SVD is widely used in signal processing, computer vision, <strong>natural language processing</strong> (<strong>NLP</strong>), and machine learning—for example, topic modeling and recommender systems where SVD is widely accepted and implemented in real-life business solutions. Have a look at the following:</p>
+<p class="CDPAlignLeft CDPAlign"><span>                                                               <img src="assets/5532eee3-3544-47cb-a869-9f70db9ea0c0.png" style="width:7.58em;height:3.42em;"/></span></p>
+<p><span>Here, <em>A</em> is a <em>m</em> x <em>n</em> left singular matrix, Σ is a <em>n x n</em> diagonal matrix, <em>V</em> is a <em>m x n</em> right singular matrix, and <em>V<sup>T</sup></em> is the transpose of the V.</span> The <kbd>numpy.linalg</kbd> subpackage offers the <kbd>svd()</kbd> function to decompose a matrix. Let's see an example of SVD, as follows:</p>
+<pre># import required libraries<br/>import numpy as np<br/>from scipy.linalg import svd<br/><br/># Create a matrix<br/>mat=np.array([[5, 3, 1],[5, 3, 0],[1, 0, 5]])<br/><br/># Perform matrix decomposition using SVD<br/>U, Sigma, V_transpose = svd(mat)<br/><br/>print("Left Singular Matrix:",U)<br/>print("Diagonal Matrix: ", Sigma)<br/>print("Right Singular Matrix:", V_transpose)</pre>
+<p><span>This results in the following output:</span></p>
+<pre>Left Singular Matrix: [[-0.70097269 -0.06420281 -0.7102924 ]<br/>                       [-0.6748668  -0.26235919  0.68972636]<br/>                       [-0.23063411  0.9628321   0.14057828]]<br/><br/>Diagonal Matrix: [8.42757145 4.89599358 0.07270729]<br/><br/>Right Singular Matrix: [[-0.84363943 -0.48976369 -0.2200092]<br/>                        [-0.13684207 -0.20009952 0.97017237]<br/>                        [ 0.51917893 -0.84858218 -0.10179157]]</pre>
+<p>In the preceding code block, we have decomposed the given matrix into three parts: <kbd>Left Singular Matrix</kbd>, <kbd>Diagonal Matrix</kbd>, and <kbd>Right Singular Matrix</kbd> using the <kbd>svd()</kbd> function of the <kbd>scipy.linalg</kbd> subpackage.</p>
+<h1 id="uuid-978cc3eb-5b1a-40d2-ab1e-02ce2a6d2592">Eigenvectors and Eigenvalues using NumPy</h1>
+<p>Eigenvectors and Eigenvalues are the tools required to understand linear mapping and transformation. Eigenvalues are solutions to the equation Ax = λx. Here, A is the square matrix, x is the eigenvector, and λ is eigenvalues. The <kbd>numpy.linalg</kbd> subpackage provides two functions, <kbd>eig()</kbd> and <kbd>eigvals()</kbd>. The <kbd>eig()</kbd> function returns a tuple of eigenvalues and eigenvectors, and <kbd>eigvals()</kbd> returns the eigenvalues.</p>
+<p>Eigenvectors and eigenvalues are the core fundamentals of linear algebra. Eigenvectors and eigenvalues are used in SVD, <span>spectral clustering, and PCA.</span></p>
+<p>Let's compute the eigenvectors and eigenvalues of a matrix, as follows:</p>
+<ul>
+<li>Create the matrix using the NumPy <kbd>mat()</kbd> function, like this:</li>
+</ul>
+<pre style="padding-left: 60px"># Import numpy<br/>import numpy as np<br/><br/># Create matrix using NumPy<br/>mat=np.mat([[2,4],[5,7]])<br/>print("Matrix:\n",mat)<br/><br/></pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Matrix: [[2 4]<br/>         [5 7]]</pre>
+<ul>
+<li>Compute eigenvectors and eigenvalues using the <kbd>eig()</kbd> function, like this:</li>
+</ul>
+<pre style="padding-left: 60px"># Calculate the eigenvalues and eigenvectors<br/>eigenvalues, eigenvectors = np.linalg.eig(mat)<br/>print("Eigenvalues:", eigenvalues) <br/>print("Eigenvectors:", eigenvectors) </pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Eigenvalues: [-0.62347538 9.62347538]<br/><br/>Eigenvectors: [[-0.83619408 -0.46462222]<br/> [ 0.54843365 -0.885509 ]]</pre>
+<p style="padding-left: 60px">In the preceding two blocks, we have created a 2*2 matrix and computed eigenvectors and eigenvalues using the <kbd>eig()</kbd> function of the <kbd>numpy.linalg</kbd> subpackage.</p>
+<ul>
+<li>Compute eigenvalues using the <kbd>eigvals()</kbd> function, like this:</li>
+</ul>
+<pre style="padding-left: 60px"># Compute eigenvalues <br/>eigenvalues= np.linalg.eigvals(mat)<br/>print("Eigenvalues:", eigenvalues) </pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Eigenvalues: [-0.62347538 9.62347538]</pre>
+<p>In the preceding code snippet, we have computed the eigenvalues using the <kbd>eigvals()</kbd> function of the <kbd>numpy.linalg</kbd> subpackage. After performing eigendecomposition, we will see how to generate random numbers and a matrix.</p>
+<h1 id="uuid-c9e45c48-eb36-445c-b528-a6404c24f219">Generating random numbers</h1>
+<p>Random numbers <span>offer a variety of applications such as Monte Carlo simulation, cryptography, initializing passwords, and stochastic processes. It is not easy to generate real random numbers, so in reality, most applications use pseudo-random numbers. Pseudo numbers are adequate for most purposes except for some rare cases. Random numbers can be generated from discrete and continuous data. The <kbd>numpy.random()</kbd> function will generate a random number matrix for the given input size of the matrix.</span></p>
+<div class="packt_infobox">The core random number generator is based on the Mersenne Twister algorithm (refer to <a href="https://en.wikipedia.org/wiki/Mersenne_twister">https://en.wikipedia.org/wiki/Mersenne_twister</a>).</div>
+<p class="mce-root">Let's see one example of generating random numbers, as follows:</p>
+<pre># Import numpy<br/>import numpy as np<br/><br/># Create an array with random values<br/>random_mat=np.random.random((3,3))<br/>print("Random Matrix: \n",random_mat)</pre>
+<p><span>This results in the following output:</span></p>
+<pre>Random Matrix: [[0.90613234 0.83146869 0.90874706]<br/>                [0.59459996 0.46961249 0.61380679]<br/>                [0.89453322 0.93890312 0.56903598]]</pre>
+<p>In the preceding example, we have generated a 3*3 random matrix using the <kbd>numpy.random.random()</kbd> function. Let's try other distributions for random number generation, such as binomial and normal distributions.</p>
+<h1 id="uuid-7b852e92-781e-4fc7-80ed-808f59912372">Binomial distribution</h1>
+<p class="mce-root"><span>Binomial distribution models the number of repeated trials with the same probability on each trial. Here, each trial is independent and has two possible outcomes—success and failure—that can occur on each client. The following formula represents the binomial distribution:</span></p>
+<div class="CDPAlignLeft CDPAlign">                                                <img src="assets/c0985d39-d707-444f-babe-484dfac674b4.png"/></div>
+<p>Here, p and q are the probabilities of success and failure, n is the number of trials, and X is the number of the desired output.</p>
+<p>The <kbd>numpy.random</kbd> subpackage provides a <kbd>binomial()</kbd> function that generates samples based on the binomial distribution for certain parameters, number of trials, and the probability of success.</p>
+<p>Let's consider a 17th-century gambling house where you can bet on eight tossing pieces and nine coins being flipped. If you get five or more heads then you win, otherwise you will lose. Let's write code for this simulation for 1,000 coins using the <kbd>binomial()</kbd> function, as follows:</p>
+<pre># Import required libraries<br/>import numpy as np<br/>import matplotlib.pyplot as plt<br/><br/># Create an numpy vector of size 5000 with value 0<br/>cash_balance = np.zeros(5000)<br/><br/>cash_balance[0] = 500<br/><br/># Generate random numbers using Binomial<br/>samples = np.random.binomial(9, 0.5, size=len(cash_balance))<br/><br/># Update the cash balance<br/>for i in range(1, len(cash_balance)):<br/>if samples[i] &lt; 5:<br/>    cash_balance[i] = cash_balance[i - 1] - 1<br/>else:<br/>    cash_balance[i] = cash_balance[i - 1] + 1<br/><br/># Plot the updated cash balance<br/>plt.plot(np.arange(len(cash_balance)), cash_balance)<br/>plt.show()</pre>
+<p><span>This results in the following output:</span></p>
+<p class="mce-root"/>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/af8abb7c-edbe-42cc-a935-f7d0276d38f8.png"/></div>
+<p class="mce-root"/>
+<p>In the preceding code block, we first created the <kbd>cash_balance</kbd> array of size 500 with zero values and updated the first value with 500. Then, we generated values between 0 to 9 using the <kbd>binomial()</kbd> function. After this, we updated the <kbd>cash_balance</kbd> array based on the results of coin tosses and plotted the cash balance using the Matplotlib library.</p>
+<p>In each execution, the code will generate different results or random walks. If you want to make walking constant, you need to use the seed value in the <kbd>binomial()</kbd> function. Let's try another form of distribution for the random number generator: normal distribution.</p>
+<h1 id="uuid-4ddfe11a-3496-448e-8f0b-8576e2bb8321">Normal distribution</h1>
+<p>Normal distributions occur frequently in real-life scenarios. A normal distribution is also known as a bell curve because of its characteristic shape. The probability density function models continuous distribution. The <kbd>numpy.random</kbd> subpackage offers lots of continuous distributions such as beta, gamma, logistic, exponential, multivariate normal, and normal distribution. The <kbd>normal()</kbd> functions find samples from Gaussian or normal distribution.</p>
+<p>Let's write code for visualizing the normal distribution using the <kbd>normal()</kbd> function, as follows:</p>
+<pre># Import required library<br/>import numpy as np<br/>import matplotlib.pyplot as plt<br/><br/>sample_size=225000<br/><br/># Generate random values sample using normal distribution<br/>sample = np.random.normal(size=sample_size)<br/><br/># Create Histogram<br/>n, bins, patch_list = plt.hist(sample, int(np.sqrt(sample_size)), density=True) <br/><br/># Set parameters<br/>mu, sigma=0,1<br/><br/>x= bins<br/>y= 1/(sigma * np.sqrt(2 * np.pi)) * np.exp( - (bins - mu)**2 / (2 * sigma**2) )<br/><br/># Plot line plot(or bell curve)<br/>plt.plot(x,y,color='red',lw=2)<br/>plt.show()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/c4c38ec6-d2a7-47d0-9857-7884ae05e388.png"/></div>
+<p>Here, we have generated random values using the <kbd>normal()</kbd> function of the <kbd>numpy. random</kbd> subpackage and displayed the values using a histogram and line plot or bell curve or theoretical <strong>probability density function</strong> (<strong>PDF</strong>) with mean 0 and standard deviation of 1.</p>
+<h1 id="uuid-06409c22-bd9f-4702-bc9f-1b5eb3639671">Testing normality of data using SciPy</h1>
+<p>A normal distribution is commonly used at a wide scale in scientific and statistical operations. As per the central limit theorem, as sample size increases, the sample distribution approaches a normal distribution. The normal distribution is well known and easy to use. In most cases, it is recommended to confirm the normality of data, especially in parametric methods, assuming that the data is Gaussian-distributed. There are lots of normality tests that exist in the literature such as the Shapiro-Wilk test, the Anderson-Darling test, and the D'Agostino-Pearson test. The <kbd>scipy.stats</kbd> package offers most of the tests for normality.</p>
+<p>In this section, we will learn how to apply normality tests on data. We are using three samples of small-, medium-, and large-sized random data. Let's generate the data samples for all three samples using the <kbd>normal()</kbd> function, as follows:</p>
+<pre><span># Import required library<br/>import numpy as np</span><br/><br/># create small, medium, and large samples for normality test<br/>small_sample = np.random.normal(loc=100, scale=60, size=15)<br/>medium_sample = np.random.normal(loc=100, scale=60, size=100)<br/>large_sample = np.random.normal(loc=100, scale=60, size=1000)</pre>
+<p>We will now explore various techniques to check the normality of the data:</p>
+<ol>
+<li><strong>Using a histogram:</strong> A histogram is the easiest and fastest method to check the normality of the data. It divides the data into bins and counts the observation into each bin. Finally, it visualizes the data. Here, we are using <kbd>distplot()</kbd> from the <kbd>seaborn</kbd> library to plot the histogram and kernel density estimation. Let's see an example of a histogram for a small sample, as follows:</li>
+</ol>
+<pre style="padding-left: 60px"># Histogram for small<br/>import seaborn as sns<br/>import matplotlib.pyplot as plt<br/><br/># Create distribution plot<br/>sns.distplot(small_sample)<br/><br/>sns.distplot(small_sample)<br/><br/>plt.show()</pre>
+<p style="padding-left: 60px" class="mce-root"><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/f7cbbbb4-a651-4fbb-afd5-bebb596896ff.png"/></div>
+<p style="padding-left: 60px" class="mce-root"><span>Let's see an example of the histogram for a medium sample, as follows:</span></p>
+<pre style="padding-left: 60px"># Histogram for medium<br/>import seaborn as sns<br/>import matplotlib.pyplot as plt<br/><br/># Create distribution plot<br/>sns.distplot(medium_sample)<br/><br/>plt.show()</pre>
+<p style="padding-left: 60px" class="mce-root"><span>This results in the following output:</span></p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img src="assets/f5bb3279-1416-498e-b22b-d684cf26d93a.png"/></div>
+<p style="padding-left: 60px"><span>Let's see an example of the histogram for a large sample, as follows:</span></p>
+<pre style="padding-left: 60px"># Histogram for large<br/>import seaborn as sns<br/>import matplotlib.pyplot as plt<br/><br/># Create distribution plot<br/>sns.distplot(large_sample)<br/><br/>plt.show()</pre>
+<p style="padding-left: 60px" class="mce-root"><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/15552b2c-e16e-4535-b5a6-6000bb746f14.png"/></div>
+<p class="mce-root"/>
+<p style="padding-left: 60px">In the preceding three plots, we can observe that as the sample size increases, the curve becomes a normal curve. Histograms can be a good tool to test the normality of data.</p>
+<ol start="2">
+<li><strong>Shapiro-Wilk test:</strong> This test is used to assess the normality of data. In Python, the <kbd>shapiro()</kbd> function of the <kbd>scipy.stats</kbd> subpackage can be used to assess normality. The <kbd>shapiro()</kbd> function will return tuples of two values: test statistics and p-value. Let's see the following example:</li>
+</ol>
+<pre style="padding-left: 60px"># Import shapiro function<br/>from scipy.stats import shapiro<br/><br/># Apply Shapiro-Wilk Test<br/>print("Shapiro-Wilk Test for Small Sample: ",shapiro(small_sample))<br/>print("Shapiro-Wilk Test for Medium Sample: ",shapiro(medium_sample))<br/>print("Shapiro-Wilk Test for Large Sample: ",shapiro(large_sample))</pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Shapiro-Wilk Test for Small Sample: (0.9081739783287048, 0.2686822712421417)<br/>Shapiro-Wilk Test for Medium Sample: (0.9661878347396851, 0.011379175819456577)<br/>Shapiro-Wilk Test for Large Sample: (0.9991633892059326, 0.9433153867721558)</pre>
+<p>In the preceding code block, you can see that the small and large datasets have p-values greater than 0.05, so as the null hypothesis has failed to reject it, this means that the sample looks like a Gaussian or normal distribution; while for the medium dataset, the p-value is less than 0.05, so the null hypothesis has rejected it, which means the sample does not look like a Gaussian or normal distribution.</p>
+<p><span>Similarly, we can try the Anderson-Darling test and the D'Agostino-Pearson test for normality using the <kbd>anderson()</kbd> and <kbd>normaltest()</kbd> functions of the <kbd>scipy.stats</kbd> subpackage. I will leave this for you as an activity. In visualization, we can also try the box plot and <strong>quantile-quantile</strong> (<strong>QQ</strong>) plot techniques to assess the normality of data. We will learn the box plot technique in the upcoming chapter, <a href="ec078274-ada3-407c-8c0e-61f5c7b57cd4.xhtml">Chapter 5</a>, <em>Data Visualization</em>. Let's move on to the concept of a masked array.</span></p>
+<h1 id="uuid-ceb39ec5-23ef-4629-a098-25a0ff04abb7">Creating a masked array using the numpy.ma subpackage</h1>
+<p>In most situations, real-life data is noisy and messy. It contains lots of gaps or missing characters in the data. Masked arrays are helpful in such cases and handle the issue. Masked arrays may contain invalid and missing values. The <kbd>numpy.ma</kbd> subpackage offers all the masked array-required functionality. In this section of the chapter, we will use the face image as the original image source and perform log mask operations.</p>
+<p>Have a look at the following code block:</p>
+<pre># Import required library<br/>import numpy as np<br/>from scipy.misc import face<br/>import matplotlib.pyplot as plt<br/><br/>face_image = face()<br/>mask_random_array = np.random.randint(0, 3, size=face_image.shape)<br/><br/>fig, ax = plt.subplots(nrows=2, ncols=2)<br/><br/># Display the Original Image<br/>plt.subplot(2,2,1)<br/>plt.imshow(face_image)<br/>plt.title("Original Image")<br/>plt.axis('off')<br/><br/># Display masked array<br/>masked_array = np.ma.array(face_image, mask=mask_random_array)<br/>plt.subplot(2,2,2)<br/>plt.title("Masked Array")<br/>plt.imshow(masked_array)<br/>plt.axis('off')<br/><br/># Log operation on original image<br/>plt.subplot(2,2,3)<br/>plt.title("Log Operation on Original")<br/>plt.imshow(np.ma.log(face_image).astype('uint8'))<br/>plt.axis('off')<br/><br/># Log operation on masked array<br/>plt.subplot(2,2,4)<br/>plt.title("Log Operation on Masked")<br/>plt.imshow(np.ma.log(masked_array).astype('uint8'))<br/>plt.axis('off')<br/><br/># Display the subplots<br/>plt.show()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/b52132fc-7279-48e3-a3bc-afea3ef3dd43.png" style=""/></div>
+<p class="mce-root"/>
+<p>In the preceding code block, we first loaded the face image from the <kbd>scipy.misc</kbd> subpackage and created a random mask using the <kbd>randint()</kbd> function. Then, we applied the random mask on the face image. After this, we applied the log operation on the original face image and masked face image. Finally, we displayed all the images in 2*2 subplots. You can also try a range of mask operations on the image from the <kbd>numpy.ma</kbd> subpackage. Here, we are only focusing on the log operation of the masked array. That is all about basic linear algebra concepts. It's time to move on to data visualization concepts, in the next chapter.</p>
+<h1 id="uuid-5dc52b81-826a-4818-a3cc-edef295b1566">Summary</h1>
+<p>Finally, we can conclude that mathematical subjects such as linear algebra are the backbone for all machine learning algorithms. Throughout the chapter, we have focused on essential linear algebra concepts to improve you as a data professional. In this chapter, you learned a lot about linear a<span>lgebra concepts using the NumPy and SciPy subpackages. Our main focus was on polynomials, determinant, matrix inverse; solving linear equations; eigenvalues and eigenvectors; SVD; random numbers; binomial and normal distributions; normality tests; and masked arrays.</span></p>
+<p>The next chapter, <a href="ec078274-ada3-407c-8c0e-61f5c7b57cd4.xhtml">Chapter <span>5</span></a><span>, <em>Data Visualization</em>, is about the important topic of visualizing data with Python. Visualization is something we often do when we start analyzing data. It helps to display relations between variables in the data. By visualizing the data, we can also get an idea about its statistical properties.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

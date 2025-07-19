@@ -1,0 +1,2073 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Naive Bayes</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">A Naive Bayes classification algorithm assigns a class to an element of a set that is most probable according to Bayes' theorem.</p>
+<p class="mce-root">Let's say that <em class="calibre18">A</em> and <em class="calibre18">B</em> are probabilistic events. <em class="calibre18">P(A)</em> is the probability of <em class="calibre18">A</em> being <kbd class="calibre17">true</kbd>. <em class="calibre18">P(A|B)</em> is the conditional probability of <em class="calibre18">A</em> being <kbd class="calibre17">true</kbd>, given that <em class="calibre18">B</em> is <kbd class="calibre17">true</kbd>. If this is the case, then Bayes' theorem states the following:</p>
+<div class="cdpaligncenter1"><img class="fm-editor-equation6" src="Images/1e3a0961-1ce8-4b33-8295-610932648b72.png" width="2740" height="220"/></div>
+<p class="mce-root"><em class="calibre18">P(A)</em> is the prior probability of <em class="calibre18">A</em> being <kbd class="calibre17">true</kbd> without the knowledge of the probability of <em class="calibre18">P(B)</em> and <em class="calibre18">P(B|A)</em>. <em class="calibre18">P(A|B)</em> is the posterior probability of <em class="calibre18">A</em> being <kbd class="calibre17">true</kbd>, taking into consideration additional knowledge about the probability of <em class="calibre18">B</em> being <kbd class="calibre17">true</kbd>.</p>
+<p class="mce-root">In this chapter, you will learn about the following topics:</p>
+<ul class="calibre14">
+<li class="calibre15">How to apply Bayes' theorem in a basic way to compute the probability of a medical test that is correct in the simple example medical test</li>
+<li class="calibre15">How to grasp Bayes' theorem by proving its statement and its extension</li>
+<li class="calibre15">How to apply Bayes' theorem differently to independent and dependent variables in examples of playing chess</li>
+<li class="calibre15">How to apply Bayes' theorem to discrete random variables in examples of medical tests and playing chess, and for continuous random variables in an example of gender classification using the probability distribution of the continuous random variable</li>
+<li class="calibre15">How to implement an algorithm in Python to calculate the posterior probabilities of using Bayes' theorem</li>
+</ul>
+<p class="mce-root">By the end of this chapter, you will be able to verify your understanding of Naive Bayes by solving problems. You will also be able to discern in which situations Bayes' theorem is an appropriate method of analysis, and when it is not.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Medical tests – basic application of Bayes' theorem</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">A patient takes a special cancer test that has an accuracy of <kbd class="calibre17">test_accuracy=99.9%</kbd>—if the result is positive, then 99.9% of the patients tested will suffer from that particular type of cancer. Conversely, 99.9% of the patients with a negative result will not suffer from that particular cancer.</p>
+<p class="mce-root">Suppose that a patient is tested and the result is positive. What is the probability of that patient suffering from that particular type of cancer?</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">We will use Bayes' theorem to ascertain the probability of the patient having cancer:</p>
+<div class="cdpaligncenter1"><img class="fm-editor-equation7" src="Images/d0bacaf1-2e6b-4b9a-9a18-babfad1b9c73.png" width="6740" height="220"/></div>
+<p class="mce-root">To ascertain the prior probability that a patient has cancer, we have to find out how frequently cancer occurs among people. Say that we find out that 1 person in 100,000 suffers from this kind of cancer. Therefore, <em class="calibre18">P(cancer)=1/100,000</em>. So, <em class="calibre18">P(test_positive|cancer) = test_accuracy=99.9%=0.999</em> given by the accuracy of the test.</p>
+<p class="mce-root"><em class="calibre18">P(test_positive)</em> has to be computed as follows:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation8" src="Images/fc29a390-e50c-428a-955b-24bd1632f2f5.png" width="8380" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation9" src="Images/edb7873e-6060-4860-a3d0-b50025907846.png" width="5660" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation10" src="Images/bddd6d3c-f083-49cd-bb6d-8ecd0b3ae5d3.png" width="5370" height="220"/></p>
+<p class="mce-root">Therefore, we can calculate the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation11" src="Images/4b5d9b6e-2b40-467d-bb4b-1c1fd4d6252b.png" width="9900" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation12" src="Images/68db59ff-64f1-42e0-bb56-1725a4861f17.png" width="4930" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation13" src="Images/fe78ce54-69c9-4861-8a7b-52c216b97539.png" width="3630" height="210"/></p>
+<p class="mce-root">So, even if the result of the test is positive and the test has an accuracy of 99.9%, the probability of the patient having the type of cancer tested for is only approximately 1%. The probability of someone having cancer after taking the test is relatively low when compared to the high accuracy of the test, but is much higher than the probability of 1 in 100,000 (0.001%), as was known prior to taking the test, based on its occurrence in the population.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Bayes' theorem and its extension</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">In this section, we will state and prove both Bayes' theorem and its extension.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Bayes' theorem</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Bayes' theorem states the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation14" src="Images/ee63b297-ca71-4ec1-97ec-e23e65d8e68a.png" width="2750" height="220"/></p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Proof</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">We can prove this theorem by using elementary set theory on the probability spaces of the events <em class="calibre18">A</em> and <em class="calibre18">B</em>. In other words, here, a probability event will be defined as a set of the possible outcomes in the probability space:</p>
+<p class="cdpaligncenter"><img class="alignnone14" src="Images/aa0e5bb6-2353-4a84-8068-1617792a0145.png" width="370" height="247"/></p>
+<div class="cdpaligncenter2">Figure 2.1: Probability space for the two events</div>
+<p class="mce-root">As you can see in the preceding diagram, we can state the following relationships:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation15" src="Images/faace8ed-f119-42e8-9bdc-9e8cb7d84d9e.png" width="2150" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation16" src="Images/43a6b4bc-0020-4e6d-87ea-5e6126ab9dc9.png" width="2150" height="220"/></p>
+<p class="mce-root">Rearranging these relationships, we get the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation17" src="Images/dec2ce66-426b-4593-94b1-76d8f2faeb19.png" width="2240" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation18" src="Images/933fce7d-60d9-428e-a4f6-4e1addbeefc0.png" width="2240" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation19" src="Images/fd66305c-346b-4fd0-bb93-87ce36cab82b.png" width="2680" height="220"/></p>
+<p class="mce-root">This is, in fact, Bayes' theorem:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation20" src="Images/be64046f-7f71-41a2-994f-1e6ce0425aa7.png" width="2600" height="220"/></p>
+<p class="mce-root">This concludes the proof.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Extended Bayes' theorem</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">We can extend Bayes' theorem by taking more probability events into consideration. Suppose that the events <em class="calibre18">B1,…,Bn</em> are conditionally independent given <em class="calibre18">A</em>. Let <em class="calibre18">~A</em> denote the complement of <em class="calibre18">A</em>. Then, we have the following:</p>
+<p class="mce-root"><img class="fm-editor-equation21" src="Images/0f87f51c-675b-4c5d-a9a2-83eeb9da4e84.png" width="4880" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation22" src="Images/84cfe840-b3eb-4fc0-9351-63504b5c5114.png" width="8830" height="220"/></p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Proof</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Since the events <em class="calibre18">B1,…,Bn</em> are conditionally independent given <em class="calibre18">A</em> (and also given <em class="calibre18">~A</em>), we get the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation23" src="Images/8f2b7b8e-dc43-4a01-bb68-4c8d3350135f.png" width="3500" height="220"/></p>
+<p class="mce-root">Applying the simple form of Bayes' theorem and this fact, we thus have the following:</p>
+<p class="mce-root"><img class="fm-editor-equation1" src="Images/0483f55a-0137-4da3-9481-f6310c381597.png" width="4880" height="220"/></p>
+<p class="mce-root"><img class="fm-editor-equation24" src="Images/7659e200-e263-4048-a432-a4a119a3b01f.png" width="7490" height="220"/></p>
+<p class="mce-root"><img class="fm-editor-equation25" src="Images/4f2148c3-8a3f-4b7e-82fc-19733de3b484.png" width="8830" height="220"/></p>
+<p class="mce-root">This completes the proof.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Playing chess – independent events</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Suppose we are given the following table of data. This tells us whether or not our friend will play a game of chess with us outside in the park, based on a number of weather-related conditions:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre37">
+<p class="calibre26"><strong class="calibre8">Temperature</strong></p>
+</td>
+<td class="calibre38">
+<p class="calibre26"><strong class="calibre8">Wind</strong></p>
+</td>
+<td class="calibre39">
+<p class="calibre26"><strong class="calibre8">Sunshine</strong></p>
+</td>
+<td class="calibre40">
+<p class="calibre26"><strong class="calibre8">Play</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre37">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Cloudy</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre37">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Cloudy</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre37">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Sunny</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre37">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Sunny</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre37">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Cloudy</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre37">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Sunny</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre37">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Cloudy</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre37">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Sunny</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre37">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Cloudy</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre37">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Cloudy</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre37">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre38">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre39">
+<p class="calibre26">Sunny</p>
+</td>
+<td class="calibre40">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">We would like to establish, by using Bayes' theorem, whether our friend would like to play a game of chess with us in the park given that the Temperature is Warm, the Wind is Strong, and it is Sunny.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">In this case, we may want to consider <em class="calibre18">Temperature</em>, <em class="calibre18">Wind</em>, and <em class="calibre18">Sunshine</em> as the independent random variables. The formula for the extended Bayes' theorem, when adapted, becomes the following:</p>
+<p class="mce-root"><img class="fm-editor-equation24" src="Images/92f1bd4b-20e6-47b0-854f-caab5e54c58e.png" width="7490" height="220"/></p>
+<p class="mce-root"><img class="fm-editor-equation26" src="Images/41f48dec-1acc-44c9-82ac-da9cead92eec.png" width="6890" height="220"/></p>
+<p class="mce-root"><img class="fm-editor-equation27" src="Images/e4b560ed-d258-4bf4-9c11-4520aa5329db.png" width="4670" height="220"/></p>
+<p class="mce-root"><img class="fm-editor-equation28" src="Images/56a1223e-b6d0-4a83-aa29-1dc7c8a24168.png" width="9200" height="490"/></p>
+<p class="mce-root"><img class="fm-editor-equation29" src="Images/005c8a30-7590-450e-b9ce-504018db3fce.png" width="7480" height="490"/></p>
+<p class="mce-root">Let's count the number of columns in the table with all known values to determine the individual probabilities.</p>
+<p class="mce-root"><em class="calibre18">P(Play=Yes)=6/10=3/5</em>, since there are 10 columns with complete data, and <em class="calibre18">6</em> of them have the value <em class="calibre18">Yes</em> for the attribute <em class="calibre18">Play</em>.</p>
+<p class="mce-root"><em class="calibre18">P(Temperature=Warm|Play=Yes)=3/6=1/2</em>, since there are <em class="calibre18">6</em> columns with the value <em class="calibre18">Yes</em> for the attribute <em class="calibre18">Play</em> and, of those, <em class="calibre18">3</em> have the value <em class="calibre18">Warm</em> for the attribute <em class="calibre18">Temperature</em>. Similarly, we have the following:</p>
+<ul class="calibre14">
+<li class="calibre15"><em class="calibre5"><img class="fm-editor-equation30" src="Images/18624546-bada-4ea7-9649-ee96875906b4.png" width="3090" height="220"/></em></li>
+<li class="calibre15"><em class="calibre5"><img class="fm-editor-equation31" src="Images/49dc0bc8-1607-4ac8-bbde-d5d434eb01a7.png" width="3920" height="220"/></em></li>
+<li class="calibre15"><em class="calibre5"><img class="fm-editor-equation32" src="Images/e59f6029-9102-4629-8a66-bf8327219510.png" width="2320" height="220"/> </em></li>
+<li class="calibre15"><em class="calibre5"><img class="fm-editor-equation33" src="Images/ca839282-8e05-4444-8dc3-6aeb3033fa2e.png" width="3630" height="220"/></em></li>
+<li class="calibre15"><em class="calibre5"><img class="fm-editor-equation34" src="Images/f644f2ce-925d-44e3-b8ab-7c7cf88935cb.png" width="3560" height="220"/></em></li>
+<li class="calibre15"><em class="calibre5"><img class="fm-editor-equation35" src="Images/28d39d67-16b2-4a81-90e6-94e4a234e722.png" width="3340" height="220"/></em></li>
+</ul>
+<p class="mce-root">Thus:</p>
+<p class="cdpaligncenter"> <img class="fm-editor-equation36" src="Images/77863d74-e1c8-41d2-b472-82c68b98a3f9.png" width="3230" height="220"/>  and <img class="fm-editor-equation37" src="Images/eecbedd6-3e19-4efb-899a-2792c4a36271.png" width="3430" height="220"/></p>
+<p class="mce-root">Therefore, we have the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation38" src="Images/997d4964-fab8-47b0-ae81-cb5fc020c85c.png" width="8610" height="220"/></p>
+<p class="mce-root">This means that our friend is likely to be happy to play chess with us in the park in the stated weather conditions, with a probability of about <em class="calibre18">67%</em>. Since this is a majority, we could classify the data vector (<em class="calibre18">Temperature=Warm, Wind=Strong, Sunshine=Sunny</em>) as being in the <em class="calibre18">Play=Yes</em> class.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Implementation of a Naive Bayes classifier</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">In this section, we will implement a program calculating the probability of a data item belonging to a certain class by using Bayes' theorem:</p>
+<pre class="calibre22"># source_code/2/naive_bayes.py 
+# A program that reads the CSV file with the data and returns
+# the Bayesian probability for the unknown value denoted by ? to
+# belong to a certain class.
+# An input CSV file should be of the following format:
+# 1. items in a row should be separated by a comma ','
+# 2. the first row should be a heading - should contain a name for each
+# column of the data.
+# 3. the remaining rows should contain the data itself - rows with
+# complete and rows with the incomplete data.
+# A row with complete data is the row that has a non-empty and
+# non-question mark value for each column. A row with incomplete data is
+# the row that has the last column with the value of a question mark ?.
+# Please, run this file on the example chess.csv to understand this help
+# better:
+# $ python naive_bayes.py chess.csv
+
+import imp
+import sys
+sys.path.append('../common')
+import common  # noqa
+
+# Calculates the Bayesian probability for the rows of incomplete data and
+# returns them completed by the Bayesian probabilities. complete_data
+# are the rows with the data that is complete and are used to calculate
+# the conditional probabilities to complete the incomplete data.
+def bayes_probability(heading, complete_data, incomplete_data,
+                      enquired_column):
+    conditional_counts = {}
+    enquired_column_classes = {}
+    for data_item in complete_data:
+        common.dic_inc(enquired_column_classes,
+                       data_item[enquired_column])
+        for i in range(0, len(heading)):
+            if i != enquired_column:
+                common.dic_inc(
+                    conditional_counts, (
+                        heading[i], data_item[i],
+                        data_item[enquired_column]))
+
+    completed_items = []
+    for incomplete_item in incomplete_data:
+        partial_probs = {}
+        complete_probs = {}
+        probs_sum = 0
+        for enquired_group in enquired_column_classes.items():
+            # For each class in the of the enquired variable A calculate
+            # the probability P(A)*P(B1|A)*P(B2|A)*...*P(Bn|A) where
+            # B1,...,Bn are the remaining variables.
+            probability = float(common.dic_key_count(
+                enquired_column_classes,
+                enquired_group[0])) / len(complete_data)
+            for i in range(0, len(heading)):
+                if i != enquired_column:
+                    probability = probability * (float(
+                        common.dic_key_count(
+                            conditional_counts, (
+                                heading[i], incomplete_item[i],
+                                enquired_group[0]))) / (
+                        common.dic_key_count(enquired_column_classes,
+                                             enquired_group[0])))
+            partial_probs[enquired_group[0]] = probability
+            probs_sum += probability
+
+        for enquired_group in enquired_column_classes.items():
+            complete_probs[enquired_group[0]
+                           ] = partial_probs[enquired_group[0]
+                                             ] / probs_sum
+        incomplete_item[enquired_column] = complete_probs
+        completed_items.append(incomplete_item)
+    return completed_items<br class="calibre2"/><br class="calibre2"/># Program start
+if len(sys.argv) &lt; 2:
+    sys.exit('Please, input as an argument the name of the CSV file.')
+
+(heading, complete_data, incomplete_data,
+ enquired_column) = common.csv_file_to_ordered_data(sys.argv[1])
+
+# Calculate the Bayesian probability for the incomplete data
+# and output it.
+completed_data = bayes_probability(
+    heading, complete_data, incomplete_data, enquired_column)
+print completed_data</pre>
+<p class="mce-root">We use the dictionary part from the common library:</p>
+<pre class="calibre22"># source_code/common/common.py 
+# Increments integer values in a dictionary.
+def dic_inc(dic, key):
+    if key is None:
+        pass
+    if dic.get(key, None) is None:
+        dic[key] = 1
+    else:
+        dic[key] = dic[key] + 1
+
+def dic_key_count(dic, key):
+    if key is None:
+        return 0
+    if dic.get(key, None) is None:
+        return 0
+    else:
+        return int(dic[key])</pre>
+<p class="mce-root"><strong class="calibre8">Input</strong>:</p>
+<p class="mce-root">We save the data from the table, for example, the data that is related to playing chess playing chess, in the following CSV file:</p>
+<pre class="calibre22">source_code/2/naive_bayes/chess.csv<br class="calibre2"/>Temperature,Wind,Sunshine,Play<br class="calibre2"/>Cold,Strong,Cloudy,No<br class="calibre2"/>Warm,Strong,Cloudy,No<br class="calibre2"/>Warm,None,Sunny,Yes<br class="calibre2"/>Hot,None,Sunny,No<br class="calibre2"/>Hot,Breeze,Cloudy,Yes<br class="calibre2"/>Warm,Breeze,Sunny,Yes<br class="calibre2"/>Cold,Breeze,Cloudy,No<br class="calibre2"/>Cold,None,Sunny,Yes<br class="calibre2"/>Hot,Strong,Cloudy,Yes<br class="calibre2"/>Warm,None,Cloudy,Yes<br class="calibre2"/>Warm,Strong,Sunny,? </pre>
+<p class="mce-root"><strong class="calibre8">Output</strong>:</p>
+<p class="mce-root">We provide the <kbd class="calibre17">chess.csvfile</kbd> as the input to the Python program, calculating the probabilities of the data item (<em class="calibre18">Temperature=Warm, Wind=Strong, Sunshine=Sunny</em>) belonging to the classes present in the file by using <kbd class="calibre17">Play=Yes</kbd> and <kbd class="calibre17">Play=No</kbd>. As we found out earlier, the data item belongs to the <kbd class="calibre17">Play=Yes</kbd> class due to it having higher probability. Therefore, we classify the data item into that class:</p>
+<pre class="calibre22"><strong class="calibre3">$ python naive_bayes.py chess.csv</strong><br class="calibre2"/>[<br class="calibre2"/>    ['Warm', 'Strong', 'Sunny', {<br class="calibre2"/>        'Yes': 0.66666666666666_66,<br class="calibre2"/>        'No': 0.33333333333333337<br class="calibre2"/>    }]<br class="calibre2"/>]</pre>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Playing chess – dependent events</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Suppose that we would like to find out whether our friend would like to play chess with us in a park in Cambridge, UK. But, this time, we are given different input data:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Temperature</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Wind</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Season</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Play</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Winter</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Autumn</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Summer</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Spring</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Autumn</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Spring</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Winter</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Spring</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Summer</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Autumn</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Spring</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">So, now we are wondering how the answer to whether our friend would like to play in a park in Cambridge, UK, will change with this different data in regard to the <strong class="calibre8">Temperature</strong> being <strong class="calibre8">Warm</strong>, the <strong class="calibre8">Wind</strong> being <strong class="calibre8">Strong</strong>, and the <strong class="calibre8">Season</strong> being <strong class="calibre8">Spring</strong>.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">We may be tempted to use Bayesian probability to calculate the probability of our friend playing chess with us in the park. However, we should be careful, and ask whether the probability of the events are independent of each other.</p>
+<p class="mce-root">In the previous example, where we used Bayesian probability, we were given the probability variables <strong class="calibre8">Temperature</strong>, <strong class="calibre8">Wind</strong>, and <strong class="calibre8">Sunshine</strong>. These are reasonably independent. Common sense tells us that a specific <strong class="calibre8">Temperature</strong> and <strong class="calibre8">Sunshine</strong> do not have a strong correlation to a specific <strong class="calibre8">Wind</strong> speed. It is true that sunny weather results in higher temperatures, but sunny weather is common even when the temperatures are very low. Hence, we considered even <strong class="calibre8">Sunshine</strong> and <strong class="calibre8">Temperature</strong> as being reasonably independent as random variables and applied Bayes' theorem.</p>
+<p class="mce-root">However, in this example, <strong class="calibre8">Temperature</strong> and <strong class="calibre8">Season</strong> are closely related, especially in a location such as the UK, our stated location for the park. Unlike countries closer to the equator, temperatures in the UK vary greatly throughout the year. Winters are cold and summers are hot. Spring and fall have temperatures in between.</p>
+<p class="mce-root">Therefore, we cannot apply Bayes' theorem here, as the random variables are dependent. However, we could still perform some analysis by using Bayes' theorem on the partial data. By eliminating sufficient dependent variables, the remaining ones could turn out to be independent. Since <strong class="calibre8">Temperature</strong> is a more specific variable than <strong class="calibre8">Season</strong>, and the two variables are dependent, let's keep just the <strong class="calibre8">Temperature</strong> variable. The remaining two variables, <strong class="calibre8">Temperature</strong> and <strong class="calibre8">Wind</strong>, are independent.</p>
+<p class="mce-root">Thus, we get the following data:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Temperature</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Wind</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Play</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Breeze</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Hot</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">None</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Strong</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">We can keep the duplicate rows, as they give us greater evidence of the occurrence of that specific data row.</p>
+<p class="mce-root"><strong class="calibre8">Input</strong>:</p>
+<p class="mce-root">Saving the table, we get the following CSV file:</p>
+<pre class="calibre22"># source_code/2/chess_reduced.csv<br class="calibre2"/>Temperature,Wind,Play<br class="calibre2"/>Cold,Strong,No<br class="calibre2"/>Warm,Strong,No<br class="calibre2"/>Warm,None,Yes<br class="calibre2"/>Hot,None,No<br class="calibre2"/>Hot,Breeze,Yes<br class="calibre2"/>Warm,Breeze,Yes<br class="calibre2"/>Cold,Breeze,No<br class="calibre2"/>Cold,None,Yes<br class="calibre2"/>Hot,Strong,Yes<br class="calibre2"/>Warm,None,Yes<br class="calibre2"/>Warm,Strong,?</pre>
+<p class="mce-root"><strong class="calibre8">Output</strong>:</p>
+<p class="mce-root">We input the saved CSV file into the <kbd class="calibre17">naive_bayes.py</kbd> program and we get the following result:</p>
+<pre class="calibre22"><strong class="calibre3">python naive_bayes.py chess_reduced.csv</strong><br class="calibre2"/>[['Warm', 'Strong', {'Yes': 0.49999999999999994, 'No': 0.5}]]</pre>
+<p class="mce-root">The first class, <kbd class="calibre17">Yes</kbd>, is going to be true, with a probability of 50%. The numerical difference resulted from using Python's non-exact arithmetic on the float numerical data type. The second class, <kbd class="calibre17">No</kbd>, has the same probability, that is, 50%, of being true. Thus, we cannot make a reasonable conclusion with the data that we have about the class of the vector (<kbd class="calibre17">Warm</kbd>, <kbd class="calibre17">Strong</kbd>). However, you have probably already noticed that this vector already occurs in the table with the resulting class <kbd class="calibre17">No</kbd>. Hence, our guess would be that this vector should just happen to exist in one class, <kbd class="calibre17">No</kbd>. But, to have greater statistical confidence, we would need more data or more independent variables to be involved.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Gender classification – Bayes for continuous random variables</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">So far, we have been given a probability event that belonged to one of a finite number of classes, for example, a temperature was classified as cold, warm, or hot. But how would we calculate the posterior probability if we were given the temperature in °C instead?</p>
+<p class="mce-root">For this example, we are given the heights of five men and five women, as shown in the following table:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Height in cm</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Gender</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">180</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">174</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">184</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">168</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">178</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">170</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">164</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">155</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">162</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">166</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">172</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">Suppose that the next person has a height of 172 cm. What gender is that person more likely to be, and with what probability?</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">One approach to solving this problem could be to assign classes to the numerical values; for example, the people with a height of between 170 cm and 179 cm would be in the same class. With this approach, we may end up with a few classes that are very wide, for example, with a high cm range, or with classes that are more precise but have fewer members, and so we cannot use the full potential of the Bayes classifier. Similarly, using this method, we would not consider the classes of height interval (170, 180) and (180, 190) in centimeters, to be closer to each other than the classes (170, 180) and (190, 200).</p>
+<p class="mce-root">Let's remind ourselves of the Bayes' formula here:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation39" src="Images/4065676f-213a-496e-bd48-07eb551ed0ea.png" width="4530" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation40" src="Images/94706b71-4c4e-4397-8eb0-4b09d25dc2b2.png" width="7370" height="220"/></p>
+<p class="mce-root">Expressing the formula in the final form shown here removes the need to normalize the <em class="calibre18">P(height|male)</em> and <em class="calibre18">P(height)</em> to get the correct probability of a person being male based on their height.</p>
+<p class="mce-root">Assuming that the height of people is distributed normally, we could use a normal probability distribution to calculate <em class="calibre18">P(male|height)</em>. We assume that <em class="calibre18">P(male)=0.5</em>, that is, it is equally likely that the person to be measured is of either gender. A normal probability distribution is determined by the mean, μ, and the variance, <em class="calibre18">σ<sup class="calibre30">2</sup></em>, of the population:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation41" src="Images/9e873050-d211-4beb-a2aa-71d9e92b60d1.png" width="1830" height="610"/></p>
+<p class="mce-root">The following table shows the m<span class="calibre9">ean height and variance by gender:</span></p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><span class="calibre9"><strong class="calibre8">Gender</strong></span></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Mean height</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Height variance</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">176.8</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">37.2</p>
+</td>
+</tr>
+<tr class="calibre28">
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">163.4</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">30.8</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">Thus, we could calculate the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation42" src="Images/b09b6973-a133-4315-90af-45500ef2010d.png" width="7540" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation43" src="Images/c217fffa-8ec2-4fcf-9a6c-26ee7e8c1f97.png" width="7730" height="220"/></p>
+<p class="mce-root">Note that these are not the probabilities, just the values of the probability density function. However, from these values, we can already observe that a person with a height of 172 cm is more likely to be male than female because, as follows:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation44" src="Images/d0f50b50-b969-498a-9dd4-cf33f29b3ff2.png" width="4010" height="220"/></p>
+<p class="mce-root">To be more precise:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation45" src="Images/fb09d676-5919-46b8-a422-726f60fb9607.png" width="8950" height="490"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation46" src="Images/3da3fe22-f207-4c58-a2dd-e775312e98e3.png" width="7510" height="220"/></p>
+<p class="mce-root">Therefore, the probability of a person with a height of <em class="calibre18">172</em> cm being male is of <em class="calibre18">68.9%</em>.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">In this chapter, we learned about Naive Bayes and how it can be applied in different ways for different purposes.</p>
+<p class="mce-root">Bayes' theorem states the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation47" src="Images/5d22360b-62a2-4229-b95f-3863b4a71b76.png" width="2740" height="220"/></p>
+<p class="mce-root">Here,<span class="calibre9"> </span><em class="calibre18">P(A|B)</em><span class="calibre9"> </span>is the conditional probability of<span class="calibre9"> </span><em class="calibre18">A</em><span class="calibre9"> </span>being true, given that<span class="calibre9"> </span><em class="calibre18">B</em><span class="calibre9"> </span>is true. It is used to update the value of the probability that<span class="calibre9"> </span><em class="calibre18">A</em><span class="calibre9"> </span>is true given the new observations about other probabilistic events. This theorem can be extended to a statement with multiple random variables:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation48" src="Images/7aab5897-71b6-48e3-8cba-88fdbac84ace.png" width="8830" height="490"/></p>
+<p class="mce-root">The random variables<span class="calibre9"> </span><em class="calibre18">B1,...,Bn</em><span class="calibre9"> </span>have to be conditionally <span class="calibre9">independent</span> given<span class="calibre9"> </span><em class="calibre18">A</em>. The random variables can be discrete or continuous and follow a probability distribution, for example, normal (Gaussian) distribution.</p>
+<p class="mce-root">We also studied the discrete random variable. We learned that it is best to ensure that you have a data item for each value of a discrete random variable given any of the conditions (with a value of<span class="calibre9"> </span><em class="calibre18">A</em>) by collecting sufficient data.</p>
+<p class="mce-root">The more independent random variables we have, the more accurately we can determine the posterior probability. However, the greater danger is that some of these variables could be dependent, resulting in imprecise final results. When variables are dependent, we may eliminate some of the dependent variables and consider only mutually independent variables, or consider another algorithm as an approach to solving the data science problem.</p>
+<p class="mce-root">In the next chapter, we will learn how to classify an element with a decision tree algorithm.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Problems</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root"><strong class="calibre8">Problem 1</strong>: A patient is tested for a virus, <em class="calibre18">V</em>. The accuracy of the test is 98%. This virus, <em class="calibre18">V</em>, is currently present in 4 out of 100 people in the region the patient lives in:</p>
+<p class="mce-root">a) What is the probability that a patient having the virus, <em class="calibre18">V</em>, if they test positive?</p>
+<p class="mce-root">b) What is the probability of a patient still having the virus if the result of the test is negative?</p>
+<p class="mce-root"><strong class="calibre8">Problem 2</strong>: Apart from assessing whether patients are suffering from the virus, <em class="calibre18">V</em> (in <em class="calibre18">Problem 1</em>), by using the test, a doctor usually also checks for other symptoms. According to a doctor, about 85% of patients with symptoms such as fever, nausea, abdominal discomfort, and malaise have the virus, <em class="calibre18">V</em>:</p>
+<p class="mce-root">a) What is the probability of a patient having the virus, <em class="calibre18">V</em>, if they have the symptoms mentioned previously and their test result for the virus is positive?</p>
+<p class="mce-root">b) How likely is it that the patient has the virus if they have the symptoms mentioned previously, but the result of the test is negative?</p>
+<p class="mce-root"><strong class="calibre8">Problem 3</strong>: On a certain island, one in two tsunamis is preceded by an earthquake. There have been 4 tsunamis and 6 earthquakes in the past 100 years. A seismological station recorded an earthquake in the ocean near the island. What is the probability that it will result in a tsunami?</p>
+<p class="mce-root"><strong class="calibre8">Problem 4</strong>: Patients are tested with four independent tests to ascertain whether they have a certain illness:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Test1 positive</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Test2 positive</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Test3 positive</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Test4 positive</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Illness</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"/>
+<p class="mce-root">We have taken a new patient, for whom the second and third tests are positive, while the first and fourth tests are negative. What is the probability that they suffer from the illness?</p>
+<p class="mce-root"><strong class="calibre8">Problem 5</strong>: We are given the following table of words that have featured in emails and whether or not those emails were spam:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Money</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Free</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Rich</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Naughty</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Secret</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Spam</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+</tr>
+<tr class="calibre28">
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">No</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Yes</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"/>
+<p class="mce-root">a) Create a Naive Bayes algorithm to determine whether or not a given email is a spam message. What is the result when given an email that contains the words <strong class="calibre8">Money</strong>, <strong class="calibre8">Rich</strong>, and <strong class="calibre8">Secret</strong>, but does not contain the words <strong class="calibre8">Free</strong> and <strong class="calibre8">Naughty</strong>?</p>
+<p class="mce-root">b) Do you agree with the result of the algorithm? Is the Naive Bayes algorithm, as used here, a good method for classifying emails? Justify your answers.</p>
+<p class="mce-root"><strong class="calibre8">Problem 6</strong>: This is a gender classification problem. Let's assume that we are given the following data about ten people:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Height in cm</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Weight in kg</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Hair length</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Gender</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">180</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">75</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Short</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">174</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">71</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Short</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">184</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">83</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Short</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">168</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">63</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Short</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">178</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">70</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Long</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Male</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">170</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">59</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Long</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">164</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">53</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Short</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">155</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">46</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Long</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">162</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">52</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Long</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">166</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">55</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Long</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Female</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">172</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">60</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Long</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"/>
+<p class="mce-root">What is the probability that the 11th person, with a height of 172 cm, a weight of 60 kg, and long hair, is a man?</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root"><strong class="calibre8">Problem 1</strong>: Before the patient is given the test, the probability that they have the virus is 4%, <kbd class="calibre17">P(virus)=4%=0.04</kbd>. The accuracy of the test is <kbd class="calibre17">test_accuracy=98%=0.98</kbd>. We apply the formula from the medical test example:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation49" src="Images/dc1aa0f8-2719-43ef-b4f2-787caf38b22a.png" width="7940" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation50" src="Images/28e07d40-bc73-420b-b2d9-f34c6dc01780.png" width="5440" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation51" src="Images/e3cb7891-2def-442f-a927-7301ec9b898f.png" width="5150" height="220"/></p>
+<p class="mce-root">Therefore, we have the following:</p>
+<p class="cdpaligncenter"> <img class="fm-editor-equation52" src="Images/5aed8c3d-b9e3-4b07-9854-b9754706737d.png" width="6270" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation53" src="Images/b376c15a-2e14-4a7e-9d35-3ca0f8c3fb12.png" width="3690" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation54" src="Images/9ab31095-5143-42d8-944c-fb99a7237905.png" width="7390" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation55" src="Images/a4a11a40-2b4e-4508-8238-68ce149be36b.png" width="5780" height="220"/></p>
+<p class="mce-root">This means that there is a probability of about 67% that the patient has the virus, <em class="calibre18">V</em>, if the result of the test is positive:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation56" src="Images/8fe1c210-e01c-4767-b2ff-85ff40b2884b.png" width="6420" height="220"/>  <img class="fm-editor-equation57" src="Images/1da1d2dc-4191-4858-ad2c-8650ba72ef0e.png" width="4580" height="220"/>          </p>
+<p class="cdpaligncenter"><img class="fm-editor-equation58" src="Images/81fada1b-643c-4a6a-b3b1-d40a8af050bf.png" width="8170" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation59" src="Images/3f8aa57e-59d5-4d3f-8c62-03b4a13d839b.png" width="7530" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation60" src="Images/42741e2f-5561-4559-a5e4-447886bddd91.png" width="6160" height="220"/></p>
+<p class="mce-root">If the test is negative, a patient can still have the virus, V, with a probability of 0.08%.</p>
+<p class="mce-root"><strong class="calibre8">Problem 2</strong>: Here, we can assume that symptoms and a positive test result are conditionally independent events given that a patient has the virus, <em class="calibre18">V</em>. The variables we have are as follows:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation61" src="Images/f46385f4-8c9d-4542-a64b-26f4f91f5534.png" width="1290" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation62" src="Images/935aabe7-095c-4dd5-b8c9-0439eb6d2461.png" width="1700" height="190"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation63" src="Images/71046b30-50a7-41ba-9a27-31d49e523af1.png" width="2090" height="190"/></p>
+<p class="mce-root">Since we have two independent random variables, we will use an extended Bayes' theorem:</p>
+<p class="cdpaligncenter">a) <img class="fm-editor-equation64" src="Images/8906397d-4a1c-4dba-b313-9dede2e3085f.png" width="5240" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation65" src="Images/c78c1ea1-4431-4b95-9e0a-27b4ef2fa01a.png" width="4100" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation66" src="Images/621859bc-e83d-4d07-9928-c8f61b01a426.png" width="2400" height="160"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation67" src="Images/74c720e9-7880-48bd-ab49-bf0dc3b6ebd4.png" width="5800" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation68" src="Images/84f2c052-cd38-4316-9540-bb217c5703c6.png" width="5500" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation69" src="Images/81037bed-996f-47a3-827e-1b27f69f59bd.png" width="3790" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation70" src="Images/83aa2fcc-5511-41a8-8533-5fa7651ad7c6.png" width="4510" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation71" src="Images/afe1c7dd-5163-42aa-a5ab-d14103f8fb43.png" width="4450" height="220"/></p>
+<p class="mce-root">So, a patient with symptoms of the virus, <em class="calibre18">V</em>, and a positive test result for the virus has the virus with a probability of approximately 92%.</p>
+<p class="mce-root">Note that in the previous question, we learned that a patient has the virus with a probability of only about 67%, given that the result of the test was positive. But after adding another independent random variable, the probability increased to 92%, even though the symptom assessment was reliable only on 85% of patients. This implies that usually, it is a very good idea to add as many independent random variables as possible to calculate the posterior probability with a higher accuracy and confidence.</p>
+<p class="mce-root"> b) Here, the patient has symptoms of the virus, <em class="calibre18">V</em>, but the result of the test is negative. Thus, we have the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation72" src="Images/37316f38-35b8-4554-a249-d64fd87d3e2c.png" width="4960" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation73" src="Images/61381a17-2a9f-467b-aee1-786a38941113.png" width="4570" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation74" src="Images/e3876435-dc39-4adb-a5a9-b7318b1d5973.png" width="2860" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation75" src="Images/cb9b5a57-2971-4b5c-b96a-73736ef8f6cb.png" width="5850" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation76" src="Images/a927d5f6-5c02-4cb5-a8e5-e5c41220ec00.png" width="5030" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation77" src="Images/d33f112e-aa5c-45f6-bf06-90dc921f53fe.png" width="3330" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation78" src="Images/33a28454-1784-4cf6-b285-453db7c3d609.png" width="4510" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation79" src="Images/05029050-7378-4e07-8ca5-f21f8f6950d2.png" width="4510" height="220"/></p>
+<p class="mce-root">Thus, a patient testing negative with regard to the test, but with symptoms of the virus, <em class="calibre18">V</em>, has a probability of 0.48% of having the virus.</p>
+<p class="mce-root"><span class="calibre9"><strong class="calibre8">Problem 3</strong></span>:<span class="calibre9"> </span>We apply the basic form of Bayes' theorem:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation80" src="Images/35a6fedd-b2a7-4c7f-8ae6-84e76434a3f0.png" width="6600" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation81" src="Images/d3bc5df0-a7f0-4767-a795-edfdef073037.png" width="3120" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation82" src="Images/997c5842-638a-40d4-b7f0-c299188fc98f.png" width="2000" height="220"/></p>
+<p class="mce-root">There is a 33% chance that there will be a tsunami following the recorded earthquake.</p>
+<p class="mce-root">Note that, here, we set <em class="calibre18">P(tsunami)</em> to be the probability of a tsunami happening on some particular day in the past 100 years. We used a day as a unit to calculate the probability <em class="calibre18">P(earthquake)</em> as well. If we changed the unit to an hour, week, month, and so on for both <em class="calibre18">P(tsunami)</em> and <em class="calibre18">P(earthquake)</em>, the result would still be the same. What is important in the calculation is the ratio <em class="calibre18">P(tsunami):P(earthquake)=4:6=2/3:1</em>, that is, that a tsunami is <span class="calibre9">about 66%</span> more likely to happen than an earthquake.</p>
+<p class="mce-root"><span class="calibre9"><strong class="calibre8">Problem 4</strong></span>: We put the data into the program for calculating the posterior probability from the observations and get the following result:</p>
+<p class="cdpaligncenter"><em class="calibre18">[['No', 'Yes', 'Yes', 'No', {'Yes': 0.0, 'No': 1.0}]]</em></p>
+<p class="mce-root">According to this calculation, a patient tested should not suffer from the virus. However, the probability of <em class="calibre18">'No'</em> seems quite high. It may be a good idea to get more data in order to obtain a more precise estimate of the probability of the patient being healthy.</p>
+<p class="mce-root"><span class="calibre9"><strong class="calibre8">Problem 5</strong></span>: </p>
+<p class="mce-root">a) The result of the algorithm is as follows:</p>
+<p class="cdpaligncenter3"><em class="calibre18">[['Yes', 'No', 'Yes', 'No', 'Yes', {'Yes': 0.8459918784779665, 'No': 0.15400812152203341}]]</em></p>
+<p class="mce-root">So, according to the Naive Bayes algorithm, when applied to the data in the table, the email is spam with a probability of about 85%.</p>
+<p class="mce-root">b)  This method may not be as good since the occurrence of certain words in a spam email is not independent. For example, spam emails containing the word "money" would likely try to convince the victim of a spam email that they could somehow get money from the spammer, and hence, other words, such as <strong class="calibre8">Rich</strong>, <strong class="calibre8">Secret</strong>, or <strong class="calibre8">Free</strong> are more likely to be present in such an email as well. The nearest neighbor algorithm would seem to perform better at spam email classification. You could verify the actual methods by using cross-validation.</p>
+<p class="mce-root"><span class="calibre9"><strong class="calibre8">Problem 6</strong></span>: For this problem, we will use the extended Bayes' theorem for both continuous and discrete random variables:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation83" src="Images/1dde7a8e-2292-425d-a96e-fc6d4a267b73.png" width="5570" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation84" src="Images/ff8dcb78-c7fe-4b51-89af-c29cf6119772.png" width="7780" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation85" src="Images/7e147f51-fd63-49d4-8b98-885ff7da1b5e.png" width="8180" height="220"/></p>
+<p class="mce-root">Let's summarize the given information in the following tables:</p>
+<table class="msotablegrid" border="1">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre41">
+<p class="calibre26"><strong class="calibre8">Gender</strong></p>
+</td>
+<td class="calibre42">
+<p class="calibre26"><strong class="calibre8">Mean height</strong></p>
+</td>
+<td class="calibre43">
+<p class="calibre26"><strong class="calibre8">Variance in height</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre41">
+<p class="calibre26">Male</p>
+</td>
+<td class="calibre42">176.8</td>
+<td class="calibre43">37.2</td>
+</tr>
+<tr class="calibre28">
+<td class="calibre41">
+<p class="calibre26">Female</p>
+</td>
+<td class="calibre42">163.4</td>
+<td class="calibre43">30.8</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"/>
+<table class="msotablegrid" border="1">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre44">
+<p class="calibre26"><strong class="calibre8">Gender</strong></p>
+</td>
+<td class="calibre45">
+<p class="calibre26"><strong class="calibre8">Mean weight</strong></p>
+</td>
+<td class="calibre46">
+<p class="calibre26"><strong class="calibre8">Variance in weight</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre44">
+<p class="calibre26">Male</p>
+</td>
+<td class="calibre45">
+<p class="calibre26">72.4</p>
+</td>
+<td class="calibre46">
+<p class="calibre26">53.8</p>
+</td>
+</tr>
+<tr class="calibre28">
+<td class="calibre44">
+<p class="calibre26">Female</p>
+</td>
+<td class="calibre45">
+<p class="calibre26">53</p>
+</td>
+<td class="calibre46">
+<p class="calibre26">22.5</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">From this data, let's determine the other values that are needed to determine the final probability of the person being male:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation86" src="Images/4169d7f0-2b98-4be7-bb83-f93516a68639.png" width="3450" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation87" src="Images/e930eaca-16dc-4eb5-a4a8-c4480e5c5cdc.png" width="7470" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation16" src="Images/2ee5daf0-4d30-4011-a807-86ec634c57ca.png" width="2170" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation63" src="Images/87adbc1d-9167-4ff7-98b0-f69fe0b8f48a.png" width="2410" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation88" src="Images/34dd87d9-edb2-487a-9db0-91c738e70049.png" width="3640" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation89" src="Images/d8b4bbc3-a624-4431-b26a-1ddd25b3dcae.png" width="9880" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation90" src="Images/04f46edb-81e8-4906-b580-791cff84a269.png" width="5190" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation91" src="Images/82ad2dd2-0646-4fda-846d-2ec00cbbcc9e.png" width="5140" height="160"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation92" src="Images/40791c73-f78d-4f41-ad07-fabbc077a486.png" width="5340" height="160"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation93" src="Images/81644091-b199-4490-8cc2-bf6916acb70b.png" width="4310" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation94" src="Images/8197cbba-e3fb-45e4-9037-8e1c0d2bfdcb.png" width="6180" height="220"/></p>
+<p class="mce-root">Therefore, the probability of a person with a height of 172 cm, a weight of 60 kg, and long hair, being a male is 20.3%. Thus, they are more likely to be female.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  </body></html>

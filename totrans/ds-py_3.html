@@ -1,0 +1,346 @@
+<html><head></head><body><div id="sbo-rt-content"><div id="_idContainer146" class="Content">
+			<h1 id="_idParaDest-93"><em class="italics"><a id="_idTextAnchor099"/>Chapter 4</em></h1>
+		</div>
+		<div id="_idContainer147" class="Content">
+			<h1 id="_idParaDest-94"><a id="_idTextAnchor100"/>Dimensionality Reduction and Unsupervised Learning</h1>
+		</div>
+		<div id="_idContainer148" class="Content">
+			<h2>Learning Objectives</h2>
+			<p>By the end of this chapter, you will be able to:</p>
+			<ul>
+				<li class="bullets">Compare hierarchical cluster analysis (HCA) and k-means clustering</li>
+				<li class="bullets">Conduct an HCA and interpret the output</li>
+				<li class="bullets">Tune a number of clusters for k-means clustering</li>
+				<li class="bullets">Select an optimal number of principal components for dimension reduction</li>
+				<li class="bullets">Perform supervised dimension compression using linear discriminant function analysis (LDA)</li>
+			</ul>
+			<p>This chapter will cover various concepts that fall under dimensionality reduction and unsupervised learning.</p>
+		</div>
+		<div id="_idContainer172" class="Content">
+			<h2 id="_idParaDest-95"><a id="_idTextAnchor101"/>Introduction</h2>
+			<p>In unsupervised learning, <strong class="bold">descriptive models</strong> are used for exploratory analysis to uncover patterns in unlabeled data. Examples of unsupervised learning tasks include algorithms for <strong class="bold">clustering</strong> and those for <strong class="bold">dimension reduction</strong>. In clustering, observations are assigned to groups in which there is high within-group homogeneity and between-group heterogeneity. Simply put, observations are placed into clusters of samples with other observations that are very similar. Use cases for clustering algorithms are vast. For example, analysts seeking to elevate sales by targeting selected customers for marketing advertisements and promotions separate customers by their shopping behavior.</p>
+			<h4>Note</h4>
+			<p class="callout">Additionally, hierarchical clustering has been implemented in academic neuroscience and motor behavior research (<a href="">https://www.researchgate.net/profile/Ming-Yang_Cheng/project/The-Effect-of-SMR-Neurofeedback-Training-on-Mental-Representation-and-Golf-Putting-Performance/attachment/57c8419808aeef0362ac36a5/AS:401522300080128@1472741784217/download/Schack+-+2012+-+Measuring+mental+representations.pdf?context=ProjectUpdatesLog</a>) and k-means clustering has been used in fraud detection (<a href="">https://www.semanticscholar.org/paper/Fraud-Detection-in-Credit-Card-by-Clustering-Tech/3e98a9ac78b5b89944720c2b428ebf3e46d9950f</a>).</p>
+			<p>However, when building descriptive or predictive models, it can be a challenge to determine which features to include in a model to improve it, and which features to exclude because they diminish a model. Too many features can be troublesome because the greater the number of variables in a model, the higher the probability of multicollinearity and subsequent overfitting of a model. Additionally, numerous features expand the complexity of a model and increase the time for model tuning and fitting. </p>
+			<p>This becomes troublesome with larger datasets. Fortunately, another use case for unsupervised learning is to reduce the number of features in a dataset by creating combinations of the original features. Reducing the number of features in data helps eliminate multicollinearity and converges on a combination of features to best produce a model that performs well on unseen test data.</p>
+			<h4>Note</h4>
+			<p class="callout">Multicollinearity is a situation in which at least two variables are correlated. It is a problem in linear regression models because it does not allow the isolation of the relationship between each independent variable and the outcome measure. Thus, coefficients and p-values become unstable and less precise.</p>
+			<p>In this chapter, we will be covering two widely used unsupervised clustering algorithms: <em class="italics">Hierarchical Cluster Analysis (HCA)</em> and<em class="italics"> k-means clustering</em>. Additionally, we will explore dimension reduction using <em class="italics">principal component analysis (PCA)</em> and observe how reducing dimensionality can improve model performance. Lastly, we will implement linear discriminant function analysis<em class="italics"> (LDA)</em> for supervised dimensionality reduction.</p>
+			<h2 id="_idParaDest-96"><a id="_idTextAnchor102"/>Hierarchical Cluster Analysis (HCA)</h2>
+			<p>Hierarchical cluster analysis (HCA) is best implemented when the user does not have a priori number of clusters to build. Thus, it is a common approach to use HCA as a precursor to other clustering techniques where a predetermined number of clusters is recommended. HCA works by merging observations that are similar into clusters and continues merging clusters that are closest in proximity until all observations are merged into a single cluster.</p>
+			<p>HCA determines similarity as the Euclidean distance between and among observations and creates links at the distance in which the two points lie.</p>
+			<p>With the number of features indicated by <em class="italics">n</em>, the Euclidean distance is calculated using the formula:</p>
+			<div>
+				<div id="_idContainer149" class="IMG---Figure">
+					<img src="Images/C13322_04_01.jpg" alt="Figure 4.1: The Euclidean distance" width="1800" height="202"/>
+				</div>
+			</div>
+			<h6>Figure 4.1: The Euclidean distance</h6>
+			<p>After the distance between observations and cluster have been calculated, the relationships between and among all observations are displayed using a dendrogram. Dendrograms are tree-like structures displaying horizontal lines as the distance between links. </p>
+			<p>Dr. Thomas Schack (<a href="">https://www.researchgate.net/profile/Ming-Yang_Cheng/project/The-Effect-of-SMR-Neurofeedback-Training-on-Mental-Representation-and-Golf-Putting-Performance/attachment/57c8419808aeef0362ac36a5/AS:401522300080128@1472741784217/download/Schack+-+2012+-+Measuring+mental+representations.pdf?context=ProjectUpdatesLog</a>) relates this structure to the human brain in which each observation is a node and the links between observations are neurons. </p>
+			<p>This creates a hierarchical structure in which items that are closely related are "chunked" together into clusters. An example dendrogram is displayed here:</p>
+			<div>
+				<div id="_idContainer150" class="IMG---Figure">
+					<img src="Images/C13322_04_02.jpg" alt="Figure 4.2: An example dendrogram&#13; &#10;" width="585" height="316"/>
+				</div>
+			</div>
+			<h6>Figure 4.2: An example dendrogram</h6>
+			<p>The y-axis indicates the Euclidean distance, while the x-axis indicates the row index for each observation. Horizontal lines denote links between observations; links closer to the x-axis indicate shorter distance and a subsequent closer relationship. In this example, there appear to be three clusters. The first cluster includes observations colored in green, the second cluster includes observations colored in red, and the third cluster includes observations colored in turquoise.</p>
+			<h3 id="_idParaDest-97"><a id="_idTextAnchor103"/>Exercise 34: Building an HCA Model</h3>
+			<p>To demonstrate HCA, we will be use an adapted version of the glass dataset from the University of California – Irvine (<a href="">https://github.com/TrainingByPackt/Data-Science-with-Python/tree/master/Chapter04</a>). This data contains 218 observations and 9 features corresponding to the percent weight of various oxides found in glass:</p>
+			<ul>
+				<li>RI: refractive index</li>
+				<li>Na: weight percent in sodium</li>
+				<li>Mg: weight percent in magnesium</li>
+				<li>Al: weight percent in aluminum</li>
+				<li>Si: weight percent in silicon</li>
+				<li>K: weight percent in potassium</li>
+				<li>Ca: weight percent in calcium</li>
+				<li>Ba: weight percent in barium</li>
+				<li>Fe: weight percent in iron</li>
+			</ul>
+			<p>In this exercise, we will use the refractive index (RI) and weight percent in each oxide to segment the glass type.</p>
+			<ol>
+				<li>To get started, we will import pandas and read the <strong class="inline">glass.csv</strong> file using the following code:<p class="snippet">import pandas as pd</p><p class="snippet">df = pd.read_csv('glass.csv')</p></li>
+				<li>Look for some basic data frame information by printing <strong class="inline">df.info()</strong> to the console using the following code:<p class="snippet">print(df.info()):</p><div id="_idContainer151" class="IMG---Figure"><img src="Images/C13322_04_03.jpg" alt="Figure 4.3: DataFrame information&#13;&#10;" width="533" height="224"/></div><h6>Figure 4.3: DataFrame information</h6></li>
+				<li>To remove any possible order effects in the data, we will shuffle the rows prior to building any models and save it as a new data frame object, as follows:<p class="snippet">from sklearn.utils import shuffle</p><p class="snippet">df_shuffled = shuffle(df, random_state=42)</p></li>
+				<li>Transform each observation into a z-score by fitting and transforming shuffled data using: <p class="snippet">from sklearn.preprocessing import StandardScaler</p><p class="snippet">scaler = StandardScaler() </p><p class="snippet">scaled_features = scaler.fit_transform(df_shuffled)</p></li>
+				<li>Perform hierarchical clustering using the linkage function on <strong class="inline">scaled_features</strong>. The following code will show you how:<p class="snippet">from scipy.cluster.hierarchy import linkage </p><p class="snippet">model = linkage(scaled_features, method='complete')</p></li>
+			</ol>
+			<p>Congratulations! You've successfully built an HCA model.</p>
+			<h3 id="_idParaDest-98"><a id="_idTextAnchor104"/>Exercise 35: Plotting an HCA Model and Assigning Predictions</h3>
+			<p>Now that the HCA model has been built, we will continue with the analysis by visualizing clusters using a dendrogram and using the visualization to generate predictions.</p>
+			<ol>
+				<li value="1">Display the dendrogram by plotting the linkage model as follows:<p class="snippet">import matplotlib.pyplot as plt </p><p class="snippet">from scipy.cluster.hierarchy import dendrogram</p><p class="snippet">plt.figure(figsize=(10,5))</p><p class="snippet">plt.title('Dendrogram for Glass Data')</p><p class="snippet">dendrogram(model, leaf_rotation=90, leaf_font_size=6)</p><p class="snippet">plt.show()</p><div id="_idContainer152" class="IMG---Figure"><img src="Images/C13322_04_04.jpg" alt="Figure 4.4: Dendogram for glass data&#13;&#10;" width="668" height="313"/></div><h6>Figure 4.4: Dendogram for glass data</h6><h4>Note</h4><p class="callout">The index for each observation or row in a dataset is on the x-axis. The Euclidean distance is on the y-axis. Horizontal lines are links between and among observations. By default, scipy will color code the different clusters that it finds.</p><p>Now that we have the predicted clusters of observations, we can use the <strong class="inline">fcluster</strong> function to generate an array of labels that correspond to rows in <strong class="inline">df_shuffled</strong>.</p></li>
+				<li>Generate predicted labels of the cluster which an observation belongs to using the following code:<p class="snippet">from scipy.cluster.hierarchy import fcluster</p><p class="snippet">labels = fcluster(model, t=9, criterion='distance')</p></li>
+				<li>Add the labels array as a column in the shuffled data and preview the first five rows using the following code:<p class="snippet">df_shuffled['Predicted_Cluster'] = labels</p><p class="snippet">print(df_shuffled.head(5))</p></li>
+				<li>Check the output in the following figure:</li>
+			</ol>
+			<div>
+				<div id="_idContainer153" class="IMG---Figure">
+					<img src="Images/C13322_04_05.jpg" alt="Figure 4.5: The first five rows of df_shuffled after predictions have been matched to observations.&#13;&#10;" width="664" height="96"/>
+				</div>
+			</div>
+			<h6>Figure 4.5: The first five rows of df_shuffled after predictions have been matched to observations.</h6>
+			<p>We have successfully learned the difference between supervised and unsupervised learning, how to build an HCA model, how to visualize and interpret the HCA dendrogram, and how to assign the predicted cluster label to the appropriate observation.</p>
+			<p>Here, we have utilized HCA to cluster our data into three groups and matched the observations with their predicted cluster. Some pros of HCA models include:</p>
+			<ul>
+				<li>They are easy to build</li>
+				<li>There is no need to specify the number of clusters in advance</li>
+				<li>Visualizations are easy to interpret</li>
+			</ul>
+			<p>However, some drawbacks of HCA include:</p>
+			<ul>
+				<li>Vagueness in terms of the termination criteria (that is, when to finalize the number of clusters)</li>
+				<li>The algorithm cannot adjust once the clustering decisions have been made</li>
+				<li>Can be very computationally expensive to build HCA models on large datasets with many features</li>
+			</ul>
+			<p>Next, we will introduce you to another clustering algorithm, k-means clustering. This algorithm addresses some of the HCA shortcomings by having the ability to adjust when the clusters have been initially generated. It is more computationally frugal than HCA.</p>
+			<h2 id="_idParaDest-99"><a id="_idTextAnchor105"/>K-means Clustering</h2>
+			<p>Like HCA, K-means also uses distance to assign observations into clusters not labeled in data. However, rather than linking observations to each other as in HCA, k-means assigns observations to <em class="italics">k </em>(user-defined number) clusters.</p>
+			<p>To determine the cluster to which each observation belongs, k<em class="italics"> </em>cluster centers are randomly generated, and observations are assigned to the cluster in which its Euclidean distance is closest to the cluster center. Like the starting weights in artificial neural networks, cluster centers are initialized at random. After cluster centers have been randomly generated there are two phases:</p>
+			<ul>
+				<li>Assignment phase</li>
+				<li>Updating phase<h4>Note</h4><p class="callout">The randomly generated cluster centers are important to remember, and we will be visiting it later in this chapter. Some refer to this random generation of cluster centers as a weakness of the algorithm, because results vary between fitting the same model on the same data, and it is not guaranteed to assign observations to the appropriate cluster. We can turn it into an advantage by leveraging the power of loops.</p></li>
+			</ul>
+			<p>In the assignment phase, observations are assigned to the cluster from which it has the smallest Euclidean distance, as shown in the following figure:</p>
+			<div>
+				<div id="_idContainer154" class="IMG---Figure">
+					<img src="Images/C13322_04_06.jpg" alt="Figure 4.6: A scatterplot of observations and the cluster centers as denoted by the star, triangle, and diamond." width="1800" height="727"/>
+				</div>
+			</div>
+			<h6>Figure 4.6: A scatterplot of observations and the cluster centers as denoted by the star, triangle, and diamond.</h6>
+			<p>Next, in the updating phase, cluster centers are shifted to the mean position of the points in that cluster. These cluster means are known as the centroids, as shown in the following figure:</p>
+			<div>
+				<div id="_idContainer155" class="IMG---Figure">
+					<img src="Images/C13322_04_07.jpg" alt="Figure 4.7: Shifting of the cluster centers to the cluster centroid.&#13;&#10;" width="1800" height="756"/>
+				</div>
+			</div>
+			<h6>Figure 4.7: Shifting of the cluster centers to the cluster centroid.</h6>
+			<p>However, once the centroids have been calculated, some of the observations are reassigned to a different cluster due to being closer to the new centroid than the previous cluster center. Thus, the model must update its centroids once again. This is shown in the following figure:</p>
+			<div>
+				<div id="_idContainer156" class="IMG---Figure">
+					<img src="Images/C13322_04_08.jpg" alt="Figure 4.8: Updating of the centroids after observation reassignment.&#13;&#10;" width="1800" height="785"/>
+				</div>
+			</div>
+			<h6>Figure 4.8: Updating of the centroids after observation reassignment.</h6>
+			<p>This process of updating centroids continues until there are no further observation reassignments. The final centroid is shown in the following figure:</p>
+			<div>
+				<div id="_idContainer157" class="IMG---Figure">
+					<img src="Images/C13322_04_09.jpg" alt="Figure 4.9: The final centroid position and cluster assignments.&#13;&#10;" width="1800" height="727"/>
+				</div>
+			</div>
+			<h6>Figure 4.9: The final centroid position and cluster assignments.</h6>
+			<p>Using the same glass dataset from <em class="italics">Exercise 34</em>, <em class="italics">Building an HCA Model</em>, we will fit a k-means model with user-defined number of clusters. Next, because of the randomness in which group centroids are chosen, we will increase the confidence in our predictions by building an ensemble of k-means models with a given number of clusters and assigning each observation to the mode of the predicted clusters. After that, we will tune the optimal number of clusters by monitoring the mean <em class="italics">inertia</em>, or within-cluster sum of squares, by number of clusters, and finding the point at which there are diminishing returns in inertia by adding more clusters.</p>
+			<h3 id="_idParaDest-100"><a id="_idTextAnchor106"/>Exercise 36: Fitting k-means Model and Assigning Predictions</h3>
+			<p>Since our data has already been prepared (see <em class="italics">Exercise 34, Building an HCA Model</em>), and we understand concepts behind the k-Means algorithm, we will learn how easy it is to fit a k-means model, generate predictions, and assign these predictions to the appropriate observation.</p>
+			<p>After the glass dataset has been imported, shuffled, and standardized:</p>
+			<ol>
+				<li value="1">Instantiate a KMeans model with an arbitrary number of, in this case, two clusters, as follows:<p class="snippet">from sklearn.cluster import KMeans</p><p class="snippet">model = KMeans(n_clusters=2)</p></li>
+				<li>Fit the model to <strong class="inline">scaled_features</strong> using the following line of code:<p class="snippet">model.fit(scaled_features)</p></li>
+				<li>Save the cluster labels from our model into the array, labels, using the following:<p class="snippet">labels = model.labels_</p></li>
+				<li>Generate a frequency table of the labels:<p class="snippet">import pandas as pd</p><p class="snippet">pd.value_counts(labels)</p><p>To get a better idea, refer to the following screenshot:</p><div id="_idContainer158" class="IMG---Figure"><img src="Images/C13322_04_10.jpg" alt="Figure 4.10: Frequency table of two clusters&#13;&#10;" width="596" height="49"/></div><h6>Figure 4.10: Frequency table of two clusters</h6><p>Using two clusters, 61 observations were placed into the first cluster and 157 observations were grouped into the second cluster.</p></li>
+				<li>Add the labels array as the '<strong class="inline">Predicted Cluster</strong>' column into the <strong class="inline">df_shuffled</strong> data frame and preview the first five rows using the following code:<p class="snippet">df_shuffled['Predicted_Cluster'] = labels</p><p class="snippet">print(df_shuffled.head(5))</p></li>
+				<li>Check the output in the following figure:</li>
+			</ol>
+			<div>
+				<div id="_idContainer159" class="IMG---Figure">
+					<img src="Images/C13322_04_11.jpg" alt="Figure 4.11: First five rows of df_shuffled&#13;&#10;" width="811" height="122"/>
+				</div>
+			</div>
+			<h6>Figure 4.11: First five rows of df_shuffled</h6>
+			<h3 id="_idParaDest-101">Activity 12:<a id="_idTextAnchor107"/> Ensemble k-means Clustering and Calculating Predictions</h3>
+			<p>When algorithms use randomness as part of their method for finding the optimal solution (that is, in artificial neural networks and k-means clustering), running identical models on the same data may result in different conclusions, limiting the confidence we have in our predictions. It is advised to run these models many times and generate predictions using a summary measure across all models (that is, mean, median, and mode). In this activity, we will build an ensemble of 100 k-means clustering models.</p>
+			<p>After the glass dataset has been imported, shuffled, and standardized (see <em class="italics">Exercise 34</em>, <em class="italics">Building an HCA Model</em>):</p>
+			<ol>
+				<li value="1">Instantiate an empty data frame to append the labels for each model and save it as the new data frame object <strong class="inline">labels_df</strong>.</li>
+				<li>Using a for loop, iterate through 100 models, appending the predicted labels to <strong class="inline">labels_df</strong> as a new column at each iteration. Calculate the mode for each row in <strong class="inline">labels_df</strong> and save it as a new column in <strong class="inline">labels_df</strong>. The output should be as follows:</li>
+			</ol>
+			<div>
+				<div id="_idContainer160" class="IMG---Figure">
+					<img src="Images/C13322_04_12.jpg" alt="Figure 4.12: First five rows of labels_df&#13;&#10;" width="578" height="124"/>
+				</div>
+			</div>
+			<h6>Figure 4.12: First five rows of labels_df</h6>
+			<h4>Note</h4>
+			<p class="callout">The solution for this activity can be found on page 356.</p>
+			<p>We have drastically increased the confidence in our predictions by iterating through numerous models, saving the predictions at each iteration, and assigning the final predictions as the mode of these predictions. However, these predictions were generated by models using a predetermined number of clusters. Unless we know the number of clusters a priori, we will want to discover the optimal number of clusters to segment our observations.</p>
+			<h3 id="_idParaDest-102"><a id="_idTextAnchor108"/>Exercise 37: Calculating Mean Inertia by n_clusters</h3>
+			<p>The k-means algorithm groups observations into clusters by minimizing the within-cluster sum of squares, or inertia. Thus, to improve our confidence in the tuned number of clusters for our k-means model, we will place the loop we created in A<em class="italics">ctivity 12, Ensemble k-means Clustering and Calculating Predictions</em> (with a few minor adjustments) inside of another loop which will iterate through a range of <strong class="inline">n_clusters</strong>. This creates a nested loop which iterates through 10 possible values for <strong class="inline">n_clusters</strong> and builds 100 models at each iteration. At each of the 100 inner iterations, model inertia will be calculated. For each of the 10 outer iterations, mean inertia over the 100 models will be computed, resulting in the mean inertia value for each <strong class="inline">n_clusters</strong> value.</p>
+			<p>After the glass dataset has been imported, shuffled, and standardized (see <em class="italics">Exercise 34, Building an HCA Model</em>):</p>
+			<ol>
+				<li value="1">Import the packages we need outside of the loop as shown here: <p class="snippet">from sklearn.cluster import KMeans</p><p class="snippet">import numpy as np</p></li>
+				<li>It is easier to build and comprehend nested loops by working from the inside-out. First, instantiate an empty list, <strong class="inline">inertia_list</strong>, for which we will append inertia values after each iteration of the inside loop as shown here:<p class="snippet">inertia_list = []</p></li>
+				<li>In the for loop, we will iterate through 100 models using the following code:<p class="snippet">for i in range(100):</p></li>
+				<li>Inside the loop, build a <strong class="inline">KMeans</strong> model with <strong class="inline">n_clusters=x</strong>, as follows:<p class="snippet">model = KMeans(n_clusters=x)</p><h4>Note</h4><p class="callout">The value for x is determined by the outer for loop, which we have not covered yet, but we will cover in detail very shortly.</p></li>
+				<li>Fit the model to <strong class="inline">scaled_features</strong> as shown here:<p class="snippet">model.fit(scaled_features)</p></li>
+				<li>Get the inertia value and save it to the object inertia as follows: <p class="snippet">inertia = model.inertia_</p></li>
+				<li>Append inertia to <strong class="inline">inertia_list</strong> using the following code:<p class="snippet">inertia_list.append(inertia)</p></li>
+				<li>Move to the outside loop, instantiate another empty list to store the average inertia values, as shown here:<p class="snippet">mean_inertia_list = []</p></li>
+				<li>Iterate through the values 1 through 10 for <strong class="inline">n_clusters</strong> using the following code:<p class="snippet">for x in range(1, 11):</p></li>
+				<li>After the inside for loop has run through 100 iterations, and the inertia value for each of the 100 models have been appended to <strong class="inline">inertia_list</strong>, compute the mean of this list and save as the object, <strong class="inline">mean_inertia</strong> as follows: <p class="snippet">mean_inertia = np.mean(inertia_list)</p></li>
+				<li>Append <strong class="inline">mean_inertia</strong> to <strong class="inline">mean_inertia_list</strong> as shown here:<p class="snippet">mean_inertia_list.append(mean_inertia)</p></li>
+				<li>After 100 iterations have been completed 10 times for a total of 1000 iterations, <strong class="inline">mean_inertia_list</strong> contains 10 values that are the average inertia values for each value of <strong class="inline">n_clusters</strong>.</li>
+				<li>Print <strong class="inline">mean_inertia_list</strong> as shown in the following code. The values are shown in the following figure:<p class="snippet">print(mean_inertia_list)  </p></li>
+			</ol>
+			<div>
+				<div id="_idContainer161" class="IMG---Figure">
+					<img src="Images/C13322_04_13.jpg" alt="Figure 4.13: mean_inertia_list&#13;&#10;" width="868" height="43"/>
+				</div>
+			</div>
+			<h6>Figure 4.13: mean_inertia_list</h6>
+			<h3 id="_idParaDest-103"><a id="_idTextAnchor109"/>Exercise 38: Plotting Mean Inertia by n_clusters</h3>
+			<p>Continuing from Exercise 38: </p>
+			<p>Now that we have generated mean inertia over 100 models for each value of <strong class="inline">n_clusters</strong>, we will plot mean inertia by <strong class="inline">n_clusters</strong>. Then, we will discuss how to visually assess the best value to use for <strong class="inline">n_clusters</strong>.</p>
+			<ol>
+				<li value="1">First, import matplotlib as follows:<p class="snippet">import matplotlib.pyplot as plt</p></li>
+				<li>Create a list of numbers and save it as the object x, so we can plot it on the x-axis as shown here:<p class="snippet">x = list(range(1, len(mean_inertia_list)+1))</p></li>
+				<li>Save <strong class="inline">mean_inertia_list</strong>, as the object y as shown here:<p class="snippet">y = mean_inertia_list</p></li>
+				<li>Plot the mean inertia by number of clusters, as follows:<p class="snippet">plt.plot(x, y)</p></li>
+				<li>Set the plot title to read '<strong class="inline">Mean Inertia by n_clusters</strong>' using the following:<p class="snippet"> plt.title('Mean Inertia by n_clusters') </p></li>
+				<li>Label the x-axis '<strong class="inline">n_clusters</strong>' using <strong class="inline">plt.xlabel('n_clusters')</strong>, and label the y-axis '<strong class="inline">Mean Inertia</strong>' using the following code:<p class="snippet">plt.ylabel ('Mean Inertia')</p></li>
+				<li>Set the tick labels on the x-axis as the values in x using the following:<p class="snippet">plt.xticks(x)</p></li>
+				<li>Display the plot used in <strong class="inline">plt.show()</strong>. To better understand, refer to the following code:<p class="snippet">plt.plot(x, y)</p><p class="snippet">plt.title('Mean Inertia by n_clusters')</p><p class="snippet">plt.xlabel('n_clusters')</p><p class="snippet">plt.xticks(x)</p><p class="snippet">plt.ylabel('Mean Inertia')</p><p class="snippet">plt.show()</p><p>For the resultant output, refer to the following screenshot:</p></li>
+			</ol>
+			<div>
+				<div id="_idContainer162" class="IMG---Figure">
+					<img src="Images/C13322_04_14.jpg" alt="Figure 4.14: Mean inertia by n_clusters&#13;&#10;" width="591" height="277"/>
+				</div>
+			</div>
+			<h6>Figure 4.14: Mean inertia by n_clusters</h6>
+			<p>To determine the best number of <strong class="inline">n_clusters</strong>, we will use the "elbow method." That is, the point in the plot where there are diminishing returns for the added complexity of more clusters. From Figure 4.14, we can see that there are rapid decreases in mean inertia from <strong class="inline">n_clusters</strong> 1 to 3. After <strong class="inline">n_clusters</strong> equals 3, the decreases in mean inertia seem to become less rapid and the decrease in inertia may not be worth the added complexity of adding additional clusters. Thus, the appropriate number of <strong class="inline">n_clusters</strong> in this situation is 3.</p>
+			<p>However, if the data has too many dimensions, the k-means algorithm can fall subject to the curse of dimensionality by inflated Euclidean distances and subsequent erroneous results. Thus, before fitting a k-Means model, using a dimension reduction strategy is encouraged.</p>
+			<p>Reducing the number of dimensions helps to eliminate multicollinearity and decreases the time to fit the model. <strong class="keyword">Principal component analysis</strong> (<strong class="keyword">PCA</strong>) is a common method to reduce the number of dimensions by discovering a set of underlying linear variables in the data.</p>
+			<h2 id="_idParaDest-104"><a id="_idTextAnchor110"/>Principal Component Analysis (PCA)</h2>
+			<p>At a high level, PCA is a technique for creating uncorrelated linear combinations from the original features termed <strong class="keyword">components</strong>. Of the principal components, the first component explains the greatest proportion of variance in data, while the following components account for progressively less variance.</p>
+			<p>To demonstrate PCA, we will:</p>
+			<ul>
+				<li>Fit PCA model with all principal components</li>
+				<li>Tune the number of principal components by setting a threshold of explained variance to remain in data</li>
+				<li>Fit those components to a k-means cluster analysis and compare k-means performance before and after the PCA transformation</li>
+			</ul>
+			<h3 id="_idParaDest-105"><a id="_idTextAnchor111"/>Exercise 39: Fitting a PCA Model</h3>
+			<p>In this exercise, you will learn to fit a generic PCA model using data we prepared in <em class="italics">Exercise 34, Building an HCA Model</em> and the brief explanation of PCA.</p>
+			<ol>
+				<li value="1">Instantiate a PCA model as shown here:<p class="snippet">from sklearn.decomposition import PCA</p><p class="snippet">model = PCA()</p></li>
+				<li>Fit the PCA model to <strong class="inline">scaled_features</strong>, as shown in the following code:<p class="snippet">model.fit(scaled_features)</p></li>
+				<li>Get the proportion of explained variance in the data for each component, save the array as the object <strong class="inline">explained_var_ratio</strong>, and print the values to the console as follows:<p class="snippet">explained_var_ratio = model.explained_variance_ratio_</p><p class="snippet">print(explained_var_ratio)</p></li>
+				<li>For the resultant output, refer to the following screenshot:</li>
+			</ol>
+			<div>
+				<div id="_idContainer163" class="IMG---Figure">
+					<img src="Images/C13322_04_15.jpg" alt="Figure 4.15: Explained variance in the data for each principal component&#13;&#10;" width="511" height="49"/>
+				</div>
+			</div>
+			<h6>Figure 4.15: Explained variance in the data for each principal component</h6>
+			<p>Each principal component explains a proportion of the variance in data. In this exercise, the first principal component explained .35 of the variance in data, the second explained. 25, the third .13%, and so on. Altogether, these nine components explain 100% of the variance in data. The goal of dimensionality reduction is to decrease the number of dimensions in data with the objectives of limiting overfitting and time to fit the subsequent model. Thus, we will not keep all nine components. However, if we retain too few components, the percent of explained variance in the data will be low and the subsequent model will under fit. Therefore, a challenge for data scientists exists in determining the number of <strong class="inline">n_components</strong> that minimize over fitting and under fitting.</p>
+			<h3 id="_idParaDest-106"><a id="_idTextAnchor112"/>Exercise 40: Choosing n_components using Threshold of Explained Variance</h3>
+			<p>In <em class="italics">Exercise 39</em>, <em class="italics">Fitting PCA Model</em>, you learned to fit a PCA model with all available principal components. However, keeping all of the principal components does not reduce the number of dimensions in data. In this exercise, we will reduce the number of dimensions in data by retaining the components that explain a threshold of variance in it.</p>
+			<ol>
+				<li value="1">Determine the number of principal components in which a minimum of 95% of the variance in the data is explained by calculating the cumulative sum of explained variance by the principal component. Let's look at the following code, to see how it's done:<p class="snippet">import numpy as np</p><p class="snippet">cum_sum_explained_var = np.cumsum(model.explained_variance_ratio_)</p><p class="snippet">print(cum_sum_explained_var)</p><p>For the resultant output, refer to the following screenshot:</p><div id="_idContainer164" class="IMG---Figure"><img src="Images/C13322_04_16.jpg" alt="Figure 4.16: The cumulative sum of the explained variance for each principal component&#13;&#10;" width="709" height="45"/></div><h6>Figure 4.16: The cumulative sum of the explained variance for each principal component</h6></li>
+				<li>Set the threshold for the percent of variance to keep in data as 95%, as follows:<p class="snippet">threshold = .95</p></li>
+				<li>Using this threshold, we will loop through the list of cumulative explained variance and see where they explain no less than 95% of the variance in data. Since we will be looping through the indices of <strong class="inline">cum_sum_explained_var</strong>, we will instantiate our loop using the following:<p class="snippet">for i in range(len(cum_sum_explained_var)):</p></li>
+				<li>Check to see if the item in <strong class="inline">cum_sum_explained_var</strong> is greater than or equal to 0.95, as shown here:<p class="snippet">if cum_sum_explained_var[i] &gt;= threshold:</p></li>
+				<li>If that logic is met, then we will add 1 to that index (because we cannot have 0 principal components), save the value as an object, and break the loop. To do this, we will use <strong class="inline">best_n_components = i+1</strong> inside of the if statement and break in the next line. Look at the following code to get an idea:<p class="snippet">best_n_components = i+1</p><p class="snippet">break</p><p>The last two lines in the if statement instruct the loop not to do anything if the logic is not met:</p><p class="snippet">else:</p><p class="snippet">pass</p></li>
+				<li>Print a message detailing the best number of components using the following code:<p class="snippet">print('The best n_components is {}'.format(best_n_components))</p><p>View the output from the previous line of code:</p></li>
+			</ol>
+			<div>
+				<div id="_idContainer165" class="IMG---Figure">
+					<img src="Images/C13322_04_17.jpg" alt="Figure 4.17: The output message displaying number of components&#13;&#10;" width="402" height="19"/>
+				</div>
+			</div>
+			<h6>Figure 4.17: The output message displaying number of components</h6>
+			<p>The value for <strong class="inline">best_n_components</strong> is 6. We can refit another PCA model with <strong class="inline">n_components = 6</strong>, transform the data into principal components, and use these components in a new k-means model to lower the inertia values. Additionally, we can compare the inertia values across <strong class="inline">n_clusters</strong> values for the models built using PCA transformed data to those using data that was not PCA transformed.</p>
+			<h3 id="_idParaDest-107">Activity 13: Evalu<a id="_idTextAnchor113"/>ating Mean Inertia by Cluster after PCA Transformation</h3>
+			<p>Now that we know the number of components to retain at least 95% of the variance in the data, how to transform our features into principal components, and a way to tune the optimal number of clusters for k-means clustering with a nested loop, we will put them all together in this activity.</p>
+			<p>Continuing from <em class="italics">Exercise 40</em>:</p>
+			<ol>
+				<li value="1">Instantiate a PCA model with the value for the <strong class="inline">n_components</strong> argument equal to <strong class="inline">best_n_components</strong> (that is, remember, <strong class="inline">best_n_components = 6</strong>).</li>
+				<li>Fit the model to <strong class="inline">scaled_features</strong> and transform it into the first six principal components</li>
+				<li>Using a nested loop, calculate the mean inertia over 100 models at values 1 through 10 for <strong class="inline">n_clusters</strong> (see <em class="italics">Exercise 40</em>, <em class="italics">Choosing n_components using Threshold of Explained Variance</em>).</li>
+			</ol>
+			<div>
+				<div id="_idContainer166" class="IMG---Figure">
+					<img src="Images/C13322_04_18.jpg" alt="Figure 4.18: mean_inertia_list_PCA&#13;&#10;" width="819" height="32"/>
+				</div>
+			</div>
+			<h6>Figure 4.18: mea<a id="_idTextAnchor114"/>n_inertia_list_PCA</h6>
+			<p>Now, much like in <em class="italics">Exercise 38</em>, <em class="italics">Plotting Mean Inertia by n_clusters</em>, we have a mean inertia value for each value of <strong class="inline">n_clusters</strong> (1 through 10). However, <strong class="inline">mean_inertia_list_PCA</strong> contains the mean inertia value for each value of <strong class="inline">n_clusters</strong> after PCA transformation. But, how do we know if the k-means model performs better after PCA transformation? In the next exercise, we will visually compare the mean inertia values before and after PCA transformation at each value of <strong class="inline">n_clusters</strong>.</p>
+			<h4>Note</h4>
+			<p class="callout">The solution for this activity can be found on page 357.</p>
+			<h3 id="_idParaDest-108"><a id="_idTextAnchor115"/>Exercise 41: Visual Comparison of Inertia by n_clusters</h3>
+			<p>To visually compare mean inertia by <strong class="inline">n_clusters</strong> before and after PCA transformation, we will slightly modify the plot created in <em class="italics">Exercise 38, Plotting Mean Inertia by n_clusters,</em> by:</p>
+			<ul>
+				<li>Adding a second line to the plot showing mean inertia by <strong class="inline">n_clusters</strong> after PCA transformation</li>
+				<li>Creating a legend distinguishing the lines</li>
+				<li>Changing the title<h4>Note</h4><p class="callout">For this visualization to work properly, <strong class="inline">mean_inertia_list</strong> from <em class="italics">Exercise 38</em>, <em class="italics">Plotting Mean Inertia by n_clusters</em>, must still be in the environment.</p></li>
+			</ul>
+			<p>Continuing from <em class="italics">Activity 13</em>:</p>
+			<ol>
+				<li value="1">Import Matplotlib using the following code:<p class="snippet">import matplotlib.pyplot as plt</p></li>
+				<li>Create a list of numbers and save it as the object x, so we can plot it on the x-axis as follows:<p class="snippet">x = list(range(1,len(mean_inertia_list_PCA)+1))</p></li>
+				<li>Save <strong class="inline">mean_inertia_list_PCA</strong> as the object y using the following code:<p class="snippet">y = mean_inertia_list_PCA</p></li>
+				<li>Save <strong class="inline">mean_inertia_list</strong> as the object y2 using the following: <p class="snippet">y2 = mean_inertia_list</p></li>
+				<li>Plot mean inertia after a PCA transformation by number of clusters using the following code: <p class="snippet">plt.plot(x, y, label='PCA')</p><p>Add our second line of mean inertia before a PCA transformation by number of clusters using the following:</p><p class="snippet">plt.plot(x, y2, label='No PCA)</p></li>
+				<li>Set the plot title to read '<strong class="inline">Mean Inertia by n_clusters for Original Features and PCA Transformed Features</strong>' as follows:<p class="snippet">plt.title('Mean Inertia by n_clusters for Original Features and PCA Transformed Features')</p></li>
+				<li>Label the x-axis '<strong class="inline">n_clusters</strong>' using the following code:<p class="snippet">plt.xlabel('n_clusters')</p></li>
+				<li>Label the y-axis '<strong class="inline">Mean Inertia</strong>' using:<p class="snippet">plt.ylabel('Mean Inertia')</p></li>
+				<li>Set the tick labels on the x-axis as the values in x using <strong class="inline">plt.xticks(x)</strong>.</li>
+				<li>Show a legend using and display the plot as follows:<p class="snippet">plt.legend()</p><p class="snippet">plt.show()</p></li>
+			</ol>
+			<div>
+				<div id="_idContainer167" class="IMG---Figure">
+					<img src="Images/C13322_04_19.jpg" alt="Figure 4.19: Mean inertia by n_clusters for original features (orange) and PCA transformed features (blue)" width="487" height="283"/>
+				</div>
+			</div>
+			<h6>Figure 4.19: Mean inertia by n_clusters for original features (orange) and PCA transformed features (blue)</h6>
+			<p>From the plot, we can see that inertia is lower at every number of clusters in the model using the PCA transformed features. This indicates that there was less distance between the group centroids and observations in each cluster after the PCA transformation relative to before the transformation. Thus, using a PCA transformation on the original features, we were able to decrease the number of features and simultaneously improve our model by decreasing the within-cluster sum of squares (that is, inertia).</p>
+			<p>HCA and k-means clustering are two widely-used unsupervised learning techniques used for segmentation. PCA can be used to help reduce the number of dimensions in our data and improve models in an unsupervised fashion. Linear discriminant function analysis (LDA), on the other hand, is a supervised method for reducing the number of dimensions via data compression.</p>
+			<h2 id="_idParaDest-109"><a id="_idTextAnchor116"/>Supervised Data Compression using Linear Discriminant Analysis (LDA)</h2>
+			<p>As discussed previously, PCA transforms features into a set of variables to maximize the variance among the features. In PCA, the output labels are not considered when fitting the model. Meanwhile, LDA uses the dependent variable to help compress data into features that best discriminate the classes of the outcome variable. In this section, we will walk through how to use LDA as a supervised data compression technique. </p>
+			<p>To demonstrate using LDA as supervised dimensionality compression technique, we will:</p>
+			<ul>
+				<li>Fit an LDA model with all possible <strong class="inline">n_components</strong></li>
+				<li>Transform our features to <strong class="inline">n_components</strong></li>
+				<li>Tune the number of <strong class="inline">n_components</strong></li>
+			</ul>
+			<h3 id="_idParaDest-110"><a id="_idTextAnchor117"/>Exercise 42: Fitting LDA Model</h3>
+			<p>To fit the model as a supervised learner using the default parameters of the LDA algorithm we will be using a slightly different glass data set, <strong class="inline">glass_w_outcome.csv</strong>. (<a href="">https://github.com/TrainingByPackt/Data-Science-with-Python/tree/master/Chapter04</a>) This dataset contains the same nine features as glass, but also an outcome variable, Type, corresponding to the type of glass. Type is labeled 1, 2, and 3 for building windows float processed, building windows non float processed, and headlamps, respectively.</p>
+			<ol>
+				<li value="1">Import the <strong class="inline">glass_w_outcome.csv</strong> file and save it as the object df using the following code:<p class="snippet">import pandas as pd</p><p class="snippet">df = pd.read_csv(‘glass_w_outcome.csv’)</p></li>
+				<li>Shuffle the data to remove any ordering effects and save it as the data frame <strong class="inline">df_shuffled</strong> as follows:<p class="snippet">from sklearn.utils import shuffle</p><p class="snippet">df_shuffled = shuffle(df, random_state=42)</p></li>
+				<li>Save ‘<strong class="inline">Type</strong>’ as <strong class="inline">DV</strong> (I.e., dependent variable) as follows:<p class="snippet">DV = ‘Type’</p></li>
+				<li>Split the shuffled data into features (i.e., X) and outcome (i.e., y) using <strong class="inline">X = df_shuffled.drop(DV, axis=1)</strong> and <strong class="inline">y = df_shuffled[DV]</strong>, respectively.</li>
+				<li>Split X and y into testing and training as follows:<p class="snippet">from sklearn.model_selection import train_test_split</p><p class="snippet">X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)</p></li>
+				<li>Scale <strong class="inline">X_train</strong> and <strong class="inline">X_test</strong> separately using the following code:<p class="snippet">from sklearn.preprocessing import StandardScaler</p><p class="snippet">scaler = StandardScaler() </p><p class="snippet">X_train_scaled = scaler.fit_transform(X_train) </p><p class="snippet">X_test_scaled = scaler.fit_transform(X_test)</p></li>
+				<li>Instantiate the LDA model and save it as model. The following will show you how.<p class="snippet">from sklearn.discriminant_analysis import LinearDiscriminantAnalysis</p><p class="snippet">-model = LinearDiscriminantAnalysis()</p><h4>Note</h4><p class="callout">By instantiating an LDA model with no argument <strong class="inline">for n_components</strong> we will return all possible components.</p></li>
+				<li>Fit the model to the training data using the following:<p class="snippet">model.fit(X_train_scaled, y_train)</p></li>
+				<li>See the resultant output below:<div id="_idContainer168" class="IMG---Figure"><img src="Images/C13322_04_20.jpg" alt="Figure 4.20: Output from fitting linear discriminant function analysis&#13;&#10;" width="407" height="17"/></div><h6>Figure 4.20: Output from fitting linear discriminant function analysis</h6></li>
+				<li>Much like in PCA, we can return the percentage of variance explained by each component. <p class="snippet">model.explained_variance_ratio_</p><p>The output is shown in the following figure.</p></li>
+			</ol>
+			<div>
+				<div id="_idContainer169" class="IMG---Figure">
+					<img src="Images/C13322_04_21.jpg" alt="Figure 4.21: Explained variance by component.&#13;&#10;" width="458" height="18"/>
+				</div>
+			</div>
+			<h6>Figure 4.21: Explained variance by component.</h6>
+			<h4>Note</h4>
+			<p class="callout">The first component explains 95.86% of the variance in the data and the second component explains 4.14% of the variance in the data for a total of 100%.</p>
+			<p>We have successfully fit an LDA model to compress our data from nine features to two features. Decreasing the features to two cuts the time to tune and fit machine learning models. However, prior to using these features in a classifier model we must transform the training and testing features into their two components. In the next exercise, we will show how this is done.</p>
+			<h3 id="_idParaDest-111"><a id="_idTextAnchor118"/>Exercise 43: Using LDA Transformed Components in Classification Model</h3>
+			<p>Using supervised data compression, we will transform our training and testing features (i.e., <strong class="inline">X_train_scaled</strong> and <strong class="inline">X_test_scaled</strong>, respectively) into their components and fit a <strong class="inline">RandomForestClassifier</strong> model on them.</p>
+			<p>Continuing from <em class="italics">Exercise 42</em>:</p>
+			<ol>
+				<li value="1">Compress <strong class="inline">X_train_scaled</strong> into its components as follows:<p class="snippet">X_train_LDA = model.transform(X_train_scaled)</p></li>
+				<li>Compress <strong class="inline">X_test</strong> into its components using: <p class="snippet">X_test_LDA = model.transform(X_test_scaled)</p></li>
+				<li>Instantiate a <strong class="inline">RandomForestClassifier</strong> model as follows:<p class="snippet">from sklearn.ensemble import RandomForestClassifier</p><p class="snippet">model = RandomForestClassifier()</p><h4>Note</h4><p class="callout">We will be using the default hyperparameters of the <strong class="inline">RandomForestClassifier</strong> model because tuning hyperparameters is beyond the scope of this chapter.</p></li>
+				<li>Fit the model to the compressed training data using the following code:<p class="snippet">model.fit(X_train_LDA, y_train)</p><p>See the resultant output below:</p><div id="_idContainer170" class="IMG---Figure"><img src="Images/C13322_04_22.jpg" alt="Figure 4.22: Output after fitting random forest classifier model&#13;&#10;" width="781" height="141"/></div><h6>Figure 4.22: Output after fitting random forest classifier model</h6></li>
+				<li>Generate predictions on <strong class="inline">X_test_LDA</strong> and save them as the array, predictions using the following code: <p class="snippet">predictions = model.predict(X_test_LDA)</p></li>
+				<li>Evaluate model performance by comparing predictions to <strong class="inline">y_test</strong> using a confusion matrix. To generate and print a confusion matrix see the code below:<p class="snippet">from sklearn.metrics import confusion_matrix </p><p class="snippet">import pandas as pd</p><p class="snippet">import numpy as np</p><p class="snippet">cm = pd.DataFrame(confusion_matrix(y_test, predictions))</p><p class="snippet">cm[‘Total’] = np.sum(cm, axis=1)</p><p class="snippet">cm = cm.append(np.sum(cm, axis=0), ignore_index=True)</p><p class="snippet">cm.columns = [‘Predicted 1’, ‘Predicted 2’, ‘Predicted 3’, ‘Total’]</p><p class="snippet">cm = cm.set_index([[‘Actual 1’, ‘Actual 2’, ‘Actual 3’, ‘Total’]])</p><p class="snippet">print(cm)</p><p>The output is shown in the following figure:</p><div id="_idContainer171" class="IMG---Figure"><img src="Images/C13322_04_23.jpg" alt="Figure 4.23: 3x3 confusion matrix for evaluating RandomForestClassifier model performance using the LDA compressed data" width="693" height="100"/></div></li>
+			</ol>
+			<h6>Figure 4.23: 3x<a id="_idTextAnchor119"/>3 confusion matrix for evaluating RandomForestClassifier model performance using the LDA compressed data</h6>
+			<h2 id="_idParaDest-112"><a id="_idTextAnchor120"/>Summary</h2>
+			<p>This chapter introduced you to two widely used unsupervised, clustering algorithms, HCA and k-means clustering. While learning about k-means clustering, we leveraged the power of loops to create ensembles of models for tuning the number of clusters and to gain more confidence in our predictions. During the PCA section, we determined the number of principal components for dimensionality reduction and fit the components to a k-means model. Additionally, we compared the differences in k-means model performance before and after PCA transformation. We were introduced to an algorithm, LDA, which reduces dimensionality in a supervised manner. Lastly, we tuned the number of components in LDA by iterating through all possible values for components and programmatically returning the value resulting in the best accuracy score from a Random Forest classifier model. You should now feel comfortable with dimensionality reduction and unsupervised learning techniques.</p>
+			<p>We were briefly introduced to creating plots in this chapter; however, in the next chapter, we will learn about structured data and how to work with XGboost and Keras libraries</p>
+		</div>
+	</div></body></html>

@@ -1,0 +1,591 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Statistical Analysis for the Database Developer</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">This chapter introduces the data developer to the practice of statistical analysis.</p>
+<p class="calibre4">As a data developer, the concept or process of data analysis may be clear to your mind. However, although there happen to be similarities between the art of data analysis and that of statistical analysis, there are important differences to be understood as well.</p>
+<p class="calibre4">In this chapter, we aim to point to both the similarities and differences between the types of analysis, helping the reader understand the fundamental principles of the processes of data, summarization, and statistical analysis that describe the key factors or characteristics found in a successful statistical analysis effort, and provide working examples of each step required in successful statistical analysis of data.</p>
+<p class="calibre4">In this chapter, we've broken things into the following topics:</p>
+<ul class="calibre18">
+<li class="calibre19">What are data analysis, statistical analysis, and summarization?</li>
+<li class="calibre19">The steps in successful statistical analysis of data</li>
+<li class="calibre19">Using R for statistical analysis of data</li>
+<li class="calibre19">Examples--a summarization model</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Data analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Let's start by looking at what is known as <strong class="calibre7">data analysis</strong>. This is defined as a structured process undertaken to evaluate data using analytical and logical reasoning. One performs data analysis by taking the time to gather up all the data to be analyzed, breaking that data (now viewed as a data source) into chunks or components (that can be reviewed), and then drawing a conclusion based upon what is seen or found within the data. Typically, this is done in an effort to determine that a data source is useable for meeting a declared project deliverable.</p>
+<p class="calibre4">There are a variety of specific data analysis approaches, some of which include data mining (discussed in <a href="641cedd6-57a0-40e8-ac63-29691036e8d7.xhtml" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"><span class="calibre5">Chapter 4</span></a>, <em class="calibre21">Data Mining and the Database Developer</em>), text analytics, business intelligence, and data visualizations (just to name a few of them).</p>
+<p class="calibre4">To a data developer, data analysis involves inspecting the individual parts of a data source with an intention in mind.</p>
+<p class="calibre4">For example, suppose we have some transactional data collected from a bicycle manufacturing organization, that we want to potentially use for a sales performance reporting deliverable. Typical of these types of projects, let us say that we've been supplied data extracted from a database in CSV format.</p>
+<p class="calibre4">Now, using R commands, we can identify the fields or columns in the data as well as view a summarization. The following R code uses <kbd class="calibre22">read.csv</kbd> to load our data file into an R data frame object, and then the command <kbd class="calibre22">colnames</kbd> to list the field or column names found within our file; then, we finally use the R command summary to instruct R to provide us with some statistics on our data.</p>
+<p class="calibre4">The following screenshot shows the output of running the R commands (<kbd class="calibre22">colnames</kbd> and <kbd class="calibre22">summary</kbd>):</p>
+<div class="packt_figure"><img class="image-border22" src="Images/17964b1b-f6e0-4c31-847a-7f5e92e829fd.png"/></div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Looking closer</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Once we've established that our data includes product identifiers (numbers and names), a transactional quantity, a sales date, a return date, sales region information, and so on, we will want to do some explorations (analysis) of the components found in the data. Perhaps, we can start this effort by establishing the total number of records in our file, using the R command <kbd class="calibre22">nrow</kbd>, then list the unique part or product numbers present within our data, using the R commands <kbd class="calibre22">list</kbd> and <kbd class="calibre22">unique,</kbd> as shown in the following code and partial output:</p>
+<div class="packt_figure"><img class="image-border23" src="Images/3414d4b8-5bfd-4b16-8de7-33f026c1375c.png"/></div>
+<p class="calibre4">Further data analysis tasks would include examining each of the components found in the data, for example:</p>
+<ul class="calibre18">
+<li class="calibre19">What is the format of the date values found in the <kbd class="calibre22">sales_date</kbd> and <kbd class="calibre22">return_date</kbd> (components) fields?</li>
+<li class="calibre19">What is the range of dates within these fields?</li>
+<li class="calibre19">How many unique products and sales regions are included in our data file?</li>
+</ul>
+<p class="calibre4">Keep in mind that dates are always tricky, so determining the format and range is always a valuable analysis exercise to perform in any data analysis that contains date or time values.</p>
+<p class="calibre4">To illustrate, let us use a few simple R commands to create a list of the years and the months found in our data.</p>
+<p class="calibre4">The following is the R code used to accomplish this statistical analysis task:</p>
+<pre class="calibre29"># --- read our data file into "x" 
+x &lt;-read.table("c:/Worker/23SamplesSalesTrans.csv", sep=",", header = FALSE, skip = 1) 
+# --- convert "x" into a data frame object, then set the data frame to 
+# --- hold only the sales_date  
+data.df &lt;- data.frame(x) 
+data.df &lt;- data.df[,4] 
+# --- use the R commands substr and regexpr to strip out just the year and # --- month from the sales date field  
+YearsInData = substr(substr(data.df[],(regexpr('/',data.df[])+1),11),( regexpr('/',substr(data.df[],(regexpr('/',data.df[])+1),11))+1),11) 
+MonthsInData = substr(data.df[],(regexpr('/',data.df[])-1),1) 
+# --- use sort and unique functions to list our year(s) and month(s) 
+sort(unique(YearsInData)) 
+sort(unique(MonthsInData)) </pre>
+<p class="calibre4">The following screenshot shows the output from running the previous commands:</p>
+<div class="packt_figure"><img class="image-border24" src="Images/9adb44ec-a717-413e-810c-b6a382ea318a.png"/></div>
+<p class="calibre4">We can see that our data contains information only for the first quarter, months <kbd class="calibre22">1</kbd>, <kbd class="calibre22">2</kbd>, and <kbd class="calibre22">3</kbd> of the calendar year <kbd class="calibre22">2013</kbd>. Now we have established our data's time series. There's still plenty of data analysis work that can be done, but the point is that we're performing analysis exercises aimed at establishing structure so that we can meet our original objective of sales performance reporting, rather than any machine learning.</p>
+<p class="calibre4">With this in mind, let us suppose we want to examine what the transaction volumes are by month. To do that, we can use R to calculate these monthly totals using the following R code:</p>
+<pre class="calibre29"># --- read data 
+data.df&lt;-data.frame(x) 
+# --- initialize counters 
+JanuarySales &lt;-0 
+FebruarySales &lt;-0 
+MarchSales &lt;-0 
+# --- loop and count 
+for(i in 1:nrow(data.df)) 
+{ 
+    MonthInData = substr(data.df[i,4],(regexpr('/',data.df[i,4])-1),1) 
+if (MonthInData == '1') {JanuarySales &lt;- JanuarySales + data.df[i,3]} 
+if (MonthInData == '2') {FebruarySales &lt;- FebruarySales + + data.df[i,3]} 
+if (MonthInData == '3') {MarchSales &lt;- MarchSales + + data.df[i,3]} 
+}</pre>
+<p class="calibre4">Once we have our monthly transaction totals calculated (using the preceding commands), we can then report those results. This can be done by creating a simple bar chart visualization.</p>
+<p class="calibre4">We can use the R <kbd class="calibre22">barplot</kbd> function in the following code:</p>
+<pre class="calibre29">barplot(c(JanuarySales, FebruarySales, MarchSales), main="Sales Qty by Month", border = "dark blue", legend.text = c("Jan", "Feb", "Mar"), col = c("lightblue", "mistyrose","lightcyan"), sub = "Sales Transactions from File") </pre>
+<p class="calibre4">The preceding command generates the following visualization:</p>
+<div class="packt_figure"><img class="image-border25" src="Images/db28d729-e2c8-4924-a1a7-d07cd432c194.png"/></div>
+<p class="calibre4">These described examples of data analysis tasks are just a few of the many steps that are typically completed when conducting data analysis work focused on a particular objective, such as delivering performance reports.</p>
+<p class="calibre4">To sum up, data analysis is about reviewing data to determine if it can be a valid source for creating a selected result, and, if so, how it can be used.</p>
+<p class="calibre4">Next, let's move on to statistical analysis in the next section.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Statistical analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Some in the study of statistics sometimes describe statistical analysis as part of statistical projects that involves the collection and scrutiny of a data source in an effort to identify trends within the data.</p>
+<p class="calibre4">With data analysis, the goal is to validate that the data is appropriate for a need, and with statistical analysis, the goal is to make sense of, and draw some inferences from, the data.</p>
+<p class="calibre4">There is a wide range of possible statistical analysis techniques or approaches that can be considered.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summarization</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Let's return to our bicycle parts manufacturing organization example. Suppose we have a new file of transactions and this time we have more data and our efforts are going to be focused on performing a statistical analysis with the intention of identifying specifics that may be contributing to the sales performance reported as part of the preceding activities.</p>
+<p class="calibre4">Step one a summarization of the data. The previous section already presented some groupings: products and periods. Using those components, we were able to be telling the story of the organization's sales performance.</p>
+<p class="calibre4">What other groupings or categories might be within the data?</p>
+<p class="calibre4">For example, if we theorize that sales performance is dependent upon a period of time, the first thing to do is probably to group the data into time periods. Standard time periods are, of course, month, quarter, and year (and we already did that in a prior section), but statistically speaking, the more data the better, so a better time grouping might be ten or five-year chunks.</p>
+<p class="calibre4">A common practice used during summarization is visualization, typically with bar charts, which show every data point in order, or histograms, which are bar charts grouped into broader categories. In this section, we'll keep this in mind and use R to create various visualizations to illustrate the results of our data summarizations.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Comparing groups</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Let's go ahead and (like we did previously in this chapter) use the R commands <kbd class="calibre22">colnames</kbd> and <kbd class="calibre22">summary</kbd>; this time on our new data file:</p>
+<div class="packt_figure"><img class="image-border26" src="Images/06fbe3c4-7c81-4e00-ae24-db5727c76b2b.png"/></div>
+<p class="calibre4">As can be seen, there is an additional field (or component) present in our file, <kbd class="calibre22">sale_type</kbd>, and executing the summary command yields the following statistics, including a breakdown of the sale types:</p>
+<div class="packt_figure"><img class="image-border27" src="Images/58e706d2-16d3-43aa-a6f6-a45c50f619e7.png"/></div>
+<p class="calibre4">The next step will depend on your hypothesis. If, for example, you have some idea that the type of sale (<kbd class="calibre22">sale_type</kbd>) has some effect on the overall sales performance, you then need to produce the <kbd class="calibre22">summary</kbd> data for each (sales type) group, usually mean, median, and/or standard deviation (the preceding <kbd class="calibre22">summary</kbd> command was a good start). Let's see some examples of using R to create this <kbd class="calibre22">summary</kbd> information.</p>
+<p class="calibre4">As always, we can first readout data into R and then explicitly move it into an R data frame object. The following code works for this step:</p>
+<pre class="calibre29"># --- read in the data in  
+sales &lt;- read.csv("c:/Worker/SamplesSalesTrans_2.csv") 
+# --- just moving our original data to a data frame object 
+# --- preserving the original  
+data.df&lt;-data.frame(sales.new)</pre>
+<p class="calibre4">There are many different ways or approaches to accomplish the same things when using the R language but, in this example, we'll use the most straightforward, simplest approach of looping through the data, creating summary totals of each sale type.</p>
+<p class="calibre4">The following is the looping code we use:</p>
+<pre class="calibre29"># --- looping through the data and counting quantities  
+# --- type 
+for(i in 1:nrow(data.df)) 
+{ 
+if (data.df[i,2] == 'Online') 
+   {Online &lt;- Online + data.df[i,1]  
+          OnlineC &lt;- OnlineC +1}  
+if (data.df[i,2] == 'Television')       
+   {Television &lt;- Television + data.df[i,1] 
+   TelevisionC &lt;- TelevisionC +1}  
+if (data.df[i,2] == 'New Customer')     
+   {NewCustomer &lt;- NewCustomer + data.df[i,1] 
+   NewCustomerC &lt;- NewCustomerC +1}  
+if (data.df[i,2] == 'Retailer')   
+   {Retailer &lt;- Retailer + data.df[i,1] 
+   RetailerC &lt;- RetailerC +1}  
+if (data.df[i,2] == 'Club')             
+   {Club &lt;- Club + data.df[i,1] 
+   ClubC &lt;- ClubC +1}  
+if (data.df[i,2] == 'Discounted')       
+   {Discounted &lt;- Discounted + data.df[i,1] 
+   DiscountedC &lt;- DiscountedC +1}  
+if (data.df[i,2] == 'Repeat')           
+   {Repeat &lt;- Repeat + data.df[i,1] 
+   RepeatC &lt;- RepeatC +1}  
+if (data.df[i,2] == 'Vendor') 
+   {Vendor &lt;- Vendor + data.df[i,1] 
+   VendorC &lt;- VendorC +1}  
+} </pre>
+<p class="calibre4">A more efficient way, perhaps, is to create subsets of our data, in this case, by <kbd class="calibre22">sale_type</kbd>. This can be accomplished by using the following R commands:</p>
+<pre class="calibre29"># --- create average or mean for all Online sales quantities 
+# --- by first creating a subset of only quanities of that sale  
+# --- type 
+OnlineSales.new &lt;-data.df[data.df$sale_type == "Online",] 
+OnlineSalesMean &lt;-mean(OnlineSales.new$quantity) 
+# --- using the summary totals, you could do the math to calculate # --- the average or mean: 
+OnlineMean &lt;- Online/OnlineC</pre>
+<p class="calibre4">In addition, we can use the R functions mean, median and standard distribution to calculate statistical <kbd class="calibre22">summary</kbd> information on our data, shown in the R command as follows:</p>
+<pre class="calibre29"># --- calculate the mean for all sale types: 
+MeanAll &lt;-mean(data.df [["quantity"]]) 
+# --- calculate the standard deviation for all sales types: 
+StdDAll&lt;-sd(data.df[["quantity"]]) 
+# --- calculate the median for all sales types: 
+MeanAll &lt;-mean(data.df [["quantity"]]) </pre>
+<p class="calibre4">The following image shows the results of running the preceding commands:</p>
+<div class="packt_figure"><img class="image-border28" src="Images/cbc23822-f5be-4295-a201-ffe7dc973be0.png"/></div>
+<p class="calibre4">Once we have some <kbd class="calibre22">summary</kbd> information calculated, the next step is to create one or more visualizations using that information, so that we can observe and study it more easily.</p>
+<p class="calibre4">A histogram is a nice visualization option for accomplishing this goal. We can use the R function <kbd class="calibre22">hist</kbd> once we perform a few more data manipulations, as noted in the following lines of R code:</p>
+<pre class="calibre29"># --- using the calculated average/mean for each sale type 
+temp&lt;-c(Online, Television, NewCustomer, Retailer, Club, Discounted, Repeat, Vendor) 
+ 
+# --- create the histogram 
+hist(temp, breaks=8, freq=TRUE, main="Quantity by Sales Type", border="black", col = "gray", xlab="Types: Online, Televsion, New Customer, Retailer, Club, Discounted, Repeat, Vendor") 
+abline(v=ref,col="red")</pre>
+<p class="calibre4">The following diagram shows the histogram visualization created by the preceding R commands:</p>
+<div class="packt_figure"><img class="image-border29" src="Images/08a77891-7ec5-4fd5-8141-387ba6fa5740.png"/></div>
+<p class="calibre4">In order to decide whether there is a genuine difference between any of the observation groups, most times you would first establish a reference or a reference distribution against which to measure the values from each of the groups (in this case each <kbd class="calibre22">sales type</kbd> group).</p>
+<p class="calibre4">The most common reference is standard distribution. Standard distribution measures variation, or how different and/or spread-out a set of values are; in this example, our <kbd class="calibre22">sales quantities</kbd>. As we did earlier in this section, we can use the R command <kbd class="calibre22">sd</kbd> to establish the standard distribution of all the products in our data source using the following R command:</p>
+<pre class="calibre29"># -- calculate standard distribution of all product quantities 
+sd(data.df[["quantity"]]) </pre>
+<p class="calibre4">We can then do a quick visual to compare the <kbd class="calibre22">summary</kbd> data from each <kbd class="calibre22">sales type</kbd> group to our standard distribution.</p>
+<p class="calibre4">The following R commands can be used to compute each group's standard distribution total:</p>
+<pre class="calibre29"># --- create a subset of only online sale type quantities 
+quantity.new &lt;- data.df[data.df$sale_type == "Online",] 
+ 
+# --- calculate this subsets standard distribution 
+StdDOnline&lt;-sd(quantity.new$quantity) 
+# --- repeated for each sales type group!</pre>
+<p class="calibre4">Then, we can plot the standard distribution totals for a visual comparison using the following R commands:</p>
+<pre class="calibre29"># --- after computing each type, calculate the standard  
+# --- distribution for all sales quantities: 
+StdDVendor&lt;-sd(quantity.new$quantity) 
+ 
+# --- combine the totals into "Temp" 
+Temp&lt;-c(StdDOnline, StdDTelevision, StdDNewCustomer, StdDRetailer, StdDClub, StdDDiscounted, StdDRepeat, StdDVendor)  
+ 
+# --- create a simple Line Chart 
+plot(Temp, type="o", col="blue",    axes=FALSE, ann=FALSE) 
+axis(1, at=1:8, lab=c("Online", "TV","New", "Retail","Club","Disc","Rep","Ven")) 
+title(ylab="STD DIST", col.lab=rgb(0,0.5,0)) 
+box() </pre>
+<p class="calibre4">The following line chart visualization, showing plotted standard distributions for each <kbd class="calibre22">sales type</kbd>, is then generated from the preceding commands:</p>
+<div class="packt_figure"><img class="image-border30" src="Images/f82f0536-f1bf-4740-b87b-002f28d5da44.png"/></div>
+<p class="calibre4">One thing we forgot to plot in this visualization is the standard distribution for all <kbd class="calibre22">sales types</kbd>. Using the previous calculation and the R <kbd class="calibre22">abline</kbd> function, we can update our visualization with the following R command:</p>
+<pre class="calibre29">abline(h=sd(data.df[["quantity"]]), col="green")</pre>
+<p class="calibre4">The following is our visualization updated with a horizontal line (green horizontal line) or watermark, depicting the standard distribution for all <kbd class="calibre22">sales types</kbd>:</p>
+<div class="packt_figure"><img class="image-border31" src="Images/29e76bd3-5580-457d-933b-4c5fbd5cb15b.png"/></div>
+<p class="calibre4">The preceding figure now gives us an idea of how each sales type compares to a standard distribution total.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Samples</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Typically, you'd want to compare distributions to a sample (rather than a total of all the quantities), so we can use the R sample function to create a sample (sourced from our data):</p>
+<pre class="calibre29"># --- use sample to create a random sampling of data 
+mysample.df &lt;- data.df[sample(1:nrow(data.df), 100, replace=FALSE),] </pre>
+<p class="calibre4">Then, we can recreate the previous visualization (using <kbd class="calibre22">plot</kbd>, <kbd class="calibre22">axis</kbd>, <kbd class="calibre22">title</kbd>, and <kbd class="calibre22">box</kbd>), with the horizontal line or watermark representing the (random) sample's standard distribution:</p>
+<pre class="calibre29"># --- original visualization 
+plot(Temp, type="o", col="blue",    axes=FALSE, ann=FALSE) 
+axis(1, at=1:8, lab=c("Online", "TV", "New", "Retail","Club","Disc","Rep","Ven")) 
+title(ylab="STD DIST", col.lab=rgb(0,0.5,0)) 
+box() 
+ 
+# --- create a sample population 
+mysample.df &lt;- data.df[sample(1:nrow(data.df), 100, replace=FALSE),]  
+ 
+# --- draw a water mark from the  
+$ --- samples standard distribution 
+abline(h=sd(mysample.df[["quantity"]]), col="green")</pre>
+<p class="calibre4">Running the preceding R code creates the following visualization:</p>
+<div class="packt_figure"><img class="image-border32" src="Images/240dd6f1-55a3-430f-b194-98e018d2185a.png"/></div>
+<p class="calibre4">Other methods of comparing groups during statistical analysis include averaging, specifically mean, median, and mode.</p>
+<p class="calibre4">Another key comparison is the measurement of spread, that is, how widely the data is spread across the whole possible measurement scale. Typically, we perform this analysis by calculating variances. Again, R makes this a straightforward task by using the <kbd class="calibre22">var</kbd> function.</p>
+<p class="calibre4">The following commands calculate the variance for our sample, as well as for the entire population:</p>
+<pre class="calibre29"># --- calculate our samples variance 
+var(mysample.df[["quantity"]]) 
+ 
+# --- calculate total variance 
+var(data.df[["quantity"]]) </pre>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Group comparison conclusions</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Before moving on, let's point out that you need to be careful of what conclusions you draw from your statistical analysis of groups. In the preceding example, we focused on comparing distributions. Using a single comparison point may cause you to make inaccurate assumptions, for example:</p>
+<ul class="calibre18">
+<li class="calibre19">The groups are different, but you conclude that they are not</li>
+<li class="calibre19">The groups are the same or very similar, but you conclude that they are different</li>
+</ul>
+<p class="calibre4">To avoid these errors, it is wise to calculate and observe many summarization points within your data. To do this, you can create a summarization model, which is the topic covered in our next section.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summarization modeling</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">The common practice of establishing multiple summarization points is through the development of a summation model. Simply put, to create a summarization model from the data is to create a table or data frame with the rows being mean, standard distribution, median, min, max, and a total for each component in the data (or at least each component in the data that you are interested in).</p>
+<p class="calibre4">Let's use our previous data example, where we examined sales quantities by individual <kbd class="calibre22">sales type</kbd> group. Fortunately, R gives us simple functions to calculate our comparison points: max, mean, standard distribution, median, min, and sum.</p>
+<p class="calibre4">We can use them to calculate each group's comparison points individually, as follows:</p>
+<pre class="calibre29"># --- create subset of Online quantities 
+quantity.new &lt;- data.df[data.df$sale_type == "Online",] 
+# --- calculate each comparison point 
+max(quantity.new[["quantity"]]) 
+mean(quantity.new[["quantity"]]) 
+sd(quantity.new[["quantity"]]) 
+median(quantity.new[["quantity"]]) 
+min(quantity.new[["quantity"]]) 
+sum(quantity.new[["quantity"]]) </pre>
+<p class="calibre4">We next create an R <kbd class="calibre22">data frame</kbd> (<kbd class="calibre22">df</kbd>) object to hold our summarizations and then load all our comparison points into the data frame. This is done with the following lines of R code:</p>
+<pre class="calibre29"># --- create a data frame object for summarization 
+df&lt;-data.frame(8,7) 
+# --- create our subset of data - this is online sales 
+quantity.new &lt;- data.df[data.df$sale_type == "Online",] 
+# --- calculate comparison points based upon 
+# --- our current subset dropping each in a temp 
+# --- variable for now (a, b, c, d, e and f) 
+a&lt;-max(quantity.new[["quantity"]]) 
+b&lt;-mean(quantity.new[["quantity"]]) 
+c&lt;-sd(quantity.new[["quantity"]]) 
+d&lt;-median(quantity.new[["quantity"]]) 
+e&lt;-min(quantity.new[["quantity"]]) 
+f&lt;-sum(quantity.new[["quantity"]]) 
+# --- load our calculations into the data frame object 
+# --- just using "i" as an index to the data frame 
+i&lt;-1 
+df[i,1]&lt;-"Online" 
+df[i,2]&lt;-a 
+df[i,3]&lt;-b 
+df[i,4]&lt;-c 
+df[i,5]&lt;-d 
+df[i,6]&lt;-e 
+df[i,7]&lt;-f 
+# --- add headings/column names to our data frame object 
+names(df)&lt;-c("group", "max", "mean", "sd", "median", "min", "sum") 
+# --- note: repeat the section of code here that creates a  
+# --- subset and calculates its points for all sale types 
+# --- display out finished summation model 
+df </pre>
+<p class="calibre4">Following is our summarization model data frame object example:</p>
+<div class="packt_figure"><img class="image-border33" src="Images/b15930d9-1f81-49b0-a14d-0dbd842c1da9.png"/></div>
+<p class="calibre4">A <em class="calibre21">summary</em> table, such as the one we created previously, typically does not answer all of your questions about the data, but in fact, as it should, generates more questions and hypothesis for you to explore. Statistical analysis is about coming up with the next question to ask for the data.</p>
+<p class="calibre4">Summary tables help us to determine:</p>
+<ul class="calibre18">
+<li class="calibre19">Is there really any significant message to be found within this data?</li>
+<li class="calibre19">Is this data source reliable?</li>
+<li class="calibre19">If this data appears to support my hypothesis, how strong is the evidence overall?</li>
+<li class="calibre19">Does this information (as summarized) really matter (to my current hypothesis)?</li>
+<li class="calibre19">What do these numbers mean (implying more analysis and summation may be needed)?</li>
+<li class="calibre19">What can next actions be taken from here?</li>
+<li class="calibre19">What is the nature of the data? (Discussed in the next section.)</li>
+</ul>
+<div class="packt_infobox">There are various R packages (such as the <kbd class="calibre22">gridExtra</kbd> package) available that can be downloaded and installed to print nicely formatted data frames to paper. It's worthy of the reader's time to explore some of these options.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Establishing the nature of data</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">When asked about the objectives of statistical analysis, one often refers to the process of describing or establishing the nature of a data source.</p>
+<p class="calibre4">Establishing the nature of something implies gaining an understanding of it. This understanding can be found to be both simple as well as complex. For example, can we determine the types of each of the variables or components found within our data source; are they quantitative, comparative, or qualitative?</p>
+<p class="calibre4">Using the example transactional data source used earlier in this chapter, we can identify some variables by types, as the following:</p>
+<ul class="calibre18">
+<li class="calibre19">Quantitative: quantity</li>
+<li class="calibre19">Comparative: <kbd class="calibre22">sale_type</kbd></li>
+<li class="calibre19">Qualitative: <kbd class="calibre22">sales_region</kbd></li>
+<li class="calibre19">Categorical: <kbd class="calibre22">product_name</kbd></li>
+</ul>
+<p class="calibre4">A more advanced statistical analysis aims to identify patterns in data; for example, whether there is a relationship between the variables or whether certain groups are more likely to show certain attributes than others.</p>
+<div class="packt_infobox">Exploring the relationships presented in data may appear to be similar to the idea of identifying a foreign key in a relational database, but in statistics, relationships between the components or variables are based upon correlation and causation.</div>
+<p class="calibre4">Further, establishing the nature of a data source is also, really, a process of modeling that data source. During modeling, the process always involves asking questions such as the following (in an effort establish the nature of the data):</p>
+<ul class="calibre18">
+<li class="calibre19">What? Some common examples of this (what) are revenue, expenses, shipments, hospital visits, website clicks, and so on. In the example that we are using in this chapter, we are measuring quantities, that is, the amount of product that is being moved (sales).</li>
+<li class="calibre19">Why? This (why) will typically depend upon your project's specific objectives, which can vary immensely. For example, we may want to track the growth of a business, the activity on a website, or the evolution of a selected product or market interest. Again, in our current transactional data example, we may want to identify over- and under-performing <kbd class="calibre22">sales types</kbd>, and determine if, new or repeat customers provide more or fewer sales?</li>
+<li class="calibre19">How? The how will most likely be over a period of time (perhaps a year, month, week, and so on) and then by some other related measure, such as a product, state, region, reseller, and so on. Within our transactional data example, we've focused on the observation of quantities by sale type.</li>
+</ul>
+<p class="calibre4">At the start of our discussion on data analysis in this chapter, we created a visualization showing the previously stated model, that is, quantities by month. Following is that visualization:</p>
+<div class="packt_figure"><img class="image-border25" src="Images/d16be47f-8ff1-4cfb-abe4-c9a108685c19.png"/></div>
+<p class="calibre4">Typically, the modeling process will include multiple iterations of observing, asking new questions, manipulating the data, creating new visualizations, and observing those visualizations, with each iteration driven by the outcome(s) of the one before.</p>
+<p class="calibre4">For example, after viewing the preceding visualization (sales quantities by month), a new question may occur to us, such as what the total sales quantities are by sales regions.</p>
+<p class="calibre4">Similar R command logic (such as the <kbd class="calibre22">barplot</kbd> function) can be used to manipulate our data and present this information, as follows:</p>
+<pre class="calibre29"># --- load our data into a data frame object 
+data.df&lt;-data.frame(x) 
+# --- initialize some counters one for each sales region ID 
+R1&lt;-0 
+R2&lt;-0 
+R3&lt;-0 
+R4&lt;-0 
+R5&lt;-0 
+# --- loop through the data and accumulate sale quantities  
+# --- for each sales region 
+for(i in 1:nrow(data.df)) 
+{ 
+    MonthInData &lt;-data.df[i,6] 
+if (MonthInData == '1') {R1 &lt;- R1 + data.df[i,3]} 
+if (MonthInData == '2') {R2 &lt;- R2 + data.df[i,3]} 
+if (MonthInData == '3') {R3 &lt;- R3 + data.df[i,3]} 
+if (MonthInData == '4') {R4 &lt;- R4 + data.df[i,3]} 
+if (MonthInData == '5') {R5 &lt;- R5 + data.df[i,3]} 
+} 
+# --- generate our barplot from accumulated data  
+# --- in R1 through R5 
+barplot(c(R1, R2, R3, R4, R5), main="Sales Qty by Region", border = "dark blue", legend.text = c("1","2","3", "4", "5"), col = c("lightblue", "mistyrose","lightcyan", "Green", "grey")) </pre>
+<p class="calibre4">The generated visualization is as follows:</p>
+<div class="packt_figure"><img class="image-border34" src="Images/b6c0439d-4a58-43d1-b895-9bf195605a1c.png"/></div>
+<p class="calibre4">From the previous visualization, of course, further questions can be asked and visualized:</p>
+<ul class="calibre18">
+<li class="calibre19">What is the breakdown of quantities by sales region by month or by quarter?</li>
+<li class="calibre19">What are the quantity totals by product?</li>
+<li class="calibre19">What is the total quantity returned by month, quarter, product, and so on?</li>
+<li class="calibre19">And on and on!</li>
+</ul>
+<p class="calibre4">Another way to describe establishing the nature of your data is adding context to it or profiling it. In any case, the objective is to allow the data consumer to better understand the data through visualization.</p>
+<p class="calibre4">Another motive for adding context or establishing the nature of your data can be to gain a new perspective on the data. An example of this can be adding comparisons, such as our preceding <kbd class="calibre22">sales type</kbd> example.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Successful statistical analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">It is worthwhile to mention some key points in this section, dealing with ensuring a successful (or at least productive) statistical analysis effort.</p>
+<div class="packt_infobox">You may find that most of these are perhaps common sense notions, but some may not be.</div>
+<ol class="calibre25">
+<li class="calibre27">As soon as you can, decide on your goal or objective. You need to know what the win is, that is, what the problem or idea is that is driving the analysis effort. In addition, you need to make sure that, whatever is driving the analysis, the result obtained must be measurable in some way. This metric or performance indicator must be identified early.</li>
+<li class="calibre27">Identify key levers. This means that once you have established your goals and a way to measure performance towards obtaining those goals, you also need to find out what has an effect on the performance towards obtaining each goal.</li>
+<li class="calibre27">Conduct a thorough data collection. Typically, the more data the better, but in the absence of quantity, always go with quality.</li>
+<li class="calibre27">Clean your data. Make sure your data has been cleaned in a consistent way so that data issues would not impact your conclusions.</li>
+<li class="calibre27">Model, model, and model your data. As we mentioned in a prior section, modeling drives modeling. The more you model your data, the more questions you'll have asked and answered, and the better results you'll have.</li>
+<li class="calibre27">Take time to grow in your statistical analysis skills. It's always a good idea to continue to evolve your experiences and style of statistical analysis. The way to improve is to do it. Another approach is to remodel the data you may have on hand for other projects to hone your skills.</li>
+<li class="calibre27">Optimize and repeat. As always, you need to take the time for standardizing, following proven practices, using templates, and testing and documenting your scripts and models, so that you can re-use your best efforts over and over again. You will find that this time will be well spent and even your better efforts will improve with use. Finally, share your work with others! The more eyes, the better the product.</li>
+</ol>
+<p class="calibre4">Some interesting advice on ensuring success with statistical projects includes the following quote:</p>
+<div class="packt_quote"><em class="calibre20">It's a good idea to build a team that allows those with an advanced degree in statistics to focus on data modeling and predictions, while others in the team-qualified infrastructure engineers, software developers and ETL experts-build the necessary data collection infrastructure, data pipeline and data products that enable streaming the data through the models and displaying the results to the business in the form of reports and dashboards.<br class="calibre2"/></em><em class="calibre20">                                                                                                           - G Shapira, 2017</em></div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">R and statistical analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Just a note here on the use of R for statistical analysis, data profiling exercises as well as adding perspectives (establish context) to data to be used in visualizations.</p>
+<p class="calibre4">R is a language and environment that is easy to learn, very flexible in nature, and also very focused on statistical computing, making it great for manipulating, cleaning, summarizing, producing probability statistics (as well as, actually creating visualizations with your data), so it's a great choice for the exercises required for profiling, establishing context, and identifying additional perspectives.</p>
+<p class="calibre4">In addition, here are a few more reasons to use R when performing any kind of data or statistical analysis:</p>
+<ul class="calibre18">
+<li class="calibre19">R is used by a large number of academic statisticians, so it's a tool that is not going away.</li>
+<li class="calibre19">R is pretty much platform independent; what you develop will run almost anywhere.</li>
+<li class="calibre19">R has awesome help resources. Just Google it and you'll see!</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">In this chapter, we explored the purpose and process of statistical analysis in detail (the differences in data analysis), created a summarization model, and listed the steps involved in a successful statistical analysis. Finally, we underscored the choice of using R as the statistical analysis tool of choice.</p>
+<p class="calibre4">The next chapter will be targeted at explaining statistical regression and why it is important to data science. We will walk through the use of various statistical regression methods in everyday data projects and outline how a developer might use regression for simple forecasting and prediction within a typical data development project.</p>
+<p class="calibre4"/>
+<p class="calibre4"/>
+<p class="calibre4"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  </body></html>

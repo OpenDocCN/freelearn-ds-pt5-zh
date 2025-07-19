@@ -1,0 +1,484 @@
+<html><head></head><body>
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Jupyter Scala</h1>
+                </header>
+            
+            <article>
+                
+<p>Scala has become very popular. It is built on top of Java (so has full interoperability, including resorting to inline Java in your Scala code). However, the syntax is much cleaner and more intuitive, reworking some of the quirks in Java.</p>
+<p>In this chapter, we will cover the following topics:</p>
+<ul>
+<li> Installing Scala for Jupyter</li>
+<li> Using Scala features</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Installing the Scala kernel</h1>
+                </header>
+            
+            <article>
+                
+<p><span>The steps for macOS are as follows (taken from <a href="https://developer.ibm.com/hadoop/2016/05/04/install-jupyter-notebook-spark">https://developer.ibm.com/hadoop/2016/05/04/install-jupyter-notebook-spark</a>): </span></p>
+<div class="packt_infobox">I could not get the steps for using the Scala kernel to work on a Windows 10 machine.</div>
+<ol>
+<li>Install <kbd>git</kbd> using the following command:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>yum install git</strong> </pre>
+<ol start="2">
+<li>Copy the <kbd>scala</kbd> package locally:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>git clone https://github.com/alexarchambault/jupyter-scala.git</strong> </pre>
+<ol start="3">
+<li>Install the <kbd>sbt</kbd> build tool by running:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>sudo yum install sbt</strong> </pre>
+<ol start="4">
+<li> Move the <kbd>jupyter-scala</kbd><span> directory </span>to the <kbd>scala</kbd> package:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>cd jupyter-scala</strong> </pre>
+<ol start="5">
+<li>Build the package:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>sbt cli/packArchive</strong> </pre>
+<ol start="6">
+<li> To launch Scala shell, use the following command:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>./jupyter-scala</strong> </pre>
+<ol start="7">
+<li> Check the kernels installed by running this command (you should now see Scala in the list):</li>
+</ol>
+<pre style="padding-left: 60px"><strong> jupyter kernelspec list</strong>  </pre>
+<ol start="8">
+<li>Launch the Jupyter Notebook:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>jupyter notebook</strong> </pre>
+<ol start="9">
+<li>You can now choose to use a Scala 2.11 shell.</li>
+</ol>
+<p>At this point, if you start Jupyter, you will see <span class="packt_screen">Scala</span> listed:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/15744930-19af-444a-ae79-ff8f777136a5.png" style="width:15.00em;height:27.58em;"/></p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p>If we create a Scala Notebook, we end up with the familiar layout with an icon displaying that we are running Scala and the engine type string identified as Scala. The kernel name is also specified in the URL to Jupyter:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/1f7e9abe-8026-471e-85e8-d4833d05eaee.png"/></p>
+<p>So, after naming our Notebook as Scala Notebook and then saving it, we get the familiar display of Notebooks on the home page, where the new Notebook is called <kbd>Scala Notebook.ipynb</kbd>.</p>
+<p>If we look in the <kbd>.ipynb</kbd> file, we can see markup similar to other Notebook types, with special markings for Scala:</p>
+<pre>{ 
+ "cells": [ 
+  { 
+   "cell_type": "code", 
+   "execution_count": null, 
+   "metadata": {}, 
+   "outputs": [], 
+   "source": [] 
+  } 
+ ], 
+ "metadata": { 
+  "kernelspec": { 
+   "display_name": "Scala", 
+   "language": "scala", 
+   "name": "scala" 
+  }, 
+  "language_info": { 
+   "codemirror_mode": "text/x-scala", 
+   "file_extension": ".scala", 
+   "mimetype": "text/x-scala", 
+   "name": "scala211", 
+   "nbconvert_exporter": "script", 
+   "pygments_lexer": "scala", 
+   "version": "2.11.11" 
+  } 
+ }, 
+ "nbformat": 4, 
+ "nbformat_minor": 2 
+} </pre>
+<p>Now, we can enter Scala coding in some of the cells. Following the previous language examples (from earlier chapters), we can enter the following:</p>
+<pre>val name = "Dan" 
+val age = 37 
+show(name + " is " + age) </pre>
+<p>Scala has changeable variables (<span class="CodeHighlightedPACKT"><kbd>var</kbd></span>) and fixed variables (<span class="CodeHighlightedPACKT"><kbd>val</kbd></span>). We are not going to be changing the fields, so they are <kbd><span class="CodeHighlightedPACKT">val</span></kbd>. The last statement, <kbd>show</kbd>, is a Jupyter extension for use in Scala to display a variable.</p>
+<p>If we run this script in Jupyter, we see the following:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/5b1cc8ba-804b-436c-af82-e9c3a45dadb5.png"/></p>
+<p>In the output area of the cell, we see the expected <kbd>Dan is 37</kbd>. Interestingly, Scala also displays the current type and value for each variable in the script at that point as well.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala data access in Jupyter</h1>
+                </header>
+            
+            <article>
+                
+<p><span>There is a copy of the <kbd>iris</kbd> dataset on the University of California's website (<strong>Irvine</strong>) at <a href="https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data">https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data</a>. We will access this data and perform several statistical operations on the same:</span></p>
+<p>The Scala code is as follows:</p>
+<pre>import scala.io.Source;<br/>//copied file locally https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data<br/>val filename = "iris.data"<br/>//println("SepalLength, SepalWidth, PetalLength, PetalWidth, Class");<br/>val array = scala.collection.mutable.ArrayBuffer.empty[Float]<br/>for (line &lt;- Source.fromFile(filename).getLines) {<br/>    var cols = line.split(",").map(_.trim);<br/>//println(s"${cols(0)}|${cols(1)}|${cols(2)}|${cols(3)} |${cols(4)}");<br/>   val i = cols(0).toFloat<br/>   array += i;<br/>}<br/>val count = array.length;<br/>var min:Double = 9999.0;<br/>var max:Double = 0.0;<br/>var total:Double = 0.0;<br/>for ( x &lt;- array ) {<br/>    if (x &lt; min) { min = x; }<br/>    if (x &gt; max) { max = x; }<br/>    total += x;<br/>}<br/>val mean:Double = total / count;</pre>
+<p>There seems to be an issue with accessing the CSV file over the internet. So, I copied the file locally, into the same directory where the Notebook resides).</p>
+<p>One noteworthy aspect regarding this script is the fact that we do not have to wrap the Scala code in an object, as would normally be required, since Jupyter provides the <kbd>wrapper</kbd> <span>class.</span></p>
+<p class="mce-root"/>
+<p>When we run the script, we see these results:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/5d28e144-b10e-493d-bf9a-e0d5e7476a6c.png"/></p>
+<p>This is a different version of the <kbd>iris</kbd> data, hence, we see different results in the statistics than we saw earlier.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala array operations</h1>
+                </header>
+            
+            <article>
+                
+<p><span>Scala does not have pandas, but we can emulate some of that logic with our own coding. We will use the <kbd>Titanic</kbd> dataset used in</span> <a href="5b1dcec0-2cf7-45b3-b09d-7b3536095926.xhtml">Chapter 2</a><span>, <em>Jupyter Python Scripting</em>, from <a href="http://titanic-gettingStarted/fdownload/train.csv">http://titanic-gettingStarted/fdownload/train.csv</a> which we have downloaded to our local space.</span></p>
+<p class="mce-root"/>
+<p>We can then use similar coding to that used in <a href="5b1dcec0-2cf7-45b3-b09d-7b3536095926.xhtml">Chapter 2</a>, <em>Jupyter Python Scripting,</em> for pandas:</p>
+<pre>import scala.io.Source; 
+ 
+val filename = "train.csv" 
+//PassengerId,Survived,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked 
+//1,0,3,"Braund, Mr. Owen Harris",male,22,1,0,A/5 21171,7.25,,S 
+ 
+var males = 0 
+var females = 0 
+var males_survived = 0 
+var females_survived = 0 
+for (line &lt;- Source.fromFile(filename).getLines) { 
+    var cols = line.split(",").map(_.trim); 
+    var sex = cols(5); 
+    if (sex == "male") {  
+        males = males + 1; 
+        if (cols(1).toInt == 1) { 
+            males_survived = males_survived + 1; 
+        } 
+    } 
+    if (sex == "female") {  
+        females = females + 1;  
+        if (cols(1).toInt == 1) { 
+            females_survived = females_survived + 1; 
+        } 
+    }     
+} 
+val mens_survival_rate = males_survived.toFloat/males.toFloat 
+val womens_survival_rate = females_survived.toFloat/females.toFloat </pre>
+<p>In the code, we read the file line by line, parse out the columns (it is CSV), and then make calculations based on the <kbd>sex</kbd> column of the data. What is interesting is that Scala arrays are not zero-based.</p>
+<p class="mce-root"/>
+<p>When we run this script, we see very similar results to before:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/fe76cf0c-5397-416f-99d0-08edf15d846a.png"/></p>
+<p>So, we see drastically higher survival rates for women. I think the stories about women and children first are true.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala random numbers in Jupyter</h1>
+                </header>
+            
+            <article>
+                
+<p>In this example, we simulate rolling dice and counting how many times each combination appears. We then present a simple histogram for illustrative purposes.</p>
+<p>The script is as follows:</p>
+<pre>val r = new scala.util.Random 
+r.setSeed(113L) 
+val samples = 1000 
+var dice = new Array[Int](12) 
+for( i &lt;- 1 to samples){ 
+    var total = r.nextInt(6) + r.nextInt(6) 
+    dice(total) = dice(total) + 1 
+} 
+val max = dice.reduceLeft(_ max _) 
+for( i &lt;- 0 to 11) { 
+    var str = "" 
+    for( j &lt;- 1 to dice(i)/3) { 
+        str = str + "X" 
+    } 
+    print(i+1, str, "\n") 
+} </pre>
+<p>We first pull in the Scala <kbd>Random</kbd> library. We set the seed (in order to have repeatable results). We are drawing <kbd>1000</kbd> rolls. For each roll, we increment a counter of how many times the total number of pips on die one and die two appear. We then present an abbreviated histogram of the results.</p>
+<p>Scala has a number of shortcut methods for quickly scanning through a list/collection, as seen in the <kbd><span class="CodeHighlightedPACKT">reduceLeft(_ max _)</span></kbd> statement. We can also find the minimum value by using <kbd><span class="CodeHighlightedPACKT">min</span></kbd> instead of <kbd><span class="CodeHighlightedPACKT">max</span></kbd> in the <kbd><span class="CodeHighlightedPACKT">reduceLeft</span></kbd> statement.</p>
+<p>When we run the script, we get these results:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/dca9b1e4-0b6e-49f2-ba91-be0381ea936f.png" style="width:43.50em;height:46.92em;"/></p>
+<p>We can see the crude histogram and the follow-on display of the current values of scalar variables in the script. Do note that I divided by three so that the results would fit on one page.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala closures</h1>
+                </header>
+            
+            <article>
+                
+<p>A closure is a function. The function resultant value depends on the value of variable(s) declared outside the function.</p>
+<p>We can use this small script by way of illustration:</p>
+<pre>var factor = 7<br/>val multiplier = (i:Int) =&gt; i * factor<br/>val a = multiplier(11)<br/>val b = multiplier(12)</pre>
+<p>We define a function named <span class="CodeHighlightedPACKT"><kbd>multiplier</kbd></span>. The function expects an <kbd>Int</kbd> argument. For each argument, we take the argument and multiply it by the external <kbd>factor</kbd> variable.</p>
+<p>We see the following result:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/e1c38549-bc39-43c4-a300-d9e8618ecc66.png"/></p>
+<p>Closures have a nice feel as they do what you expect with little fanfare.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala higher-order functions</h1>
+                </header>
+            
+            <article>
+                
+<p>A higher-order function either takes other functions as arguments or returns a function as its result.</p>
+<p>We can use this example script:</p>
+<pre>def squared(x: Int): Int = x * x<br/>def cubed(x: Int): Int = x * x * x<br/><br/>def process(a: Int, processor: Int =&gt; Int): Int = {processor(a) }<br/><br/>val fiveSquared = process(5, squared)<br/>val sevenCubed = process(7, cubed)</pre>
+<p>We define two functions: one squares the number passed, and the other cubes the number passed.</p>
+<p>Next, we define a higher-order function that takes a number to work on and a processor to apply.</p>
+<p>Lastly, we call each function. For example, we call <kbd><span class="CodeHighlightedPACKT">process()</span></kbd> with <kbd>5</kbd> and the <kbd>squared</kbd> function. The <kbd><span class="CodeHighlightedPACKT">process()</span></kbd> function passes <kbd>5</kbd> to the <kbd><span class="CodeHighlightedPACKT">squared()</span></kbd> function and returns the result:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/cafafeae-b8fc-4543-ad8c-49c02cb40cf3.png" style="width:52.42em;height:27.25em;"/></p>
+<p>We take advantage of Scala's engine automatically printing out variable values to see the  expected result.</p>
+<p>These functions are not doing very much. When I ran them, it took a few seconds for the results to display. I think there is a big performance hit using higher-order functions in Scala.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala pattern matching</h1>
+                </header>
+            
+            <article>
+                
+<p>Scala has very useful, built-in pattern matching. Pattern matching can be used to test for exact and/or partial matches of entire values, parts of objects, you name it.</p>
+<p>We can use this sample script for reference:</p>
+<pre>def matchTest(x: Any): Any = x match { 
+  case 7 =&gt; "seven" 
+  case "two" =&gt; 2 
+  case _ =&gt; "something" 
+} 
+val isItTwo = matchTest("two") 
+val isItTest = matchTest("test") 
+val isItSeven = matchTest(7) </pre>
+<p>We define a function called <kbd><span class="CodeHighlightedPACKT">matchTest</span></kbd>. The <kbd><span class="CodeHighlightedPACKT">matchTest</span></kbd> function takes any kind of argument and can return any type of result. (Not sure if that is real-life programming).</p>
+<p>The keyword of interest is <kbd><span class="CodeHighlightedPACKT">match</span></kbd>. This means the function will walk down the list of choices until it gets a match on to the <kbd>x</kbd> value passed and then returns.</p>
+<p>As you can see, we have numbers and strings as input and output.</p>
+<p>The last <kbd><span class="CodeHighlightedPACKT">case</span></kbd> statement is a wildcard, and <kbd>_</kbd> is <kbd>catchall</kbd>, meaning that if the code gets that far, it will match any argument.</p>
+<p class="mce-root"/>
+<p>We can see the output as follows:</p>
+<p class="CDPAlignCenter CDPAlign"><span><img src="assets/daebe713-33d9-4c05-ba21-6bd051a54120.png" style="width:44.17em;height:23.08em;"/></span></p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala case classes</h1>
+                </header>
+            
+            <article>
+                
+<p>A <kbd>case</kbd> class is a simplified type that can be used without calling <kbd><span class="CodeHighlightedPACKT">new Classname(..)</span></kbd>. For example, we could have this script that defines a <kbd>case</kbd> class and uses it:</p>
+<pre>case class Car(brand: String, model: String) 
+val buickLeSabre = Car("Buick", "LeSabre") </pre>
+<p>So, we have a <kbd>case</kbd> class called <kbd><span class="CodeHighlightedPACKT">Car</span></kbd>. We make an instance of that class called <kbd><span class="CodeHighlightedPACKT">buickLeSabre</span></kbd>.</p>
+<p>The <kbd>case</kbd> classes are most useful for pattern matching, since we can easily construct complex objects and examine their content. For example:</p>
+<pre>def carType(car: Car) = car match { 
+  case Car("Honda", "Accord") =&gt; "sedan" 
+  case Car("GM", "Denali") =&gt; "suv" 
+  case Car("Mercedes", "300") =&gt; "luxury" 
+  case Car("Buick", "LeSabre") =&gt; "sedan" 
+  case _ =&gt; "Car: is of unknown type" 
+} 
+val typeOfBuick = carType(buickLeSabre) </pre>
+<p class="mce-root"/>
+<p>We define a pattern <kbd>match</kbd> block (as in the previous section of this chapter). In the <kbd>match</kbd> block, we look at a <kbd><span class="CodeHighlightedPACKT">Car</span></kbd> object that has <kbd>brand</kbd> as <kbd>GM</kbd> and <kbd>model</kbd> as <kbd>Denali</kbd>, and so forth. For each of the models of interest, we classify its type. We also have the <kbd><span class="CodeHighlightedPACKT">catchall _</span></kbd> at the end so we can catch unexpected values.</p>
+<p>We can exercise the <kbd>case</kbd> classes in Jupyter, as shown in this screenshot:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/76e06323-2a6a-4072-b8a3-89c13a0d27ab.png"/></p>
+<p>We defined and used the <kbd>case</kbd> class as <kbd><span class="CodeHighlightedPACKT">Car</span></kbd>. We then did pattern matching using the <kbd>Car</kbd> class.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala immutability</h1>
+                </header>
+            
+            <article>
+                
+<p>Immutable means you cannot change something. In Scala, all variables are immutable, unless specifically marked otherwise. This is the opposite to languages such as Java, where all variables are mutable unless specifically marked otherwise.</p>
+<p>In Java, we can have the following function:</p>
+<pre>public void calculate(integer amount) { 
+} </pre>
+<p>We can modify the value of <kbd>amount</kbd> inside the <kbd><span class="CodeHighlightedPACKT">calculate</span></kbd> function. We can tell Java not to allow changing the value if we use the <kbd><span class="CodeHighlightedPACKT">final</span></kbd> keyword, as in:</p>
+<pre>public void calculate(final integer amount) { 
+} </pre>
+<p>Whereas in Scala:</p>
+<pre>def calculate (amount: Int): Int = {  
+        amount = amount + 1; 
+        return amount; 
+} <br/>var balance = 100<br/>val result = calculate(balance)</pre>
+<p><span>A similar routine </span>leaves the value of the <kbd><span class="CodeHighlightedPACKT">amount</span></kbd> variable as it was before the routine was called:</p>
+<p class="CDPAlignCenter CDPAlign"><span><img src="assets/daf89191-deb2-483f-8bbc-b2b3757a783c.png" style="width:43.33em;height:23.33em;"/></span></p>
+<p>We can see in the display that even though <kbd><span class="CodeHighlightedPACKT">balance</span></kbd> is a variable (marked as <kbd><span class="CodeHighlightedPACKT">var</span></kbd>), Scala will not allow you to change its value inside the function. The <kbd>amount</kbd> parameter to the <kbd>calculate</kbd> <span>function </span>is assumed to be a <kbd>val</kbd> and cannot be changed once initialized.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala collections</h1>
+                </header>
+            
+            <article>
+                
+<p>In Scala, collections are automatically <kbd>mutable</kbd> or <kbd>immutable</kbd> depending on your usage. All collections in <kbd>scala.collections.immutable</kbd> are <kbd>immutable</kbd>. And vice-versa for <kbd>scala.collections.immutable</kbd>. Scala picks <kbd>immutable</kbd> collections by default, so your code will then draw automatically from the <kbd>mutable</kbd> collections, as in:</p>
+<pre>var List mylist; </pre>
+<p>Or, you can prefix your variable with <kbd><span class="CodeHighlightedPACKT">immutable</span></kbd>:</p>
+<pre>var mylist immutable.List; </pre>
+<p>We can see this in this short example:</p>
+<pre>var mutableList = List(1, 2, 3); 
+var immutableList = scala.collection.immutable.List(4, 5, 6); 
+mutableList.updated(1,400); 
+immutableList.updated(1,700); </pre>
+<p>As we can see in this Notebook:</p>
+<p class="CDPAlignCenter CDPAlign"><span><img src="assets/2cc19d53-856b-400e-91ea-122c47b02234.png"/></span></p>
+<p>Note that Scala cheated a little here: it created a new <kbd>collection</kbd> when we updated <kbd><span class="CodeHighlightedPACKT">immutableList</span></kbd>, as you can see with the variable name <kbd><span class="CodeHighlightedPACKT">real_3</span></kbd> instead.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Named arguments</h1>
+                </header>
+            
+            <article>
+                
+<p>Scala allows you to specify parameter assignment by name rather than just ordinal position. For example, we can have this code:</p>
+<pre>def divide(dividend:Int, divisor:Int): Float =  
+{ dividend.toFloat / divisor.toFloat } 
+divide(40, 5) 
+divide(divisor = 40, dividend = 5) </pre>
+<p>If we run this in a Notebook, we can see the results:</p>
+<p class="CDPAlignCenter CDPAlign"><span><img src="assets/ed4ba648-b628-4de2-9abc-4632f7b2be1a.png"/></span></p>
+<p>The first call <span class="CodeHighlightedPACKT">divides</span> the assigned parameters by position. The second call sets the parameters specifically, rather than using standard ordinal position assignment.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Scala traits</h1>
+                </header>
+            
+            <article>
+                
+<p>The <kbd>trait</kbd> function in Scala defines a set of features that can be implemented by classes. A <kbd>trait</kbd> interface is similar to an interface in Java.</p>
+<p>The <kbd>trait</kbd> function can be partially implemented, forcing the user (class) of <kbd>trait</kbd> to implement the details.</p>
+<p>By way of an example, we could have this code:</p>
+<pre>trait Color {<br/> def isRed(): Boolean<br/>}<br/>class Red extends Color {<br/> def isRed() = true<br/>}<br/>class Blue extends Color {<br/> def isRed() = false<br/>}<br/>var red = new Red();<br/>var blue = new Blue();<br/>red.isRed()<br/>blue.isRed() </pre>
+<p class="mce-root"/>
+<p>The code creates a <kbd>trait</kbd> called <kbd><span class="CodeHighlightedPACKT">Color</span></kbd>, with one partially implemented function, <kbd><span class="CodeHighlightedPACKT">isRed</span></kbd>. So, every class that uses <kbd><span class="CodeHighlightedPACKT">Color</span></kbd> will have to implement <kbd><span class="CodeHighlightedPACKT">isRed()</span></kbd>.</p>
+<p>We then implement two classes, <kbd><span class="CodeHighlightedPACKT">Red</span></kbd> and <kbd><span class="CodeHighlightedPACKT">Blue</span></kbd>, that extend the <kbd><span class="CodeHighlightedPACKT">Color</span></kbd> trait (this is the Scala syntax for using <kbd>trait</kbd>). Since the <kbd><span class="CodeHighlightedPACKT">isRed()</span></kbd> function is partially implemented, both classes have to provide implementations for the <kbd>trait</kbd> function.</p>
+<p>We can see how this operates in the following Notebook display:</p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/c55974d0-4def-45fb-b94d-0d5e6405088a.png"/></p>
+<p>We see (in the output section at the bottom) that <kbd>trait</kbd> and <kbd>class</kbd> are created, and that two instances are created, along with the result of calling the <kbd>trait</kbd> function for both classes.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article>
+                
+<p>In this chapter, we installed Scala for Jupyter. We used Scala coding to access larger datasets. We saw how Scala can manipulate arrays. We generated random numbers in Scala. There were examples of higher-order functions and pattern matching. We used <kbd>case</kbd> classes. We saw examples of immutability in Scala. We built collections using Scala packages. Finally, we looked at Scala traits.</p>
+<p>In the next chapter, we will be looking at using big data in Jupyter.</p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

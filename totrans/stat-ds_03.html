@@ -1,0 +1,561 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">A Developer&amp;#x27;s Approach to Data Cleaning</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">This chapter discusses how a developer might understand and approach the topic of <strong class="calibre7">data cleaning</strong> using several common statistical methods.</p>
+<p class="calibre4">In this chapter, we've broken things into the following topics:</p>
+<ul class="calibre18">
+<li class="calibre19">Understanding basic data cleaning</li>
+<li class="calibre19">Using R to detect and diagnose common data issues, such as missing values, special values, outliers, inconsistencies, and localization</li>
+<li class="calibre19">Using R to address advanced statistical situations, such as transformation, deductive correction, and deterministic imputation</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Understanding basic data cleaning</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">The importance of having clean (and therefore reliable) data in any statistical project cannot be overstated. Dirty data, even with sound statistical practice, can be unreliable and can lead to producing results that suggest courses of action that are incorrect or that may even cause harm or financial loss. It has been stated that a data scientist spends nearly 90 percent of his or her time in the process of cleaning data and only 10 percent on the actual modeling of the data and deriving results from it.</p>
+<p class="calibre4">So, just what is data cleaning?</p>
+<p class="calibre4">Data cleaning is also referred to as data cleansing or data scrubbing and involves both the processes of detecting as well as addressing errors, omissions, and inconsistencies within a population of data.</p>
+<p class="calibre4">This may be done interactively with data wrangling tools, or in batch mode through scripting. We will use R in this book as it is well-fitted for data science since it works with even very complex datasets, allows handling of the data through various modeling functions, and even provides the ability to generate visualizations to represent data and prove theories and assumptions in just a few lines of code.</p>
+<p class="calibre4">During cleansing, you first use logic to examine and evaluate your data pool to establish a level of quality for the data. The level of data quality can be affected by the way the data is entered, stored, and managed. Cleansing can involve correcting, replacing, or just removing data points or entire actual records.</p>
+<p class="calibre4">Cleansing should not be confused with validating as they differ from each other. A validation process is a pass or fails process, usually occurring as the data is captured (time of entry), rather than an operation performed later on the data in preparation for an intended purpose.</p>
+<p class="calibre4">As a data developer, one should not be new to the concept of data cleaning or the importance of improving the level of quality of data. A data developer will also agree that the process of addressing data quality requires a routine and regular review and evaluation of the data, and in fact, most organizations have enterprise tools and/or processes (or at least policies) in place to routinely preprocess and cleanse the enterprise data.</p>
+<div class="packt_infobox">There is quite a list of both free and paid tools to sample, if you are interested, including iManageData, Data Manager, DataPreparator (Trifecta) Wrangler, and so on. From a statistical perspective, the top choices would be R, Python, and Julia.</div>
+<p class="calibre4">Before you can address specific issues within your data, you need to detect them. Detecting them requires that you determine what would qualify as an issue or error, given the context of your objective (more on this later in this section).</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Common data issues</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">We can categorize data difficulties into several groups. The most generally accepted groupings (of data issues) include:</p>
+<ul class="calibre18">
+<li class="calibre19"><strong class="calibre3">Accuracy</strong>: There are many varieties of data inaccuracies and the most common examples include poor math, out-of-range values, invalid values, duplication, and more.</li>
+<li class="calibre19"><strong class="calibre3">Completeness</strong>: Data sources may be missing values from particular columns, missing entire columns, or even missing complete transactions.</li>
+<li class="calibre19"><strong class="calibre3">Update status</strong>: As part of your quality assurance, you need to establish the cadence of data refresh or update, as well as have the ability to determine when the data was last saved or updated. This is also referred to as latency.</li>
+<li class="calibre19"><strong class="calibre3">Relevance</strong>: It is identification and elimination of information that you don't need or care about, given your objectives. An example would be removing sales transactions for pickles if you are intending on studying personal grooming products.</li>
+<li class="calibre19"><strong class="calibre3">Consistency</strong>: It is common to have to cross-reference or translate information from data sources. For example, recorded responses to a patient survey may require translation to a single consistent indicator to later make processing or visualizing easier.</li>
+<li class="calibre19"><strong class="calibre3">Reliability</strong>: This is chiefly concerned with making sure that the method of data gathering leads to consistent results. A common data assurance process involves establishing baselines and ranges, and then routinely verifying that the data results fall within the established expectations. For example, districts that typically have a mix of both registered Democrat and Republican voters would warrant the investigation if the data suddenly was 100 percent single partied.</li>
+<li class="calibre19"><strong class="calibre3">Appropriateness</strong>: Data is considered appropriate if it is suitable for the intended purpose; this can be subjective. For example, it is considered a fact that holiday traffic affects purchasing habits (an increase in US Flags Memorial day week does not indicate an average or expected weekly behavior).</li>
+<li class="calibre19"><strong class="calibre3">Accessibility</strong>: Data of interest may be watered down in a sea of data you are not interested in, thereby reducing the quality of the interesting data since it would be mostly inaccessible. This is particularly common in big data projects. Additionally, security may play a role in the quality of your data. For example, particular computers might be excluded from captured logging files or certain health-related information may be hidden and not part of shared patient data.</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Contextual data issues</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">A lot of the previously mentioned data issues can be automatically detected and even corrected. The issues may have been originally caused by user entry errors, by corruption in transmission or storage, or by different definitions or understandings of similar entities in different data sources. In data science, there is more to think about.</p>
+<p class="calibre4">During data cleaning, a data scientist will attempt to identify patterns within the data, based on a hypothesis or assumption about the context of the data and its intended purpose. In other words, any data that the data scientist determines to be either obviously disconnected with the assumption or objective of the data or obviously inaccurate will then be addressed. This process is reliant upon the data scientist's judgment and his or her ability to determine which points are valid and which are not.</p>
+<div class="packt_infobox">When relying on human judgment, there is always a chance that valid data points, not sufficiently accounted for in the data scientist's hypothesis/assumption, are overlooked or incorrectly addressed. Therefore, it is a common practice to maintain appropriately labeled versions of your cleansed data.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Cleaning techniques</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Typically, the data cleansing process evolves around identifying those data points that are outliers, or those data points that stand out for not following the pattern within the data that the data scientist sees or is interested in.</p>
+<p class="calibre4">The data scientists use various methods or techniques for identifying the outliers in the data. One approach is plotting the data points and then visually inspecting the resultant plot for those data points that lie far outside the general distribution. Another technique is programmatically eliminating all points that do not meet the data scientist's mathematical control limits (limits based upon the objective or intention of the statistical project).</p>
+<p class="calibre4">Other data cleaning techniques include:</p>
+<ul class="calibre18">
+<li class="calibre19"><strong class="calibre3">Validity checking</strong>: Validity checking involves applying rules to the data to determine if it is valid or not. These rules can be global; for example, a data scientist could perform a uniqueness check if specific unique keys are part of the data pool (for example, social security numbers cannot be duplicated), or case level, as when a combination of field values must be a certain value. The validation may be strict (such as removing records with missing values) or fuzzy (such as correcting values that partially match existing, known values).</li>
+<li class="calibre19"><strong class="calibre3">Enhancement</strong>: This is a technique where data is made complete by adding related information. The additional information can be calculated by using the existing values within the data file or it can be added from another source. This information could be used for reference, comparison, contrast, or show tendencies.</li>
+<li class="calibre19"><strong class="calibre3">Harmonization</strong>: With data harmonization, data values are converted, or mapped to other more desirable values.</li>
+<li class="calibre19"><strong class="calibre3">Standardization</strong>: This involves changing a reference dataset to a new standard. For example, use of standard codes.</li>
+<li class="calibre19"><strong class="calibre3">Domain expertise</strong>: This involves removing or modifying data values in a data file based upon the data scientist's prior experience or best judgment.</li>
+</ul>
+<p class="calibre4">We will go through an example of each of these techniques in the next sections of this chapter.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">R and common data issues</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Let's start this section with some background on R. R is a language and environment that is easy to learn, very flexible in nature, and very focused on statistical computing, making it a great choice for manipulating, cleaning, summarizing, producing probability statistics, and so on.</p>
+<p class="calibre4">In addition, here are a few more reasons to use R for data cleaning:</p>
+<ul class="calibre18">
+<li class="calibre19">It is used by a large number of data scientists so it's not going away anytime soon</li>
+<li class="calibre19">R is platform independent, so what you create will run almost anywhere</li>
+<li class="calibre19">R has awesome help resources--just Google it, you'll see!</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Outliers</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">The simplest explanation for what outliers are might be is to say that outliers are those data points that just don't fit the rest of your data. Upon observance, any data that is either very high, very low, or just unusual (within the context of your project), is an outlier. As part of data cleansing, a data scientist would typically identify the outliers and then address the outliers using a generally accepted method:</p>
+<ul class="calibre18">
+<li class="calibre19">Delete the outlier values or even the actual variable where the outliers exist</li>
+<li class="calibre19">Transform the values or the variable itself</li>
+</ul>
+<p class="calibre4">Let's look at a real-world example of using R to identify and then address data outliers.</p>
+<p class="calibre4">In the world of gaming, slot machines (a gambling machine operated by inserting coins into a slot and pulling a handle which determines the payoff) are quite popular. Most slot machines today are electronic and therefore are programmed in such a way that all their activities are continuously tracked. In our example, investors in a casino want to use this data (as well as various supplementary data) to drive adjustments to their profitability strategy. In other words, what makes for a profitable slot machine? Is it the machine's theme or its type? Are newer machines more profitable than older or retro machines? What about the physical location of the machine? Are lower denomination machines more profitable? We try to find our answers using the outliers.</p>
+<p class="calibre4">We are given a collection or pool of gaming data (formatted as a comma-delimited or CSV text file), which includes data points such as the location of the slot machine, its denomination, month, day, year, machine type, age of the machine, promotions, coupons, weather, and coin-in (which is the total amount inserted into the machine less pay-outs). The first step for us as a data scientist is to review (sometimes called <strong class="calibre7">profile</strong>) the data, where we'll determine if any outliers exist. The second step will be to address those outliers.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Step 1 – Profiling the data</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">R makes this step very simple. Although there are many ways to program a solution, let us try to keep the lines of the actual program code or script to a minimum. We can begin by defining our CSV file as a variable in our R session (named <kbd class="calibre22">MyFile</kbd>) and then reading our file into an R <kbd class="calibre22">data.frame</kbd> (named <kbd class="calibre22">MyData</kbd>):</p>
+<pre class="calibre29">MyFile &lt;-"C:/GammingData/SlotsResults.csv" 
+MyData &lt;- read.csv(file=MyFile, header=TRUE, sep=",") </pre>
+<p class="calibre4">In statistics, a <kbd class="calibre22">boxplot</kbd> is a simple way to gain information regarding the shape, variability, and centre (or median) of a statistical dataset, so we'll use the <kbd class="calibre22">boxplot</kbd> with our data to see if we can identify both the median <kbd class="calibre22">Coin-in</kbd> and if there are any outliers. To do this, we can ask R to plot the <kbd class="calibre22">Coin-in</kbd> value for each slot machine in our file, using the <kbd class="calibre22">boxplot</kbd> function:</p>
+<pre class="calibre29">boxplot(MyData[11],main='Gamming Data Review', ylab = "Coin-in") </pre>
+<div class="packt_infobox"><kbd class="calibre22">Coin-in</kbd> is the 11th column in our file so I am referring to it explicitly as a parameter of the function <kbd class="calibre22">boxplot</kbd>. I've also added optional parameters (again, continuing the effort to stay minimal) which add headings to the visualization.</div>
+<p class="calibre4">Executing the previous script yields us the following visual. Note both the median (shown by the line that cuts through the box in the <kbd class="calibre22">boxplot</kbd>) as well as the four outliers:</p>
+<p class="calibre4"/>
+<div class="packt_figure"><img class="image-border9" src="Images/eb9f236a-3856-46ce-9471-b8851f952c24.png"/></div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Step 2 – Addressing the outliers</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Now that we see the outliers do exist within our data, we can address them so that they do not adversely affect our intended study. Firstly, we know that it is illogical to have a negative <kbd class="calibre22">Coin-in</kbd> value since machines cannot dispense more coins that have been inserted in them. Given this rule, we can simply drop any records from the file that have negative <kbd class="calibre22">Coin-in</kbd> values. Again, R makes it easy as we'll use the <kbd class="calibre22">subset</kbd> function to create a new version of our <kbd class="calibre22">data.frame</kbd>, one that only has records (or cases) with non-negative <kbd class="calibre22">Coin-in</kbd> values.</p>
+<p class="calibre4">We'll call our <kbd class="calibre22">subset</kbd> data frame <kbd class="calibre22">noNegs</kbd>:</p>
+<pre class="calibre29">noNegs &lt;- subset(MyData, MyData[11]&gt;0) </pre>
+<p class="calibre4">Then, we'll replot to make sure we've dropped our negative outlier:</p>
+<pre class="calibre29">boxplot(noNegs[11],main='Gamming Data Review', ylab = "Coin-in")</pre>
+<p class="calibre4">This produces a new <kbd class="calibre22">boxplot</kbd>, as shown in the following screenshot:</p>
+<div class="packt_figure"><img class="image-border10" src="Images/3b83e3a1-b730-4441-b64d-805707d21dc8.png"/></div>
+<p class="calibre4">We can use the same approach to drop our extreme positive <kbd class="calibre22">Coin-in</kbd> values (those greater than $1,500) by creating yet another <kbd class="calibre22">subset</kbd> and then replotting:</p>
+<pre class="calibre29">noOutliers &lt;-subset(noNegs, noNegs[11]&lt;1500) 
+boxplot(noOutliers[11],main='Gamming Data Review', ylab = "Coin-in") </pre>
+<p class="calibre4">It is well-advised, as you work through various iterations of your data, that you save off most (if not just the most significant) versions of your data. You can use the R function <kbd class="calibre22">write.csv</kbd>:</p>
+<pre class="calibre29">write.csv(noOutliers, file = "C:/GammingData/MyData_lessOutliers.csv") </pre>
+<div class="packt_infobox">Most data scientists adopt a common naming convention to be used through the project (if not for all the projects). The names of your files should be as explicit as possible to save you time later. In addition, especially when working with big data, you need to be mindful of disk space.</div>
+<p class="calibre4">The output of the preceding code is as follows:</p>
+<div class="packt_figure"><img class="image-border11" src="Images/874a7a47-f170-4c53-a966-8861ec97c0e5.png"/></div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Domain expertise</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Moving on, another data cleaning technique is referred to as cleaning data based upon domain expertise. This doesn't need to be complicated. The point of this technique is simply using information not found in the data. For example, previously we excluded cases with negative <kbd class="calibre22">Coin-in</kbd> values since we know it is impossible to have a negative <kbd class="calibre22">Coin-in</kbd> amount. Another example might be the time when Hurricane Sandy hit the northeast United States. During that period of time, the cases of most machines had very low (if not zero) <kbd class="calibre22">Coin-in</kbd> amounts. A data scientist would probably remove all the data cases during a specific time period, based on that information.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Validity checking</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">As I mentioned earlier in this chapter, cross-validation is when a data scientist applies rules to data in a data pool.</p>
+<div class="packt_infobox">Validity checking is the most common form of statistical data cleansing and is a process that both the data developer and the data scientist will most likely be (at least somewhat) familiar with.</div>
+<p class="calibre4">There can be any number of validity rules used to clean the data, and these rules will depend upon the intended purpose or objective of the data scientist. Examples of these rules include: data-typing (for example, a field must be a numeric), range limitations (where numbers or dates must fall within a certain range), required (a value cannot be empty or missing), uniqueness (a field, or a combination of fields, must be unique within the data pool), set-member (this is when values must be a member of a discreet list), foreign-key (certain values found within a case must be defined as member of or meeting a particular rule), regular expression patterning (which simply means verifying that a value is formatted in a prescribed format), and cross-field validation (where combinations of fields within a case must meet a certain criteria).</p>
+<p class="calibre4">Let's look at a few examples of the preceding, starting with data-typing (also known as <strong class="calibre7">coercion</strong>). R offers six coercion functions to make it easy:</p>
+<ul class="calibre18">
+<li class="calibre19"><kbd class="calibre22">as.numeric</kbd></li>
+<li class="calibre19"><kbd class="calibre22">as.integer</kbd></li>
+<li class="calibre19"><kbd class="calibre22">as.character</kbd></li>
+<li class="calibre19"><kbd class="calibre22">as.logical</kbd></li>
+<li class="calibre19"><kbd class="calibre22">as.factor</kbd></li>
+<li class="calibre19"><kbd class="calibre22">as.ordered</kbd></li>
+<li class="calibre19"><kbd class="calibre22">as.Date</kbd></li>
+</ul>
+<p class="calibre4">These functions, along with a little R knowledge, can make the effort of converting a value in a data pool pretty straightforward. For example, using the previous GammingData as an example, we might discover that a new gamming results file was generated and the age value was saved as a string (or text value). To clean it, we need to convert the value to a numeric data type. We can use the following single line of R code to quickly convert those values in the file:</p>
+<pre class="calibre29">noOutliers["Age"]&lt;-as.numeric(noOutliers["Age"]) </pre>
+<p class="calibre4">One point: using this simple approach, should any value be unable to be converted, it will be set to an <strong class="calibre7">NA</strong> value. In type conversion, the real work is understanding what type a value needs to be, and, of course, what data types are valid; R has a wide variety of data types, including scalars, vectors (numerical, character, logical), matrices, data frames, and lists.</p>
+<p class="calibre4">Another area of data cleaning we'll look at here is the process of regular expression patterning. In practice, especially when working with data that is collected (or mined) from multiple sources, the data scientist surely encounters either field that are not in the desired format (for the objective at hand) or, field values that are inconsistently formatted (which potentially can yield incorrect results). Some examples can be dates, social security numbers, and telephone numbers. With dates, depending on the source, you may have to re-type (as described previously), but more often than not, you'll also need to reformat the values into a format that is usable, given your objective.</p>
+<div class="packt_infobox">Re-typing a date is important so that R knows to use the value as an actual date and you can use the various R data functions correctly.</div>
+<p class="calibre4">A common example is when data contains cases with dates that are perhaps formatted as <kbd class="calibre22">YYYY/MM/DD</kbd> and you want to perform a time series analysis showing a sum week to week, or some other operation that requires using the date value but perhaps requiring the date to be reformatted, or you just need it to be a true R date object type. So, let's assume a new Gamming file—this one with just two columns of data: <kbd class="calibre22">Date</kbd> and <kbd class="calibre22">Coinin</kbd>. This file is a dump of collected <kbd class="calibre22">Coinin</kbd> values for a single slot machine, day by day.</p>
+<p class="calibre4">The records (or cases) in our new file look like the following screenshot:</p>
+<div class="packt_figure"><img class="image-border12" src="Images/16b90af7-9697-4826-9fb1-d4d877b3e992.png"/></div>
+<p class="calibre4">A variety of cleaning examples can be used by the data scientist. Starting with verifying what data types each of these data points are. We can use the R function class to verify our file's data types. First (as we did in the previous example), we read our CSV file into an R data frame object:</p>
+<pre class="calibre29">MyFile &lt;-"C:/GammingData/SlotsByMachine.csv" 
+MyData &lt;- read.csv(file=MyFile, header=TRUE, sep=",")</pre>
+<p class="calibre4">Next, we can use the <kbd class="calibre22">class</kbd> function, as shown in the following screenshot:</p>
+<div class="packt_figure"><img class="image-border13" src="Images/8e56f465-ba3f-460c-9db9-1f09c36913eb.png"/></div>
+<p class="calibre4">You can see in the preceding screenshot that we used <kbd class="calibre22">class</kbd> to display our data types.</p>
+<p class="calibre4"><kbd class="calibre22">MyData</kbd> is our data frame holding our gaming data, <kbd class="calibre22">Date</kbd> is of type <kbd class="calibre22">factor</kbd>, and <kbd class="calibre22">Coinin</kbd> is an <kbd class="calibre22">integer</kbd>. So, the data frame and the integer should make sense to you, but take note that R sets our dates up for what it calls a <kbd class="calibre22">factor</kbd>. Factors are categorical variables that are beneficial in summary statistics, plots, and regressions, but not so much as date values. To remedy this, we can use the R functions <kbd class="calibre22">substr</kbd> and <kbd class="calibre22">paste</kbd> as shown next:</p>
+<pre class="calibre29">MyData$Date&lt;-paste(substr(MyData$Date,6,7), substr(MyData$Date,9,10), substr(MyData$Date,1,4),sep="/") </pre>
+<p class="calibre4">This reformats the value of our <kbd class="calibre22">Data</kbd> field in all our cases in one simple line of script by pulling apart the field into three segments (the month, day, and year) and then pasting the segments back together in the order we want (with a/as the separator (<kbd class="calibre22">sep</kbd>)), as shown in the following screenshot:</p>
+<div class="packt_figure"><img class="image-border14" src="Images/9d21a628-e05a-44e9-80b8-67815525d812.png"/></div>
+<p class="calibre4">We find that this line of script converts our <kbd class="calibre22">Data</kbd> field to type <kbd class="calibre22">character</kbd> and, finally, we can use them <kbd class="calibre22">as.Date</kbd> function to re-data type our values to an R <kbd class="calibre22">Date</kbd> type:</p>
+<div class="packt_figure"><img class="image-border15" src="Images/e97e3be7-be72-4bb4-bb36-660405cd5858.png"/></div>
+<p class="calibre4">With a little trial and error, you can reformat a string or character data point exactly how you want it.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Enhancing data</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Data cleaning through enhancement is another common technique where data is made complete (and perhaps more valuable) by adding related information, facts, and/or figures. The source of this additional data could be calculations using information already in the data or added from another source. There are a variety of reasons why a data scientist may take the time to enhance data.</p>
+<p class="calibre4">Based upon the purpose or objective at hand, the information the data scientist adds might be used for reference, comparison, contrast, or show tendencies. Typical use cases include:</p>
+<ul class="calibre18">
+<li class="calibre19">Derived fact calculation</li>
+<li class="calibre19">Indicating the use of calendar versus fiscal year</li>
+<li class="calibre19">Converting time zones</li>
+<li class="calibre19">Currency conversions</li>
+<li class="calibre19">Adding current versus previous period indicators</li>
+<li class="calibre19">Calculating values such as the total units shipped per day</li>
+<li class="calibre19">Maintaining slowly changing dimensions</li>
+</ul>
+<div class="packt_infobox">As a data scientist, you should always use scripting to enhance your data, as this approach is much better than editing a data file directly since it is less prone to errors and maintains the integrity of the original file. Also, creating scripts allows you to reapply the enhancements to multiple files and/or new versions of files received, without having to redo the same work.</div>
+<p class="calibre4">For a working example, let us again go back to our <kbd class="calibre22">GammingData</kbd>. Assume we're receiving files of the <kbd class="calibre22">Coinin</kbd> amounts by slot machine and our gaming company now runs casinos outside of the continental United States. These locations are sending us files to be included in our statistical analysis and we've now discovered that these international files are providing the <kbd class="calibre22">Coinin</kbd> amounts in their local currencies. To be able to correctly model the data, we'll need to convert those amounts to US dollars. Here is the scenario:</p>
+<p class="calibre4">File Source: Great Britain</p>
+<p class="calibre4">Currency used: GBP or Great British Pound</p>
+<p class="calibre4">The formula to convert our GBP values to USD is simply the amount multiplied by an exchange rate. So, in R:</p>
+<pre class="calibre29">MyData$Coinin&lt;-MyData$Coinin * 1.4 </pre>
+<p class="calibre4">The previous line of code will accomplish what we want; however, the data scientist is left to determine which currency needs to be converted (GBP) and what the exchange rate to be used is. Not a huge deal, but one might want to experiment with creating a user-defined function that determines the rate to be used, as shown next:</p>
+<pre class="calibre29">getRate &lt;- function(arg){     
+    if(arg=="GPB") { 
+      myRate &lt;- 1.4 
+    } 
+    if(arg=="CAD") { 
+      myRate &lt;- 1.34 
+    } 
+    return(myRate) 
+}</pre>
+<p class="calibre4">Although the preceding code snippet is rather simplistic, it illustrates the point of creating logic that we can reuse later:</p>
+<div class="packt_figure"><img class="image-border16" src="Images/9abc7426-e90c-497a-8909-aabf86a3900a.png"/></div>
+<p class="calibre4">Finally, to make things better still, save off your function (in an R file) so that it can always be used:</p>
+<pre class="calibre29">source("C:/GammingData/CurerncyLogic.R") </pre>
+<p class="calibre4">Then:</p>
+<pre class="calibre29">MyFile &lt;-"C:/GammingData/SlotsByMachine.csv" 
+MyData &lt;- read.csv(file=MyFile, header=TRUE, sep=",") 
+MyData$Coin &lt;- MyData$Coinin * getRate("CAD") </pre>
+<div class="packt_infobox">Of course, in the best of all worlds, we might modify the function to look up the rate in a table or a file, based upon the country code, so that the rates can be changed to reflect the most current value and to de-couple the data from the program code.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Harmonization</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">With data harmonization, the data scientist converts, translates, or maps data values to other more desirable values, based upon the overall objective or purpose of the analysis to be performed. The most common examples of this can be gender or country code. For example, if your file has gender coded as <kbd class="calibre22">1</kbd>s and <kbd class="calibre22">0</kbd>s or <kbd class="calibre22">M</kbd> and <kbd class="calibre22">F</kbd>, you might want to convert the data points to be consistently coded as <kbd class="calibre22">MALE</kbd> or <kbd class="calibre22">FEMALE</kbd>.</p>
+<p class="calibre4">With country codes, the data scientist may want to plot summations for regions: North America, South America, and Europe rather than USA, CA, MX, BR, CH, GB, FR, and DE individually. In this case, he or she would be creating aggregated values:</p>
+<p class="calibre4">North America = USA + CA + MX</p>
+<p class="calibre4">South America = BR + CH</p>
+<p class="calibre4">Europe = GB + FR + DE</p>
+<p class="calibre4">To make a point, perhaps the data scientist has stitched together multiple survey files, all containing gender, called <kbd class="calibre22">gender.txt</kbd>, but in various codes (<kbd class="calibre22">1</kbd>, <kbd class="calibre22">0</kbd>, <kbd class="calibre22">M</kbd>, <kbd class="calibre22">F</kbd>, <kbd class="calibre22">Male</kbd>, and <kbd class="calibre22">Female</kbd>). If we tried to use the R function table, we would see the following undesirable result:</p>
+<div class="packt_figure"><img class="image-border17" src="Images/f5f4ff68-574c-4b49-b9ca-5bf531893c45.png"/></div>
+<p class="calibre4">And if we visualize this with the best of expectations:</p>
+<pre class="calibre29">lbs = c("Male", "Female") 
+pie(table(MyData), main="Gambling by Gender")</pre>
+<p class="calibre4">We see the following screenshot:</p>
+<div class="packt_figure"><img class="image-border18" src="Images/e31b73ea-1d20-48f5-88e9-ae58b6c5b863.png"/></div>
+<p class="calibre4">Once again, to solve the inconsistent coding of the data point gender, I've borrowed the concept from the example in the previous section and created a simple function to help us with our recoding:</p>
+<pre class="calibre29">setGender &lt;- function(arg){      
+    if(substr(arg,1,1)=="0" | toupper(substr(arg,1,1))=="M") { Gender &lt;- "MALE" } 
+    if(substr(arg,1,1)=="1" | toupper(substr(arg,1,1))=="F") { Gender &lt;- "FEMALE" } 
+    return(Gender) 
+} </pre>
+<p class="calibre4">This time, I've added the <kbd class="calibre22">toupper</kbd> function so that we don't have to worry about the case, as well as <kbd class="calibre22">substr</kbd> to handle values that are longer than a single character.</p>
+<div class="packt_infobox">I am assuming the argument value will be either <kbd class="calibre22">0</kbd><span class="calibre5">,</span><kbd class="calibre22">1</kbd><span class="calibre5">,</span><kbd class="calibre22">m</kbd><span class="calibre5">,</span><kbd class="calibre22">M</kbd><span class="calibre5">,</span><kbd class="calibre22">f</kbd><span class="calibre5">,</span><kbd class="calibre22">F</kbd><span class="calibre5">,</span><kbd class="calibre22">Male</kbd>, or <kbd class="calibre22">Female</kbd><span class="calibre5">,</span> otherwise an error will occur.</div>
+<p class="calibre4">Since R categorizes the <kbd class="calibre22">Gender</kbd> value as data type <kbd class="calibre22">factor</kbd>, I found it was difficult to easily make use of the simple function, so I decided to create a new R data frame object to hold our harmonized data. I've also decided to use a looping process to read through each case (record) in our file and convert it to <kbd class="calibre22">Male</kbd> or <kbd class="calibre22">Female</kbd>:</p>
+<pre class="calibre29">MyFile &lt;-"C:/GammingData/Gender.txt" 
+MyData &lt;- read.csv(file=MyFile, header=TRUE, sep=",") 
+GenderData &lt;-data.frame(nrow(MyData)) 
+for(i in 2:nrow(MyData)) 
+{ 
+   x&lt;-as.character(MyData[i,1])    
+   GenderData[i,1] &lt;-setGender(x) 
+} </pre>
+<p class="calibre4">Now we can enjoy a more appropriate visualization by writing:</p>
+<pre class="calibre29">lbls = c("Male", "Female") 
+pie(table(GenderData), labels=lbls, main="Gambling by Gender") </pre>
+<p class="calibre4">The output of the preceding code is as follows:</p>
+<div class="packt_figure"><img class="image-border19" src="Images/43d1b057-00cd-41af-a0ea-938b3b4de4c6.png"/></div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Standardization</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Most mainstream data scientists have noted the importance of standardizing data variables (changing reference data to a standard) as part of the data cleaning process before beginning a statistical study or analysis project. This is important, as, without standardization, the data points measured using different scales will most likely not contribute equally to the analysis.</p>
+<p class="calibre4">If you consider that a data point within a range between 0 and 100 will outweigh a variable within a range between 0 and 1, you can understand the importance of data standardization. Using these variables without standardization in effect gives the variable with the larger range a larger weight in the analysis. To address this concern and equalize the variables, the data scientists try to transform the data into a comparable scale.</p>
+<p class="calibre4">Centring (of the data points) is the most common example of data standardization (there are many others though). To center a data point, the data scientist would subtract the mean of all the data points from each individual data point in the file.</p>
+<p class="calibre4">Instead of doing the mathematics, R provides the <kbd class="calibre22">scale</kbd> function. This is a function whose default method centers and/or scales a column of numeric data in a file in one line of code. Let's look at a simple example.</p>
+<p class="calibre4">Back to our slot machines! In our gaming files, you may recall that there is a field named <kbd class="calibre22">Coinin</kbd> that contains a numeric value indicating the total dollars put into the machine. This is considered a measurement of the machine profitability. This seems like an obvious data point to use in our profitability analysis. However, these amounts may be misleading since there are machines of different denominations (in other words, some machines accept nickels while others accept dimes or dollars). Perhaps this difference in machine denominations creates an unequal scale. We can use the <kbd class="calibre22">scale</kbd> function to address this situation. First, we see in the following screenshot, the values of <kbd class="calibre22">Coin.in</kbd>:</p>
+<div class="packt_figure"><img class="image-border20" src="Images/6bfc6e92-9f22-48e4-a624-e806aacd79d3.png"/></div>
+<p class="calibre4">We can then write the following line of code to center our <kbd class="calibre22">Coin.in</kbd> data points:</p>
+<pre class="calibre29">scale(MyData[11], center = TRUE, scale = TRUE) </pre>
+<p class="calibre4">The value of center determines how column centring is to be performed. Using center is <kbd class="calibre22">TRUE</kbd> causes centring to be done by subtracting the column means (omitting NAs) of <kbd class="calibre22">Coin.in</kbd> from their corresponding columns. The value of <kbd class="calibre22">scale</kbd> determines how column scaling is performed (after centring). If the scale is <kbd class="calibre22">TRUE</kbd>, then scaling is done by dividing the (centered) columns of <kbd class="calibre22">Coin.in</kbd> by their standard deviations if a center is <kbd class="calibre22">TRUE</kbd>, and the root mean square otherwise.</p>
+<p class="calibre4">We see the difference in the following screenshot:</p>
+<div class="packt_figure"><img class="image-border21" src="Images/6c565dfb-7d93-4fcf-9f46-5b39e0a9b468.png"/></div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Transformations</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">A thought-provoking type of data cleaning, which may be a new concept for a data developer, is <strong class="calibre7">data transformation</strong>. Data transformation is a process where the data scientist actually changes what you might expect to be valid data values through some mathematical operation.</p>
+<p class="calibre4">Performing data transformation maps data from an original format into the format expected by an appropriate application or a format more convenient for a particular assumption or purpose. This includes value conversions or translation functions, as well as normalizing of numeric values to conform to the minimum and maximum values.</p>
+<p class="calibre4">As we've used R earlier in this chapter, we can see that the syntax of a very simple example of this process is simple. For example, a data scientist may decide to transform a given value to the square root of the value:</p>
+<pre class="calibre29">data.dat$trans_Y &lt;-sqrt(data.dat$Y) </pre>
+<p class="calibre4">The preceding code example informs R to create a new variable (or column in the <kbd class="calibre22">data.dat</kbd> dataset) named <kbd class="calibre22">trans_Y</kbd> that is equal to the square root of the original response variable <kbd class="calibre22">Y</kbd>.</p>
+<div class="packt_infobox">While R can support just about any mathematical operation you can think of or have a need for, the syntax is not always intuitive. R even provides the generic function <kbd class="calibre22">transform</kbd><strong class="calibre3">,</strong> but as of this writing, it only works with data frames. <kbd class="calibre22">transform.default</kbd> converts its first argument to a data frame and then calls <kbd class="calibre22">transform.data.frame</kbd>.</div>
+<p class="calibre4">But why would you do this? Well, one reason is relationships like that wouldn't work well. For example, if you were experimenting with values that were different by orders of magnitude, it would be difficult to deal or work with them. Practical examples can be a comparison of the physical body weight between species or various sound frequencies and their effects on the atmosphere. In these examples, the use of log transformations enables the data scientist to graph values in a way that permits one to see the differences among the data points at lower values.</p>
+<p class="calibre4">Another example is the transformation of test scores (to the distance the score is from a mean score).</p>
+<p class="calibre4">Finally, various widely used statistical methods assume normality or a normal distribution shape. In cases where the data scientist observes something other than normalcy, data transformations can be used. Data transformations such as log or exponential, or power transformations are typically used in an attempt to make the distribution of data scores that are non-normal in shape more normal. These data transformations can also help the data scientist bring extreme outliers closer to the rest of the data values; and that reduces the impact of the outliers on the estimates of summary statistics, such as the sample mean or correlation.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Deductive correction</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">With deductive reasoning, one uses known information, assumptions, or generally accepted rules to reach a conclusion. In statistics, a data scientist uses this concept (in an attempt) to repair inconsistencies and/or missing values within a data population.</p>
+<p class="calibre4">To the data developer, examples of deductive correction include the idea of converting a string or text value to a numeric data type or flipping a sign from negative to positive (or vice versa). Practical examples of these instances are overcoming storage limitations such as when survey information is always captured and stored as text or when accounting needs to represent a numeric dollar value as an expense. In these cases, a review of the data may take place (in order to deduce what corrections—also known as <strong class="calibre7">statistical data</strong><strong class="calibre7">editing</strong>—need to be performed), or the process may be automated to affect all incoming data from a particular data source.</p>
+<p class="calibre4">Other deductive corrections routinely performed by the data scientists include the corrections of input typing errors, rounding errors, sign errors, and value interchanges.</p>
+<p class="calibre4">There are R packages and libraries available, such as the <kbd class="calibre22">deducorrect</kbd> package, which focus on the correction of rounding, typing, and sign errors, and include three data cleaning algorithms (<kbd class="calibre22">correctRounding</kbd>, <kbd class="calibre22">correctTypos</kbd>, and <kbd class="calibre22">correctSigns</kbd>). However, the data scientists mostly want to specially custom script a solution for the project at hand.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Deterministic imputation</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">We have been discussing the topic of the data scientists deducing or determining how to address or correct a dirty data issue, such as missing, incorrect, incomplete, or inconsistent values within a data pool.</p>
+<p class="calibre4">When data is missing (or incorrect, incomplete, or inconsistent) within a data pool, it can make handling and analysis difficult and can introduce bias to the results of the analysis performed on the data. This leads us to imputation.</p>
+<p class="calibre4">In data statistics, imputation is when, through a data cleansing procedure, the data scientist replaces missing (or otherwise specified) data with other values.</p>
+<p class="calibre4">Because missing data can create problems in analyzing data, imputation is seen as a way to avoid the dangers involved with simply discarding or removing altogether the cases with missing values. In fact, some statistical packages default to discarding any case that has a missing value, which may introduce bias or affect the representativeness of the results. Imputation preserves all the cases within the data pool by replacing the missing data with an estimated value based on other available information.</p>
+<p class="calibre4">Deterministic imputation is a process used by the data scientists in the process of assigning replacement values for missing, invalid, or inconsistent data that has failed edits. In other words, in a particular case, when specific values of all other fields are known and valid, if only one (missing) value will cause the record or case to satisfy or pass all the data scientist edits, that value will be imputed. Deterministic imputation is a conservation imputation theory in that it is aimed at cases that are simply identified (as mentioned previously) and may be the first situation that is considered in the automated editing and imputation of data.</p>
+<p class="calibre4">Currently, in the field of data science, imputation theory is gaining popularity and is continuing to be developed, and thus requires consistent attention to new information regarding the subject.</p>
+<div class="packt_infobox">A few of the other well-known imputation theories attempting to deal with missing data include hot deck and cold deck imputation; listwise and pairwise deletion; mean imputation; regression imputation; last observation carried forward; stochastic imputation; and multiple imputations.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">In this chapter, we provided an overview of the fundamentals of the different kinds or types of statistical data cleansing. Then, using the R programming language, we illustrated various working examples, showing each of the best or commonly used data cleansing techniques.</p>
+<p class="calibre4">We also introduced the concepts of data transformation, deductive correction, and deterministic imputation.</p>
+<p class="calibre4">In the next chapter, we will dive deep into the topic of what data mining is and why it is important, and use R for the most common statistical data mining methods: dimensional reduction, frequent patterns, and sequences.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  </body></html>

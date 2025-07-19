@@ -1,0 +1,271 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Chapter 10. Collaborative Filtering and Recommendation System"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title"><a id="ch10" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Chapter 10. Collaborative Filtering and Recommendation System</h1></div></div></div><p class="calibre11">Every day, we are immersed with decisions and choices. These can range from our clothes to the movies we can watch or what to eat when we order online. We take decisions in business, too. For instance, which stock we should invest in. The set of choices that we have can vary depending on what we are actually doing and what we want. For example, when buying clothes online from Flipkart or Amazon we see hundreds or thousands of choices. Amazon's Kindle store is so huge that no one can read all the books in their lifetime. To make these decisions, we require some background information and maybe a little help in knowing what can be best for us.</p><p class="calibre11">Generally, individuals depend on suggestions from their companions or the counsel of specialists to choose and make decisions. They may observe their friends or trusted people to make the same decisions as them. These include either paying a good amount on the ticket and go to watch a movie, or order a specific pizza that the individual has not tasted before, or start reading a book the individual knows nothing about.</p><p class="calibre11">The way these suggestions are made have limits. These are not dependent on the likings or the "taste" of the user. There might be many movies or pizzas or books that one may like and their friends or their company won't on whose his decisions are usually made. This specific taste of the user cannot be taken care of by the traditional way of suggestions or recommendations.</p><p class="calibre11">In this chapter, we will learn:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">What are recommendation systems?</li><li class="listitem">Association rule mining.</li><li class="listitem">Content-based filtering.</li><li class="listitem">What is collaborative filtering?</li><li class="listitem">What is user-based and item-based collaborative filtering?</li><li class="listitem">Building a recommendation engine.</li></ul></div><div class="calibre2" title="What is a recommendation system?"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch10lvl1sec76" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>What is a recommendation system?</h1></div></div></div><p class="calibre11">Recommendation frameworks use learning methods for making customized suggestions for data, items, or services. These recommendation systems generally have some level of interaction with the target individual. The amount of data that has been collected in recent years and the data that is being generated today proved a great boon for these recommendation systems.</p><p class="calibre11">Today, many recommendation systems are in operation and produce millions of recommendations per day:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Recommendations on e-commerce websites regarding the books, clothes, or items to buy</li><li class="listitem">Advertisements suited to our tastes</li><li class="listitem">Type of properties that we may be interested in</li><li class="listitem">Travel packages suited to our tastes and budget</li></ul></div><p class="calibre11">The current generation of recommender systems are able to make worthy recommendations and are scaled to millions of products and target users. It is required that even if the number of products or users increase, the recommender system should continue to work. But this becomes another challenge, as to get better recommendations the algorithm would process more data which would increase the time taken for recommendations. If we limit the data that is processed, the recommendations generated may not be that effective or have the quality that the user would trust.</p><p class="calibre11">We need to create the balance and devise the mechanisms to process more data in a less amount of time.</p><p class="calibre11">This is done by utilizing user-based collaborative filtering or item-based collaborative filtering. Before we go further in collaborative filtering, we will also go through association rule mining.</p><p class="calibre11">A recommender framework is an essential part of the data and e-business system. It is an effective technique for empowering clients to channel through vast data and item spaces. It also helps the user to find the product right at the front which the user might not have been able to search for or might not have bought if the recommendation system hadn't been there in place. This also helps in increasing the sales as more and more users find the correct item that they would be interested in buying.</p><p class="calibre11">A lot of research has been made to improve the recommender systems and it has been accepted that there is no recommender system that can fit to every kind of problem.</p><p class="calibre11">Algorithms cannot work without the user interaction or the data. Interaction with the user is needed to:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Understand the user</li><li class="listitem">Provide recommendations generated to the user</li></ul></div><p class="calibre11">This is a big challenge to collect the "good" data from the user, that is, eliminating or removing the noisy data that can have an affect on the recommendations that will be generated.</p><p class="calibre11">Some users generally traverse through various information on the Internet, while some are focused only on the data they are interested in. Also, some users are very concerned about their privacy and don't allow the data collection process to happen.</p><p class="calibre11">Actually, the current recommender systems generally give good recommendations when fed with clean and useful data. A lot of effort is put into the data collection and cleaning phase where we understand which data is actually of use to the user.</p><div class="calibre2" title="The utility matrix"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec125" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>The utility matrix</h2></div></div></div><p class="calibre11">Generally, we encounter entities belonging to two classes in recommender systems:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Users</li><li class="listitem">Items</li></ul></div><p class="calibre11">Users may have a liking for specific items and we need to find this liking and show the items matching the criteria to them.</p><p class="calibre11">Let's take an example of the matrix of user ratings for movies. We will make a user-movie matrix where the the ratings would be values in this matrix:</p><div class="informaltable"><table border="1" class="calibre12"><colgroup class="calibre13"><col class="calibre14"/><col class="calibre14"/><col class="calibre14"/><col class="calibre14"/><col class="calibre14"/><col class="calibre14"/><col class="calibre14"/><col class="calibre14"/></colgroup><tbody class="calibre15"><tr class="calibre16"><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">Star Wars IV</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">The Godfather</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">LOTR 1</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">LOTR 2</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">LOTR 3</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">The Notebook</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">Titanic</strong></span>
+</p>
+</td></tr><tr class="calibre20"><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">User 1</strong></span>
+</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">4</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">3</p>
+</td><td class="calibre17">
+<p class="calibre18">3</p>
+</td><td class="calibre17">
+</td></tr><tr class="calibre16"><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">User 2</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">5</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">3</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">2</p>
+</td></tr><tr class="calibre20"><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">User 3</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">5</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">5</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">4</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td></tr><tr class="calibre16"><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">User 4</strong></span>
+</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">4</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">3</p>
+</td><td class="calibre17">
+</td></tr><tr class="calibre21"><td class="calibre17">
+<p class="calibre18">
+<span class="strong"><strong class="calibre19">User 5</strong></span>
+</p>
+</td><td class="calibre17">
+<p class="calibre18">2</p>
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td><td class="calibre17">
+</td><td class="calibre17">
+<p class="calibre18">3</p>
+</td><td class="calibre17">
+<p class="calibre18">4</p>
+</td><td class="calibre17">
+<p class="calibre18">5</p>
+</td></tr></tbody></table></div><p class="calibre11">In this particular example, we can see that user 1 has given a rating of 4 to "The Godfather", a rating of 3 to "LOTR 3" (The Lord of the Rings 3), and a rating of 3 to "The Notebook", but the user has not given ratings to other movies, which is generally due to the reason that the user has not watched the movie. It is also a possibility that the user preferred not to share views regarding the movie.</p><p class="calibre11">The values range from 1 to 5, 1 being the lowest and 5 being the highest rating for a movie. It is evident that the matrix is sparse, which means that most of the entries are unknown. In the real world, the data that we encounter is more sparse and we are required to fill these blank spaces with the probable ratings from the user and thus give the recommendations.</p></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Association rule mining"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch10lvl1sec77" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Association rule mining</h1></div></div></div><p class="calibre11">Association rule mining is finding associations or patterns among a collection of items which occur frequently. It is also known as <span class="strong"><strong class="calibre19">Market basket analysis</strong></span>.</p><p class="calibre11">Its main aim is to understand the buying habits of the customer, which is done by finding the correlations and patterns among the items that customers intended to buy or actually bought. For example, a customer who buys a computer keyboard is also likely to buy a computer mouse or a pen drive.</p><p class="calibre11">The rule is given by:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Antecedent → Consequent [support, confidence]</li></ul></div><div class="calibre2" title="Measures of association rules"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec126" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Measures of association rules</h2></div></div></div><p class="calibre11">Let <span class="strong"><em class="calibre23">A</em></span>, <span class="strong"><em class="calibre23">B</em></span>, <span class="strong"><em class="calibre23">C</em></span>, <span class="strong"><em class="calibre23">D</em></span>, and <span class="strong"><em class="calibre23">E</em></span> .... represent different items.</p><p class="calibre11">Then we need to generate association rules, for example:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong"><em class="calibre23">{A, J} → {C}</em></span></li><li class="listitem"><span class="strong"><em class="calibre23">{M, D, J} → {X}</em></span></li></ul></div><p class="calibre11">The first rule here means that when <span class="strong"><em class="calibre23">A</em></span> and <span class="strong"><em class="calibre23">J</em></span> are bought together then there is a high probability of the customer buying <span class="strong"><em class="calibre23">C</em></span> too.</p><p class="calibre11">Similarly, the second rule means that when <span class="strong"><em class="calibre23">M</em></span>, <span class="strong"><em class="calibre23">D</em></span>, and <span class="strong"><em class="calibre23">J</em></span> are bought together there is a high probability of the customer buying <span class="strong"><em class="calibre23">X</em></span> too.</p><p class="calibre11">These rules are measured by:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong"><strong class="calibre19">Support</strong></span>: Support refers to the total coverage. It is the probability of items bought together over the total transactions:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Support, X → Y: P(X,Y)</li><li class="listitem">(transactions containing both X and Y)/(total number of transactions)</li></ul></div><p class="calibre44">
+</p></li><li class="listitem"><span class="strong"><strong class="calibre19">Confidence</strong></span>: Confidence refers to the accuracy. It is the probability of buying the second item if the first item is bought:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Confidence, X → Y: P(Y|X)</li><li class="listitem">(transactions that contain both X and Y) / (transactions that contain only X)</li></ul></div><p class="calibre44">
+</p></li></ul></div><p class="calibre11">Some items are not bought that frequently and they may not be of that much importance to the algorithm. To generate these rules, these items need to to be dropped. These are defined by the two thresholds, which are called:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Minimum support</li><li class="listitem">Minimum confidence</li></ul></div></div><div class="calibre2" title="How to generate the item sets"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec127" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>How to generate the item sets</h2></div></div></div><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Item sets that have the required minimal support are chosen.</li><li class="listitem">If {X,Y} fulfills the criteria for the minimal support, then X and Y also fulfill that criteria. The vice-versa is not true.</li></ul></div><p class="calibre11">
+<span class="strong"><strong class="calibre19">Apriori algorithm</strong></span>:Subsets belonging to the frequent item sets are themselves frequent:</p><div class="calibre2"><ol class="orderedlist"><li class="listitem1">First, all the item sets are found based on the <span class="strong"><em class="calibre23">n</em></span>:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">For example, when <span class="strong"><em class="calibre23">n=2</em></span>, <span class="strong"><em class="calibre23">{{X,Y}, {Y,Z}, {X,S}, {S,Y}}</em></span></li></ul></div><p class="calibre44">
+</p></li><li class="listitem1">Now we merge these sets to a higher level:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem"><span class="strong"><em class="calibre23">{{X,Y,Z}, {X,Y,S}, {Y,Z,S}, {X,Z,S}}</em></span></li></ul></div><p class="calibre44">
+</p></li><li class="listitem1">Out of these merged sets, we check how many of these have the required minimum support:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem"> We eliminate those sets whose minimum support couldn't be generated</li></ul></div><p class="calibre44">
+</p></li><li class="listitem1">We keep on increasing the level to the point where no more sets can be generated that have the required minimal support</li></ol></div></div><div class="calibre2" title="How to generate the rules"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec128" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>How to generate the rules</h2></div></div></div><p class="calibre11">When the number of item sets is small, the brute-force method is used:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Subsets of all the item sets are generated. The empty set is not included.</li><li class="listitem">Confidence of these subsets is computed.</li><li class="listitem">Rules having higher confidence are selected.</li></ul></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Content-based filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch10lvl1sec78" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Content-based filtering</h1></div></div></div><p class="calibre11">Content-based filtering creates a profile of the user and uses this profile to give relevant recommendations to the user. The profile of the user is created by the history of the user.</p><p class="calibre11">For example, an e-commerce company can track the following details of the user to generate recommendations:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Items ordered in the past</li><li class="listitem">Items viewed or added to the cart but not purchased</li><li class="listitem">User browsing history to identify what kinds of products the user may be interested in</li></ul></div><p class="calibre11">The user may or may not have manually given ratings to these items, but various factors can be considered to evaluate their relevance to the user. Based on this, new items are recommended to the user that would be interesting to that user.</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/B05321_10_01.jpg" alt="Content-based filtering" class="calibre213"/></div><p class="calibre11">
+</p><p class="calibre11">The process as shown, takes the attributes from the user profile and matches them with the attributes of the items available. When there are relevant items available, these are considered to be of interest to the user and are recommended.</p><p class="calibre11">Therefore, the recommendations are heavily dependent on the profile of the user. If the user profile correctly represents the user likings and interests then the recommendations produced would be accurate and if the profile is not the current representation of the user's preferences then the recommendations produced may not be accurate.</p><div class="calibre2" title="Steps involved in content-based filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec129" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Steps involved in content-based filtering</h2></div></div></div><p class="calibre11">There are multiple steps involved in generating recommendations using content-based filtering. These steps are as follows:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Analyzing attributes of the items. There is a possibility that the items that are the candidates for the recommendation don't have the valid structure of the information. Therefore, the first step is to extract these attributes from the items in a structured way:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">For instance, for an e-commerce company, these attributes are the properties or features of the products available in their catalog</li></ul></div><p class="calibre44">
+</p></li><li class="listitem">Generating the profile of the user. The user profile is created considering various factors. This is done using machine learning techniques. The various factors that can be considered are:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Order history</li><li class="listitem">Item view history</li><li class="listitem">User browsing history to identify what kind of products the user may be interested in</li></ul></div><p class="calibre44">
+</p><p class="calibre44">In addition to these, the feedback from the user is also taken into account. For example, if the user was satisfied after ordering a product, how many times the user viewed a product and how much time was spent on it.</p></li><li class="listitem">The recommender using the preceding two generated components. The following generated user profile and the item attributes that are extracted are matched against each other using various techniques. Different weights are provided to the different attributes of both user and item. We then generate recommendations that can be ordered on the basis of relevance.</li></ul></div><p class="calibre11">Generating a user profile is a typical task and it needs to be exhaustive to generate a more accurate profile.</p><p class="calibre11">Social networks help to build a user profile. That is a treasure trove of the information that is manually provided by the user. The user gives the details, such as:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Type of products interested in, such as which type of books, music, and so on</li><li class="listitem">Products disliked such as some particular cuisine, cosmetic brands, and so on</li></ul></div><p class="calibre11">After we start giving user recommendations, we also have the capability to receive feedback, which helps the recommender to produce better recommendations:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong"><strong class="calibre19">Explicit feedback</strong></span>: When we buy an item on an e-commerce website, we generally receive a feedback form after 2-3 days of initial use. The primary aim of this form is to help the company to know if we actually liked the product and if not, what could have been done to make it better. This is called explicit feedback. This enables the recommender system to know that the product was not completely suited for the user or a better product could have been recommended.</li><li class="listitem"><span class="strong"><strong class="calibre19">Implicit feedback</strong></span>: The user may not be required to manually fill out the feedback or may choose not to do so. In such a scenario, the user's activities are analyzed and monitored to know what the response was of the user towards the product.</li></ul></div><p class="calibre11">Feedback may also be present as the comments on the product review section on these e-commerce sites. These comments can be mined, and sentiment of the user can be extracted.</p><p class="calibre11">Although having direct feedback from the user makes it easier for the system, most users choose to ignore this particular feedback.</p></div><div class="calibre2" title="Advantages of content-based filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec130" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Advantages of content-based filtering</h2></div></div></div><p class="calibre11">There are many advantages of using content-based filtering:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Content-based filtering is dependent only on the user that we are generating recommendations for. These are not dependent on the other users' ratings or profiles.</li><li class="listitem">The recommendations generated can be explained to the user as they are dependent on the user's profile and the attributes of the items present.</li><li class="listitem">As the recommendations are not based on the ratings of the items, but on the attributes of these items and the profile of the users, the newer items that have not yet been bought or rated can be recommended too.</li></ul></div></div><div class="calibre2" title="Limitations of content-based filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec131" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Limitations of content-based filtering</h2></div></div></div><p class="calibre11">There are some limitations of content-based filtering too:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">As content-based filtering requires the user profile, for a new user it can be difficult to generate recommendations. To give good quality recommendations, we need to analyze the user's activity and still the recommendations generated may not be as per to the user's liking.</li><li class="listitem">When the attributes or the features of the items are not readily available, the content-based filtering faces difficulty to give recommendations. Also, sufficient domain knowledge is also needed to understand these attributes.</li><li class="listitem">Content-based filtering is also dependent on the feedback provided by the user. So, we need to analyze and monitor for the user feedback continuously. In the scenario where the system can't understand if it is positive or negative feedback, then it may not give such relevant recommendations.</li><li class="listitem">CBF also has the tendency to limit the recommendations to a very specific set. It may not be able to recommend similar or related items that the user might be interested in.</li></ul></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Collaborative filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch10lvl1sec79" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Collaborative filtering</h1></div></div></div><p class="calibre11">Collaborative filtering is a famous algorithm that is based on the likings or the behavior of other users or peers unlike the content-based filtering that we studied in the previous section.</p><p class="calibre11">Collaborative filtering:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">If the user likes some of the things that other users or peers have shown an inclination to, then the preferences of these users can be recommended to the desired user</li><li class="listitem">It is referred to as the "nearest neighbor recommendation"</li></ul></div><p class="calibre11">To implement collaborative filtering, some assumptions are made:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Likings or the behavior of peers or other users can be taken into consideration to understand and predict for the desired user. Therefore, an assumption is made that the desired user has similar tastes as the other users taken into consideration here.</li><li class="listitem">If the user got a recommendation in the past based on ratings of a group of users, then the user would have a similar taste with that group.</li></ul></div><p class="calibre11">There are different types of collaborative filtering:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong"><strong class="calibre19">Memory-based collaborative filtering</strong></span>: Memory-based collaborative filtering is based on the rating of the users to compute the similarity between the users or even the items. This is used to make the recommendations:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">It makes use of the rating matrix</li><li class="listitem">Recommendations are generated for the desired user using this rating matrix at any given time</li></ul></div><p class="calibre44">
+</p></li><li class="listitem"><span class="strong"><strong class="calibre19">Model-based collaborative filtering</strong></span>: Model-based collaborative filtering depends on the training data and the learning algorithm to create the model. This model is used to generate the recommendations using the actual data:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">This method fits the model to the provided matrix to generate the recommendations on the basis of this model</li></ul></div><p class="calibre44">
+</p></li></ul></div><p class="calibre11">The basic procedure for collaborative filtering includes:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">As CF is highly based on the group whose preferences are considered, it is recommended to find the peer group with similar tastes</li><li class="listitem">The items that we will consider recommending should be there in the list of items from the group, but not of the user</li><li class="listitem">After creating the matrix, the items are given a particular score depending on the various factors</li><li class="listitem">The items that receive the highest scores are recommended</li><li class="listitem">To keep improving and adding the recommendations as new items are added to the list from the group, the preceding steps are performed again on a desired interval</li></ul></div><p class="calibre11">There are some advantages and disadvantages with collaborative filtering. Let's go through the advantages:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">It is easier to understand where attributes of the user are properly formed</li><li class="listitem">Users and products are simple systems and don't need specific understanding to build the recommender</li><li class="listitem">The recommendations produced are generally good</li></ul></div><p class="calibre11">There are some drawbacks to collaborative filtering, too:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">As discussed earlier, collaborative filtering requires a lot of user feedback. Also, these users need to be reliable.</li><li class="listitem">A standardization is also required for the attributes of the items.</li><li class="listitem">Assumption of past behavior will influence the present choices.</li></ul></div><div class="calibre2" title="Baseline prediction methods"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec132" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Baseline prediction methods</h2></div></div></div><p class="calibre11">A baseline is the simplest and easiest prediction that can be formed. It is important to calculate a baseline to know about the accuracy of the models we generate and validity of the results of the algorithms that we produce:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong"><strong class="calibre19">Classification</strong></span>: The baseline for classification problems can be formed by considering that most of the results of the predictions will be from the class with the most observations.</li><li class="listitem"><span class="strong"><strong class="calibre19">Regression</strong></span>: The baseline for regression problems can be formed by considering that most of the results of the predictions will be a central tendency measure, such as mean or median.</li><li class="listitem"><span class="strong"><strong class="calibre19">Optimization</strong></span>: Random samples in the domain are fixed when working on the optimization problem.</li></ul></div><p class="calibre11">When we have chosen the baseline prediction methods and have the results we can compare them with the results of the models that we generated.</p><p class="calibre11">If the models that we generated are not able to out perform these baseline methods then most likely we need to work on the model to improve the accuracy.</p></div><div class="calibre2" title="User-based collaborative filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec133" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>User-based collaborative filtering</h2></div></div></div><p class="calibre11">User-based collaborative filtering makes use of the main idea of collaborative filtering which is finding similar users that have past ratings or behavior somewhat similar to the target user.</p><p class="calibre11">This approach is also called k-Nearest Neighbour collaborative filtering.</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/B05321_10_02.jpg" alt="User-based collaborative filtering" class="calibre214"/></div><p class="calibre11">
+</p><p class="calibre11">If we have n number of users and x number of items, then we will have a matrix <span class="strong"><em class="calibre23">R -&gt; n*x</em></span>. In the preceding diagram, we can see that there is one target user and multiple other users. Out of these other users, two of them are similar to the target user. Therefore, the previous ratings or behavior can be utilized for generating the recommendations.</p><p class="calibre11">Other than the matrix mentioned above, we also need a function to compute the similarity between the users to calculate which users' ratings can be used to generate the recommendations.</p><p class="calibre11">To find the similarity between the users (u,v), we find the nearest neighbors using the Pearson Correlation coefficient (Pearson's r):</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/B05321_10_03.jpg" alt="User-based collaborative filtering" class="calibre215"/></div><p class="calibre11">
+</p><p class="calibre11">This computes the neighborhood N ⊆ U of neighbors of <span class="strong"><em class="calibre23">u</em></span>:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Perfectly positive correlation = 1</li><li class="listitem">Perfectly negative correlation = -1</li></ul></div><p class="calibre11">Pearson Correlation has a drawback in that it may show two users as similar even if they have very few ratings in common. To treat this, we can apply a threshold on the items that are rated by both the users.</p><p class="calibre11">Cosine similarity: This is another method to find similar users. This takes a different approach than Pearson Correlation.</p><p class="calibre11">Unlike Pearson correlation, which uses statistical approach, cosine similarity uses the vector-space approach. In this method, users are not part of the matrix but are represented by |I|-dimensional vectors.</p><p class="calibre11">To measure the similarity between two users (vectors), it computes the cosine distance. This is the dot product of the vectors and divides it by taking the product of their L2 (Euclidean) norms.</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/B05321_10_04.jpg" alt="User-based collaborative filtering" class="calibre216"/></div><p class="calibre11">
+</p><p class="calibre11">When there is no rating for a particular item, the dot product becomes 0 and it drops out.</p><p class="calibre11">Now to generate the recommendation, we use:</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/B05321_10_05.jpg" alt="User-based collaborative filtering" class="calibre217"/></div><p class="calibre11">
+</p><p class="calibre11">This computes the weighted average of the user's rating of the neighbors taking similarity as the weights. It is the most commonly used practice.</p><p class="calibre11">Here are some drawbacks of user-based collaborative filtering:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Sparsity: the matrix formed is usually very sparse and sparsity increases with the increase in number of users and items</li><li class="listitem">It is not always easy to effectively find nearest neighbors and make recommendations</li><li class="listitem">It is not very scalable and becomes computationally heavy with the increase in the number of users and items</li><li class="listitem">Sparse matrices may not be able to predict actual sets of like-minded people</li></ul></div></div><div class="calibre2" title="Item-item collaborative filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch10lvl2sec134" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Item-item collaborative filtering</h2></div></div></div><p class="calibre11">There are some drawbacks to the user-based collaborative filtering, one of them is scalability. To find the nearest neighbors, we find similarities between the neighbors, which involves a lot of computation. It may not be feasible to apply user-based collaborative filtering to systems having millions of users because of high computation power requirements.</p><p class="calibre11">So, item-based collaborative filtering is used instead of user-based collaborative filtering to achieve the desired scalability. It looks for patterns such as a few items liked and an other few items disliked by the same set of users, then these are considered to be like-minded and items are recommended.</p><p class="calibre11">It is still required that we find the similar items in the item set by using k-Nearest Neighbor or a similar algorithm.</p><p class="calibre11">Let's consider a scenario where a user has rated a few items. After a few days, that particular user revisits those items and changes their rating. By changing their rating, the user is essentially going to another neighbor.</p><p class="calibre11">Therefore, it is not always recommended to pre-compute the matrix or find the nearest neighbors. This is generally done when the recommendations are actually needed.</p><div class="calibre2" title="Algorithm of item-based collaborative filtering"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h3 class="title5"><a id="ch10lvl3sec92" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Algorithm of item-based collaborative filtering</h3></div></div></div><div class="calibre2"><ul class="itemizedlist"><li class="listitem">For (<span class="strong"><em class="calibre23">i=1 to I</em></span>) where <span class="strong"><em class="calibre23">I</em></span> refers to every item available:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">For each customer, <span class="strong"><em class="calibre23">x</em></span> who rated <span class="strong"><em class="calibre23">I</em></span><div class="calibre2"><ul class="itemizedlist1"><li class="listitem">For each item <span class="strong"><em class="calibre23">K</em></span> purchased by the same customer, <span class="strong"><em class="calibre23">x</em></span></li></ul></div><p class="calibre44">
+</p></li></ul></div><p class="calibre44">
+</p></li><li class="listitem">Save that customer, <span class="strong"><em class="calibre23">x</em></span> purchased both <span class="strong"><em class="calibre23">I</em></span> and <span class="strong"><em class="calibre23">K</em></span><div class="calibre2"><ul class="itemizedlist1"><li class="listitem">For each item <span class="strong"><em class="calibre23">K</em></span><div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Find the similarity between <span class="strong"><em class="calibre23">I</em></span> and <span class="strong"><em class="calibre23">K</em></span></li></ul></div><p class="calibre44">
+</p></li></ul></div><p class="calibre44">
+</p></li></ul></div><p class="calibre11">This particular similarity is found using the same methods as used in user-based collaborative filtering:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Cosine-based similarity</li><li class="listitem">Correlation-based similarity</li></ul></div><p class="calibre11">A weighted average is used to generate the recommendations.</p><p class="calibre11">Let <span class="strong"><em class="calibre23">S</em></span> be the set of items which is similar to <span class="strong"><em class="calibre23">i</em></span>, then predictions can be made. The equation that defines the item-based collaborative filtering is as follows:</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/B05321_10_06.jpg" alt="Algorithm of item-based collaborative filtering" class="calibre218"/></div><p class="calibre11">
+</p><p class="calibre11">For the number of neighbors <span class="strong"><em class="calibre23">k</em></span>, u would have rated some items which are taken into consideration.</p></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Building a movie recommender system"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch10lvl1sec80" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Building a movie recommender system</h1></div></div></div><p class="calibre11">The dataset is maintained by the "GroupLens research" and is available for free at <a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="http://grouplens.org/datasets/movielens/">http://grouplens.org/datasets/movielens/</a>.</p><p class="calibre11">We will be working on the dataset of 20 million ratings (<code class="literal">ml-20m.zip</code>). This contains:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">20 million ratings</li><li class="listitem">465,000 tag applications applied to 27,000 movies by 138,000 users</li></ul></div><p class="calibre11">We will work on an ALS recommender, which is a matrix factorization algorithm that uses <span class="strong"><strong class="calibre19">Alternating Least Squares with Weighted-Lamda-Regularization</strong></span> (<span class="strong"><strong class="calibre19">ALS-WR</strong></span>).</p><p class="calibre11">Let's consider that we have a matrix with users, <span class="strong"><em class="calibre23">u</em></span>, and items, <span class="strong"><em class="calibre23">i:</em></span>
+</p><pre class="programlisting">
+<span class="strong"><em class="calibre23">Matrix, M (ui) = { r (if item i is rated by the user, u)</em></span>
+<span class="strong"><em class="calibre23">0 (if item i is not rated by user, u) }</em></span>
+</pre><p class="calibre11">Here, <span class="strong"><em class="calibre23">r</em></span> represents the ratings submitted.</p><p class="calibre11">Consider that we have <span class="strong"><em class="calibre23">m</em></span> number of users and <span class="strong"><em class="calibre23">n</em></span> number of movies.</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/B05321_07.jpg" alt="Building a movie recommender system" class="calibre219"/></div><p class="calibre11">
+</p><p class="calibre11">With <span class="strong"><em class="calibre23">m</em></span> number of users and <span class="strong"><em class="calibre23">n</em></span> number of movies, we create a matrix of users and movies (<span class="strong"><em class="calibre23">m*n</em></span>).</p><p class="calibre11">The recommendations are generated for any user-movie pair as follows:</p><p class="calibre11">
+<span class="strong"><em class="calibre23">(i,j),rij=ui⋅mj,∀i,j</em></span>
+</p><p class="calibre11">Here, <span class="strong"><em class="calibre23">(i,j)</em></span> is the user-movie pair.</p><p class="calibre11">Julia has a package, <code class="literal">RecSys.jl</code>, created by Abhijith Chandraprabhu (<a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://github.com/abhijithch">https://github.com/abhijithch</a>). The package can be installed as follows:</p><pre class="programlisting">Pkg.update() 
+Pkg.clone("https://github.com/abhijithch/RecSys.jl.git") 
+</pre><p class="calibre11">We will initiate Julia in parallel mode:</p><pre class="programlisting">
+<span class="strong"><strong class="calibre19">julia -p &lt;number of worker processes&gt; 
+</strong></span>
+</pre><p class="calibre11">As we will be working on a huge dataset it is recommended to initiate the Julia process in parallel.</p><p class="calibre11">There is <code class="literal">movielens.jl</code> in the examples section. We will be using this to generate recommendations for us.</p><p class="calibre11">Keep it in the directory where it can be called and open it using any text editor, such as Atom (Juno), Sublime, Vim, and so on:</p><pre class="programlisting">using RecSys 
+ 
+import RecSys: train, recommend, rmse 
+ 
+if isless(Base.VERSION, v"0.5.0-") 
+    using SparseVectors 
+end 
+</pre><p class="calibre11">This example will use the package <code class="literal">RecSys</code> and we are importing the methods <code class="literal">train</code>, <code class="literal">recommend</code>, and <code class="literal">rmse</code>:</p><pre class="programlisting">type MovieRec 
+    movie_names::FileSpec 
+    als::ALSWR 
+    movie_mat::Nullable{SparseVector{AbstractString,Int64}} 
+ 
+    function MovieRec(trainingset::FileSpec, movie_names::FileSpec) 
+        new(movie_names, ALSWR(trainingset, ParShmem()), nothing) 
+    end 
+ 
+    function MovieRec(trainingset::FileSpec, movie_names::FileSpec,
+    thread::Bool)  
+   new(movie_names, ALSWR(trainingset, ParThread()), nothing) 
+    end      
+ 
+    function MovieRec(user_item_ratings::FileSpec,
+    item_user_ratings::FileSpec, movie_names::FileSpec) 
+        new(movie_names, ALSWR(user_item_ratings, item_user_ratings,
+        ParBlob()), nothing) 
+    end 
+end 
+</pre><p class="calibre11">This creates a composite type, which is a collection of named fields whose instances can be treated as a single value. This is a user-defined data type.</p><p class="calibre11">This user-defined data type has three fields and three methods. The field <code class="literal">als</code> belongs to the type ALSWR, which is defined in RecSys.</p><p class="calibre11">The function uses multiple dispatches for the different types of inputs, which could be provided:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><code class="literal">trainingset</code> and <code class="literal">movie_names</code></li><li class="listitem"><code class="literal">trainingset</code>, <code class="literal">movie_names</code>, and <code class="literal">thread</code></li><li class="listitem"><code class="literal">user_item_ratings</code>, <code class="literal">item_user_ratings</code>, and <code class="literal">movie_names</code></li></ul></div><pre class="programlisting">function movie_names(rec::MovieRec) 
+    if isnull(rec.movie_mat) 
+        A = read_input(rec.movie_names) 
+        movie_ids = convert(Array{Int}, A[:,1]) 
+        movie_names = convert(Array{AbstractString}, A[:,2]) 
+        movie_genres = convert(Array{AbstractString}, A[:,3]) 
+        movies = AbstractString[n*" - "*g for (n,g) in
+        zip(movie_names, movie_genres)] 
+        M = SparseVector(maximum(movie_ids), movie_ids, movies) 
+        rec.movie_mat = Nullable(M) 
+    end 
+ 
+    get(rec.movie_mat) 
+end 
+</pre><p class="calibre11">This creates a function, <code class="literal">movie_names</code>, which is made to work with the <code class="literal">movielens</code> dataset to handle the data types and missing values in the CSV file, which we use as the input to the recommender system.</p><p class="calibre11">Now, to train the system, we will use the train function:</p><pre class="programlisting">
+<span class="strong"><strong class="calibre19">train(als, num_iterations, num_factors, lambda)</strong></span>
+</pre><p class="calibre11">In this particular scenario, we will do as follows:</p><pre class="programlisting">
+<span class="strong"><strong class="calibre19">train(movierec::MovieRec, args...) = train(movierec.als, args...)</strong></span>
+</pre><p class="calibre11">This trains the model for the <code class="literal">movielens</code> dataset using ALS:</p><pre class="programlisting">rmse(movierec::MovieRec, args...; kwargs...) = rmse(movierec.als, args...; kwargs...) 
+</pre><p class="calibre11">We can also initiate the test for the recommendations that will be produced:</p><pre class="programlisting">rmse(als, testdataset) 
+</pre><p class="calibre11">To start the recommendations, do as follows:</p><pre class="programlisting">recommend(movierec::MovieRec, args...; kwargs...) = recommend(movierec.als, args...; kwargs...) 
+ 
+function print_recommendations(rec::MovieRec, recommended::Vector{Int}, watched::Vector{Int}, nexcl::Int) 
+    mnames = movie_names(rec) 
+ 
+    print_list(mnames, watched, "Already watched:") 
+    (nexcl == 0) || println("Excluded $(nexcl) movies already watched") 
+    print_list(mnames, recommended, "Recommended:") 
+    nothing 
+end 
+</pre><p class="calibre11">This will print the recommendations on screen.</p><p class="calibre11">The recommendations that I received were:</p><pre class="programlisting">
+<span class="strong"><strong class="calibre19">[96030] Weekend It Lives, The (Ax 'Em) (1992) - Horror 
+[96255] On Top of the Whale (Het dak van de Walvis) (1982) - Fantasy 
+[104576] Seasoning House, The (2012) - Horror|Thriller 
+[92948] Film About a Woman Who... (1974) - Drama 
+[6085] Neil Young: Human Highway (1982) - Comedy|Drama 
+[94146] Flower in Hell (Jiokhwa) (1958) - Crime|Drama 
+[92083] Zen (2009) - Drama 
+[110603] God's Not Dead (2014) - Drama 
+[105040] Dragon Day (2013) - Drama|Sci-Fi|Thriller 
+[80158] Cartoon All-Stars to the Rescue (1990) - Animation|Children|Comedy|Drama|Fantasy 
+</strong></span>
+</pre><p class="calibre11">We will call the function test to generate the recommendations:</p><pre class="programlisting">function test(dataset_path) 
+    ratings_file = DlmFile(joinpath(dataset_path, "ratings.csv");
+    dlm=',', header=true) 
+    movies_file = DlmFile(joinpath(dataset_path, "movies.csv");
+    dlm=',', header=true) 
+    rec = MovieRec(ratings_file, movies_file) 
+    @time train(rec, 10, 10) 
+ 
+    err = rmse(rec) 
+    println("rmse of the model: $err") 
+ 
+    println("recommending existing user:") 
+    print_recommendations(rec, recommend(rec, 100)...) 
+ 
+    println("recommending anonymous user:") 
+    u_idmap = RecSys.user_idmap(rec.als.inp) 
+    i_idmap = RecSys.item_idmap(rec.als.inp) 
+    # take user 100 
+    actual_user = isempty(u_idmap) ? 100 : findfirst(u_idmap, 100) 
+    rated_anon, ratings_anon = RecSys.items_and_ratings(rec.als.inp,
+    actual_user) 
+    actual_movie_ids = isempty(i_idmap) ? rated_anon : i_idmap[rated_anon] 
+    nmovies = isempty(i_idmap) ? RecSys.nitems(rec.als.inp) :
+    maximum(i_idmap) 
+    sp_ratings_anon = SparseVector(nmovies, actual_movie_ids,
+    ratings_anon) 
+    print_recommendations(rec, recommend(rec, sp_ratings_anon)...) 
+ 
+    println("saving model to model.sav") 
+    clear(rec.als) 
+    localize!(rec.als) 
+    save(rec, "model.sav") 
+    nothing 
+end 
+</pre><div class="calibre2"><ul class="itemizedlist"><li class="listitem">This function takes the dataset path as an argument. Here we will provide the path of the directory where we extracted the <code class="literal">ml-20m.zip</code>, which we downloaded from grouplens.</li><li class="listitem">It takes the ratings file and the movies file and creates an object "rec" of type MovieRec, which we created earlier.</li><li class="listitem">We pass the object to rmse to find out the error.</li><li class="listitem">It calls <code class="literal">print_recommendations</code>, which calls the recommend function to generate the recommendations for the existing user.</li><li class="listitem">It saves the model for further use.</li></ul></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Summary"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch10lvl1sec81" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Summary</h1></div></div></div><p class="calibre11">In this chapter, we learned what recommendation engines are and how they are important to businesses as well as what value they provide to the customer. We discussed association rule mining and market basket analysis and how this simple method is being used in the industry. Then we went through content-based filtering and its advantages and disadvantages. We then discussed collaborative filtering and different types of collaborative filtering, namely user-based and item-based collaborative filtering. The aim of user-based collaborative filtering is finding similar users that have past ratings or behavior somewhat similar to the target user, whereas item-based collaborative filtering looks for patterns in ratings of items to find like-minded users and to recommend items.</p></div></div>
+
+
+
+  </body></html>

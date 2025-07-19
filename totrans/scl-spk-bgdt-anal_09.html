@@ -1,0 +1,1136 @@
+<html><head></head><body>
+        <section id="8IL201-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Stream Me Up, Scotty - Spark Streaming</h1>
+                
+            
+            <article>
+                
+<div class="book-info-bottom-author-body"><em class="calibre8"><span>"I really like streaming services. It's a great way for people to find your music"</span></em></div>
+<p class="packt_quote1">- Kygo<em class="calibre8"><br class="title-page-name"/></em></p>
+<p class="mce-root">In this chapter, we will learn about Spark Streaming and find out how we can take advantage of it to process streams of data using the Spark API. Moreover, in this chapter, we will learn various ways of processing real-time streams of data using a practical example to consume and process tweets from Twitter. In a nutshell, the following topics will be covered throughout this chapter:</p>
+<ul class="calibre9">
+<li class="mce-root1">A brief introduction to streaming</li>
+<li class="mce-root1">Spark Streaming</li>
+<li class="mce-root1">Discretized streams</li>
+<li class="mce-root1">Stateful/stateless transformations</li>
+<li class="mce-root1">Checkpointing</li>
+<li class="mce-root1">Interoperability with streaming platforms (Apache Kafka)</li>
+<li class="mce-root1">Structured streaming</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8JJII1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">A Brief introduction to streaming</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">In today's world of interconnected devices and services, it is hard to even spend a few hours a day without our smartphone to check Facebook, or order an Uber ride, or tweet something about the burger you just bought, or check the latest news or sports updates on your favorite team. We depend on our phones and Internet, for a lot of things, whether it is to get work done, or just browse, or e-mail your friend. There is simply no way around this phenomenon, and the number and variety of applications and services will only grow over time.</p>
+<p class="mce-root">As a result, the smart devices are everywhere, and they generate a lot of data all the time. This phenomenon, also broadly referred to as the Internet of Things, has changed the dynamics of data processing forever. Whenever you use any of the services or apps on your iPhone, or Droid or Windows phone, in some shape or form, real-time data processing is at work. Since so much is depending on the quality and value of the apps, there is a lot of emphasis on how the various startups and established companies are tackling the complex challenges of <strong class="calibre1">SLAs</strong> (<strong class="calibre1">Service Level Agreements</strong>), and usefulness and also the timeliness of the data.</p>
+<p class="mce-root">One of the paradigms being researched and adopted by organisations and service providers is the building of very scalable, near real-time or real-time processing frameworks on a very cutting-edge platform or infrastructure. Everything must be fast and also reactive to changes and failures. You would not like it if your Facebook updated once every hour or if you received email only once a day; so, it is imperative that data flow, processing, and the usage are all as close to real time as possible. Many of the systems we are interested in monitoring or implementing generate a lot of data as an indefinite continuous stream of events.</p>
+<p class="mce-root">As in any other data processing system, we have the same fundamental challenges of a collection of data, storage, and processing of data. However, the additional complexity is due to the real-time needs of the platform. In order to collect such indefinite streams of events and then subsequently process all such events in order to generate actionable insights, we need to use highly scalable specialized architectures to deal with tremendous rates of events. As such, many systems have been built over the decades starting from AMQ, RabbitMQ, Storm, Kafka, Spark, Flink, Gearpump, Apex, and so on.</p>
+<p class="mce-root">Modern systems built to deal with such large amounts of streaming data come with very flexible and scalable technologies that are not only very efficient but also help realize the business goals much better than before. Using such technologies, it is possible to consume data from a variety of data sources and then use it in a variety of use cases almost immediately or at a later time as needed.</p>
+<p class="mce-root">Let us talk about what happens when you take out your smartphone and book an Uber ride to go to the airport. With a few touches on the smartphone screen, you're able to select a point, choose the credit card, make the payment, and book the ride. Once you're done with your transaction, you then get to monitor the progress of your car real-time on a map on your phone. As the car is making its way toward you, you're able to monitor exactly where the car is and you can also make a decision to pick up coffee at the local Starbucks while you're waiting for the car to pick you up.</p>
+<p class="mce-root">You could also make informed decisions regarding the car and the subsequent trip to the airport by looking at the expected time of arrival of the car. If it looks like the car is going to take quite a bit of time picking you up, and if this poses a risk to the flight you are about to catch, you could cancel the ride and hop in a taxi that just happens to be nearby. Alternatively, if it so happens that the traffic situation is not going to let you reach the airport on time, thus posing a risk to the flight you are due to catch, then you also get to make a decision regarding rescheduling or canceling your flight.</p>
+<p class="mce-root">Now in order to understand how such real-time streaming architectures work to provide such invaluable information, we need to understand the basic tenets of streaming architectures. On the one hand, it is very important for a real-time streaming architecture to be able to consume extreme amounts of data at very high rates while , on the other hand, also ensuring reasonable guarantees that the data that is getting ingested is also processed.</p>
+<p class="mce-root">The following images diagram shows a generic stream processing system with a producer putting events into a messaging system while a consumer is reading from the messaging system:</p>
+<div class="cdpaligncenter"><img class="image-border105" src="../images/00125.jpeg"/></div>
+<p class="mce-root">Processing of real-time streaming data can be categorized into the following three essential paradigms:</p>
+<ul class="calibre9">
+<li class="mce-root1">At least once processing</li>
+<li class="mce-root1">At most once processing</li>
+<li class="mce-root1">Exactly once processing</li>
+</ul>
+<p class="mce-root">Let's look at what these three stream processing paradigms mean to our business use cases.<br class="title-page-name"/>
+While exactly once processing of real-time events is the ultimate nirvana for us, it is very difficult to always achieve this goal in different scenarios. We have to compromise on the property of exactly once processing in cases where the benefit of such a guarantee is outweighed by the complexity of the implementation.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8KI341-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">At least once processing</h1>
+                
+            
+            <article>
+                
+<p class="mce-root"><span>The at least once processing paradigm involves a mechanism to save the position of the last event received <strong class="calibre1">only after</strong> the event is actually processed and results persisted somewhere so that, if there is a failure and the consumer restarts, the consumer will read the old events again and process them. However, since there is no guarantee that the received events were not processed at all or partially processed, this causes a potential duplication of events as they are fetched again. This results in the behavior that events ate processed at least once.</span></p>
+<p class="mce-root">At least once is ideally suitable for any application that involves updating some instantaneous ticker or gauge to show current values. Any cumulative sum, counter, or dependency on the accuracy of aggregations (<kbd class="calibre11">sum</kbd>, <kbd class="calibre11">groupBy</kbd>, and so on) does not fit the use case for such processing simply because duplicate events will cause incorrect results.</p>
+<p class="mce-root">The sequence of operations for the consumer are as follows:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">Save results</li>
+<li value="2" class="mce-root1">Save offsets</li>
+</ol>
+<p class="mce-root">Shown in the following is an illustration of what happens if there are a failure and <strong class="calibre1">consumer</strong> restarts. Since the events have already been processed but the offsets have not saved, the consumer will read from the previous offsets saved, thus causing duplicates. Event 0 is processed twice in the following figure:</p>
+<div class="cdpaligncenter"><img class="image-border106" src="../images/00277.jpeg"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8LGJM1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">At most once processing</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">The At most once processing paradigm involves a mechanism to save the position of the last event received before the event is actually processed and results persisted somewhere so that, if there is a failure and the consumer restarts, the consumer will not try to read the old events again. However, since there is no guarantee that the received events were all processed, this causes potential loss of events as they are never fetched again. This results in the behavior that the events are processed at most once or not processed at all.</p>
+<p class="mce-root">At most once is ideally suitable for any application that involves updating some instantaneous ticker or gauge to show current values, as well as any cumulative sum, counter, or other aggregation, provided accuracy is not mandatory or the application needs absolutely all events. Any events lost will cause incorrect results or missing results.</p>
+<p class="mce-root">The sequence of operations for the consumer are as follows:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">Save offsets</li>
+<li value="2" class="mce-root1">Save results</li>
+</ol>
+<p class="mce-root">Shown in the following is an illustration of what happens if there are a failure and the <strong class="calibre1">consumer</strong> restarts. Since the events have not been processed but offsets are saved, the consumer will read from the saved offsets, causing a gap in events consumed. Event 0 is never processed in the following figure:</p>
+<div class="cdpaligncenter"><img class="image-border107" src="../images/00340.jpeg"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8MF481-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Exactly once processing</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">The Exactly once processing paradigm is similar to the at least once paradigm, <span>and involves a mechanism to save the position of the last event received only after the event has actually been processed and the results persisted somewhere so that, if there is a failure and the consumer restarts, the consumer will read the old events again and process them. However, since there is no guarantee that the received events were not processed at all or were partially processed, this causes a potential duplication of events as they are fetched again. However, unlike the at least once paradigm, the duplicate events are not processed and are dropped, thus resulting in the exactly once paradigm.</span></p>
+<p class="mce-root">Exactly once processing paradigm is suitable for any application that involves accurate counters, aggregations, or which in general needs every event processed only once and also definitely once (without loss).</p>
+<p class="mce-root">The sequence of operations for the consumer are as follows:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">Save results</li>
+<li value="2" class="mce-root1">Save offsets</li>
+</ol>
+<p class="mce-root">The following is illustration shows what happens if there are a failure and the <strong class="calibre1">consumer</strong> restarts. Since the events have already been processed but offsets have not saved, the consumer will read from the previous offsets saved, thus causing duplicates. Event 0 is processed only once in the following figure because the <strong class="calibre1">consumer</strong> drops the duplicate event 0:</p>
+<div class="cdpaligncenter"><img class="image-border108" src="../images/00105.jpeg"/></div>
+<p class="mce-root">How does the Exactly once paradigm drop duplicates? There are two techniques which can help here:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">Idempotent updates</li>
+<li value="2" class="mce-root1">Transactional updates</li>
+</ol>
+<div class="packt_tip">Spark Streaming also implements structured streaming in Spark 2.0+, which support Exactly once processing out of the box. We will look at structured streaming later in this chapter.</div>
+<p class="mce-root">Idempotent updates involve saving results based on some unique ID/key generated so that, if there is a duplicate, the generated unique ID/key will already be in the results (for instance, a database) so that the consumer can drop the duplicate without updating the results. This is complicated as it's not always possible or easy to generate unique keys. It also requires additional processing on the consumer end. Another point is that the database can be separate for results and offsets.</p>
+<p class="mce-root">Transactional updates save results in batches that have a transaction beginning and a transaction commit phase within so that, when the commit occurs, we know that the events were processed successfully. Hence, when duplicate events are received, they can be dropped without updating results. This technique is much more complicated than the idempotent updates as now we need some transactional data store. <span>Another point is that the database must be the same for results and offsets.</span></p>
+<div class="packt_tip">You should look into the use case you're trying to build and see if at least once processing, or At most once processing, can be reasonably wide and still achieve an acceptable level of performance and accuracy.</div>
+<p class="mce-root">We will be looking at the paradigms closely when we learn about Spark Streaming and how to use Spark Streaming and consume events from Apache Kafka in the following sections.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8NDKQ1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Spark Streaming</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Spark Streaming is not the first streaming architecture to come into existence. Several technologies have existenced over time to deal with the real-time processing needs of various business use cases. Twitter Storm was one of the first popular stream processing technologies out there and was in used by many organizations fulfilling the needs of many businesses.</p>
+<p class="mce-root">Apache Spark comes with a streaming library, which has rapidly evolved to be the most widely used technology. Spark Streaming has some distinct advantages over the other technologies, the first and foremost being the tight integration between Spark Streaming APIs and the Spark core APIs making building a dual purpose real-time and batch analytical platform feasible and efficient than otherwise. Spark Streaming also integrates with Spark ML and Spark SQL, as well as GraphX, making it the most powerful stream processing technology that can serve many unique and complex use cases. In this section, we will look deeper into what Spark Streaming is all about.</p>
+<div class="packt_tip">For more information on Spark Streaming, you can refer to <a href="https://spark.apache.org/docs/2.1.0/streaming-programming-guide.html" class="calibre21">https://spark.apache.org/docs/2.1.0/streaming-programming-guide.html</a>.</div>
+<p class="mce-root">Spark Streaming supports several input sources and can write results to several sinks.</p>
+<div class="cdpaligncenter"><img class="image-border109" src="../images/00004.jpeg"/></div>
+<p class="mce-root">While Flink, Heron (successor to Twitter Storm), Samza, and so on all handle events as they are collected with minimal latency, Spark Streaming consumes continuous streams of data and then processes the collected data in the form of micro-batches. The size of the micro-batch can be as low as 500 milliseconds but usually cannot go lower than that.</p>
+<div class="packt_tip">Apache Apex, Gear pump, Flink, Samza, Heron, or other upcoming technologies compete with Spark Streaming in some use cases. If you need true event-by-event processing, then Spark Streaming is not the right fit for your use case.</div>
+<p class="mce-root">The way streaming works are by creating batches of events at regular time intervals as per configuration and delivering the micro-batches of data at every specified interval for further processing.</p>
+<div class="cdpaligncenter"><img class="image-border110" src="../images/00011.jpeg"/></div>
+<p class="mce-root">Just like <kbd class="calibre11">SparkContext,</kbd> Spark Streaming has a <kbd class="calibre11">StreamingContext</kbd>, which is the main entry point for the streaming job/application. <kbd class="calibre11"><span>StreamingContext</span></kbd> is dependent on <kbd class="calibre11">SparkContext</kbd>. In fact, the <kbd class="calibre11">SparkContext</kbd> can be directly used in the streaming job. The <kbd class="calibre11"><span>StreamingContext</span></kbd> is similar to the <span><kbd class="calibre11">SparkContext</kbd>,</span> except that <kbd class="calibre11"><span>StreamingContext</span></kbd> also requires the program to specify the time interval or duration of the batching interval, which can be in milliseconds or minutes.</p>
+<div class="packt_tip">Remember that <kbd class="calibre22">SparkContext</kbd> is the main point of entry, and the task scheduling and resource management is part of <kbd class="calibre22">SparkContext</kbd>, so <kbd class="calibre22">StreamingContext</kbd> reuses the logic.</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8OC5C1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">StreamingContext</h1>
+                
+            
+            <article>
+                
+<p class="mce-root"><span><kbd class="calibre11">StreamingContext</kbd> is the main entry point for streaming and essentially takes care of the streaming application, including checkpointing, transformations, and actions on DStreams of RDDs.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8PALU1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Creating StreamingContext</h1>
+                
+            
+            <article>
+                
+<p class="mce-root"><span><span>A new StreamingContext can be created in two ways:</span></span></p>
+<ol class="calibre14">
+<li value="1" class="mce-root1"><span>Create a <kbd class="calibre11">StreamingContext</kbd> using an existing <kbd class="calibre11">SparkContext</kbd> as follows:</span></li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      StreamingContext(<span>sparkContext</span>: <span>SparkContext</span>, <span>batchDuration</span>: <span>Duration</span>)<br class="title-page-name"/><br class="title-page-name"/></strong><strong class="calibre1">      scala&gt; val ssc = new StreamingContext(sc, Seconds(10))</strong>
+</pre>
+<ol start="2" class="calibre14">
+<li value="2" class="mce-root1">Create a <kbd class="calibre11">StreamingContext</kbd> by providing the configuration necessary for a new <kbd class="calibre11">SparkContext</kbd> <span>as follows:</span></li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      StreamingContext(<span>conf</span>: <span>SparkConf</span>, <span>batchDuration</span>: <span>Duration</span>)<br class="title-page-name"/><br class="title-page-name"/></strong><strong class="calibre1">      scala&gt; val conf = new SparkConf().setMaster("local[1]")<br class="title-page-name"/>                                       .setAppName("TextStreams")<br class="title-page-name"/>      scala&gt; val ssc = new StreamingContext(conf, Seconds(10))</strong>
+</pre>
+<ol start="3" class="calibre14">
+<li value="3" class="mce-root1">A third method is to use <kbd class="calibre11">getOrCreate()</kbd>, which is used to either recreate a <kbd class="calibre11">StreamingContext</kbd> from checkpoint data or to create a new <kbd class="calibre11">StreamingContext</kbd>. If checkpoint data exists in the provided <kbd class="calibre11">checkpointPath</kbd>, then <kbd class="calibre11">StreamingContext</kbd> will be recreated from the checkpoint data. If the data does not exist, then the <kbd class="calibre11">StreamingContext</kbd> will be created by calling the provided <kbd class="calibre11">creatingFunc</kbd>:</li>
+</ol>
+<pre class="calibre19">
+        def getOrCreate(<br class="title-page-name"/>          checkpointPath: String,<br class="title-page-name"/>          creatingFunc: () =&gt; StreamingContext,<br class="title-page-name"/>          hadoopConf: Configuration = SparkHadoopUtil.get.conf,<br class="title-page-name"/>          createOnError: Boolean = false<br class="title-page-name"/>        ): StreamingContext
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8Q96G1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Starting StreamingContext</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">The <kbd class="calibre11">start()</kbd> method starts the execution of the streams defined using the <kbd class="calibre11">StreamingContext</kbd>. This essentially starts the entire streaming application:</p>
+<pre class="calibre19">
+<strong class="calibre1">def start(): Unit</strong> <br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; ssc.start()</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8R7N21-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Stopping StreamingContext</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Stopping the <kbd class="calibre11">StreamingContext</kbd> stops all processing and you will have to recreate a new <kbd class="calibre11">StreamingContext</kbd> and invoke <kbd class="calibre11">start()</kbd> on it to restart the application. There are two APIs useful to stop a stream processing application.</p>
+<p class="mce-root">Stop the execution of the streams immediately (do not wait for all received data to be processed):</p>
+<pre class="calibre19">
+<strong class="calibre1">def stop(stopSparkContext: Boolean)<br class="title-page-name"/><br class="title-page-name"/></strong><strong class="calibre1">scala&gt; ssc.stop(false)</strong>
+</pre>
+<p class="mce-root">Stop the execution of the streams, with the option of ensuring that all received data has been processed:</p>
+<pre class="calibre19">
+<strong class="calibre1">def stop(stopSparkContext: Boolean, stopGracefully: Boolean)<br class="title-page-name"/><br class="title-page-name"/></strong><strong class="calibre1">scala&gt; ssc.stop(true, true)</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8S67K1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Input streams</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">There are several types of input streams such as <kbd class="calibre11">receiverStream</kbd> and <kbd class="calibre11">fileStream</kbd> that can be created using the <kbd class="calibre11">StreamingContext</kbd> as shown in the following subsections:</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8T4O61-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">receiverStream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Create an input stream with any arbitrary user implemented receiver. It can be customized to meet the use cases.</p>
+<div class="packt_tip"><br class="calibre23"/>
+Find more details at <a href="http://spark.apache.org/docs/latest/streaming-custom-receivers.html" class="calibre21">http://spark.apache.org/docs/latest/streaming-custom-receivers.html</a>.</div>
+<p class="mce-root">Following is the API declaration for the <kbd class="calibre11">receiverStream</kbd>:</p>
+<pre class="calibre19">
+<strong class="calibre1">
+def receiverStream[T: ClassTag](receiver: Receiver[T]): ReceiverInputDStream[T]</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8U38O1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">
+socketTextStream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">This creates an input stream from TCP source <kbd class="calibre11">hostname:port</kbd>. Data is received using a TCP socket and the received bytes are interpreted as UTF8 encoded <kbd class="calibre11">\n</kbd> delimited lines:</p>
+<pre class="calibre19">
+<strong class="calibre1">def socketTextStream(hostname: String, port: Int,</strong><br class="title-page-name"/><strong class="calibre1">      storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2):<br class="title-page-name"/>    ReceiverInputDStream[String]</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="8V1PA1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">
+rawSocketStream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Create an input stream from network source <kbd class="calibre11">hostname:port</kbd>, where data is received as serialized blocks (serialized using the Spark's serializer) that can be directly pushed into the block manager without deserializing them. This is the most efficient<br class="title-page-name"/>
+way to receive data.</p>
+<pre class="calibre19">
+<strong class="calibre1">def rawSocketStream[T: ClassTag](hostname: String, port: Int,</strong><br class="title-page-name"/><strong class="calibre1">      storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2):<br class="title-page-name"/>    ReceiverInputDStream[T]</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9009S1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">
+fileStream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Create an input stream that monitors a Hadoop-compatible filesystem for new files and reads them using the given key-value types and input format. Files must be written to the monitored directory by moving them from another location within the same filesystem. File names starting with a dot (<kbd class="calibre11">.</kbd>) are ignored, so this is an obvious choice for the moved file names in the monitored directory. Using an atomic file rename function call, the filename which starts with <kbd class="calibre11">.</kbd> can be now renamed to an actual usable filename so that <kbd class="calibre11">fileStream</kbd> can pick it up and let us process the file content:</p>
+<pre class="calibre19">
+<strong class="calibre1">def fileStream[K: ClassTag, V: ClassTag, F &lt;: NewInputFormat[K, V]: ClassTag] (directory: String): InputDStream[(K, V)]</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="90UQE1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">textFileStream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Create an input stream that monitors a Hadoop-compatible filesystem for new files and reads them as text files (using a key as <kbd class="calibre11">LongWritable</kbd>, value as Text, and input format as <kbd class="calibre11">TextInputFormat</kbd>). Files must be written to the monitored directory by moving them from another location within the same filesystem. File names starting with . are ignored:</p>
+<pre class="calibre19">
+<strong class="calibre1">def textFileStream(directory: String): DStream[String]</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="91TB01-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">
+binaryRecordsStream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Create an input stream that monitors a Hadoop-compatible filesystem for new files and reads them as flat binary files, assuming a fixed length per record, generating one byte array per record. Files must be written to the monitored directory by moving them from another location within the same filesystem. File names starting with <kbd class="calibre11">.</kbd> are ignored:</p>
+<pre class="calibre19">
+<strong class="calibre1">def binaryRecordsStream(directory: String, recordLength: Int): DStream[Array[Byte]]</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="92RRI1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">queueStream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Create an input stream from a queue of RDDs. In each batch, it will process either one or all of the RDDs returned by the queue:</p>
+<pre class="calibre19">
+<strong class="calibre1">def queueStream[T: ClassTag](queue: Queue[RDD[T]], oneAtATime: Boolean = true): InputDStream[T]</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="93QC41-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">textFileStream example</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Shown in the following is a simple example of Spark Streaming using <kbd class="calibre11">textFileStream</kbd>. In this example, we create a <kbd class="calibre11">StreamingContext</kbd> from the spark-shell <kbd class="calibre11">SparkContext</kbd> (<kbd class="calibre11">sc</kbd>) and an interval of 10 seconds. This starts the <kbd class="calibre11">textFileStream</kbd>, which monitors the directory named <strong class="calibre1">streamfiles</strong> and processes any new file found in the directory. In this example, we are simply printing the number of elements in the RDD:</p>
+<pre class="calibre19">
+<strong class="calibre1">scala&gt; import org.apache.spark._</strong><br class="title-page-name"/><strong class="calibre1">scala&gt; import org.apache.spark.streaming._</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; val ssc = new StreamingContext(sc, Seconds(10))</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; val filestream = ssc.textFileStream("streamfiles")</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; filestream.foreachRDD(rdd =&gt; {println(rdd.count())})</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; ssc.start</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="94OSM1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">twitterStream example</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Let us look at another example of how we can process tweets from Twitter using Spark Streaming:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">First, open a terminal and change the directory to <kbd class="calibre11">spark-2.1.1-bin-hadoop2.7</kbd>.</li>
+<li value="2" class="mce-root1">Create a folder <span><span><kbd class="calibre11">streamouts</kbd> under the <kbd class="calibre11">spark-2.1.1-bin-hadoop2.7</kbd> folder where you have spark installed. When the application runs, <kbd class="calibre11">streamouts</kbd> folder will have collected tweets to text files.</span></span></li>
+</ol>
+<p class="mce-root"> </p>
+<ol start="3" class="calibre14">
+<li value="3" class="mce-root1">Download the following jars into the directory:
+<ul class="calibre38">
+<li class="mce-root1"><a href="http://central.maven.org/maven2/org/apache/bahir/spark-streaming-twitter_2.11/2.1.0/spark-streaming-twitter_2.11-2.1.0.jar" class="calibre10">http://central.maven.org/maven2/org/apache/bahir/spark-streaming-twitter_2.11/2.1.0/spark-streaming-twitter_2.11-2.1.0.jar</a></li>
+<li class="mce-root1"><a href="http://central.maven.org/maven2/org/twitter4j/twitter4j-core/4.0.6/twitter4j-core-4.0.6.jar" class="calibre10">http://central.maven.org/maven2/org/twitter4j/twitter4j-core/4.0.6/twitter4j-core-4.0.6.jar</a></li>
+<li class="mce-root1"><a href="http://central.maven.org/maven2/org/twitter4j/twitter4j-stream/4.0.6/twitter4j-stream-4.0.6.jar" class="calibre10">http://central.maven.org/maven2/org/twitter4j/twitter4j-stream/4.0.6/twitter4j-stream-4.0.6.jar</a></li>
+</ul>
+</li>
+</ol>
+<ol start="4" class="calibre14">
+<li value="4" class="mce-root1">Launch spark-shell with the jars needed for Twitter integration specified:</li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      ./bin/spark-shell --jars twitter4j-stream-4.0.6.jar,<br class="title-page-name"/>                               twitter4j-core-4.0.6.jar,<br class="title-page-name"/>                               spark-streaming-twitter_2.11-2.1.0.jar</strong>
+</pre>
+<ol start="5" class="calibre14">
+<li value="5" class="mce-root1">Now, we can write a sample code. Shown in the following is the code to test Twitter event processing:</li>
+</ol>
+<pre class="calibre19">
+        import org.apache.spark._<br class="title-page-name"/>        import org.apache.spark.streaming._<br class="title-page-name"/>        import org.apache.spark.streaming.Twitter._<br class="title-page-name"/>        import twitter4j.auth.OAuthAuthorization<br class="title-page-name"/>        import twitter4j.conf.ConfigurationBuilder<br class="title-page-name"/><br class="title-page-name"/>        //you can replace the next 4 settings with your own Twitter<br class="title-page-name"/>              account settings.<br class="title-page-name"/>        System.setProperty("twitter4j.oauth.consumerKey",<br class="title-page-name"/>                           "8wVysSpBc0LGzbwKMRh8hldSm") <br class="title-page-name"/>        System.setProperty("twitter4j.oauth.consumerSecret",<br class="title-page-name"/>                  "FpV5MUDWliR6sInqIYIdkKMQEKaAUHdGJkEb4MVhDkh7dXtXPZ") <br class="title-page-name"/>        System.setProperty("twitter4j.oauth.accessToken",<br class="title-page-name"/>                  "817207925756358656-yR0JR92VBdA2rBbgJaF7PYREbiV8VZq") <br class="title-page-name"/>        System.setProperty("twitter4j.oauth.accessTokenSecret",<br class="title-page-name"/>                  "JsiVkUItwWCGyOLQEtnRpEhbXyZS9jNSzcMtycn68aBaS")<br class="title-page-name"/><br class="title-page-name"/>        val ssc = new StreamingContext(sc, Seconds(10))<br class="title-page-name"/><br class="title-page-name"/>        val twitterStream = TwitterUtils.createStream(ssc, None)<br class="title-page-name"/><br class="title-page-name"/>        twitterStream.saveAsTextFiles("streamouts/tweets", "txt")<br class="title-page-name"/>        ssc.start()<br class="title-page-name"/><br class="title-page-name"/>        //wait for 30 seconds<br class="title-page-name"/><br class="title-page-name"/>        ss.stop(false)
+</pre>
+<p class="mce-root">You will see the <kbd class="calibre11">streamouts</kbd> folder contains several <kbd class="calibre11">tweets</kbd> output in text files. You can now open the directory <kbd class="calibre11">streamouts</kbd> and check that the files contain <kbd class="calibre11">tweets</kbd>.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="95ND81-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Discretized streams</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Spark Streaming is built on an abstraction called <strong class="calibre1">Discretized Streams</strong> referred, to as <strong class="calibre1">DStreams</strong>. A DStream is represented as a sequence of RDDs, with each RDD created at each time interval. The <span>DStream</span> can be processed in a similar fashion to regular RDDs using similar concepts such as a directed cyclic graph-based execution plan (Directed Acyclic Graph). Just like a regular RDD processing, the transformations and actions that are part of the execution plan are handled for the DStreams.</p>
+<p class="mce-root">DStream essentially divides a never ending stream of data into smaller chunks known as micro-batches based on a time interval, materializing each individual micro-batch as a RDD which can then processed as a regular RDD. Each such micro-batch is processed independently and no state is maintained between micro-batches thus making the processing stateless by nature. Let's say the batch interval is 5 seconds, then while events are being consumed, real-time and a micro-batch are created at every 5-second interval and the micro-batch is handed over for further processing as an RDD. One of the main advantages of Spark Streaming is that the API calls used to process the micro-batch of events are very tightly integrated into the spark for APIs to provide seamless integration with the rest of the architecture. When a micro-batch is created, it gets turned into an RDD, which makes it a seamless process using spark APIs.</p>
+<p class="mce-root">The <kbd class="calibre11">DStream</kbd> class looks like the following in the source code showing the most important variable, a <kbd class="calibre11">HashMap[Time, RDD]</kbd> pairs:</p>
+<pre class="calibre19">
+class DStream[T: ClassTag] (var ssc: StreamingContext)<br class="title-page-name"/><br class="title-page-name"/>//hashmap of RDDs in the DStream<br class="title-page-name"/>var generatedRDDs = new HashMap[Time, RDD[T]]()
+</pre>
+<p class="mce-root">Shown in the following is an illustration of a DStream comprising an RDD created every <strong class="calibre1">T</strong> seconds:</p>
+<div class="cdpaligncenter"><img class="image-border111" src="../images/00076.jpeg"/></div>
+<p class="mce-root">In the following example, a streaming context is created to create micro-batches every 5 seconds and to create an RDD, which is just like a Spark core API RDD. The RDDs in the DStream can be processed just like any other RDD.</p>
+<p class="mce-root">The steps involved in building a streaming application are as follows:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">Create a <kbd class="calibre11">StreamingContext</kbd> from the <kbd class="calibre11">SparkContext</kbd>.</li>
+<li value="2" class="mce-root1">Create a <kbd class="calibre11">DStream</kbd> from <span><kbd class="calibre11">StreamingContext</kbd>.</span></li>
+<li value="3" class="mce-root1">Provide transformations and actions that can be applied to each RDD.</li>
+<li value="4" class="mce-root1">Finally, the streaming application is started by calling <kbd class="calibre11">start()</kbd> on the <span><kbd class="calibre11">StreamingContext</kbd>. This</span> starts the entire process of consuming and processing real-time events.</li>
+</ol>
+<div class="packt_tip">Once the Spark Streaming application has started, no further operations can be added. A stopped context cannot be restarted and you have to create a new streaming context if such a need arises.</div>
+<p class="mce-root">Shown in the following is an example of how to create a simple streaming job accessing Twitter:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">Create a <kbd class="calibre11">StreamingContext</kbd> from the <kbd class="calibre11">SparkContext</kbd>:</li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      scala&gt; val ssc = new StreamingContext(sc, Seconds(5))</strong><br class="title-page-name"/>      <strong class="calibre1">ssc: org.apache.spark.streaming.StreamingContext = </strong><br class="title-page-name"/><strong class="calibre1">        org.apache.spark.streaming.StreamingContext@8ea5756</strong>
+</pre>
+<ol start="2" class="calibre14">
+<li value="2" class="mce-root1">Create a <kbd class="calibre11">DStream</kbd> from <span><kbd class="calibre11">StreamingContext</kbd>:</span></li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      scala&gt; val twitterStream = TwitterUtils.createStream(ssc, None)</strong><br class="title-page-name"/>      <strong class="calibre1">twitterStream: org.apache.spark.streaming.dstream</strong><br class="title-page-name"/><strong class="calibre1">      .ReceiverInputDStream[twitter4j.Status] = </strong><br class="title-page-name"/><strong class="calibre1">      org.apache.spark.streaming.Twitter.TwitterInputDStream@46219d14</strong>
+</pre>
+<ol start="3" class="calibre14">
+<li value="3" class="mce-root1">Provide transformations and actions that can be applied to each RDD:</li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      val aggStream = twitterStream</strong><br class="title-page-name"/><strong class="calibre1">         .flatMap(x =&gt; x.getText.split(" ")).filter(_.startsWith("#"))</strong><br class="title-page-name"/><strong class="calibre1">         .map(x =&gt; (x, 1))</strong><br class="title-page-name"/><strong class="calibre1">         .reduceByKey(_ + _)</strong>
+</pre>
+<ol start="4" class="calibre14">
+<li value="4" class="mce-root1">Finally, the streaming application is started by calling <kbd class="calibre11">start()</kbd> on the <span><kbd class="calibre11">StreamingContext</kbd>. This</span> starts the entire process of consuming and processing real-time events:</li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      ssc.start()<br class="title-page-name"/></strong>      //to stop just call stop on the StreamingContext<br class="title-page-name"/><strong class="calibre1">      ssc.stop(false)</strong>
+</pre>
+<ol start="5" class="calibre14">
+<li value="5" class="mce-root1">Created a <kbd class="calibre11">DStream</kbd> of type <kbd class="calibre11">ReceiverInputDStream</kbd>, which is defined as an abstract class for defining any <kbd class="calibre11">InputDStream</kbd> that has to start a receiver on worker nodes to receive external data. Here, we are receiving from Twitter stream:</li>
+</ol>
+<pre class="calibre19">
+        class InputDStream[T: ClassTag](_ssc: StreamingContext) extends<br class="title-page-name"/>                                        DStream[T](_ssc)<br class="title-page-name"/><br class="title-page-name"/>        class ReceiverInputDStream[T: ClassTag](_ssc: StreamingContext)<br class="title-page-name"/>                                  extends InputDStream[T](_ssc)
+</pre>
+<ol start="6" class="calibre14">
+<li value="6" class="mce-root1">If you run a transformation <kbd class="calibre11">flatMap()</kbd> on the <kbd class="calibre11">twitterStream</kbd>, you get a <kbd class="calibre11">FlatMappedDStream</kbd>, as shown in the following:</li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      scala&gt; val wordStream = twitterStream.flatMap(x =&gt; x.getText()<br class="title-page-name"/>                                                          .split(" "))</strong><br class="title-page-name"/>      <strong class="calibre1">wordStream: org.apache.spark.streaming.dstream.DStream[String] = </strong><br class="title-page-name"/><strong class="calibre1">      org.apache.spark.streaming.dstream.FlatMappedDStream@1ed2dbd5</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="96LTQ1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Transformations</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Transformations on a DStream are similar to the transformations applicable to a Spark core RDD. Since DStream consists of RDDs, a transformation also applies to each RDD to generate a transformed RDD for the RDD, and then a transformed DStream is created. Every transformation creates a specific <kbd class="calibre11">DStream</kbd> derived class.</p>
+<p class="mce-root">The following diagram shows the hierarchy of <kbd class="calibre11">DStream</kbd> classes starting from the parent <kbd class="calibre11">DStream</kbd> class. We can also see the different classes inheriting from the parent class:</p>
+<div class="cdpaligncenter"><img class="image-border112" src="../images/00019.jpeg"/></div>
+<p class="mce-root">There are a lot of <kbd class="calibre11">DStream</kbd> classes purposely built for the functionality. Map transformations, window functions, reduce actions, and different types of input streams are all implemented using different class derived from <kbd class="calibre11">DStream</kbd> class.</p>
+<p class="mce-root">Shown in the following is an illustration of a transformation on a base DStream to generate a filtered DStream. Similarly, any transformation is applicable to a DStream:</p>
+<div class="cdpaligncenter"><img class="image-border113" src="../images/00382.jpeg"/></div>
+<p class="mce-root">Refer to the following table for the types of transformations possible.</p>
+<table class="calibre24">
+<tbody class="calibre5">
+<tr class="calibre6">
+<th class="calibre30">Transformation</th>
+<th class="calibre30">Meaning</th>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">map(func)</kbd></td>
+<td class="calibre7">This applies the transformation function to each element of the DStream and returns a new DStream.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">flatMap(func)</kbd></td>
+<td class="calibre7">This is similar to map; however, just like RDD's <kbd class="calibre34">flatMap</kbd> versus map, using <kbd class="calibre34">flatMap</kbd> operates on each element and applies <kbd class="calibre34">flatMap</kbd>, producing multiple output items per each input.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">filter(func)</kbd></td>
+<td class="calibre7">This filters out the records of the DStream to return a new DStream.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">repartition(numPartitions)</kbd></td>
+<td class="calibre7">This creates more or fewer partitions to redistribute the data to change the parallelism.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">union(otherStream)</kbd></td>
+<td class="calibre7">This combines the elements in two source DStreams and returns a new DStream.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">count()</kbd></td>
+<td class="calibre7">This returns a new DStream by counting the number of elements in each RDD of the source DStream.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">reduce(func)</kbd></td>
+<td class="calibre7">This returns a new DStream by applying the <kbd class="calibre34">reduce</kbd> function on each element of the source DStream.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">countByValue()</kbd></td>
+<td class="calibre7">This computes the frequency of each key and returns a new DStream of (key, long) pairs.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">reduceByKey(func, [numTasks])</kbd></td>
+<td class="calibre7"><span>This aggregates the data by key in the source DStream's RDDs and returns a new DStream of (key, value) pairs.</span></td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">join(otherStream, [numTasks])</kbd></td>
+<td class="calibre7">This joins two DStreams of <em class="calibre8">(K, V)</em> and <em class="calibre8">(K, W)</em> pairs and returns a new DStream of <em class="calibre8">(K, (V, W))</em> pairs combining the values from both DStreams.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">cogroup(otherStream, [numTasks])</kbd></td>
+<td class="calibre7"><kbd class="calibre34">cogroup()</kbd>, when called on a DStream of <em class="calibre8">(K, V)</em> and <em class="calibre8">(K, W)</em> pairs, will return a new DStream of <em class="calibre8">(K, Seq[V], Seq[W])</em> tuples.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">transform(func)</kbd></td>
+<td class="calibre7">This applies a transformation function on each RDD of the source DStream and returns a new DStream.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">updateStateByKey(func)</kbd></td>
+<td class="calibre7">This updates the state for each key by applying the given function on the previous state of the key and the new values for the key. Typically, it used to maintain a state machine.</td>
+</tr>
+</tbody>
+</table>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header id="97KEC2-21aec46d8593429cacea59dbdcd64e1c">
+                    </header><h1 class="header-title" id="calibre_pb_0">Window operations</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Spark Streaming provides windowed processing, which allows you to apply transformations over a sliding window of events. The sliding window is created over an interval specified. Every time the window slides over a source DStream, the source RDDs, which fall within the window specification, are combined and operated upon to generate the windowed DStream. There are two parameters that need to be specified for the window:</p>
+<ul class="calibre9">
+<li class="mce-root1"><strong class="calibre1">Window length: This specifies the length in interval considered as the window</strong></li>
+<li class="mce-root1">Sliding interval: This is the interval at which the window is created</li>
+</ul>
+<div class="packt_tip">The window length and the sliding interval must both be a multiple of the block interval.</div>
+<p class="mce-root">Shown in the following is an illustration shows a DStream with a sliding window operation showing how the old window (dotted line rectangle) slides by one interval to the right into the new window (solid line rectangle):</p>
+<div class="cdpaligncenter"><img class="image-border114" src="../images/00028.jpeg"/></div>
+<p class="mce-root">Some of the common window operation are as follows.</p>
+<table class="calibre24">
+<tbody class="calibre5">
+<tr class="calibre6">
+<th class="calibre30">Transformation</th>
+<th class="calibre30">Meaning</th>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">window(windowLength, slideInterval)</kbd></td>
+<td class="calibre7">This creates a window on the source DStream and returns the same as a new DStream.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">countByWindow(windowLength, slideInterval)</kbd></td>
+<td class="calibre7">This returns count of elements in the DStream by applying a sliding window.</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">reduceByWindow(func, windowLength, slideInterval)</kbd></td>
+<td class="calibre7"><span>This returns a new DStream by applying the reduce function on each element of the source DStream after creating a sliding window of length <kbd class="calibre34">windowLength</kbd>.</span></td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">reduceByKeyAndWindow(func, windowLength, slideInterval, [numTasks])</kbd></td>
+<td class="calibre7"><span>This aggregates the data by key in the window applied to the source DStream's RDDs and returns a new DStream of (key, value) pairs. The computation is provided by function <kbd class="calibre34">func</kbd>.</span></td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">reduceByKeyAndWindow(func, invFunc, windowLength, slideInterval, [numTasks])</kbd></td>
+<td class="calibre7">
+<p class="mce-root"><span>This aggregates the data by key in the window applied to the source DStream's RDDs and returns a new DStream of (key, value) pairs. The key difference between the preceding function and this one is the <kbd class="calibre11">invFunc</kbd>, which provides the computation to be done at the beginning of the sliding window.</span></p>
+</td>
+</tr>
+<tr class="calibre6">
+<td class="calibre7"><kbd class="calibre34">countByValueAndWindow(windowLength, slideInterval, [numTasks])</kbd></td>
+<td class="calibre7"><span>This computes the frequency of each key and returns a new DStream of (key, long) pairs within the sliding window as specified.</span></td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root">Let us look at the Twitter stream example in more detail. Our goal is to print the top five words used in tweets streamed every five seconds, using a window of length 15 seconds, sliding every 10 seconds. Hence, we can get the top five words in 15 seconds.</p>
+<p class="mce-root">To run this code, follow these steps:</p>
+<ol class="calibre14">
+<li value="1" class="mce-root1">First, open a terminal and change directory to <kbd class="calibre11">spark-2.1.1-bin-hadoop2.7</kbd>.</li>
+<li value="2" class="mce-root1">Create a folder <span><kbd class="calibre11">streamouts</kbd> under the <kbd class="calibre11">spark-2.1.1-bin-hadoop2.7</kbd> folder where you have spark installed. When the application runs, the <kbd class="calibre11">streamouts</kbd> folder will have collected tweets to text files.</span></li>
+<li value="3" class="mce-root1">Download the following jars into the directory:
+<ul class="calibre38">
+<li class="mce-root1"><a href="http://central.maven.org/maven2/org/apache/bahir/spark-streaming-twitter_2.11/2.1.0/spark-streaming-twitter_2.11-2.1.0.jar" class="calibre10">http://central.maven.org/maven2/org/apache/bahir/spark-streaming-twitter_2.11/2.1.0/spark-streaming-twitter_2.11-2.1.0.jar</a></li>
+<li class="mce-root1"><a href="http://central.maven.org/maven2/org/twitter4j/twitter4j-core/4.0.6/twitter4j-core-4.0.6.jar" class="calibre10">http://central.maven.org/maven2/org/twitter4j/twitter4j-core/4.0.6/twitter4j-core-4.0.6.jar</a></li>
+<li class="mce-root1"><a href="http://central.maven.org/maven2/org/twitter4j/twitter4j-stream/4.0.6/twitter4j-stream-4.0.6.jar" class="calibre10">http://central.maven.org/maven2/org/twitter4j/twitter4j-stream/4.0.6/twitter4j-stream-4.0.6.jar</a></li>
+</ul>
+</li>
+<li value="4" class="mce-root1">Launch spark-shell with the jars needed for Twitter integration specified:</li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      ./bin/spark-shell --jars twitter4j-stream-4.0.6.jar,<br class="title-page-name"/>                               twitter4j-core-4.0.6.jar,<br class="title-page-name"/>                               spark-streaming-twitter_2.11-2.1.0.jar</strong>
+</pre>
+<ol start="5" class="calibre14">
+<li value="5" class="mce-root1">Now, we can write the code. Shown in the following is the code used to test Twitter event processing:</li>
+</ol>
+<pre class="calibre19">
+        import org.apache.log4j.Logger<br class="title-page-name"/>        import org.apache.log4j.Level<br class="title-page-name"/>        Logger.getLogger("org").setLevel(Level.OFF)<br class="title-page-name"/><br class="title-page-name"/>       import java.util.Date<br class="title-page-name"/>       import org.apache.spark._<br class="title-page-name"/>       import org.apache.spark.streaming._<br class="title-page-name"/>       import org.apache.spark.streaming.Twitter._<br class="title-page-name"/>       import twitter4j.auth.OAuthAuthorization<br class="title-page-name"/>       import twitter4j.conf.ConfigurationBuilder<br class="title-page-name"/><br class="title-page-name"/>       System.setProperty("twitter4j.oauth.consumerKey",<br class="title-page-name"/>                          "8wVysSpBc0LGzbwKMRh8hldSm")<br class="title-page-name"/>       System.setProperty("twitter4j.oauth.consumerSecret",<br class="title-page-name"/>                  "FpV5MUDWliR6sInqIYIdkKMQEKaAUHdGJkEb4MVhDkh7dXtXPZ")<br class="title-page-name"/>       System.setProperty("twitter4j.oauth.accessToken",<br class="title-page-name"/>                  "817207925756358656-yR0JR92VBdA2rBbgJaF7PYREbiV8VZq")<br class="title-page-name"/>       System.setProperty("twitter4j.oauth.accessTokenSecret",<br class="title-page-name"/>                  "JsiVkUItwWCGyOLQEtnRpEhbXyZS9jNSzcMtycn68aBaS")<br class="title-page-name"/><br class="title-page-name"/>       val ssc = new StreamingContext(sc, Seconds(5))<br class="title-page-name"/><br class="title-page-name"/>       val twitterStream = TwitterUtils.createStream(ssc, None)<br class="title-page-name"/><br class="title-page-name"/>       val aggStream = twitterStream<br class="title-page-name"/>             .flatMap(x =&gt; x.getText.split(" "))<br class="title-page-name"/>             .filter(_.startsWith("#"))<br class="title-page-name"/>             .map(x =&gt; (x, 1))<br class="title-page-name"/>             .reduceByKeyAndWindow(_ + _, _ - _, Seconds(15),<br class="title-page-name"/>                                   Seconds(10), 5)<br class="title-page-name"/><br class="title-page-name"/>       ssc.checkpoint("checkpoints")<br class="title-page-name"/>       aggStream.checkpoint(Seconds(10))<br class="title-page-name"/><br class="title-page-name"/>       aggStream.foreachRDD((rdd, time) =&gt; {<br class="title-page-name"/>         val count = rdd.count()<br class="title-page-name"/> <br class="title-page-name"/>         if (count &gt; 0) {<br class="title-page-name"/>           val dt = new Date(time.milliseconds)<br class="title-page-name"/>           println(s"\n\n$dt rddCount = $count\nTop 5 words\n")<br class="title-page-name"/>           val top5 = rdd.sortBy(_._2, ascending = false).take(5)<br class="title-page-name"/>           top5.foreach {<br class="title-page-name"/>             case (word, count) =&gt;<br class="title-page-name"/>             println(s"[$word] - $count")<br class="title-page-name"/>           }<br class="title-page-name"/>         }<br class="title-page-name"/>       })<br class="title-page-name"/><br class="title-page-name"/>       ssc.start<br class="title-page-name"/><br class="title-page-name"/>       //wait 60 seconds<br class="title-page-name"/>       ss.stop(false)
+</pre>
+<ol start="6" class="calibre14">
+<li value="6" class="mce-root1">The output is displayed on the console every 15 seconds and looks something like the following:</li>
+</ol>
+<pre class="calibre19">
+<strong class="calibre1">      Mon May 29 02:44:50 EDT 2017 rddCount = 1453</strong><br class="title-page-name"/><strong class="calibre1">      Top 5 words</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">      [#RT] - 64</strong><br class="title-page-name"/><strong class="calibre1">      [#de] - 24</strong><br class="title-page-name"/><strong class="calibre1">      [#a] - 15</strong><br class="title-page-name"/><strong class="calibre1">      [#to] - 15</strong><br class="title-page-name"/><strong class="calibre1">      [#the] - 13</strong><br class="title-page-name"/><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">      Mon May 29 02:45:00 EDT 2017 rddCount = 3312</strong><br class="title-page-name"/><strong class="calibre1">      Top 5 words</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">      [#RT] - 161</strong><br class="title-page-name"/><strong class="calibre1">      [#df] - 47</strong><br class="title-page-name"/><strong class="calibre1">      [#a] - 35</strong><br class="title-page-name"/><strong class="calibre1">      [#the] - 29</strong><br class="title-page-name"/><strong class="calibre1">      [#to] - 29</strong><br class="title-page-name"/><br class="title-page-name"/>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="98IUU1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Stateful/stateless transformations</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">As seen previously, Spark Streaming uses a concept of DStreams, which are essentially micro-batches of data created as RDDs. We also saw types of transformations that are possible on DStreams. The transformations on DStreams can be grouped into two types: <strong class="calibre1">Stateless transformations</strong> and <strong class="calibre1">Stateful transformations.</strong></p>
+<p class="mce-root">In Stateless transformations, the processing of each micro-batch of data does not depend on the previous batches of data. Thus, this is a stateless transformation, with each batch doing its own processing independently of anything that occurred prior to this batch.</p>
+<p class="mce-root">In Stateful transformations, the processing of each micro-batch of data depends on the previous batches of data either fully or partially. Thus, this is a stateful transformation, with each batch considering what happened prior to this batch and then using the information while computing the data in this batch.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="99HFG1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Stateless transformations</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Stateless transformations transform one DStream to another by applying transformations to each of the RDDs within the DStream. Transformations such as <kbd class="calibre11">map()</kbd>, <kbd class="calibre11">flatMap()</kbd>, <kbd class="calibre11">union()</kbd>, <kbd class="calibre11">join()</kbd>, and <kbd class="calibre11">reduceByKey</kbd> are all examples of stateless transformations.</p>
+<p class="mce-root">Shown in the following is an illustration showing a <kbd class="calibre11">map()</kbd> transformation on <kbd class="calibre11">inputDStream</kbd> to generate a new <kbd class="calibre11">mapDstream</kbd>:</p>
+<div class="cdpaligncenter"><img class="image-border115" src="../images/00210.jpeg"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9AG021-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Stateful transformations</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Stateful transformations operate on a DStream, but the computations depend on the previous state of processing. Operations such as <kbd class="calibre11"><span>countByValueAndWindow</span></kbd>, <kbd class="calibre11">reduceByKeyAndWindow</kbd> , <kbd class="calibre11">mapWithState</kbd>, <span>and <kbd class="calibre11">updateStateByKey</kbd> are all examples of stateful transformations. In fact, all window-based transformations are all stateful because, by the definition of window operations, we need to keep track of the window length and sliding interval of DStream.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9BEGK1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Checkpointing</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Real-time streaming applications are meant to be long running and resilient to failures of all sorts. Spark Streaming implements a checkpointing mechanism that maintains enough information to recover from failures.</p>
+<p class="mce-root">There are two types of data that needs to be checkpointed:</p>
+<ul class="calibre9">
+<li class="mce-root1">Metadata checkpointing</li>
+<li class="mce-root1">Data checkpointing</li>
+</ul>
+<p class="mce-root">Checkpointing can be enabled by calling <kbd class="calibre11">checkpoint()</kbd> function on the <kbd class="calibre11">StreamingContext</kbd> as follows:</p>
+<pre class="calibre19">
+<strong class="calibre1">def checkpoint(directory: String)</strong><strong class="calibre1"><br class="title-page-name"/></strong>
+</pre>
+<p class="mce-root">Specifies the directory where the checkpoint data will be reliably stored.</p>
+<div class="packt_tip"><br class="calibre23"/>
+Note that this must be a fault-tolerant file system like HDFS.</div>
+<p class="mce-root">Once checkpoint directory is set, any DStream can be checkpointed into the directory based on a specified interval. Looking at the Twitter example, we can checkpoint each DStream every 10 seconds into the directory <kbd class="calibre11">checkpoints</kbd>:</p>
+<pre class="calibre19">
+val ssc = new StreamingContext(sc, Seconds(5))<br class="title-page-name"/><br class="title-page-name"/>val twitterStream = TwitterUtils.createStream(ssc, None)<br class="title-page-name"/><br class="title-page-name"/>val wordStream = twitterStream.flatMap(x =&gt; x.getText().split(" "))<br class="title-page-name"/><br class="title-page-name"/>val aggStream = twitterStream<br class="title-page-name"/> .flatMap(x =&gt; x.getText.split(" ")).filter(_.startsWith("#"))<br class="title-page-name"/> .map(x =&gt; (x, 1))<br class="title-page-name"/> .reduceByKeyAndWindow(_ + _, _ - _, Seconds(15), Seconds(10), 5)<br class="title-page-name"/><br class="title-page-name"/>ssc.checkpoint("checkpoints")<br class="title-page-name"/><br class="title-page-name"/>aggStream.checkpoint(Seconds(10))<br class="title-page-name"/><br class="title-page-name"/>wordStream.checkpoint(Seconds(10))
+</pre>
+<p class="mce-root">The <kbd class="calibre11">checkpoints</kbd> directory looks something like the following after few seconds, showing the metadata as well as the RDDs and the <kbd class="calibre11">logfiles</kbd> are maintained as part of the checkpointing:</p>
+<div class="cdpaligncenter"><img class="image-border116" src="../images/00246.jpeg"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9CD161-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Metadata checkpointing</h1>
+                
+            
+            <article>
+                
+<p class="mce-root"><strong class="calibre1">Metadata checkpointing</strong> saves information defining the streaming operations, which are represented by a <strong class="calibre1">Directed Acyclic Graph</strong> (<strong class="calibre1">DAG</strong>) to the HDFS. This can be used to recover the DAG, if there is a failure and the application is restarted. The driver restarts and reads the metadata from HDFS, and rebuilds the DAG and recovers all the operational state before the crash.</p>
+<p class="mce-root">Metadata includes the following:</p>
+<ul class="calibre9">
+<li class="mce-root1"><strong class="calibre1">Configuration</strong>: the configuration that was used to create the streaming application</li>
+<li class="mce-root1"><strong class="calibre1">DStream operations</strong>: the set of DStream operations that define the streaming application</li>
+<li class="mce-root1"><strong class="calibre1">Incomplete batches</strong>: batches whose jobs are queued but have not completed yet</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9DBHO1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Data checkpointing</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Data checkpointing saves the actual RDDs to HDFS so that, if there is a failure of the Streaming application, the application can recover the checkpointed RDDs and continue from where it left off. While streaming application recovery is a good use case for the data checkpointing, checkpointing also helps in achieving better performance whenever some RDDs are lost because of cache cleanup or loss of an executor by instantiating the generated RDDs without a need to wait for all the parent RDDs in the lineage (DAG) to be recomputed.</p>
+<p class="mce-root">Checkpointing must be enabled for applications with any of the following requirements:</p>
+<ul class="calibre9">
+<li class="mce-root1"><strong class="calibre1">Usage of stateful transformations</strong>: If either <kbd class="calibre11">updateStateByKey</kbd> or <kbd class="calibre11">reduceByKeyAndWindow</kbd> (with inverse function) is used in the application, then the checkpoint directory must be provided to allow for periodic RDD checkpointing.</li>
+<li class="mce-root1"><strong class="calibre1">Recovering from failures of the driver running the application</strong>: Metadata checkpoints are used to recover with progress information.</li>
+</ul>
+<p class="mce-root">If your streaming application does not have the stateful transformations, then the application can be run without enabling checkpointing.</p>
+<div class="packt_tip">There might be loss of data received but not processed yet in your streaming application.</div>
+<p class="mce-root">Note that checkpointing of RDDs incurs the cost of saving each RDD to storage. This may cause an increase in the processing time of those batches where RDDs get checkpointed. Hence, the interval of checkpointing needs to be set carefully so as not to cause performance issues. At tiny batch sizes (say 1 second), checkpointing too frequently every tiny batch may significantly reduce operation throughput. Conversely, checkpointing too infrequently causes the lineage and task sizes to grow, which may cause processing delays as the amount of data to be persisted is large.</p>
+<p class="mce-root">For stateful transformations that require RDD checkpointing, the default interval is a multiple of the batch interval that is at least 10 seconds.</p>
+<div class="packt_tip">A checkpoint interval of 5 to 10 sliding intervals of a DStream is a good setting to start with.</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9EA2A1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Driver failure recovery</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Driver failure recovery can be accomplished by using <span><kbd class="calibre11">StreamingContext.getOrCreate()</kbd> to either initialize <kbd class="calibre11">StreamingContext</kbd> from an existing checkpoint or to create a new StreamingContext.</span></p>
+<p class="mce-root">The two conditions for a streaming application when started are as follows:</p>
+<ul class="calibre9">
+<li class="mce-root1">When the program is being started for the first time, it needs to create a new <kbd class="calibre11">StreamingContext</kbd>, set up all the streams, and then call <kbd class="calibre11">start()</kbd></li>
+<li class="mce-root1">When the program is being restarted after failure, it needs to initialize a <kbd class="calibre11">StreamingContext</kbd> from the checkpoint data in the checkpoint directory and then call <kbd class="calibre11">start()</kbd></li>
+</ul>
+<p class="mce-root"><span>We will implement a function <kbd class="calibre11">createStreamContext()</kbd>, which creates the <kbd class="calibre11">StreamingContext</kbd> and sets up the various DStreams to parse the tweets and generate the top five tweet hashtags every 15 seconds using a window.</span> But instead of calling <span><kbd class="calibre11">createStreamContext(</kbd>) and then calling <kbd class="calibre11">ssc.start()</kbd></span> , we will call <kbd class="calibre11">getOrCreate()</kbd> so that if the <kbd class="calibre11">checkpointDirectory</kbd> exists, then the context will be recreated from the checkpoint data. If the directory does not exist (the application is running for the first time), then the function <kbd class="calibre11"><span>createStreamContext()</span></kbd> will be called to create a new context and set up the DStreams:</p>
+<pre class="calibre19">
+val ssc = StreamingContext.getOrCreate(checkpointDirectory,<br class="title-page-name"/>                                       createStreamContext _)
+</pre>
+<p class="mce-root">Shown in the following is the code showing the definition of the function and how <kbd class="calibre11">getOrCreate()</kbd> can be called:</p>
+<pre class="calibre19">
+val checkpointDirectory = "checkpoints"<br class="title-page-name"/><br class="title-page-name"/>// Function to create and setup a new StreamingContext<br class="title-page-name"/>def createStreamContext(): StreamingContext = {<br class="title-page-name"/>  val ssc = new StreamingContext(sc, Seconds(5))<br class="title-page-name"/><br class="title-page-name"/>  val twitterStream = TwitterUtils.createStream(ssc, None)<br class="title-page-name"/><br class="title-page-name"/>  val wordStream = twitterStream.flatMap(x =&gt; x.getText().split(" "))<br class="title-page-name"/><br class="title-page-name"/>  val aggStream = twitterStream<br class="title-page-name"/>    .flatMap(x =&gt; x.getText.split(" ")).filter(_.startsWith("#"))<br class="title-page-name"/>    .map(x =&gt; (x, 1))<br class="title-page-name"/>    .reduceByKeyAndWindow(_ + _, _ - _, Seconds(15), Seconds(10), 5)<br class="title-page-name"/><br class="title-page-name"/>  ssc.checkpoint(checkpointDirectory)<br class="title-page-name"/><br class="title-page-name"/>  aggStream.checkpoint(Seconds(10))<br class="title-page-name"/><br class="title-page-name"/>  wordStream.checkpoint(Seconds(10))<br class="title-page-name"/><br class="title-page-name"/>  aggStream.foreachRDD((rdd, time) =&gt; {<br class="title-page-name"/>    val count = rdd.count()<br class="title-page-name"/> <br class="title-page-name"/>    if (count &gt; 0) {<br class="title-page-name"/>      val dt = new Date(time.milliseconds)<br class="title-page-name"/>      println(s"\n\n$dt rddCount = $count\nTop 5 words\n")<br class="title-page-name"/>      val top10 = rdd.sortBy(_._2, ascending = false).take(5)<br class="title-page-name"/>      top10.foreach {<br class="title-page-name"/>        case (word, count) =&gt; println(s"[$word] - $count")<br class="title-page-name"/>      }<br class="title-page-name"/>    }<br class="title-page-name"/>  })<br class="title-page-name"/>  ssc<br class="title-page-name"/>}<br class="title-page-name"/><br class="title-page-name"/>// Get StreamingContext from checkpoint data or create a new one<br class="title-page-name"/>val ssc = StreamingContext.getOrCreate(checkpointDirectory, createStreamContext _)
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9F8IS1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Interoperability with streaming platforms (Apache Kafka)</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Spark Streaming has very good integration with Apache Kafka, which is the most popular messaging platform currently. Kafka integration has several approaches, and the mechanism has evolved over time to improve the performance and reliability.</p>
+<p class="mce-root">There are three main approaches for integrating Spark Streaming with Kafka:</p>
+<ul class="calibre9">
+<li class="mce-root1">Receiver-based approach</li>
+<li class="mce-root1">Direct stream approach</li>
+<li class="mce-root1">Structured streaming</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9G73E1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Receiver-based approach</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">The receiver-based approach was the first integration between Spark and Kafka. In this approach, the driver starts receivers on the executors that pull data using high-level APIs, from Kafka brokers. Since receivers are pulling events from Kafka brokers, receivers update the offsets into Zookeeper, which is also used by Kafka cluster. The key aspect is the usage of a <strong class="calibre1">WAL</strong> (<strong class="calibre1">Write Ahead Log</strong>), which the receiver keeps writing to as it consumes data from Kafka. So, when there is a problem and executors or receivers are lost or restarted, the WAL can be used to recover the events and process them. Hence, this log-based design provides both durability and consistency.</p>
+<p class="mce-root">Each receiver creates an input DStream of events from a Kafka topic while querying Zookeeper for the Kafka topics, brokers, offsets, and so on. After this, the discussion we had about DStreams in previous sections comes into play.</p>
+<p class="mce-root">Long-running receivers make parallelism complicated as the workload is not going to be properly distributed as we scale the application. Dependence on HDFS is also a problem along with the duplication of write operations. As for the reliability needed for exactly once paradigm of processing, only the idempotent approach will work. The reason why a transactional approach, will not work in the receiver-based approach is that there is no way to access the offset ranges from the HDFS location or Zookeeper.</p>
+<div class="packt_tip">The receiver-based approach works with any messaging system, so it's more general purpose.</div>
+<p class="mce-root">You can create a receiver-based stream by invoking the <kbd class="calibre11">createStream()</kbd> API as follows:</p>
+<pre class="calibre19">
+<strong class="calibre1">def createStream(</strong><br class="title-page-name"/><strong class="calibre1">  ssc: StreamingContext, </strong>// StreamingContext object<br class="title-page-name"/><strong class="calibre1">  zkQuorum: String, </strong>//Zookeeper quorum (hostname:port,hostname:port,..)<br class="title-page-name"/><strong class="calibre1">  groupId: String, </strong>//The group id for this consumer<br class="title-page-name"/><strong class="calibre1">  topics: Map[String, Int], </strong>//Map of (topic_name to numPartitions) to<br class="title-page-name"/>                  consume. Each partition is consumed in its own thread<br class="title-page-name"/><strong class="calibre1">  storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2 </strong><br class="title-page-name"/>  Storage level to use for storing the received objects<br class="title-page-name"/>  (default: StorageLevel.MEMORY_AND_DISK_SER_2)<br class="title-page-name"/><strong class="calibre1">): ReceiverInputDStream[(String, String)] </strong>//DStream of (Kafka message key, Kafka message value)
+</pre>
+<p class="mce-root">Shown in the following is an example of creating a receiver-based stream that pulls messages from Kafka brokers:</p>
+<pre class="calibre19">
+val topicMap = topics.split(",").map((_, numThreads.toInt)).toMap<br class="title-page-name"/>val lines = KafkaUtils.createStream(ssc, zkQuorum, group,<br class="title-page-name"/>                                    topicMap).map(_._2)
+</pre>
+<p class="mce-root">Shown in the following is an illustration of how the driver launches receivers on executors to pull data from Kafka using the high-level API. The receivers pull the topic offset ranges from the Kafka Zookeeper cluster and then also update Zookeeper as they pull events from the brokers:</p>
+<div class="cdpaligncenter"><img class="image-border117" src="../images/00078.jpeg"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9H5K01-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Direct stream</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">The direct stream based approach is the newer approach with respect to Kafka integration and works by using the driver to connect to the brokers directly and pull events. The key aspect is that using direct stream API, Spark tasks work on a 1:1 ratio when looking at spark partition to Kafka topic/partition. No dependency on HDFS or WAL makes it flexible. Also, since now we can have direct access to offsets, we can use idempotent or transactional approach for exactly once processing.</p>
+<p class="mce-root">Create an input stream that directly pulls messages from Kafka brokers without using any receiver. This stream can guarantee that each message from Kafka is included in transformations exactly once.</p>
+<p class="mce-root">Properties of a direct stream are as follows:</p>
+<ul class="calibre9">
+<li class="mce-root1"><strong class="calibre1">No receivers</strong>: This stream does not use any receiver, but rather directly queries Kafka.</li>
+<li class="mce-root1"><strong class="calibre1">Offsets</strong>: This does not use Zookeeper to store offsets, and the consumed offsets are tracked by the stream itself. You can access the offsets used in each batch from the generated RDDs.</li>
+<li class="mce-root1"><strong class="calibre1">Failure recovery</strong>: To recover from driver failures, you have to enable checkpointing in the <kbd class="calibre11">StreamingContext</kbd>.</li>
+<li class="mce-root1"><strong class="calibre1">End-to-end semantics</strong>: This stream ensures that every record is effectively received and transformed exactly once, but gives no guarantees on whether the transformed data are outputted exactly once.</li>
+</ul>
+<p class="mce-root">You can create a direct stream by using KafkaUtils, <kbd class="calibre11">createDirectStream()</kbd> API as follows:</p>
+<pre class="calibre19">
+<strong class="calibre1">def createDirectStream[</strong><br class="title-page-name"/><strong class="calibre1">  K: ClassTag, </strong>//K type of Kafka message key<br class="title-page-name"/><strong class="calibre1">  V: ClassTag, </strong>//V type of Kafka message value<br class="title-page-name"/><strong class="calibre1">  KD &lt;: Decoder[K]: ClassTag, </strong>//KD type of Kafka message key decoder<br class="title-page-name"/><strong class="calibre1">  VD &lt;: Decoder[V]: ClassTag, </strong>//VD type of Kafka message value decoder<br class="title-page-name"/><strong class="calibre1">  R: ClassTag </strong>//R type returned by messageHandler<br class="title-page-name"/><strong class="calibre1">](</strong><br class="title-page-name"/><strong class="calibre1">  ssc: StreamingContext, </strong>//StreamingContext object<br class="title-page-name"/><strong class="calibre1">  KafkaParams: Map[String, String], </strong><br class="title-page-name"/>  /*<br class="title-page-name"/>  KafkaParams Kafka &lt;a  href="http://Kafka.apache.org/documentation.html#configuration"&gt;<br class="title-page-name"/>  configuration parameters&lt;/a&gt;. Requires "metadata.broker.list" or   "bootstrap.servers"<br class="title-page-name"/>to be set with Kafka broker(s) (NOT zookeeper servers) specified in<br class="title-page-name"/>  host1:port1,host2:port2 form.<br class="title-page-name"/>  */<br class="title-page-name"/><strong class="calibre1">  fromOffsets: Map[TopicAndPartition, Long], </strong>//fromOffsets Per- topic/partition Kafka offsets defining the (inclusive) starting point of the stream<br class="title-page-name"/><strong class="calibre1">  messageHandler: MessageAndMetadata[K, V] =&gt; R </strong>//messageHandler Function for translating each message and metadata into the desired type<strong class="calibre1"> </strong><br class="title-page-name"/><strong class="calibre1">): InputDStream[R] </strong>//DStream of R<br class="title-page-name"/> 
+</pre>
+<p class="mce-root">Shown in the following is an example of a direct stream created to pull data from Kafka topics and create a DStream:</p>
+<div class="title-page-name">
+<pre class="calibre19">
+<span>val topicsSet = topics.split(",").toSet</span><br class="title-page-name"/><span>val KafkaParams : Map[String, String] =</span><br class="title-page-name"/><span>        Map("metadata.broker.list" -&gt; brokers,</span><br class="title-page-name"/><span>            "group.id" -&gt; groupid )</span><br class="title-page-name"/><br class="title-page-name"/><span>val rawDstream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, KafkaParams, topicsSet)</span>
+</pre></div>
+<div class="packt_tip">The direct stream API can only be used with Kafka, so this is not a general purpose approach.</div>
+<p class="mce-root"><span>Shown in the following is an illustration of how the driver</span> <span>pulls offset information from Zookeeper and directs the executors to launch tasks to pull events from brokers based on the offset ranges prescribed by the driver:</span></p>
+<div class="cdpaligncenter"><img class="image-border118" src="../images/00118.jpeg"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9I44I1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Structured streaming</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Structured streaming is new in Apache Spark 2.0+ and is now in GA from Spark 2.2 release. You will see details in the next section along with examples of how to use structured streaming.</p>
+<div class="packt_tip">For more details on the Kafka integration in structured streaming, refer to <a href="https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html" class="calibre21">https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html</a>.</div>
+<p class="mce-root">An example of how to use Kafka source stream in structured streaming is as follows:</p>
+<pre class="calibre19">
+val ds1 = spark<br class="title-page-name"/> .readStream<br class="title-page-name"/> .format("Kafka")<br class="title-page-name"/> .option("Kafka.bootstrap.servers", "host1:port1,host2:port2")<br class="title-page-name"/> .option("subscribe", "topic1")<br class="title-page-name"/> .load()<br class="title-page-name"/><br class="title-page-name"/>ds1.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")<br class="title-page-name"/> .as[(String, String)]
+</pre>
+<p class="mce-root">An example of how to use Kafka source instead of source stream (in case you want more batch analytics approach) is as follows:</p>
+<pre class="calibre19">
+val ds1 = spark<br class="title-page-name"/> .read<br class="title-page-name"/> .format("Kafka")<br class="title-page-name"/> .option("Kafka.bootstrap.servers", "host1:port1,host2:port2")<br class="title-page-name"/> .option("subscribe", "topic1")<br class="title-page-name"/> .load()<br class="title-page-name"/><br class="title-page-name"/>ds1.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")<br class="title-page-name"/> .as[(String, String)]
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9J2L41-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Structured streaming</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Structured streaming is a scalable and fault-tolerant stream processing engine built on top of Spark SQL engine. This brings stream processing and computations closer to batch processing, rather than the DStream paradigm and challenges involved with Spark streaming APIs at this time. The structured streaming engine takes care of several challenges like exactly-once stream processing, incremental updates to results of processing, aggregations, and so on.</p>
+<p class="mce-root">The structured streaming API also provides the means to tackle a big challenge of Spark streaming, that is, Spark streaming processes incoming data in micro-batches and uses the received time as a means of splitting the data, thus not considering the actual event time of the data. The structured streaming allows you to specify such an event time in the data being received so that any late coming data is automatically handled.</p>
+<div class="packt_tip">The structured streaming is GA in Spark 2.2, and the APIs are marked GA. Refer to <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html" class="calibre21">https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html</a>.</div>
+<p class="mce-root">The key idea behind structured streaming is to treat a live data stream as an unbounded table being appended to continuously as events are processed from the stream. You can then run computations and SQL queries on this unbounded table as you normally do on batch data. A Spark SQL query for instance will process the unbounded table:</p>
+<div class="cdpaligncenter"><img class="image-border119" src="../images/00348.jpeg"/></div>
+<p class="mce-root">As the DStream keeps changing with time, more and more data will be processed to generate the results. Hence, the unbounded input table is used to generate a result table. The output or results table can be written to an external sink known as <strong class="calibre1">Output</strong>.</p>
+<p class="mce-root">The <strong class="calibre1">Output</strong> is what gets written out and can be defined in a different mode:</p>
+<ul class="calibre9">
+<li class="mce-root1"><strong class="calibre1">Complete mode</strong>: The entire updated result table will be written to the external storage. It is up to the storage connector to decide how to handle the writing of the entire table.</li>
+<li class="mce-root1"><strong class="calibre1">Append mode</strong>: Only any new rows appended to the result table since the last trigger will be written to the external storage. This is applicable only on the queries where existing rows in the result table are not expected to change.</li>
+<li class="mce-root1"><strong class="calibre1">Update mode</strong>: Only the rows that were updated in the result table since the last trigger will be written to the external storage. Note that this is different from the complete mode in that this mode only outputs the rows that have changed since the last trigger. If the query doesn't contain aggregations, it will be equivalent to Append mode.</li>
+</ul>
+<p class="mce-root">Shown in the following is an illustration of the output from the unbounded table:</p>
+<div class="cdpaligncenter"><img class="image-border120" src="../images/00001.jpeg"/></div>
+<p class="mce-root">We will show an example of creating a Structured streaming query by listening to input on localhost port 9999.</p>
+<div class="packt_tip">If using a Linux or Mac, it's easy to start a simple server on port 9999: nc -lk 9999.</div>
+<p class="mce-root">Shown in the following is an example where we start by creating an <kbd class="calibre11">inputStream</kbd> calling SparkSession's <kbd class="calibre11">readStream</kbd> API and then extracting the words from the lines. Then we group the words and count the occurrences before finally writing the results to the output stream:</p>
+<pre class="calibre19">
+//create stream reading from localhost 9999<br class="title-page-name"/><strong class="calibre1">val inputLines = spark.readStream</strong><br class="title-page-name"/><strong class="calibre1">  .format("socket")</strong><br class="title-page-name"/><strong class="calibre1">  .option("host", "localhost")</strong><br class="title-page-name"/><strong class="calibre1">  .option("port", 9999)</strong><br class="title-page-name"/><strong class="calibre1">  .load()</strong><br class="title-page-name"/>inputLines: org.apache.spark.sql.DataFrame = [value: string]<br class="title-page-name"/><br class="title-page-name"/>// Split the inputLines into words<br class="title-page-name"/><strong class="calibre1">val words = inputLines.as[String].flatMap(_.split(" "))</strong><br class="title-page-name"/>words: org.apache.spark.sql.Dataset[String] = [value: string]<br class="title-page-name"/><br class="title-page-name"/>// Generate running word count<br class="title-page-name"/><strong class="calibre1">val wordCounts = words.groupBy("value").count()</strong><br class="title-page-name"/>wordCounts: org.apache.spark.sql.DataFrame = [value: string, count: bigint]<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">val query = wordCounts.writeStream</strong><br class="title-page-name"/><strong class="calibre1">  .outputMode("complete")</strong><br class="title-page-name"/><strong class="calibre1">  .format("console")</strong><br class="title-page-name"/>query: org.apache.spark.sql.streaming.DataStreamWriter[org.apache.spark.sql.Row] = org.apache.spark.sql.streaming.DataStreamWriter@4823f4d0<br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">query.start()</strong>
+</pre>
+<p class="mce-root">As you keep typing words in the terminal, the query keeps updating and generating results which are printed on the console:</p>
+<pre class="calibre19">
+<strong class="calibre1">scala&gt; -------------------------------------------</strong><br class="title-page-name"/><strong class="calibre1">Batch: 0</strong><br class="title-page-name"/><strong class="calibre1">-------------------------------------------</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><strong class="calibre1">|value|count|</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><strong class="calibre1">| dog| 1|</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">-------------------------------------------</strong><br class="title-page-name"/><strong class="calibre1">Batch: 1</strong><br class="title-page-name"/><strong class="calibre1">-------------------------------------------</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><strong class="calibre1">|value|count|</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><strong class="calibre1">| dog| 1|</strong><br class="title-page-name"/><strong class="calibre1">| cat| 1|</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><br class="title-page-name"/><strong class="calibre1">scala&gt; -------------------------------------------</strong><br class="title-page-name"/><strong class="calibre1">Batch: 2</strong><br class="title-page-name"/><strong class="calibre1">-------------------------------------------</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><strong class="calibre1">|value|count|</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong><br class="title-page-name"/><strong class="calibre1">| dog| 2|</strong><br class="title-page-name"/><strong class="calibre1">| cat| 1|</strong><br class="title-page-name"/><strong class="calibre1">+-----+-----+</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9K15M1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Handling Event-time and late data</h1>
+                
+            
+            <article>
+                
+<p class="mce-root"><strong class="calibre1">Event time</strong> is the time inside the data itself. Traditional Spark Streaming only handled time as the received time for the DStream purposes, but this is not enough for many applications where we need the event time. For example, if you want to get the number of times hashtag appears in a tweet every minute, then you should want to use the time when the data was generated, not when Spark receives the event. To get event time into the mix, it is very easy to do so in structured streaming by considering the event time as a column in the row/event. This allows window-based aggregations to be run using the event time rather than the received time. Furthermore, this model naturally handles data that has arrived later than expected based on its event time. Since Spark is updating the result table, it has full control over updating old aggregates when there is late data as well as cleaning up old aggregates to limit the size of intermediate state data. There is also support for watermarking event streams, which allows the user to specify the threshold of late data and allows the engine to accordingly clean up the old state.</p>
+<p class="mce-root">Watermarks enable the engine to track the current event times and determine whether the event needs to be processed or has been already processed by checking the threshold of how late data can be received. For instance, if the event time is denoted by <kbd class="calibre11">eventTime</kbd> and the threshold interval of late arriving data is <kbd class="calibre11">lateThreshold</kbd>, then by checking the difference between the <kbd class="calibre11">max(eventTime) - lateThreshold</kbd> and comparing with the specific window starting at time T, the engine can determine if the event can be considered for processing in this window or not.</p>
+<p class="mce-root">Shown in the following is an extension of the preceding example on structured streaming listening on port 9999. Here we are enabling <kbd class="calibre11">Timestamp</kbd> as part of the input data so that we can do Window operations on the unbounded table to generate results:</p>
+<pre class="calibre19">
+<strong class="calibre1">import java.sql.Timestamp<br class="title-page-name"/></strong><strong class="calibre1">import org.apache.spark.sql.SparkSession</strong><br class="title-page-name"/><strong class="calibre1">import org.apache.spark.sql.functions._<br class="title-page-name"/><br class="title-page-name"/></strong>// Create DataFrame representing the stream of input lines from connection to host:port<br class="title-page-name"/><strong class="calibre1">val inputLines = spark.readStream</strong><br class="title-page-name"/><strong class="calibre1"> .format("socket")</strong><br class="title-page-name"/><strong class="calibre1"> .option("host", "localhost")</strong><br class="title-page-name"/><strong class="calibre1"> .option("port", 9999)</strong><br class="title-page-name"/><strong class="calibre1"> .option("includeTimestamp", true)</strong><br class="title-page-name"/><strong class="calibre1"> .load()<br class="title-page-name"/><br class="title-page-name"/></strong>// Split the lines into words, retaining timestamps<br class="title-page-name"/><strong class="calibre1">val words = inputLines.as[(String, Timestamp)].flatMap(line =&gt;</strong><br class="title-page-name"/><strong class="calibre1"> line._1.split(" ").map(word =&gt; (word, line._2))</strong><br class="title-page-name"/><strong class="calibre1">).toDF("word", "timestamp")<br class="title-page-name"/><br class="title-page-name"/></strong>// Group the data by window and word and compute the count of each group<br class="title-page-name"/><strong class="calibre1">val windowedCounts = words.withWatermark("timestamp", "10 seconds")<br class="title-page-name"/>.groupBy(</strong><br class="title-page-name"/><strong class="calibre1"> window($"timestamp", "10 seconds", "10 seconds"), $"word"</strong><br class="title-page-name"/><strong class="calibre1">).count().orderBy("window")<br class="title-page-name"/><br class="title-page-name"/></strong>// Start running the query that prints the windowed word counts to the console<br class="title-page-name"/><strong class="calibre1">val query = windowedCounts.writeStream</strong><br class="title-page-name"/><strong class="calibre1"> .outputMode("complete")</strong><br class="title-page-name"/><strong class="calibre1"> .format("console")</strong><br class="title-page-name"/><strong class="calibre1"> .option("truncate", "false")</strong><br class="title-page-name"/> <br class="title-page-name"/><strong class="calibre1">query.start()<br class="title-page-name"/>query.awaitTermination()</strong>
+</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9KVM81-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Fault tolerance semantics</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">Delivering <strong class="calibre1">end-to-end exactly once semantics</strong> was one of the key goals behind the design of Structured streaming, which implements the Structured streaming sources, the output sinks, and the execution engine to reliably track the exact progress of the processing so that it can handle any kind of failure by restarting and/or reprocessing. Every streaming source is assumed to have offsets (similar to Kafka offsets) to track the read position in the stream. The engine uses checkpointing and write ahead logs to record the offset range of the data being processed in each trigger. The streaming sinks are designed to be idempotent for handling reprocessing. Together, using replayable sources and idempotent sinks, Structured streaming can ensure end-to-end exactly once semantics under any failure.</p>
+<div class="packt_tip">Remember that exactly once the paradigm is more complicated in traditional streaming using some external database or store to maintain the offsets.</div>
+<p class="mce-root">The structured streaming is still evolving and has several challenges to overcome before it can be widely used. Some of them are as follows:</p>
+<ul class="calibre9">
+<li class="mce-root1">Multiple streaming aggregations are not yet supported on streaming datasets</li>
+<li class="mce-root1"><span>Limiting and taking first</span> <em class="calibre8">N</em> <span>rows is not supported on streaming datasets</span></li>
+<li class="mce-root1"><span>Distinct operations on streaming datasets are not supported</span></li>
+<li class="mce-root1">Sorting operations are supported on streaming datasets only after an aggregation step is performed and that too exclusively when in complete output mode</li>
+<li class="mce-root1">Any kind of join operations between two streaming datasets are not yet supported</li>
+<li class="mce-root1">Only a few types of sinks - file sink and for each sink are supported</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section id="9LU6Q1-21aec46d8593429cacea59dbdcd64e1c">
+
+                            <header>
+                    </header><h1 class="header-title" id="calibre_pb_0">Summary</h1>
+                
+            
+            <article>
+                
+<p class="mce-root">In this chapter, we discussed the concepts of the stream processing systems, Spark streaming, DStreams of Apache Spark, what DStreams are, DAGs and lineages of DStreams, Transformations, and Actions. We also looked at window concept of stream processing. We also looked at a practical examples of consuming tweets from Twitter using Spark Streaming.</p>
+<p class="mce-root">In addition, we looked at receiver-based and direct stream approaches of consuming data from Kafka. In the end, we also looked at the new structured streaming, which promises to solve many of the challenges such as fault tolerance and exactly once semantics on the stream. We also discussed how structured streaming also simplifies the integration with messaging systems such as Kafka or other messaging systems.</p>
+<p class="mce-root">In the next chapter, we will look at graph processing and how it all works.</p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

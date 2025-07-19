@@ -1,0 +1,341 @@
+<html><head></head><body><div class="chapter" title="Chapter&#xA0;5.&#xA0;The Dance with Trees"><div class="titlepage"><div><div><h1 class="title"><a id="ch05"/>Chapter 5. The Dance with Trees</h1></div></div></div><p>Everything from <a id="id296" class="indexterm"/>creating simple binary trees to practical applications such as Huffman encoding is covered in this section:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Defining a binary tree data type</li><li class="listitem" style="list-style-type: disc">Defining a rose tree (multiway tree) data type</li><li class="listitem" style="list-style-type: disc">Traversing a tree depth-first</li><li class="listitem" style="list-style-type: disc">Traversing a tree breadth-first</li><li class="listitem" style="list-style-type: disc">Implementing a Foldable instance for a tree</li><li class="listitem" style="list-style-type: disc">Calculating the height of a tree</li><li class="listitem" style="list-style-type: disc">Implementing a binary search tree data structure</li><li class="listitem" style="list-style-type: disc">Verifying the order property of a binary search tree</li><li class="listitem" style="list-style-type: disc">Using a self-balancing tree</li><li class="listitem" style="list-style-type: disc">Implementing a min-heap data structure</li><li class="listitem" style="list-style-type: disc">Encoding a string using a Huffman tree</li><li class="listitem" style="list-style-type: disc">Decoding a Huffman code</li></ul></div><div class="section" title="Introduction"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec61"/>Introduction</h1></div></div></div><div class="mediaobject"><img src="graphics/ch05.jpg" alt="Introduction"/></div><p>Trees are a common data structure used in a variety of data analysis techniques. A <a id="id297" class="indexterm"/>
+<span class="strong"><strong>tree</strong></span> is a hierarchical connection of nodes under one all-encompassing mighty root node. Every node can have zero or more children, but each child node associates with only one parent. Also, the root is the only special case that has no parent node. All nodes without children are also referred to as <a id="id298" class="indexterm"/>
+<span class="strong"><strong>leaf</strong></span> nodes.</p><p>In Haskell, we can very gracefully represent a tree since the recursive nature of the data structure makes use of the recursive nature of functional programming. This section will cover creating our own trees as well as using existing implementations from libraries.</p><p>We will implement heaps and Huffman trees, which are some of the most notable examples of trees in data analysis. In other chapters throughout the book, we also run into HTML/XML traversal, hierarchical clustering, and decision trees, which all depend heavily on the tree data structure.</p></div></div>
+<div class="section" title="Defining a binary tree data type"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec62"/>Defining a binary tree data type</h1></div></div></div><p>In a binary tree, each <a id="id299" class="indexterm"/>node has at most two children. We will define a data structure to encompass the left and right subtrees of each node.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec168"/>Getting ready</h2></div></div></div><p>The code in the recipe will represent the following tree. The root node is labeled <span class="strong"><strong>n3</strong></span> with a value of <span class="strong"><strong>3</strong></span>. It has a left node <span class="strong"><strong>n1</strong></span> of value <span class="strong"><strong>1</strong></span>, and a right node <span class="strong"><strong>n2</strong></span> of value <span class="strong"><strong>2</strong></span>.</p><div class="mediaobject"><img src="graphics/6331OS_05_01.jpg" alt="Getting ready"/></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec169"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">This code requires no imports. We can jump in and define the data structure recursively. A tree can either be a node with values or null/empty:<div class="informalexample"><pre class="programlisting">data Tree a = Node { value	:: a
+                   , left  :: (Tree a)
+                   , right:: (Tree a) }
+            | Leaf 
+            deriving Show</pre></div></li><li class="listitem">In <code class="literal">main</code>, create the tree shown in the preceding diagram and print it out:<div class="informalexample"><pre class="programlisting">main = do
+  let n1 = Node { value = 1, left = Leaf, right = Leaf }
+  let n2 = Node { value = 2, left = Leaf, right = Leaf }
+  let n3 = Node { value = 3, left = n1,   right = n2 }
+  print n3</pre></div></li><li class="listitem">The <a id="id300" class="indexterm"/>full tree is printed out as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>Node { value = 3</strong></span>
+<span class="strong"><strong>     , left = Node  { value = 1</strong></span>
+<span class="strong"><strong>                    , left = Leaf</strong></span>
+<span class="strong"><strong>                    , right = Leaf }</strong></span>
+<span class="strong"><strong>     , right = Node { value = 2</strong></span>
+<span class="strong"><strong>                    , left = Leaf</strong></span>
+<span class="strong"><strong>                    , right = Leaf }</strong></span>
+<span class="strong"><strong>     }</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec170"/>See also</h2></div></div></div><p>If the nodes in a tree need more than two children, then see the next section, <span class="emphasis"><em>Defining a rose tree (multiway tree) data type</em></span>.</p></div></div>
+<div class="section" title="Defining a rose tree (multiway tree) data type"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec63"/>Defining a rose tree (multiway tree) data type</h1></div></div></div><p>A rose tree relaxes <a id="id301" class="indexterm"/>the limitation of at most two children per node. It can have an arbitrary number of elements. Rose trees are common when parsing HTML to represent the <a id="id302" class="indexterm"/>
+<span class="strong"><strong>Document Object Model</strong></span> (<span class="strong"><strong>DOM</strong></span>).</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec171"/>Getting ready</h2></div></div></div><p>We will be representing the following tree in this recipe. The root node has three children:</p><div class="mediaobject"><img src="graphics/6331OS_05_02.jpg" alt="Getting ready"/></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec172"/>How to do it...</h2></div></div></div><p>We will not need <a id="id303" class="indexterm"/>any imports for this recipe:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">The rose tree data type is similar to that of the binary tree, except that instead of left and right children, it will store an arbitrary list of children:<div class="informalexample"><pre class="programlisting">data Tree a = Node { value  :: a
+                   , children  :: [Tree a] } 
+                   deriving Show</pre></div></li><li class="listitem">Construct the tree from the preceding diagram and print it out:<div class="informalexample"><pre class="programlisting">main = do
+  let n1 = Node { value = 1, children = [] }
+  let n2 = Node { value = 2, children = [] }
+  let n3 = Node { value = 3, children = [] }
+  let n4 = Node { value = 6, children = [n1, n2, n3] }
+  print n4</pre></div></li><li class="listitem">The printed output will be as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>Node { value = 6</strong></span>
+<span class="strong"><strong>     , children = [ Node { value = 1</strong></span>
+<span class="strong"><strong>                         , children = [] }</strong></span>
+<span class="strong"><strong>                  , Node { value = 2</strong></span>
+<span class="strong"><strong>                         , children = [] }</strong></span>
+<span class="strong"><strong>                  , Node { value = 3</strong></span>
+<span class="strong"><strong>                         , children = [] } ] </strong></span>
+<span class="strong"><strong>     }</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec173"/>How it works...</h2></div></div></div><p>Instead of using <a id="id304" class="indexterm"/>dedicated left and right fields to represent child nodes, a rose tree uses a list data structure to represent an arbitrary number of children. A rose tree can be used to emulate a binary tree if each node is restricted to have at most two children.</p></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec174"/>See also</h2></div></div></div><p>To represent a binary tree, it may be simpler to use the previous recipe, <span class="emphasis"><em>Defining a binary tree data type</em></span>.</p></div></div>
+<div class="section" title="Traversing a tree depth-first"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec64"/>Traversing a tree depth-first</h1></div></div></div><p>This recipe <a id="id305" class="indexterm"/>will demonstrate one way to traverse through a tree. The algorithm starts at the root node and continues exploring nodes along the entire length of a branch before going back to explore more shallow nodes.</p><p>Since we will examine each node before recursively examining its child nodes, we call this a <a id="id306" class="indexterm"/>
+<span class="strong"><strong>pre-order traversal</strong></span>. Instead, if we examine each node afterwards, then we call this approach <a id="id307" class="indexterm"/>
+<span class="strong"><strong>post-order traversal</strong></span>. Anything in-between is an<a id="id308" class="indexterm"/> <span class="strong"><strong>in-order traversal</strong></span>, but naturally, there is no unique in-order traversal for rose trees.</p><p>The biggest <a id="id309" class="indexterm"/>advantage in using the depth-first approach is the minimal space complexity. Video game AIs often use depth-first approaches in determining the ideal move to take against an opponent. However, in enormous or infinite trees, a depth-first search may never terminate if we keep visiting subsequent child nodes.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec175"/>Getting ready</h2></div></div></div><p>We will traverse the following tree in a depth-first fashion. Starting at node <span class="strong"><strong>r</strong></span>, we first explore node <span class="strong"><strong>n1</strong></span>, followed by <span class="strong"><strong>n2</strong></span>, then go back up to find <span class="strong"><strong>n3</strong></span>, and backtrack all the way to finally end at <span class="strong"><strong>n4</strong></span>.</p><div class="mediaobject"><img src="graphics/6331OS_05_03.jpg" alt="Getting ready"/></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec176"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">We will use an existing rose tree implementation from <code class="literal">Data.Tree</code>:<div class="informalexample"><pre class="programlisting">import Data.Tree (rootLabel, subForest, Tree(..))
+import Data.List (tails)</pre></div></li><li class="listitem">This function will traverse a tree depth-first:<div class="informalexample"><pre class="programlisting">depthFirst :: Tree a -&gt; [a]
+
+depthFirst (Node r forest) = 
+  r : concat [depthFirst t | t &lt;- forest]</pre></div></li><li class="listitem">Here's a <a id="id310" class="indexterm"/>depth-first implementation of adding all the values in a tree:<div class="informalexample"><pre class="programlisting">add :: Tree Int -&gt; Int
+
+add (Node r forest) = r + sum [add t | t &lt;- forest]</pre></div></li><li class="listitem">Define a tree to represent the preceding diagram:<div class="informalexample"><pre class="programlisting">someTree :: Tree Int
+
+someTree = r
+  where r  = Node { rootLabel = 0, subForest = [n1, n4] }
+        n1 = Node { rootLabel = 1, subForest = [n2, n3] }
+        n2 = Node { rootLabel = 2, subForest = [] }
+        n3 = Node { rootLabel = 3, subForest = [] }
+        n4 = Node { rootLabel = 4, subForest = [] }</pre></div></li><li class="listitem">Test out the depth-first functions:<div class="informalexample"><pre class="programlisting">main = do
+  print $ depthFirst someTree
+  print $ add someTree</pre></div></li><li class="listitem">This will print the following two lines of output:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>[0,1,2,3,4]</strong></span>
+<span class="strong"><strong>10</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works…"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec177"/>How it works…</h2></div></div></div><p>In this recipe, we <a id="id311" class="indexterm"/>use the built-in rose tree data structure from <code class="literal">Data.Tree</code>. Similar to our implementation in the previous recipe, it has the <code class="literal">Tree</code> data type having the following constructor:</p><div class="informalexample"><pre class="programlisting">data Tree a = Node { rootLabel :: a
+                   , subForest :: Forest a }</pre></div><p>We recursively run the <code class="literal">depthFirst</code> algorithm on every child node and append it to the node's value, thereby creating a list that represents the tree traversal.</p></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec178"/>See also</h2></div></div></div><p>If traversing a tree by the tree level is preferred, then take a look at the next section, <span class="emphasis"><em>Traversing a tree breadth-first</em></span>.</p></div></div>
+<div class="section" title="Traversing a tree breadth-first"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec65"/>Traversing a tree breadth-first</h1></div></div></div><p>In a breadth-first search <a id="id312" class="indexterm"/>approach to traversing a tree, nodes are visited in the order of the depth of the tree. The root is visited, then its children, then each of their children, and so on and so forth. This process requires a greater space complexity than the depth-first traversal but comes in handy for optimizing search algorithms. </p><p>For example, imagine trying to find all relevant topics from a Wikipedia article. Traversing all the links within the article in a breadth-first fashion will help ensure the topics start out with relevance.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec179"/>Getting ready</h2></div></div></div><p>Examine the tree in the following diagram. A breadth-first traversal will start at the root node <span class="strong"><strong>r</strong></span>, then continue to the next level, encountering <span class="strong"><strong>n1</strong></span> and <span class="strong"><strong>n4</strong></span>, finally followed by <span class="strong"><strong>n2</strong></span> and <span class="strong"><strong>n3</strong></span>.</p><div class="mediaobject"><img src="graphics/6331OS_05_03.jpg" alt="Getting ready"/></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec180"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">We will be using an existing implementation of a rose tree from <code class="literal">Data.Tree</code>:<div class="informalexample"><pre class="programlisting">import Data.Tree (rootLabel, subForest, Tree(..))
+import Data.List (tails)</pre></div></li><li class="listitem">Implement <a id="id313" class="indexterm"/>the breadth-first traversal of a tree:<div class="informalexample"><pre class="programlisting">breadthFirst :: Tree a -&gt; [a]
+
+breadthFirst t = bf [t]
+  where bf forest | null forest = []
+                  | otherwise   = map rootLabel forest ++
+                         bf (concat (map subForest forest))</pre></div></li><li class="listitem">For demonstration, implement a function to add the values of each node in a tree.<div class="informalexample"><pre class="programlisting">add :: Tree Int -&gt; Int
+
+add t = sum $ breadthFirst t</pre></div></li><li class="listitem">Create a tree based on the preceding diagram:<div class="informalexample"><pre class="programlisting">someTree :: Tree Int
+
+someTree = root
+  where root = Node { rootLabel = 0, subForest = [n1, n4] }
+        n1   = Node { rootLabel = 1, subForest = [n2, n3] }
+        n2   = Node { rootLabel = 2, subForest = [] }
+        n3   = Node { rootLabel = 3, subForest = [] }
+        n4   = Node { rootLabel = 4, subForest = [] }</pre></div></li><li class="listitem">Test out the breadth-first algorithms in <code class="literal">main</code>:<div class="informalexample"><pre class="programlisting">main = do
+  print $ breadthFirst someTree
+  print $ add someTree</pre></div></li><li class="listitem">The printed output is as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>[0,1,4,2,3]</strong></span>
+<span class="strong"><strong>10</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works…"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec181"/>How it works…</h2></div></div></div><p>In this recipe, we use the built-in rose tree data structure from <code class="literal">Data.Tree</code>. Similar to our implementation in <a id="id314" class="indexterm"/>one of the previous recipes, it has the <code class="literal">Tree</code> data type with the following constructors:</p><div class="informalexample"><pre class="programlisting">data Tree a = Node { rootLabel :: a
+                   , subForest :: Forest a }</pre></div><p>We perform the breadth-first search by creating a list that begins with the values of the node's direct children. Then, the values of the children's children are appended, and so on until the tree is fully traversed.</p></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec182"/>See also</h2></div></div></div><p>If space complexity becomes an issue, then the previous recipe, <span class="emphasis"><em>Traversing a tree depth-first</em></span>, might offer a better approach.</p></div></div>
+<div class="section" title="Implementing a Foldable instance for a tree"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec66"/>Implementing a Foldable instance for a tree</h1></div></div></div><p>The idea of<a id="id315" class="indexterm"/> traversing a tree can be generalized by implementing a <code class="literal">Foldable</code> instance. Usually, folds are <a id="id316" class="indexterm"/>used on lists; for example, <code class="literal">foldr1 (+) [1..10]</code> traverses a list of numbers to produce a grand sum. Similarly, we can apply <code class="literal">foldr1 (+) tree</code> to find the sum of all nodes in a tree.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec183"/>Getting ready</h2></div></div></div><p>We will be folding through the following tree to obtain a sum of all node values.</p><div class="mediaobject"><img src="graphics/6331OS_05_03.jpg" alt="Getting ready"/></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec184"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the following built-in packages:<div class="informalexample"><pre class="programlisting">import Data.Monoid (mempty, mappend)
+import qualified Data.Foldable as F
+import Data.Foldable (Foldable, foldMap)</pre></div></li><li class="listitem">The tree <a id="id317" class="indexterm"/>from <code class="literal">Data.Tree</code> already implements <code class="literal">Foldable</code>, so we will define our own tree data type for demonstration purposes:<div class="informalexample"><pre class="programlisting">data Tree a = Node { value :: a
+                   , children :: [Tree a] }
+                   deriving Show</pre></div></li><li class="listitem">Implement<a id="id318" class="indexterm"/> the <code class="literal">foldMap</code> function for the <code class="literal">Foldable</code> instance. This implementation will give us a post-order traversal of the tree:<div class="informalexample"><pre class="programlisting">instance Foldable Tree where
+  foldMap f Null = mempty
+  foldMap f (Node val xs) = foldr mappend (f val) 
+                             [foldMap f x | x &lt;- xs]</pre></div></li><li class="listitem">Define a function to fold through a tree to find the sum of all nodes:<div class="informalexample"><pre class="programlisting">add :: Tree Integer -&gt; Integer
+
+add = F.foldr1 (+)</pre></div></li><li class="listitem">Construct a tree that represents the one in the preceding diagram:<div class="informalexample"><pre class="programlisting">someTree :: Tree Integer
+
+someTree = root
+  where root = Node { value = 0, children = [n1, n4] }
+        n1   = Node { value = 1, children = [n2, n3] }
+        n2   = Node { value = 2, children = [] }
+        n3   = Node { value = 3, children = [] }
+        n4   = Node { value = 4, children = [] }</pre></div></li><li class="listitem">Test out the<a id="id319" class="indexterm"/> folding by running the <code class="literal">add</code> function on a tree:<div class="informalexample"><pre class="programlisting">main :: IO ()
+main = print $ add someTree</pre></div></li><li class="listitem">The result gets printed out as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>10</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec185"/>How it works...</h2></div></div></div><p>The function that is <a id="id320" class="indexterm"/>necessary to define a <code class="literal">Foldable</code> instance is either <code class="literal">foldMap</code> or <code class="literal">foldr</code>. In this recipe, we define the <code class="literal">foldMap :: (Foldable t, Data.Monoid.Monoid m) =&gt; (a -&gt; m) -&gt; t a -&gt; m</code> function that essentially maps a function <code class="literal">f</code> over every node in a tree, and glues it together using <code class="literal">mappend</code> from <code class="literal">Data.Monoid</code>.</p></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec186"/>See also</h2></div></div></div><p>Other ways to traverse through elements of a tree are discussed in the previous two sections, <span class="emphasis"><em>Traversing a tree depth-first</em></span> and <span class="emphasis"><em>Traversing a tree breadth-first</em></span>.</p></div></div>
+<div class="section" title="Calculating the height of a tree"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec67"/>Calculating the height of a tree</h1></div></div></div><p>The height of a tree<a id="id321" class="indexterm"/> is the <a id="id322" class="indexterm"/>length of the longest downward path from the root node. For example, the height of a balanced binary tree should be around log to the base 2 of the number of nodes.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec187"/>Getting ready</h2></div></div></div><p>As long as we're consistent, the height of a tree can be defined as either the number of nodes or the number of edges in the longest path. In this recipe, we will count by using the number of nodes. The longest path of this tree contains three nodes and two edges. Therefore, this tree has a height of three units.</p><div class="mediaobject"><img src="graphics/6331OS_05_05.jpg" alt="Getting ready"/></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec188"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the <code class="literal">maximum function</code> from <code class="literal">Data.List</code> and the built-in tree data structure from <code class="literal">Data.Tree</code>:<div class="informalexample"><pre class="programlisting">import Data.List (maximum)
+import Data.Tree</pre></div></li><li class="listitem">Define a function to calculate the height of a tree:<div class="informalexample"><pre class="programlisting">height :: Tree a -&gt; Int
+
+height (Node val []) = 1
+height (Node val xs) = 1 + maximum (map height xs)</pre></div></li><li class="listitem">Construct a tree on which we will run our algorithm:<div class="informalexample"><pre class="programlisting">someTree :: Tree Integer
+
+someTree = root
+  where root = 0 [n1, n4]
+        n1   = 1 [n2, n3]
+        n2   = 2 []
+        n3   = 3 []
+        n4   = 4 []</pre></div></li><li class="listitem">Test out the function in <code class="literal">main</code>:<div class="informalexample"><pre class="programlisting">main = print $ height someTree</pre></div></li><li class="listitem">The height of the tree will be printed as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>3</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec189"/>How it works...</h2></div></div></div><p>The <code class="literal">height</code> function <a id="id323" class="indexterm"/>recursively <a id="id324" class="indexterm"/>finds <a id="id325" class="indexterm"/>the maximum height among its child trees and returns one plus that value.</p></div></div>
+<div class="section" title="Implementing a binary search tree data structure"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec68"/>Implementing a binary search tree data structure</h1></div></div></div><p>A binary search tree restricts <a id="id326" class="indexterm"/>an order property on a binary tree. This order property requires that among every node, the nodes in the left subtree must not be greater, and that the nodes in the right subtree must not be less than the current node.</p><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec190"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Create a binary <code class="literal">BSTree</code> module<a id="id327" class="indexterm"/> to expose our binary search tree data structure. Insert the following code in a file called <code class="literal">BSTree.hs</code>:<div class="informalexample"><pre class="programlisting">module BSTree (insert, find, single) where</pre></div></li><li class="listitem">Define the data structure for a binary tree:<div class="informalexample"><pre class="programlisting">data Tree a = Node	{value	:: a
+                   , left   :: (Tree a)
+                   , right  :: (Tree a)}
+             | Null
+             deriving (Eq, Show)</pre></div></li><li class="listitem">Define a convenience function to create a one-node tree:<div class="informalexample"><pre class="programlisting">single :: a -&gt; Tree a
+
+single n = Node n Null Null</pre></div></li><li class="listitem">Implement a function to insert new values in the binary search tree:<div class="informalexample"><pre class="programlisting">insert :: Ord a =&gt; Tree a -&gt; a -&gt; Tree a
+
+insert (Node v l r) v'
+  | v' &lt; v      = Node v (insert l v') r
+  | v' &gt; v      = Node v l (insert r v')
+  | otherwise   = Node v l r
+                
+insert _ v' = Node v' Null Null</pre></div></li><li class="listitem">Implement <a id="id328" class="indexterm"/>a function to find a node with a specific value in a binary search tree:<div class="informalexample"><pre class="programlisting">find :: Ord a =&gt; Tree a -&gt; a -&gt; Bool
+
+find (Node v l r) v'
+  | v' &lt; v      = find l v'
+  | v' &gt; v      = find r v'
+  | otherwise   = True
+                
+find Null v' = False</pre></div></li><li class="listitem">Now, test out the <code class="literal">BSTree</code> module by creating a new file that can be called <code class="literal">Main.hs</code> with the following code:<div class="informalexample"><pre class="programlisting">import BSTree</pre></div></li><li class="listitem">In <code class="literal">main</code>, construct a binary search tree by calling the <code class="literal">insert</code> function on various values:<div class="informalexample"><pre class="programlisting">main = do
+  let tree = single 5
+  let nodes = [6,4,8,2,9]
+  let bst = foldl insert tree nodes</pre></div></li><li class="listitem">Print out the tree and test out the <code class="literal">find</code> function:<div class="informalexample"><pre class="programlisting">  print bst
+  print $ find bst 1
+  print $ find bst 2</pre></div></li><li class="listitem">The output should be as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>Node { value = 5</strong></span>
+<span class="strong"><strong>     , left = Node { value = 4</strong></span>
+<span class="strong"><strong>                   , left = Node { value = 2</strong></span>
+<span class="strong"><strong>                                 , left = Null</strong></span>
+<span class="strong"><strong>                                 , right = Null }</strong></span>
+<span class="strong"><strong>                   , right = Null }</strong></span>
+<span class="strong"><strong>     , right = Node { value = 6</strong></span>
+<span class="strong"><strong>                    , left = Null</strong></span>
+<span class="strong"><strong>                    , right = Node { value = 8</strong></span>
+<span class="strong"><strong>                                   , left = Null</strong></span>
+<span class="strong"><strong>                                   , right = Node { value = 9</strong></span>
+<span class="strong"><strong>                                                  , left = Null</strong></span>
+<span class="strong"><strong>                                                  , right = Null }</strong></span>
+<span class="strong"><strong>                                   }</strong></span>
+<span class="strong"><strong>                    }</strong></span>
+<span class="strong"><strong>     }</strong></span>
+
+<span class="strong"><strong>False</strong></span>
+
+<span class="strong"><strong>True</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec191"/>How it works...</h2></div></div></div><p>The core functions <a id="id329" class="indexterm"/>of a binary search tree data structure are <a id="id330" class="indexterm"/>
+<code class="literal">insert</code> and <code class="literal">find</code>, and <a id="id331" class="indexterm"/>are used for inserting and finding elements in a binary search tree respectively. Finding a node is accomplished by traversing the tree and taking advantage of its order property. If the value is lower than expected, it will check the left node; otherwise, if the value is greater, it will check the right node. Eventually, this recursive algorithm either finds the desired node or ends up at a leaf node and consequently does not find the node.</p><p>A binary search tree does not guarantee the tree to be balanced, and therefore, a speedy O(log n) lookup is not to be expected. There is always a possibility for a binary search tree to end up looking like a list data structure (consider, for example, when we insert nodes in the following order [1,2,3,4,5] and examine the resulting structure).</p></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec192"/>See also</h2></div></div></div><p>Given a binary tree, the order property can be verified using the following recipe titled <span class="emphasis"><em>Verifying the order property of a binary search tree</em></span>. To use a balanced binary tree, refer to the recipe, <span class="emphasis"><em>Using a self-balancing tree</em></span>.</p></div></div>
+<div class="section" title="Verifying the order property of a binary search tree"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec69"/>Verifying the order property of a binary search tree</h1></div></div></div><p>Given a binary tree, this <a id="id332" class="indexterm"/>recipe will cover how to verify if it <a id="id333" class="indexterm"/>actually satisfies the order property such that all elements in the left subtree are of lesser value, and that all values of the right subtree are of greater value.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec193"/>Getting ready</h2></div></div></div><p>We will be verifying whether or not the following tree is a binary search tree:</p><div class="mediaobject"><img src="graphics/6331OS_05_06.jpg" alt="Getting ready"/></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec194"/>How to do it...</h2></div></div></div><p>No imports are necessary for this recipe. Perform the following steps to find if the tree is a binary search tree:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Define a data structure for a binary tree:<div class="informalexample"><pre class="programlisting">data Tree a = Node { value  :: a
+                   , left  :: (Tree a)
+                   , right :: (Tree a)}
+            | Null
+    deriving (Eq, Show)</pre></div></li><li class="listitem">Construct<a id="id334" class="indexterm"/> a tree based on the preceding diagram:<div class="informalexample"><pre class="programlisting">someTree :: Tree Int
+
+someTree = root  
+  where root = Node 0 n1 n4
+        n1   = Node 1 n2 n3
+        n2   = Node 2 Null Null
+        n3   = Node 3 Null Null
+        n4   = Node 4 Null Null</pre></div></li><li class="listitem">Define the <a id="id335" class="indexterm"/>function to verify whether or not a tree obeys the binary order property:<div class="informalexample"><pre class="programlisting">valid :: Ord t =&gt; Tree t -&gt; Bool
+
+valid (Node v l r) = leftValid &amp;&amp; rightValid
+  where leftValid  = if notNull l 
+                       then valid l &amp;&amp; value l &lt;= v 
+                       else True
+        rightValid = if notNull r 
+                       then valid r &amp;&amp; v &lt;= value r 
+                       else True
+        notNull t  =  t /= Null</pre></div></li><li class="listitem">Test out the function in <code class="literal">main</code>:<div class="informalexample"><pre class="programlisting">main = print $ valid someTree</pre></div></li><li class="listitem">Clearly, the tree does not obey the order property, and therefore, the output is as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>False</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec195"/>How it works...</h2></div></div></div><p>The <code class="literal">valid</code> function<a id="id336" class="indexterm"/> recursively checks if the left subtree contains elements less than the current node and if the right subtree contains elements greater than the current node.</p></div></div>
+<div class="section" title="Using a self-balancing tree"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec70"/>Using a self-balancing tree</h1></div></div></div><p>An AVL tree<a id="id337" class="indexterm"/> is a balanced binary search tree. The heights of each subtree differ by at most one. On each insertion or deletion, the <a id="id338" class="indexterm"/>tree shifts around its nodes through a series of rotations to become balanced. A balanced tree ensures the height is minimized, which guarantees lookups and insertions to be within <span class="emphasis"><em>O(log n)</em></span> time. In this recipe, we will use an AVL tree package directly, but self-balancing trees also exist within the <code class="literal">Data.Set</code> and <code class="literal">Data.Map</code> implementations.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec196"/>Getting ready</h2></div></div></div><p>We will be using the <a id="id339" class="indexterm"/>
+<code class="literal">AvlTree</code> package to use <code class="literal">Data.Tree.AVL</code>:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install AvlTree</strong></span>
+</pre></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec197"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the relevant AVL tree packages:<div class="informalexample"><pre class="programlisting">import Data.Tree.AVL
+import Data.COrdering</pre></div></li><li class="listitem">Set up an AVL tree from a list of values and read the minimum and maximum values from it:<div class="informalexample"><pre class="programlisting">main = do
+  let avl  = asTree fstCC [4,2,1,5,3,6]
+  let min  = tryReadL avl
+  let max  = tryReadR avl
+  print min
+  print max</pre></div></li><li class="listitem">The minimum and maximum values are printed out as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>Just 1</strong></span>
+<span class="strong"><strong>Just 6</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec198"/>How it works...</h2></div></div></div><p>The <code class="literal">asTree :: (e -&gt; e -&gt; COrdering e) -&gt; [e] -&gt; AVL</code> e-function takes in an ordering property and a list of elements to produce an AVL tree out of the corresponding elements. The function <code class="literal">fstCC :: Ord a =&gt; a -&gt; a -&gt; COrdering a</code> comes from <code class="literal">Data.Cordering</code> and is defined as:</p><p><span class="emphasis"><em>A combining comparison for an instance of 'Ord' which keeps the first argument if they are deemed equal. The second argument is discarded in this case.</em></span></p></div><div class="section" title="There's more…"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec199"/>There's more…</h2></div></div></div><p>The implementation of Haskell's <code class="literal">Data.Set</code> and <code class="literal">Data.Map</code> functions efficiently uses balanced binary trees. We can rewrite the recipe by simply using <code class="literal">Data.Set</code>:</p><div class="informalexample"><pre class="programlisting">import qualified Data.Set as S
+
+main = do
+  let s = S.fromList [4,2,1,5,3,6]
+  let min = S.findMin s
+  let max = S.findMax s
+  print min
+  print max </pre></div></div></div>
+<div class="section" title="Implementing a min-heap data structure"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec71"/>Implementing a min-heap data structure</h1></div></div></div><p>A heap is <a id="id340" class="indexterm"/>a binary tree with both <a id="id341" class="indexterm"/>a shape property and a heap property. The shape property enforces the tree to behave in a balanced way by defining each node to have two children unless the node is in the very last level. The heap property ensures that each node is less than or equal to either of its child nodes if it is a min-heap, and vice versa in case of a max-heap.</p><p>Heaps are used for constant time lookups for maximum or minimum elements. We will use a heap in the next recipe to implement our own Huffman tree.</p><div class="section" title="Getting started"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec200"/>Getting started</h2></div></div></div><p>Install the lens library for easy data manipulation:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install lens</strong></span>
+</pre></div></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec201"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Define the <code class="literal">MinHeap</code> module in a file <code class="literal">MinHeap.hs</code>:<div class="informalexample"><pre class="programlisting">module MinHeap (empty, insert, deleteMin, weights) where
+
+import Control.Lens (element, set)
+import Data.Maybe (isJust, fromJust)</pre></div></li><li class="listitem">We will use a list to represent a binary tree data structure for demonstration purposes only. It is best to implement the heap as an actual binary tree (as we have done in the previous sections), or we should use an actual array that will give us constant time access to its elements. For simplicity, we will define the root node <a id="id342" class="indexterm"/>to start at index 1. Given a node at index <code class="literal">i</code>, the left child will always be located at <span class="emphasis"><em>2*i</em></span>, and the right child at <span class="emphasis"><em>2*i + 1</em></span>:<div class="informalexample"><pre class="programlisting">data Heap v = Heap { items :: [Node v] }
+              deriving Show
+
+data Node v = Node { value :: v, weight :: Int }
+              deriving Show</pre></div></li><li class="listitem">We define a convenience function to initiate an empty heap:<div class="informalexample"><pre class="programlisting">empty = Heap []</pre></div></li><li class="listitem">Insertion of a node in a heap is done by appending the node to the end of the array and percolating it up:<div class="informalexample"><pre class="programlisting">insert v w (Heap xs) = percolateUp position items'
+  where items'   = xs ++ [Node v w]
+        position = length items' - 1</pre></div></li><li class="listitem">Deleting a node from a heap is done by swapping the root node with the last element, and then percolating down from the root node:<div class="informalexample"><pre class="programlisting">deleteMin (Heap xs) = percolateDown 1 items'
+  where items' = set (element 1) (last xs) (init xs)</pre></div></li><li class="listitem">Create a function to view the minimum:<div class="informalexample"><pre class="programlisting">viewMin heap@(Heap (_:y:_)) = 
+  Just (value y, weight y, deleteMin heap)
+viewMin _                   = Nothing</pre></div></li><li class="listitem">Percolating down from a node means ensuring the heap property holds for the current node; otherwise, swap the node with the greater or lesser (depending on the max or min heap) child. This process is recursively applied all the way down to the leaf nodes:<div class="informalexample"><pre class="programlisting">percolateDown i items
+   | isJust left &amp;&amp; isJust right = percolateDown i' 
+                                     (swap i i' items)
+   | isJust left = percolateDown l (swap i l items)
+   | otherwise = Heap items</pre></div></li><li class="listitem">Define the <code class="literal">left</code>, <code class="literal">right</code>, <code class="literal">i'</code>, <code class="literal">l</code>, and <code class="literal">r</code> variables:<div class="informalexample"><pre class="programlisting">  where left   = if l &gt;= length items
+                   then Nothing
+                   else Just $ items !! l
+        right  = if r &gt;= length items
+                   then Nothing
+                   else Just $ items !! r
+        i'     = if (weight (fromJust left)) &lt; 
+                      (weight (fromJust right))
+                 then l else r
+        l      = 2*i
+        r      = 2*i + 1</pre></div></li><li class="listitem">Percolating<a id="id343" class="indexterm"/> a node up means to recursively swap a node with its parent until the heap property of the tree holds:<div class="informalexample"><pre class="programlisting">percolateUp i items
+  | i == 1 = Heap items
+  | w &lt; w' = percolateUp c (swap i c items)
+  | otherwise = Heap items
+   where  w  = weight $ items !! i
+          w' = weight $ items !! c
+          c  = i `div` 2</pre></div></li><li class="listitem">We define a convenience function to swap items at two indices in a list:<div class="informalexample"><pre class="programlisting">swap i j xs = set (element j) vi (set (element i) vj xs)
+  where vi = xs !! i
+        vj = xs !! j</pre></div></li><li class="listitem">To view the weights of each node in the array representation of a heap, we can define the following function:<div class="informalexample"><pre class="programlisting">weights heap = map weight ((tail.items) heap)</pre></div></li><li class="listitem">Finally, in a different file that we can name <code class="literal">Main.hs</code>, we can test out the min-heap:<div class="informalexample"><pre class="programlisting">import MinHeap
+
+main = do
+  let heap = foldr (\x -&gt; insert x x) 
+               empty [11, 5, 3, 4, 8]
+  print $ weights heap
+  print $ weights $ iterate deleteMin heap !! 1
+  print $ weights $ iterate deleteMin heap !! 2
+  print $ weights $ iterate deleteMin heap !! 3
+  print $ weights $ iterate deleteMin heap !! 4</pre></div></li><li class="listitem">The output of the weights in the array representation of the heap is as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>[3,5,4,8,11]</strong></span>
+<span class="strong"><strong>[4,5,11,8]</strong></span>
+<span class="strong"><strong>[5,8,11]</strong></span>
+<span class="strong"><strong>[8,11]</strong></span>
+<span class="strong"><strong>[11]</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="There's more…"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec202"/>There's more…</h2></div></div></div><p>The code in this<a id="id344" class="indexterm"/> recipe is for understanding the heap data structure, but it is by no means efficient. Better implementations of heaps exist on Hackage, including the <code class="literal">Data.Heap</code> library that we will explore:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the heap library:<div class="informalexample"><pre class="programlisting">import Data.Heap (MinHeap, MaxHeap, empty, insert, view)</pre></div></li><li class="listitem">Define a helper function to construct a min-heap from a list:<div class="informalexample"><pre class="programlisting">minheapFromList :: [Int] -&gt; MinHeap Int
+minheapFromList ls = foldr insert empty ls</pre></div></li><li class="listitem">Define a helper function to construct a max-heap from a list:<div class="informalexample"><pre class="programlisting">maxheapFromList :: [Int] -&gt; MaxHeap Int
+maxheapFromList ls = foldr insert empty ls</pre></div></li><li class="listitem">Test out the heaps:<div class="informalexample"><pre class="programlisting">main = do
+  let myList = [11, 5, 3, 4, 8]
+  let minHeap = minheapFromList myList
+  let maxHeap = maxheapFromList myList
+  print $ view minHeap
+  print $ view maxHeap</pre></div></li><li class="listitem">The view functions return a tuple in a <code class="literal">Maybe</code> data structure. The first element of the tuple is the value from performing a lookup, and the second element is the new heap with that value removed:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+<span class="strong"><strong>Just (3, fromList [(4,()),(11,()),(5,()),(8,())])</strong></span>
+<span class="strong"><strong>Just (11, fromList [(8,()),(3,()),(5,()),(4,())])</strong></span>
+</pre></div></li></ol></div></div></div>
+<div class="section" title="Encoding a string using a Huffman tree"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec72"/>Encoding a string using a Huffman tree</h1></div></div></div><p>A <span class="strong"><strong>Huffman tree</strong></span><a id="id345" class="indexterm"/> allows efficient<a id="id346" class="indexterm"/> encoding of data by<a id="id347" class="indexterm"/> calculating a probability distribution of characters to optimize the space taken per character. Imagine compressing this book into one piece of paper and back without any information loss. Huffman trees allow this type of optimal lossless data compression based on statistics.</p><p>In this recipe, we<a id="id348" class="indexterm"/> will implement a Huffman tree from a source of text and produce a string representation of its Huffman codes.</p><p>For example, the<a id="id349" class="indexterm"/> string "hello world" contains 11 characters, which, depending on the encoding and architecture, may take up as few as 11 bytes of space to represent. The code in this recipe will transform the string into just 51 bits, or 6.375 bytes.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec203"/>Getting ready</h2></div></div></div><p>Make sure to be connected to the Internet since this recipe will download text from <a class="ulink" href="http://norgiv.com/big.txt">http://norgiv.com/big.txt</a> to analyze probability distribution of many characters. We will be using the min-heap that was implemented in the previous recipe by importing <code class="literal">MinHeap</code>.</p></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec204"/>How to do it...</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the following packages. We will be using our previous <code class="literal">MinHeap</code> module, so be sure to include the code from the previous recipe:<div class="informalexample"><pre class="programlisting">import Data.List (group, sort)
+import MinHeap
+import Network.HTTP ( getRequest, getResponseBody, simpleHTTP )
+import Data.Char (isAscii)
+import Data.Maybe (fromJust)
+import Data.Map (fromList, (!))</pre></div></li><li class="listitem">Define a function to return an association list of characters to its frequency:<div class="informalexample"><pre class="programlisting">freq xs = map (\x -&gt; (head x, length x)) . 
+            group . sort $ xs</pre></div></li><li class="listitem">The data structure of a Huffman tree is simply a binary tree:<div class="informalexample"><pre class="programlisting">data HTree  =  HTree { value :: Char
+                     , left  :: HTree
+                     , right :: HTree }
+            | Null
+            deriving (Eq, Show)</pre></div></li><li class="listitem">Construct a Huffman tree with one value:<div class="informalexample"><pre class="programlisting">single v = HTree v Null Null</pre></div></li><li class="listitem">Define a function to construct a Huffman tree from a min-heap:<div class="informalexample"><pre class="programlisting">htree heap = if length (items heap) == 2
+             then case fromJust (viewMin heap) of 
+                    (a,b,c) -&gt; a
+             else htree $ insert newNode (w1 + w2) heap3
+
+  where (min1, w1, heap2) = fromJust $ viewMin heap
+        (min2, w2, heap3) = fromJust $ viewMin heap2
+        newNode           = HTree { value  = ' '
+                                  , left   = min1
+                                  , right  = min2 }</pre></div></li><li class="listitem">Get a<a id="id350" class="indexterm"/> map <a id="id351" class="indexterm"/>of Huffman codes from the Huffman tree:<div class="informalexample"><pre class="programlisting">codes htree = codes' htree ""
+
+  where codes' (HTree v l r) str
+            | l==Null &amp;&amp; r==Null = [(v, str)]
+            | r==Null            = leftCodes
+            | l==Null            = rightCodes
+            | otherwise          = leftCodes ++ rightCodes
+            where  leftCodes  = codes' l ('0':str)
+                   rightCodes = codes' r ('1':str)</pre></div></li><li class="listitem">Define a function to encode a string to text using the Huffman codes:<div class="informalexample"><pre class="programlisting">encode str m = concat $ map (m !) str</pre></div></li><li class="listitem">Test out the entire process by executing the following in <code class="literal">main</code>. Downloading and calculating the frequency might take a couple of minutes:<div class="informalexample"><pre class="programlisting">main = do
+  rsp &lt;- simpleHTTP (getRequest 
+           "http://norvig.com/big.txt")
+  html &lt;- fmap (takeWhile isAscii) (getResponseBody rsp)
+  let freqs = freq html
+  let heap = foldr (\(v,w) -&gt; insert (single v) w) 
+               empty freqs
+  let m = fromList $ codes $ htree heap
+  print $ encode "hello world" m</pre></div></li><li class="listitem">The string representation of the Huffman tree is then printed as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>"010001110011110111110001011101000100011011011110010"</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="How it works..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec205"/>How it works...</h2></div></div></div><p>First, we obtain a source of data to analyze by downloading the text from <a class="ulink" href="http://norvig.com/big.txt">http://norvig.com/big.txt</a>. Next, we obtain the frequency map of each character and throw it in a heap. The Huffman tree<a id="id352" class="indexterm"/> is constructed from this min-heap by combining the two lowest frequency nodes until only one node is left in the min-heap. Finally, the Huffman codes are used on a sample "hello world" string to see the encoding.</p></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec206"/>See also</h2></div></div></div><p>To read an encoded Huffman value, see the next section, <span class="emphasis"><em>Decoding a Huffman code</em></span>.</p></div></div>
+<div class="section" title="Decoding a Huffman code"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec73"/>Decoding a Huffman code</h1></div></div></div><p>This code<a id="id353" class="indexterm"/> relies heavily on the previous recipe, <span class="emphasis"><em>Encoding a string using a Huffman tree</em></span>. The same Huffman tree data structure is used next to decode a string representation of a Huffman coding.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec207"/>Getting ready</h2></div></div></div><p>Read the previous recipe, <span class="emphasis"><em>Encoding a string using a Huffman tree</em></span>. The same <code class="literal">HTree</code> data structure is used in this recipe.</p></div><div class="section" title="How to do it..."><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec208"/>How to do it...</h2></div></div></div><p>We traverse down the tree until we hit a leaf node. Then, we prepend the character found and restart from the root node. This process continues until no input is available:</p><div class="informalexample"><pre class="programlisting">decode :: String -&gt; HTree -&gt; String
+decode str htree = decode' str htree
+  where  decode' "" _ = ""
+      decode' ('0':str) (HTree _ l _)
+        | leaf l    = value l : decode' str htree
+        | otherwise = decode' str l
+      decode' ('1':str) (HTree v _ r)
+        | leaf r    = value r : decode' str htree
+        | otherwise = decode' str r
+      leaf tree = left tree == Null &amp;&amp; right tree == Null</pre></div></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec209"/>See also</h2></div></div></div><p>To encode data using a Huffman tree, see the previous recipe, <span class="emphasis"><em>Encoding a string using a Huffman tree</em></span>.</p></div></div></body></html>

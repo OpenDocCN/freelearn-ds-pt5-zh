@@ -1,0 +1,1232 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Classification Using K-Nearest Neighbors</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">A <span class="calibre9">nearest </span>neighbor algorithm classifies a data instance based on its neighbors. The class of a data instance determined by the <span class="calibre9"><em class="calibre18">k</em>-nearest neighbors</span> algorithm is the class with the highest representation among the <em class="calibre18">k</em>-closest neighbors.</p>
+<p class="mce-root">In this chapter, we will cover the following topics:</p>
+<ul class="calibre14">
+<li class="calibre15"><span class="calibre4">How to implement the basics of the</span> k-<span class="calibre4">NN algorithm using the example of Mary and her temperature preferences</span></li>
+<li class="calibre15">How to <span class="calibre4">choose a correct</span> <em class="calibre5">k</em><span class="calibre4"> value so that the algorithm can perform correctly and with the highest degree of accuracy using the example of a map of Italy</span></li>
+<li class="calibre15">How to rescale <span class="calibre4">values and prepare them for the k-NN algorithm using the example of house preferences</span></li>
+<li class="calibre15">How <span class="calibre4">to choose a good metric to measure distances between data points</span></li>
+<li class="calibre15"><span class="calibre4">How to eliminate irrelevant dimensions in higher-dimensional space to ensure that the algorithm performs accurately using the text classification example</span></li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Mary and her temperature preferences</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">As an example, if we know that our friend, Mary, feels cold when it is 10°C, but warm when it is 25<span class="calibre9">°C</span>, then in a room where it is 22°C, the <span class="calibre9">n</span><span class="calibre9">earest neighbor</span> algorithm would guess that our friend would feel warm, because 22 is closer to 25 than to 10.</p>
+<p class="mce-root"/>
+<p class="mce-root">Suppose that we would like to know when Mary feels warm and when she feels cold, as in the previous example, but in addition, wind speed data is also available when Mary is asked whether she feels warm or cold:</p>
+<table class="msotablegrid" border="1">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Temperature in <span class="calibre9">°C</span></strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Wind speed in km/h</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Mary's perception</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">10</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">25</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">15</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">5</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">20</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">3</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">18</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">7</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">20</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">10</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Cold</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">22</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">5</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+</tr>
+<tr class="calibre28">
+<td class="calibre25">
+<p class="calibre26">24</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">6</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Warm</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">We could represent the data in a graph, as follows:</p>
+<p class="cdpaligncenter"><img class="alignnone1" src="Images/32fcee24-5625-4abb-9ff4-48c0f241fca5.png" width="1410" height="801"/></p>
+<p class="mce-root">Now, suppose we would like to find out how Mary feels when the temperature is 16<span class="calibre9">°C</span> with a wind speed of 3 km/h by using the <em class="calibre18">1</em>-NN algorithm:</p>
+<p class="cdpaligncenter"><img class="alignnone2" src="Images/b1ef3a61-29f6-4395-9904-a8fd36dfcff9.png" width="1420" height="807"/></p>
+<p class="mce-root">For simplicity, we will use a Manhattan metric to measure the distance between the neighbors on the grid. The Manhattan distance <em class="calibre18">d<sub class="calibre29">Man</sub></em> of the neighbor <em class="calibre18">N<sub class="calibre29">1</sub>=(x<sub class="calibre29">1</sub>,y<sub class="calibre29">1</sub>)</em> from the neighbor <em class="calibre18">N<sub class="calibre29">2</sub>=(x<sub class="calibre29">2</sub>,y<sub class="calibre29">2</sub>)</em> is defined as <em class="calibre18">d<sub class="calibre29">Man</sub>=|x<sub class="calibre29">1</sub></em><em class="calibre18">-</em> <em class="calibre18">x<sub class="calibre29">2</sub>|+|y<sub class="calibre29">1</sub></em><em class="calibre18">-</em> <em class="calibre18">y<sub class="calibre29">2</sub>|</em>.</p>
+<p class="mce-root"/>
+<p class="mce-root">Let's label the grid with distances around the neighbors to see which neighbor with a known class is closest to the point we would like to classify:</p>
+<p class="cdpaligncenter"><img class="alignnone3" src="Images/b41d305d-64c1-4f53-aa2e-2146b7586056.png" width="1426" height="803"/></p>
+<p class="mce-root">We can see that the closest neighbor with a known class is the one with a <span class="calibre9">temperature of 15°C (blue) </span>and a wind speed of 5 km/h. Its distance from the point in question is three units. Its class is blue (cold). The closest red (warm) neighbour is at a distance of four units from the point in question. Since we are using the 1-<span class="calibre9">nearest neighbor</span> algorithm, we just look at the closest neighbor and, therefore, the class of the <span class="calibre9">point in question</span> should be blue (cold).</p>
+<p class="mce-root">By applying this procedure to every data point, we can complete the graph, as follows:</p>
+<p class="cdpaligncenter"><img class="alignnone4" src="Images/fadf736f-c76e-4d57-9868-ba3d12a30639.png" width="1410" height="794"/></p>
+<p class="mce-root">Note that, sometimes, a data point might be the same distance away from two known classes: for example, 20<span class="calibre9">°C</span> and 6 km/h. In such situations, we could prefer one class over the other, or ignore these boundary cases. The actual result depends on the specific implementation of an algorithm.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Implementation of the k-nearest neighbors algorithm</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Now, we will implement the k-NN algorithm in Python to find Mary's temperature preference. At the end of this section, we will also implement the visualization of the data <span class="calibre9">produced in the previous section, that is, <em class="calibre18">Mary and her temperature preferences</em></span>. The full, compilable code, with the input files, can be found in the source code provided with this book. The most important parts have been extracted and presented here:</p>
+<pre class="calibre22"><strong class="calibre3"># source_code/1/mary_and_temperature_preferences/knn_to_data.py<br class="calibre2"/></strong># Applies the knn algorithm to the input data.<br class="calibre2"/># The input text file is assumed to be of the format with one line per<br class="calibre2"/># every data entry consisting of the temperature in degrees Celsius,<br class="calibre2"/># wind speed and then the classification cold/warm.<br class="calibre2"/><br class="calibre2"/>import sys<br class="calibre2"/>sys.path.append('..')<br class="calibre2"/>sys.path.append('../../common')<br class="calibre2"/>import knn # noqa<br class="calibre2"/>import common # noqa<br class="calibre2"/><br class="calibre2"/><strong class="calibre3"># Program start</strong><br class="calibre2"/># E.g. "mary_and_temperature_preferences.data"<br class="calibre2"/>input_file = sys.argv[1]<br class="calibre2"/># E.g. "mary_and_temperature_preferences_completed.data"<br class="calibre2"/>output_file = sys.argv[2]<br class="calibre2"/>k = int(sys.argv[3])<br class="calibre2"/>x_from = int(sys.argv[4])<br class="calibre2"/>x_to = int(sys.argv[5])<br class="calibre2"/>y_from = int(sys.argv[6])<br class="calibre2"/>y_to = int(sys.argv[7])<br class="calibre2"/><br class="calibre2"/>data = common.load_3row_data_to_dic(input_file)<br class="calibre2"/>new_data = knn.knn_to_2d_data(data, x_from, x_to, y_from, y_to, k)<br class="calibre2"/>common.save_3row_data_from_dic(output_file, new_data)</pre>
+<pre class="calibre22"><strong class="calibre3"># source_code/common/common.py<br class="calibre2"/></strong># ***Library with common routines and functions***<strong class="calibre3"><br class="calibre2"/>def dic_inc(dic, key):</strong><br class="calibre2"/>    if key is None:<br class="calibre2"/>        pass<br class="calibre2"/>    if dic.get(key, None) is None:<br class="calibre2"/>        dic[key] = 1<br class="calibre2"/>    else:<br class="calibre2"/>        dic[key] = dic[key] + 1<strong class="calibre3"><br class="calibre2"/></strong></pre>
+<pre class="calibre22"><strong class="calibre3"># source_code/1/knn.py</strong><br class="calibre2"/># ***Library implementing knn algorithm***<br class="calibre2"/><br class="calibre2"/><strong class="calibre3">def info_reset(info):</strong><br class="calibre2"/>    info['nbhd_count'] = 0<br class="calibre2"/>    info['class_count'] = {}<br class="calibre2"/><br class="calibre2"/># Find the class of a neighbor with the coordinates x,y.<br class="calibre2"/># If the class is known count that neighbor.<br class="calibre2"/><strong class="calibre3">def info_add(info, data, x, y):</strong><br class="calibre2"/>    group = data.get((x, y), None)<br class="calibre2"/>    common.dic_inc(info['class_count'], group)<br class="calibre2"/>    info['nbhd_count'] += int(group is not None)<br class="calibre2"/><br class="calibre2"/># Apply knn algorithm to the 2d data using the k-nearest neighbors with<br class="calibre2"/># the Manhattan distance.<br class="calibre2"/># The dictionary data comes in the form with keys being 2d coordinates<br class="calibre2"/># and the values being the class.<br class="calibre2"/># x,y are integer coordinates for the 2d data with the range<br class="calibre2"/># [x_from,x_to] x [y_from,y_to].<br class="calibre2"/><strong class="calibre3">def knn_to_2d_data(data, x_from, x_to, y_from, y_to, k):</strong><br class="calibre2"/>    new_data = {}<br class="calibre2"/>    info = {}<br class="calibre2"/>    # Go through every point in an integer coordinate system.<br class="calibre2"/>    for y in range(y_from, y_to + 1):<br class="calibre2"/>        for x in range(x_from, x_to + 1):<br class="calibre2"/>            info_reset(info)<br class="calibre2"/>            # Count the number of neighbors for each class group for<br class="calibre2"/>            # every distance dist starting at 0 until at least k<br class="calibre2"/>            # neighbors with known classes are found.<br class="calibre2"/>            for dist in range(0, x_to - x_from + y_to - y_from):<br class="calibre2"/>                # Count all neighbors that are distanced dist from<br class="calibre2"/>                # the point [x,y].<br class="calibre2"/>                if dist == 0:<br class="calibre2"/>                    info_add(info, data, x, y)<br class="calibre2"/>                else:<br class="calibre2"/>                    for i in range(0, dist + 1):<br class="calibre2"/>                        info_add(info, data, x - i, y + dist - i)<br class="calibre2"/>                        info_add(info, data, x + dist - i, y - i)<br class="calibre2"/>                    for i in range(1, dist):<br class="calibre2"/>                        info_add(info, data, x + i, y + dist - i)<br class="calibre2"/>                        info_add(info, data, x - dist + i, y - i)<br class="calibre2"/>                # There could be more than k-closest neighbors if the<br class="calibre2"/>                # distance of more of them is the same from the point<br class="calibre2"/>                # [x,y]. But immediately when we have at least k of<br class="calibre2"/>                # them, we break from the loop.<br class="calibre2"/>                if info['nbhd_count'] &gt;= k:<br class="calibre2"/>                    break<br class="calibre2"/>            class_max_count = None<br class="calibre2"/>            # Choose the class with the highest count of the neighbors<br class="calibre2"/>            # from among the k-closest neighbors.<br class="calibre2"/>            for group, count in info['class_count'].items():<br class="calibre2"/>                if group is not None and (class_max_count is None or<br class="calibre2"/>                   count &gt; info['class_count'][class_max_count]):<br class="calibre2"/>                    class_max_count = group<br class="calibre2"/>            new_data[x, y] = class_max_count<br class="calibre2"/>    return new_data</pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"><strong class="calibre8">Input</strong>:</p>
+<p class="mce-root">The preceding program will use the following file as the source of the input data. The file contains the table with the known data about Mary's temperature preferences:</p>
+<pre class="calibre22"><strong class="calibre3"># source_code/1/mary_and_temperature_preferences/<br class="calibre2"/>marry_and_temperature_preferences.data</strong><br class="calibre2"/>10 0 cold<br class="calibre2"/>25 0 warm<br class="calibre2"/>15 5 cold<br class="calibre2"/>20 3 warm<br class="calibre2"/>18 7 cold<br class="calibre2"/>20 10 cold<br class="calibre2"/>22 5 warm<br class="calibre2"/>24 6 warm</pre>
+<p class="mce-root"><strong class="calibre8">Output</strong>:</p>
+<p class="mce-root">We run the preceding implementation on the <kbd class="calibre17">mary_and_temperature_preferences.data</kbd> input file by using the k-NN algorithm for <kbd class="calibre17">k=1</kbd> neighbors. The algorithm classifies all the points with integer coordinates in the rectangle with a size of <kbd class="calibre17">(30-5=25) by (10-0=10)</kbd>, hence, with a size of <kbd class="calibre17">(25+1) * (10+1) = 286</kbd> integer points (adding one to count points on boundaries). Using the <kbd class="calibre17">wc</kbd> command, we find out that the output file contains exactly 286 lines—one data item per point. Using the <kbd class="calibre17">head</kbd> command, we display the first 10 lines from the output file:</p>
+<pre class="calibre22"><strong class="calibre3">$ python knn_to_data.py mary_and_temperature_preferences.data mary_and_temperature_preferences_completed.data 1 5 30 0 10</strong><br class="calibre2"/><br class="calibre2"/><strong class="calibre3">$ wc -l mary_and_temperature_preferences_completed.data </strong><br class="calibre2"/>286 mary_and_temperature_preferences_completed.data<br class="calibre2"/><br class="calibre2"/><strong class="calibre3">$ head -10 mary_and_temperature_preferences_completed.data </strong><br class="calibre2"/>7 3 cold<br class="calibre2"/>6 9 cold<br class="calibre2"/>12 1 cold<br class="calibre2"/>16 6 cold<br class="calibre2"/>16 9 cold<br class="calibre2"/>14 4 cold<br class="calibre2"/>13 4 cold<br class="calibre2"/>19 4 warm<br class="calibre2"/>18 4 cold<br class="calibre2"/>15 1 cold</pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"><strong class="calibre8">Visualization</strong>:</p>
+<p class="mce-root">For the visualization depicted earlier in this chapter, the <kbd class="calibre17">matplotlib</kbd> library was used. A data file is loaded, and then displayed in a scatter diagram:</p>
+<pre class="calibre22"><strong class="calibre3"># source_code/common/common.py</strong>
+# returns a dictionary of 3 lists: 1st with x coordinates,
+# 2nd with y coordinates, 3rd with colors with numeric values
+def get_x_y_colors(data):
+    dic = {}
+    dic['x'] = [0] * len(data)
+    dic['y'] = [0] * len(data)
+    dic['colors'] = [0] * len(data)
+    for i in range(0, len(data)):
+        dic['x'][i] = data[i][0]
+        dic['y'][i] = data[i][1]
+        dic['colors'][i] = data[i][2]
+    return dic</pre>
+<pre class="calibre22"><strong class="calibre3"># source_code/1/mary_and_temperature_preferences/</strong><br class="calibre2"/><strong class="calibre3">mary_and_temperature_preferences_draw_graph.py 
+</strong>import sys
+sys.path.append('../../common')  # noqa
+import common
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib
+matplotlib.style.use('ggplot')
+
+data_file_name = 'mary_and_temperature_preferences_completed.data'
+temp_from = 5
+temp_to = 30
+wind_from = 0
+wind_to = 10
+
+data = np.loadtxt(open(data_file_name, 'r'),
+                  dtype={'names': ('temperature', 'wind', 'perception'),
+                         'formats': ('i4', 'i4', 'S4')})
+
+# Convert the classes to the colors to be displayed in a diagram.
+for i in range(0, len(data)):
+    if data[i][2] == 'cold':
+        data[i][2] = 'blue'
+    elif data[i][2] == 'warm':
+        data[i][2] = 'red'
+    else:
+        data[i][2] = 'gray'
+# Convert the array into the format ready for drawing functions.
+data_processed = common.get_x_y_colors(data)
+
+# Draw the graph.
+plt.title('Mary and temperature preferences')
+plt.xlabel('temperature in C')
+plt.ylabel('wind speed in kmph')
+plt.axis([temp_from, temp_to, wind_from, wind_to])
+# Add legends to the graph.
+blue_patch = mpatches.Patch(color='blue', label='cold')
+red_patch = mpatches.Patch(color='red', label='warm')
+plt.legend(handles=[blue_patch, red_patch])
+plt.scatter(data_processed['x'], data_processed['y'],
+            c=data_processed['colors'], s=[1400] * len(data))
+plt.show()</pre>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Map of Italy example – choosing the value of k</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">In our data, we are given some points (about 1 percent) from the map of Italy and its surroundings. The blue points represent water, and the green points represent land; the white points are unknown. From the partial information that we have been given, we would like to predict whether there is water or land in the white areas.</p>
+<p class="mce-root">Drawing only 1% of the map data in the picture would make it almost invisible. If we were given about 33 times more data from the map of Italy and its surroundings, and drew it in the picture instead, it would look as follows:</p>
+<div class="cdpaligncenter1"><img class="image-border" src="Images/1d1458c9-b445-498b-81df-26d1aa0aed5a.png" width="500" height="692"/></div>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">For this problem, we will use the k-NN algorithm—<em class="calibre18">k</em> here means that we will look at <em class="calibre18">k</em>-closest neighbors. Given a white point, it will be classified as an area of water if the majority of its <em class="calibre18">k</em>-closest neighbors are in an area of water and classified as land if the majority of its <em class="calibre18">k</em>-closest neighbors are an area of land. We will use the Euclidean metric for the distance: given two points, <em class="calibre18">X=[x<sub class="calibre29">0</sub>,x<sub class="calibre29">1</sub>]</em> and <em class="calibre18">Y=[y<sub class="calibre29">0</sub>,y<sub class="calibre29">1</sub>]</em>, their Euclidean distance is defined as <em class="calibre18">d<sub class="calibre29">Euclidean</sub> = sqrt((x<sub class="calibre29">0</sub>-y<sub class="calibre29">0</sub>)<sup class="calibre30">2</sup>+(x<sub class="calibre29">1</sub>-y<sub class="calibre29">1</sub>)<sup class="calibre30">2</sup>)</em>.</p>
+<p class="mce-root">The Euclidean distance is the most common metric. Given two points on a piece of paper, their Euclidean distance is just the length between the two points, as measured by a ruler, as shown in the following diagram:</p>
+<div class="cdpaligncenter1"><img class="alignnone5" src="Images/438d455d-c50a-4050-ad3c-8cc3c04594ae.png" width="135" height="136"/></div>
+<p class="mce-root">To apply the k-NN algorithm to an incomplete map, we have to choose the value of <em class="calibre18">k</em>. Since the resulting class of a point is the class of the majority of the <em class="calibre18">k</em>-closest neighbors of that point, <em class="calibre18">k</em> should be odd. Let's apply this algorithm to the values of <em class="calibre18">k=1,3,5,7,9</em>.</p>
+<p class="mce-root">Applying this algorithm to every white point on the incomplete map will result in the following complete maps:</p>
+<div class="cdpaligncenter1"><img class="alignnone6" src="Images/3e30176a-ac73-4bfc-bc22-ad4e9582f5c6.png" width="500" height="692"/></div>
+<div class="cdpaligncenter2"><span class="calibre4">k=1</span></div>
+<div class="cdpaligncenter1"><img class="alignnone7" src="Images/a3ba0c09-c93a-42c0-946d-008ef6dfa6fc.png" width="500" height="692"/></div>
+<div class="cdpaligncenter2"><span class="calibre4">k=3</span></div>
+<div class="cdpaligncenter2"><img class="alignnone8" src="Images/d2adcc17-bafc-4e20-aaa0-c43d020f6745.png" width="500" height="692"/></div>
+<div class="cdpaligncenter2"><span class="calibre4">k=5</span></div>
+<div class="cdpaligncenter2"><img class="alignnone9" src="Images/00da5203-291f-40de-906e-8f24897be3d2.png" width="500" height="692"/></div>
+<div class="cdpaligncenter2"><span class="calibre4">k=7</span></div>
+<div class="cdpaligncenter2"><img class="alignnone10" src="Images/89bc78d7-4053-4586-83e2-49c105cf71bd.png" width="500" height="692"/> </div>
+<div class="cdpaligncenter2"><span class="calibre4">k=9</span></div>
+<p class="mce-root"/>
+<p class="mce-root">As you may have noticed, the highest value of <em class="calibre18">k</em> results in a complete map with smoother boundaries. An actual complete map of Italy is shown here:</p>
+<div class="cdpaligncenter1"><img class="image-border1" src="Images/822d8fb1-cae0-4f08-8fce-a4ed19eb02a3.png" width="500" height="692"/></div>
+<p class="mce-root">We can use this real, complete map to calculate the percentage of incorrectly classified points for the various values of <em class="calibre18">k</em> to determine the accuracy of the k-NN algorithm for different values of <em class="calibre18">k</em>:</p>
+<table class="msotablegrid" border="1">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre31">
+<p class="calibre26"><strong class="calibre8">k</strong></p>
+</td>
+<td class="calibre32">
+<p class="calibre26"><strong class="calibre8">Precentage of incorrectly classified points</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre31">
+<p class="calibre26">1</p>
+</td>
+<td class="calibre32">
+<p class="calibre26">2.97</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre31">
+<p class="calibre26">3</p>
+</td>
+<td class="calibre32">
+<p class="calibre26">3.24</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre31">
+<p class="calibre26">5</p>
+</td>
+<td class="calibre32">
+<p class="calibre26">3.29</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre31">
+<p class="calibre26">7</p>
+</td>
+<td class="calibre32">
+<p class="calibre26">3.40</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre31">
+<p class="calibre26">9</p>
+</td>
+<td class="calibre32">
+<p class="calibre26">3.57</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">Thus, for this particular type of classification problem, the k-NN algorithm achieves the highest accuracy (least error rate) for <em class="calibre18">k=1</em>.</p>
+<p class="mce-root">However, in real life, the problem is that we wouldn't usually have complete data or a solution. In such scenarios, we need to choose a value of <em class="calibre18">k</em> that is appropriate to the data that is partially available. For this, consult <em class="calibre18">Problem 4</em> at the end of this chapter.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">House ownership – data rescaling</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">For each person, we are given their age, yearly income, and whether or not they own a house:</p>
+<table class="msotablegrid" border="1">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Age</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Annual income in USD</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">House ownership status</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">23</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">50,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">37</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">34,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">48</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">40,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">52</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">30,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">28</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">95,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">25</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">78,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">35</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">130,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">32</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">105,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">20</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">100,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">40</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">60,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">50</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">80,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Peter</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="cdpaligncenter"><img class="alignnone11" src="Images/dca3b7cb-d007-4325-8adc-6da7a4c97381.png" width="1450" height="793"/></p>
+<div class="cdpaligncenter2">House ownership and annual income</div>
+<p class="mce-root">The aim is to predict whether Peter, aged 50, with an income of $80,000 per year, owns a house and could be a potential customer for our insurance company.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">In this case, we could try to apply the 1-NN algorithm. However, we should be careful about how we measure the distances between the data points, since the income range is much wider than the age range. Income levels of USD 115 k and USD 116 k are USD 1,000 apart. The two data points for these incomes would be very far apart. However, relative to each other, the difference between these data points isn't actually that big. Because we consider both measures (age and yearly income) to be about as important as each other, we would scale both from 0 to 1 according to the following formula:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation" src="Images/d7f80a4f-06bb-4927-95df-4173f07c1cf3.png" width="7080" height="220"/></p>
+<p class="mce-root">In our particular case, this reduces to the following:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation1" src="Images/ce5dc1b8-a7ce-4089-b54b-3974f5cf909a.png" width="4890" height="220"/></p>
+<p class="cdpaligncenter"><img class="fm-editor-equation2" src="Images/1d4d1412-e788-4d98-8880-3ebf69fc1b26.png" width="6440" height="220"/></p>
+<p class="mce-root">After scaling, we get the following data:</p>
+<table class="msotablegrid" border="1">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Age</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Scaled age</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Annual income in USD</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Scaled annual income</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">House ownership status</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">23</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.09375</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">50,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.2</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">37</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.53125</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">34,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.04</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">48</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.875</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">40,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.1</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">52</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">1</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">30,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">28</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.25</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">95,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.65</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">25</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.15625</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">78,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.48</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">35</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.46875</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">130,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">1</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">32</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.375</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">105,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.75</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">20</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">100,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.7</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Non-owner</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">40</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.625</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">60,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.3</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Owner</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">50</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.9375</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">80,000</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0.5</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"/>
+<p class="mce-root">Now, if we apply the 1-NN algorithm with the Euclidean metric, we will find out that Peter more than likely owns a house. Note that, without rescaling, the algorithm would yield a different result. Refer to <em class="calibre18">Exercise 1.5</em> for more information.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Text classification – using non-Euclidean distances</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">We are given the following word counts relating to the keywords <strong class="calibre8">algorithm</strong> and <strong class="calibre8">computer</strong>, for documents of the classes, <span class="calibre9">in the informatics and mathematics subject classifications:</span></p>
+<table class="msotablegrid" border="1">
+<tbody class="calibre23">
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Algorithm words per 1,000</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Computer words per 1,000</strong></p>
+</td>
+<td class="calibre25">
+<p class="calibre26"><strong class="calibre8">Subject classification</strong></p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">153</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">150</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Informatics</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">105</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">97</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Informatics</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">75</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">125</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Informatics</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">81</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">84</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Informatics</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">73</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">77</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Informatics</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">90</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">63</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Informatics</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">20</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Mathematics</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">33</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Mathematics</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">105</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">10</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Mathematics</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">2</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Mathematics</p>
+</td>
+</tr>
+<tr class="calibre27">
+<td class="calibre25">
+<p class="calibre26">84</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">2</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Mathematics</p>
+</td>
+</tr>
+<tr class="calibre24">
+<td class="calibre25">
+<p class="calibre26">12</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">0</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">Mathematics</p>
+</td>
+</tr>
+<tr class="calibre33">
+<td class="calibre25">
+<p class="calibre26">41</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">42</p>
+</td>
+<td class="calibre25">
+<p class="calibre26">?</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">Those documents having a high incidence of the words <strong class="calibre8">algorithm</strong> and <strong class="calibre8">computer</strong> are in the <kbd class="calibre17">informatics</kbd> class. The <kbd class="calibre17">mathematics</kbd> <span class="calibre9">class </span>happens to contain documents with a high incidence of the word <strong class="calibre8">algorithm</strong> in some cases, for example, a document concerned with the Euclidean algorithm from the field of number theory. But, since the <kbd class="calibre17">mathematics</kbd> class tends to be applied less than <kbd class="calibre17">informatics</kbd> in the area of algorithms, the word <strong class="calibre8">computer</strong> comes up less frequently in the documents.</p>
+<p class="mce-root"/>
+<p class="mce-root">We would like to classify a document that has 41 instances of the word <strong class="calibre8">algorithm</strong> per 1,000 words, and 42 instances of the word <strong class="calibre8">computer</strong> per 1,000 words:</p>
+<p class="cdpaligncenter"><img class="alignnone12" src="Images/d58149ae-c5d9-458e-b369-b2c2249c17dc.png" width="1424" height="802"/></p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Using, for example, the 1-NN algorithm and the Manhattan or Euclidean distance would result in the document in question being assigned to the <kbd class="calibre17">mathematics</kbd> <span class="calibre9">class</span>. However, intuitively, we should instead use a different metric to measure the distance, as the document in question has a much higher incidence of the word <strong class="calibre8">computer</strong> than other known documents in the class of <kbd class="calibre17">mathematics</kbd>.</p>
+<p class="mce-root">Another candidate metric for this problem is a metric that would measure the proportion of the for the words or the angle between the instances in documents. Instead of the angle, you could take the cosine of the angle, <em class="calibre18">cos(θ)</em>, and then use the well-known dot product formula to calculate <em class="calibre18">cos(θ)</em>.</p>
+<p class="mce-root">Let's use <em class="calibre18">a=(a<sub class="calibre29">x</sub>,a<sub class="calibre29">y</sub>), b=(b<sub class="calibre29">x</sub>,b<sub class="calibre29">y</sub>)</em>. Use the following formula:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation3" src="Images/ec9b933f-2f8c-4aaa-89f8-f8a64ddcbe2a.png" width="2760" height="220"/></p>
+<p class="mce-root">This will derive the following:</p>
+<div class="cdpaligncenter1"><img class="fm-editor-equation4" src="Images/39906b59-4478-4f29-82d0-66365f6a52bf.png" width="2000" height="480"/></div>
+<p class="mce-root">Using the cosine distance metric, you could classify the document in question to the <kbd class="calibre17">informatics</kbd> class:</p>
+<p class="cdpaligncenter"><img class="alignnone13" src="Images/7c0a52f7-1e42-4cff-8f2c-d1ebc92ae0ec.png" width="1434" height="795"/></p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Text classification – k-NN in higher dimensions</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Suppose we are given documents and would like to classify other documents based on their word frequency counts. For example, the 120 most frequently occurring words found in the Project Gutenberg e-book of the King James Bible are as follows:</p>
+<div class="cdpaligncenter1"><img src="Images/e554f3ad-cab2-4a87-8abe-af4546dde5c2.png" class="calibre34"/></div>
+<p class="mce-root"/>
+<p class="mce-root">The task is to design a metric that, given the word frequencies for each document, would accurately determine how semantically close those documents are. Consequently, such a metric could be used by the k-NN algorithm to classify the unknown instances in the new documents based on the existing documents.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">Suppose that we consider, for example, <em class="calibre18">N</em> most frequent words in our corpus of documents. Then, we count the word frequencies for each of the <em class="calibre18">N</em> words in a given document and put them in an <em class="calibre18">N</em>-dimensional vector that will represent that document. Then, we define a distance between two documents to be the distance (for example, Euclidean) between the two-word frequency vectors of those documents.</p>
+<p class="mce-root">The problem with this solution is that only certain words represent the actual content of the book, and others need to be present in the text because of grammar rules or their general basic meaning. For example, out of the 120 most frequently encountered words in the Bible, each word is of different importance. In the following table, we have highlighted the words that have both a high frequency in the Bible and an important meaning:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre28">
+<td class="calibre25">
+<ol start="121" class="calibre20">
+<li class="chapter">lord - used 1.00%</li>
+<li class="chapter">god - 0.56%</li>
+</ol>
+</td>
+<td class="calibre25">
+<ol start="123" class="calibre20">
+<li class="chapter">Israel - 0.32%</li>
+<li class="chapter">king - 0.32%</li>
+</ol>
+</td>
+<td class="calibre25">
+<ol start="125" class="calibre20">
+<li class="chapter">David - 0.13%</li>
+<li class="chapter">Jesus - 0.12%</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">These words are less likely to be present in mathematical texts, for example, but more likely to be present in texts concerned with religion or Christianity.</p>
+<p class="mce-root">However, if we just look at the six most frequent words in the Bible, they happen to be less useful with regard to detecting the meaning of the text:</p>
+<table border="1" class="msotablegrid">
+<tbody class="calibre23">
+<tr class="calibre28">
+<td class="calibre25">
+<ol class="calibre20">
+<li class="chapter">the - 8.07%</li>
+<li class="chapter">and - 6.51%</li>
+</ol>
+</td>
+<td class="calibre25">
+<ol start="3" class="calibre20">
+<li class="chapter">of - 4.37%</li>
+<li class="chapter">to - 1.72%</li>
+</ol>
+</td>
+<td class="calibre25">
+<ol start="5" class="calibre20">
+<li class="chapter">that - 1.63%</li>
+<li class="chapter">in - 1.60%</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="mce-root"> </p>
+<p class="mce-root">Texts concerned with mathematics, literature, and other subjects will have similar frequencies for these words. Differences may result mostly from the writing style.</p>
+<p class="mce-root">Therefore, to determine a similarity distance between two documents, we only need to look at the frequency counts of the important words. Some words are less important—these dimensions are better reduced, as their inclusion can lead to misinterpretation of the results in the end. Thus, what we are left to do is choose the words (dimensions) that are important to classify the documents in our corpus. For this, consult <em class="calibre18">Problem 6</em>.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root"><span class="calibre9">In this chapter, we learned that t</span><span class="calibre9">he</span><span class="calibre9"> </span><em class="calibre18">k</em><span class="calibre9">-</span><span class="calibre9">nearest neighbor</span><span class="calibre9"> </span><span class="calibre9">algorithm is a classification algorithm that assigns the majority class among the</span><span class="calibre9"> </span><em class="calibre18">k</em><span class="calibre9">-nearest neighbors to a given data point. The distance between two points is measured by a metric. We covered examples of distances, including the Euclidean distance, Manhattan distance, tangential distance, and cosine distance. We also discussed how experiments with various parameters and cross-validation can help to establish which parameter, </span><em class="calibre18">k</em><span class="calibre9">, </span><span class="calibre9">and which metric should be used.</span></p>
+<p class="mce-root">We also learned that the dimensionality and position of a data point are determined by its qualities. A large number of dimensions can result in low accuracy of the k-NN algorithm. Reducing the dimensions of qualities of lesser importance can increase accuracy. Similarly, to increase accuracy further, distances for each dimension should be scaled according to the importance of the quality of that dimension.</p>
+<p class="mce-root">In the next chapter, we will look at the Naive Bayes algorithm, which classifies an element based on probabilistic methods using Bayes' theorem.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Problems</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root">In this section, we will discuss the following problems:</p>
+<ul class="calibre14">
+<li class="calibre15"><span class="calibre4">Mary and her temperature preference problems</span></li>
+<li class="calibre15">Map of Italy – choosing the value of <em class="calibre5">k</em></li>
+<li class="calibre15">House ownership</li>
+</ul>
+<p class="mce-root">In order to learn from the material from this chapter in the best way possible, please analyze these problems on your own first before looking at the <em class="calibre18">Analysis</em> section at the end of this chapter.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Mary and her temperature preference problems</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root"><strong class="calibre8">Problem 1</strong>: Imagine that you know that your friend Mary feels cold when it is -50<span class="calibre9">°C</span>, but she feels warm when it is 20<span class="calibre9">°C</span>. What would the 1-NN algorithm say about Mary? Would she feel warm or cold at temperatures of 22, 15, and -10? Do you think that the algorithm predicted Mary's body's perception of the temperature correctly? If not, please give your reasons and suggest why the algorithm did not give appropriate results and what would need to be improved for the algorithm to make a better classification.</p>
+<p class="mce-root"><strong class="calibre8">Problem 2</strong>: Do you think that the 1-NN algorithm would yield better results than using the <em class="calibre18">k</em>-NN algorithm for <em class="calibre18">k</em>&gt;1?</p>
+<p class="mce-root"><span class="calibre9"><strong class="calibre8">Problem 3</strong></span>: We collected more <span class="calibre9">data and found out that Mary feels warm</span> <span class="calibre9">at</span> 17<span class="calibre9">°C</span>, but cold at 18<span class="calibre9">°C</span><span class="calibre9">. Using our own common sense, Mary should feel warmer when the temperature is higher. Can you explain the possible cause of the discrepancies in the data? How could we improve the analysis of our data? Should we also collect some non-temperature data? Suppose that we have the only piece of temperature data available; do you think that the <em class="calibre18">1</em>-NN algorithm would still yield better results with data like this? How should we choose</span> <em class="calibre18"><span class="calibre9">k</span></em> <span class="calibre9">for the <em class="calibre18">k</em>-NN algorithm to perform well?</span></p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Map of Italy – choosing the value of k</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root"><strong class="calibre8">Problem 4</strong>: We are given a partial map of Italy for the Map of Italy <span class="calibre9">problem</span>. However, suppose that the complete data is not available. Thus, we cannot calculate the error rate on all of the predicted points for different values of <em class="calibre18">k</em>. How should you choose the value of <em class="calibre18">k</em> for the <em class="calibre18">k</em>-NN algorithm, to complete the map of Italy with a view to maximizing its accuracy?</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">House ownership</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root"><strong class="calibre8">Problem 5</strong>: Using <span class="calibre9">the data from the section concerned with the problem of house ownership, find the closest neighbor to Peter by using the Euclidean metric:</span></p>
+<p class="calibre35">a) Without rescaling the data</p>
+<p class="calibre35">b) By using the scaled data</p>
+<p class="mce-root"/>
+<p class="mce-root">Is the closest neighbor in:</p>
+<p class="calibre35">a) The same as the neighbor in?</p>
+<p class="calibre35">b) Which of the neighbors owns the house?</p>
+<p class="cdpalignleft1"><strong class="calibre8">Problem 6</strong>: Suppose you would like to find books or documents in Gutenberg's corpus (<a href="http://www.gutenberg.org/" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre13">www.gutenberg.org</a>) that are similar to a selected book from the corpus (for example, the Bible) by using a certain metric and the 1-NN algorithm. How would you design a metric measuring the similarity distance between the two books?</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Analysis</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="mce-root"><strong class="calibre8">Problem 1</strong>: 8<span class="calibre9">°C</span> is closer to 20<span class="calibre9">°C</span> than to -50<span class="calibre9">°C</span>. So, the algorithm would classify Mary as feeling warm at -8<span class="calibre9">°C</span>. But this is not likely to be true if we use our common sense and knowledge. In more complex examples, we may be deluded by the results of the analysis and make false conclusions due to our lack of expertise. But remember that data science makes use of substantive and expert knowledge, not only data analysis. In order to draw sound conclusions, we should have a good understanding of the problem and our data.</p>
+<p class="mce-root">The algorithm further says that at 22<span class="calibre9">°C</span>, Mary should feel warm, and there is no doubt in that, as 22<span class="calibre9">°C</span> is higher than 20<span class="calibre9">°C</span>, and a human being feels warmer with a higher temperature; again, a trivial use of our knowledge. For 15<span class="calibre9">°C</span>, the algorithm would deem Mary to feel warm, but if we use our common sense, we may not be that certain of this statement.</p>
+<p class="mce-root">To be able to use our algorithm to yield better results, we should collect more data. For example, if we find out that Mary feels cold at 14<span class="calibre9">°C</span>, then we have a data instance that is very close to 15<span class="calibre9">° </span>and, thus, we can guess with a higher degree of certainty that Mary would feel cold at a temperature of 15<span class="calibre9">°</span>.</p>
+<p class="mce-root"><strong class="calibre8">Problem 2</strong>: The data we are dealing with is just one-dimensional and is also partitioned into two parts, cold and warm, with the following property: the higher the temperature, the warmer a person feels. Also, even if we know how Mary feels at the temperatures -40, -39, …, 39, and 40, we still have a very limited amount of data instances <span class="calibre9">– </span>just one for around every degree Celsius. For these reasons, it is best to just look at one closest neighbor.</p>
+<p class="mce-root"><strong class="calibre8"><span class="calibre9">Problem 3</span></strong>: Discrepancies in the data can be caused by inaccuracies in the tests carried out. This could be mitigated by performing more experiments.</p>
+<p class="mce-root">Apart from inaccuracy, there could be other factors that influence how Mary feels: for example, the wind speed, humidity, sunshine, how warmly Mary is dressed (whether she has a coat on with jeans, or just shorts with a sleeveless top, or even a swimming suit), and whether she is wet or dry. We could add these additional dimensions (wind speed and how she is dressed) into the vectors of our data points. This would provide more, and better quality, data for the algorithm and, consequently, better results could be expected.</p>
+<p class="mce-root">If we have only temperature data, but more of it (for example, 10 instances of classification for every degree Celsius), then we could increase the <em class="calibre18">k</em> value and look at more neighbors to determine the temperature more accurately. But this purely relies on the availability of the data. We could adapt the algorithm to yield the classification based on all the neighbors within a certain distance, <em class="calibre18">d</em>, rather than classifying based on the <em class="calibre18">k</em>-closest neighbors. This would make the algorithm work well in both cases when we have a lot of data within a close distance, and when we have just one data instance close to the instance that we want to classify.</p>
+<p class="mce-root"><span class="calibre9"><strong class="calibre8">Problem 4</strong></span>: For this purpose, you can use cross-validation (consult the <em class="calibre18">Cross-validation</em> section in <em class="calibre18">Appendix A – Statistics</em>) to determine the value of <em class="calibre18">k</em> with the highest accuracy. You could separate the available data from the partial map of Italy into learning and test data, for example, 80% of the classified pixels on the map would be given to a k-NN algorithm to complete the map. Then, the remaining 20% of the classified pixels from the partial map would be used to calculate the percentage of pixels with the correct classification according to the k-NN algorithm.</p>
+<p class="mce-root"><strong class="calibre8"><span class="calibre9">Problem 5</span></strong>:</p>
+<p class="calibre36">a) Without data rescaling, Peter's closest neighbor has an annual income of USD 78,000 and is aged 25. This neighbor does not own a house.</p>
+<p class="calibre36">b) After data rescaling, Peter's closest neighbor has an annual income of USD 60,000 and is aged 40. This neighbor owns a house.</p>
+<p class="mce-root"><span class="calibre9"><strong class="calibre8">Problem 6</strong></span>: To design a metric that accurately measures the similarity distance between the two documents, we need to select important words that will form the dimensions of the frequency vectors for the documents. Words that do not determine the semantic meaning of documents tend to have an approximately similar frequency count across all documents. Thus, instead, we could produce a list with the relative word frequency counts for a document. For example, we could use the following definition:</p>
+<p class="cdpaligncenter"><img class="fm-editor-equation5" src="Images/53ecdce7-22e4-4db7-95d3-283325d8a832.png" width="7090" height="480"/></p>
+<p class="mce-root">Then, the document could be represented by an <em class="calibre18">N</em>-dimensional vector consisting of the word frequencies for <em class="calibre18">N</em> words with the highest relative frequency count. Such a vector will tend to consist of more important words than a vector of <em class="calibre18">N</em> words with the highest frequency count.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  </body></html>

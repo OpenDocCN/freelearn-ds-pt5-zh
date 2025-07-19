@@ -1,0 +1,219 @@
+<html><head></head><body>
+        <section>
+
+                            <header class="header-title chapter-title">
+                    Retrieving, Processing, and Storing Data
+                </header>
+            
+            <article>
+                
+<p>Data can be found everywhere, in all shapes and forms. We can get it from the web, IoT sensors, <span>emails, FTP, and databases. We can also collect it ourselves in a lab experiment, election polls, marketing polls, and social surveys. As a data professional, you should know how to handle a variety of datasets as that is a very important skill. We will discuss retrieving, processing, and storing various types of data in this chapter. T</span><span>his chapter offers an overview of how to acquire data in various formats, such as CSV, Excel, JSON, HDF5, Parquet, and <kbd>pickle</kbd>. </span></p>
+<p>Sometimes, we need to store or save the data before or after the data analysis. We will also learn how to access data from relational and <strong>NoSQL</strong> (<strong>Not Only SQL</strong>) databases such as <kbd>sqlite3</kbd>, MySQL, MongoDB, Cassandra, and Redis. In the world of the21st-century web, NoSQL databases are undergoing substantial growth in big data and web applications. They provide a more flexible, faster, and schema-free database. NoSQL databases can store data in various formats, such as document style, column-oriented, objects, graphs, tuples, or a combination.</p>
+<p><span>The topics covered in this chapter are listed as follows:</span></p>
+<ul>
+<li>Reading and writing CSV files with NumPy</li>
+<li>Reading and writing CSV files with pandas</li>
+<li>Reading and writing data from Excel</li>
+<li>Reading and writing data from JSON</li>
+<li>Reading and writing data from HDF5</li>
+<li>Reading and writing data from HTML tables</li>
+<li>Reading and writing data from Parquet</li>
+<li>Reading and writing data from a <kbd>pickle pandas</kbd> object</li>
+<li>Lightweight access with <kbd>sqllite3</kbd></li>
+<li>Reading and writing data from MySQL</li>
+<li>Reading and writing data from MongoDB</li>
+<li>Reading and writing data from Cassandra</li>
+<li>Reading and writing data from Redis</li>
+<li>PonyORM</li>
+</ul>
+<h1 id="uuid-1302e1f5-cf35-4941-950f-a179600eac17">Technical requirements</h1>
+<p>This chapter has the following technical requirements:</p>
+<ul>
+<li>You can find the code and the dataset at the following GitHub link: <a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter06">https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter06</a>.</li>
+<li>All the code blocks are available in the<span> </span><kbd>ch6.ipynb</kbd> file. </li>
+<li>This chapter uses CSV files (<kbd>demo.csv</kbd>, <kbd>product.csv</kbd>, <kbd>demo_sample_df.csv</kbd>, <kbd>my_first_demo.csv</kbd>, and <kbd>employee.csv</kbd>), Excel files (<kbd>employee.xlsx</kbd>, <kbd>employee_performance.xlsx</kbd>, and <kbd>new_employee_details.xlsx</kbd>), JSON files (<kbd>employee.json</kbd> and <kbd>employee_demo.json</kbd>), an HTML file (<kbd>country.html</kbd>), a <kbd>pickle</kbd> file (<kbd>demo_obj.pkl</kbd>), an HDF5 file (<kbd>employee.h5</kbd>), and a Parquet file (<kbd>employee.parquet</kbd>) for practice purposes.</li>
+<li>In this chapter, we will use the <kbd>pandas</kbd>, <kbd>pickle</kbd>, <kbd>pyarrow</kbd>, <kbd>sqlite3</kbd>, <kbd>pymysql</kbd>, <span><kbd>mysql-connector</kbd>, </span><kbd>pymongo</kbd>, <kbd>cassandra-driver</kbd>, and <kbd>redis</kbd><span> Python libraries.</span></li>
+</ul>
+<h1 id="uuid-0555bc81-03e3-44ee-8c86-92fd41523004">Reading and writing CSV files with NumPy</h1>
+<p><span>In <a href="2519d92c-1aff-40f7-a6ee-e36d32b77096.xhtml">Chapter 2</a>, <em>NumPy and pandas</em>, we looked at the NumPy library in detail and explored lots of functionality. NumPy also has functions to read and write CSV files and get output in a NumPy array. The <kbd>genfromtxt()</kbd> function will help us to read the data and the <kbd>savetxt()</kbd> function will help us to write the data into a file. The <kbd>genfromtxt()</kbd> function is slow compared to other functions due to its two-stage operation. In the first stage, it reads the data in a string type, and in the second stage, it converts the string type into suitable data types. <kbd>genfromtxt()</kbd> has the following parameters:</span></p>
+<ul>
+<li><kbd>fname</kbd>: <span>String; filename or path of the file.</span></li>
+<li><kbd>delimiter</kbd>: <span>String; optional, separate string value. By default, it takes consecutive white spaces.</span></li>
+<li><kbd>skip_header</kbd>: Integer; optional, number of lines you want to skip from the start of the file.</li>
+</ul>
+<p>Let's see an example of reading and writing CSV files:</p>
+<pre># import genfromtxt function<br/>from numpy import genfromtxt<br/><br/># Read comma separated file<br/>product_data = genfromtxt('demo.csv', delimiter=',')<br/><br/># display initial 5 records<br/>print(product_data)</pre>
+<p><span>This results in the following output:</span></p>
+<pre>[[14. 32. 33.]
+ [24. 45. 26.]
+ [27. 38. 39.]]</pre>
+<p><span>In the </span><span>preceding</span><span> code example</span>, we are reading the <kbd>demo.csv</kbd> file using the <kbd>genfromtxt()</kbd> method of the NumPy module:</p>
+<pre># import numpy<br/>import numpy as np<br/><br/># Create a sample array<br/>sample_array = np.asarray([ [1,2,3], [4,5,6], [7,8,9] ])<br/><br/># Write sample array to CSV file<br/>np.savetxt("my_first_demo.csv", sample_array, delimiter=",")</pre>
+<p><span>In the preceding code example, we are writing the <kbd>my_first_demo.csv</kbd> file using the <kbd>savetxt()</kbd> method of the NumPy module.</span></p>
+<p><span>Let's see how can we read CSV files using the <kbd>pandas</kbd> module in the next section. </span></p>
+<h1 id="uuid-cac517f2-59b3-4673-86b2-ad7243dd9534">Reading and writing CSV files with pandas</h1>
+<p>The <kbd>pandas</kbd> library provides a variety of file reading and writing options. In this section, we will learn about reading and writing CSV files. In order to read a CSV file, we will use the <kbd>read_csv()</kbd> method. Let's see an example:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># Read CSV file<br/>sample_df=pd.read_csv('demo.csv', sep=',' , header=None)<br/><br/># display initial 5 records<br/>sample_df.head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/2f3288ff-42bd-4c76-9674-b5c9d94c0888.png" style=""/></div>
+<p>We can now save the dataframe as a CSV file using the following code:</p>
+<pre># Save DataFrame to CSV file<br/>sample_df.to_csv('demo_sample_df.csv')</pre>
+<p class="CDPAlignLeft CDPAlign">In the preceding sample code, we have read and saved the CSV file using the <kbd>read_csv()</kbd> and <kbd>to_csv(0)</kbd> methods of the <kbd>pandas</kbd> module.</p>
+<p>The <kbd>read_csv()</kbd> method has the following important arguments:</p>
+<ul>
+<li><kbd>filepath_or_buffer</kbd>: Provides a file path or URL as a string to read a file.</li>
+<li><span><kbd>sep</kbd>: Provides a separator in the string, for example, comma as <kbd>','</kbd> and semicolon as <kbd>';'</kbd>. The default separator is a comma <kbd>','</kbd>.</span></li>
+<li><span><kbd>delim_whitespace</kbd>: Alternative argument for a white space separator. It is a Boolean variable. The default value for <kbd>delim_whitespace</kbd> is <kbd>False</kbd>.</span></li>
+<li><kbd>header</kbd>: This is used to identify the names of columns. The default value is <kbd>infer</kbd>.</li>
+<li><kbd>names</kbd>: You can pass a list of column names. The default value for <kbd>names</kbd> is <kbd>None</kbd>.</li>
+</ul>
+<p>In <kbd>pandas</kbd>, a DataFrame can also be exported in a CSV file using the <kbd>to_csv()</kbd> method. CSV files are comma-separated values files. This method can run with <span>only</span><span> </span><span>a single argument (filename as a string):</span></p>
+<ul>
+<li><kbd>path_or_buf</kbd>: The file path or location where the file will export.</li>
+<li><kbd>sep</kbd>: This is a delimiter used for output files.</li>
+<li><kbd>header</kbd>: To include column names or a list of column aliases (default value: <kbd>True</kbd>).</li>
+<li><kbd>index</kbd>: To write an index to the file (default value: <kbd>True</kbd>).</li>
+</ul>
+<p>For more parameters and detailed descriptions, visit <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_csv.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_csv.html</a>. <span>Let's see how can we read Excel files using the <kbd>pandas</kbd> module in the next section. </span></p>
+<h1 id="uuid-ea299ac7-9692-466c-afdd-bd67dc5d92e4">Reading and writing data from Excel</h1>
+<p>Excel files are widely used files in the business domain. Excel files can be easily read in Python's <kbd>pandas</kbd> using the <kbd>read_excel()</kbd> function. The <kbd>read_excel()</kbd> function takes a file path and <kbd>sheet_name</kbd> parameters to read the data:</p>
+<pre># Read excel file<br/>df=pd.read_excel('employee.xlsx',sheet_name='performance')<br/><br/># display initial 5 records<br/>df.head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/9458050f-19fc-47fd-95a9-0f411cfb3ef6.png"/></div>
+<p>DataFrame objects can be written on Excel sheets. We can use the <kbd>to_excel()</kbd> function to export DataFrame objects into an Excel sheet. Mostly, the <kbd>to_excel()</kbd> function arguments are the same as <kbd>to_csv()</kbd> except for the <kbd>sheet_name</kbd> argument:</p>
+<pre>df.to_excel('employee_performance.xlsx')</pre>
+<p><span>In the </span><span>preceding</span><span> code example</span>, we have exported a single DataFrame into an Excel sheet. We can also export multiple DataFrames <span>in a single file with different sheet names. We can also write more than one DataFrame in a single Excel file (each DataFrame on different sheets) using <kbd>ExcelWriter</kbd>, as shown:</span></p>
+<pre># Read excel file<br/>emp_df=pd.read_excel('employee.xlsx',sheet_name='employee_details')<br/><br/># write multiple dataframes to single excel file<br/>with pd.ExcelWriter('new_employee_details.xlsx') as writer:<br/>    emp_df.to_excel(writer, sheet_name='employee')<br/>    df.to_excel(writer, sheet_name='perfromance')</pre>
+<p><span>In the </span><span>preceding</span><span> code example</span>, we have written multiple DataFrames to a single Excel file. Here, each DataFrame store on a different sheet using the <kbd>ExcelWriter</kbd> function. <span> </span><span>Let's see how can we read the JSON files using the <kbd>pandas</kbd> module in the next section. </span></p>
+<h1 id="uuid-a3570def-e08c-45c1-bfad-1c35f5f9b7f8">Reading and writing data from JSON</h1>
+<p><strong>JSON</strong> (<strong>JavaScript Object Notation</strong>) files are a widely used format for interchanging data among web applications and servers. It acts as a data interchanger and is more readable compared to XML. <kbd>pandas</kbd> offers the <kbd>read_json</kbd> function <span>for reading JSON data and</span> <kbd>to_json()</kbd> <span>for writing JSON data:</span></p>
+<pre># Reading JSON file<br/>df=pd.read_json('employee.json')<br/><br/># display initial 5 records<br/>df.head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/b694891d-1d89-4264-bf15-5412ba97b2fc.png"/></div>
+<p class="mce-root"/>
+<p><span>In the preceding code example, we have read the JSON file using the <kbd>read_json()</kbd> method. Let's see how to write a JSON file:</span></p>
+<pre># Writing DataFrame to JSON file<br/>df.to_json('employee_demo.json',orient="columns")</pre>
+<p><span>In the preceding code example, we have written the JSON file using the <kbd>to_json()</kbd> method. In the <kbd>to_json()</kbd> method, the <kbd>orient</kbd> parameter is used to handle the output string format. <kbd>orient</kbd> offers record, column, index, and value kind of formats. You can explore it in more detail on the official web page, at <a href="https://pandas.pydata.org/pandas-docs/version/0.24.2/reference/api/pandas.DataFrame.to_json.html">https://pandas.pydata.org/pandas-docs/version/0.24.2/reference/api/pandas.DataFrame.to_json.html</a>.  It's time to jump into HDF5 files. In the next section, we will see how to read and write HDF5 files using the <kbd>pandas</kbd> module. </span></p>
+<h1 id="uuid-aa8c922e-a3b7-4c2d-a5dd-777b5cea5090">Reading and writing data from HDF5</h1>
+<p><span><strong>HDF</strong> stands for <strong>Hierarchical Data Format</strong>. HDF is designed to store and manage large amounts of data with high performance. It offers fast I/O processing and storage of heterogeneous data. There are various HDF file formats available, such as HDF4 and HDF5. HDF5 is the same as a dictionary object that reads and writes <kbd>pandas</kbd> DataFrames. It u</span>ses the PyTables library's<span> <kbd>read_hdf()</kbd> function for reading the HDF5 file and the <kbd>to_hdf()</kbd> function for writing:</span></p>
+<pre># Write DataFrame to hdf5<br/>df.to_hdf('employee.h5', 'table', append=True)</pre>
+<p><span>In the preceding code example, we have written the HDF file format using the <kbd>to_hdf()</kbd> method. <kbd>'table'</kbd> is a format parameter used for the table format. Table format may perform slower but offers more flexible operations, such as searching and selecting. The <kbd>append</kbd> parameter is used to append input data onto the existing data file:</span></p>
+<pre># Read a hdf5 file<br/>df=pd.read_hdf('employee.h5', 'table')<br/><br/># display initial 5 records<br/>df.head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/3ea05ef4-fb90-4f8e-ab93-0d15496e2aef.png" style=""/></div>
+<p><span>In the preceding code example, we have read the HDF file format using the <kbd>read_hdf()</kbd> method. </span>Let's see how to read and write HTML tables from a website in the next section.</p>
+<h1 id="uuid-d9ed1012-952f-4235-83e2-e956b776e66e">Reading and writing data from HTML tables</h1>
+<p>HTML tables store rows in the <kbd>&lt;tr&gt;...&lt;/tr&gt;</kbd> tag and each row has corresponding <kbd>&lt;td&gt;...&lt;/td&gt;</kbd> cells for holding values. In <kbd>pandas</kbd>, we can also read the HTML tables from a file or URL. The <kbd>read_html()</kbd> function reads an HTML table from a file or URL and returns HTML tables into a list of <kbd>pandas</kbd> DataFrames:</p>
+<pre># Reading HTML table from given URL<br/>table_url = 'https://en.wikipedia.org/wiki/List_of_sovereign_states_and_dependent_territories_in_North_America'<br/>df_list = pd.read_html(table_url)<br/><br/>print("Number of DataFrames:",len(df_list))</pre>
+<p><span>This results in the following output:</span></p>
+<pre>Number of DataFrames: 7</pre>
+<p class="mce-root"><span>In the preceding code example, we have read the HTML table from a given web page using the <kbd>read_html()</kbd> method. <kbd>read_html()</kbd> will return all the tables as a list of DataFrames.  Let's check one of the DataFrames from the list:</span></p>
+<pre># Check first DataFrame<br/>df_list[0].head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/12053630-a477-4f75-9354-f324711171b0.png"/></div>
+<p><span>In the </span><span>preceding</span><span> code</span><span> </span><span>example</span>, we have shown the initial five records of the first table available on the given web page. Similarly, we can also write DataFrame objects as HTML tables using <kbd>to_html()</kbd>. <kbd>to_html()</kbd> renders the content as an HTML table:</p>
+<pre># Write DataFrame to raw HTML<br/>df_list[1].to_html('country.html')</pre>
+<p><span>With the </span><span>preceding</span><span> code</span><span> </span><span>example</span>, we can convert any <span>DataFrame in</span>to an HTML page that contains the <span>DataFrame </span>as a table. </p>
+<h1 id="uuid-3c8e6b4c-c748-4d3b-bbbe-03ecceceffed">Reading and writing data from Parquet</h1>
+<p>The Parquet file format provides columnar serialization for <kbd>pandas</kbd> DataFrames. It reads and writes DataFrames efficiently in terms of storage and performance and shares data across distributed systems without information loss. The Parquet file format does not support duplicate and numeric columns.   </p>
+<p>There are two engines used to read and write Parquet files in <kbd>pandas</kbd>: <kbd>pyarrow</kbd> and the <kbd>fastparquet</kbd> engine. <kbd>pandas</kbd>'s default Parquet engine is <kbd>pyarrow</kbd>; if <kbd>pyarrow</kbd> is unavailable, then it uses <kbd>fastparquet</kbd>. In our example, we are using <kbd>pyarrow</kbd>. Let's install <kbd>pyarrow</kbd> using <kbd>pip</kbd>:</p>
+<pre>pip install pyarrow</pre>
+<p>You can also install the <kbd>pyarrow</kbd> engine in the Jupyter Notebook by putting an <kbd>!</kbd> before the <kbd>pip</kbd> keyword. Here is an example:</p>
+<pre>!pip install pyarrow</pre>
+<p><span>Let's write a file using the </span><span><kbd>pyarrow</kbd> engine:</span></p>
+<pre># Write to a parquet file.<br/>df.to_parquet('employee.parquet', engine='pyarrow')</pre>
+<p><span>In the preceding code example, we have written the <kbd>using to_parquet()</kbd></span><span> </span><span>Parquet file</span><span> </span><span>and the <kbd>pyarrow</kbd> engine:</span></p>
+<pre># Read parquet file<br/>employee_df = pd.read_parquet('employee.parquet', engine='pyarrow')<br/><br/># display initial 5 records<br/>employee_df.head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/b44e908a-ac9e-43fc-9a94-86fbb6d1abb0.png" style=""/></div>
+<p><span>In the </span><span>preceding</span><span> code</span><span> </span><span>example</span>, we have read the Parquet file using <kbd>read_parquet()</kbd> and the <kbd>pyarrow</kbd> engine. <kbd>read_parquet()</kbd> helps to read the Parquet file formats. <span>Let's see how to read and write the data using <kbd>pickle</kbd> files in the next section.</span></p>
+<h1 id="uuid-8a9f468f-5870-42bd-a7f1-1720f7c7ba66">Reading and writing data from a pickle pandas object</h1>
+<p>In the data preparation step, we will use various data structures such as dictionaries, lists, arrays, or DataFrames. Sometimes, we might want to save them for future reference or send them to someone else. Here, a <kbd>pickle</kbd> object comes into the picture. <kbd>pickle</kbd> serializes the objects to save them and can be loaded again any time. <kbd>pandas</kbd> offer two functions: <kbd>read_pickle()</kbd> for loading <kbd>pandas</kbd> objects and <kbd>to_pickle()</kbd> for saving Python objects:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># Read CSV file<br/>df=pd.read_csv('demo.csv', sep=',' , header=None)<br/><br/># Save DataFrame object in pickle file<br/>df.to_pickle('demo_obj.pkl')</pre>
+<p><span>In the preceding code, we read the <kbd>demo.csv</kbd> file using the <kbd>read_csv()</kbd> method with <kbd>sep </kbd>and <kbd>header</kbd> parameters. Here, we have assigned <kbd>sep</kbd> with a comma and <kbd>header</kbd> with <kbd>None</kbd>.  Finally, we have written the dataset to a <kbd>pickle</kbd> object using the <kbd>to_pickle()</kbd> method. Let's see how to read <kbd>pickle</kbd> objects using the <kbd>pandas</kbd> library:</span></p>
+<pre>#Read DataFrame object from pickle file<br/>pickle_obj=pd.read_pickle('demo_obj.pkl')<br/><br/># display initial 5 records<br/>pickle_obj.head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/e6244c42-b825-4193-886c-eee9ae5d3c8e.png" style=""/></div>
+<p><span>In the preceding code, we have read the <kbd>pickle</kbd> objects using the <kbd>read_pickle()</kbd> method.</span></p>
+<h1 id="uuid-545bece8-ef8c-472b-8383-3b255f3a19c4">Lightweight access with sqllite3</h1>
+<p>SQLite is an open-source database engine. It offers various features such as faster execution, lightweight processing, serverless architecture, ACID compliance, less administration, high stability, and reliable transactions. It is the most popular and widely deployed database in the mobile and computer world. It is also known as an embedded relational database because it runs as part of your application. SQLite is a lighter database and does not offer full-fledged features. It is mainly used for small data to store and process locally, such as mobile and desktop applications. The main advantages of SQLite are that it is easy to use, efficient, and light, and can be embedded into the application.</p>
+<p>We can read and write data in Python from the <kbd>sqlite3</kbd> module. We don't need to download and install <kbd>sqlite3</kbd> as it is already available in all the standard Python distributions. With <kbd>sqlite3</kbd>, we can either store the database in a file or keep it in RAM. <kbd>sqlite3</kbd> allows us to write any database using SQL without any third-party application server. Let's look at the following example to understand database connectivity:</p>
+<pre># Import sqlite3<br/>import sqlite3<br/><br/># Create connection. This will create the connection with employee database. If the database does not exist it will create the database<br/>conn = sqlite3.connect('employee.db')<br/><br/># Create cursor<br/>cur = conn.cursor()<br/><br/># Execute SQL query and create the database table<br/>cur.execute("create table emp(eid int,salary int)")<br/><br/># Execute SQL query and Write the data into database<br/>cur.execute("insert into emp values(105, 57000)")<br/><br/># commit the transaction<br/>con.commit()<br/><br/># Execute SQL query and Read the data from the database<br/>cur.execute('select * from emp')<br/><br/># Fetch records<br/>print(cur.fetchall())<br/><br/># Close the Database connection<br/>conn.close()<br/><br/><strong>Output:<br/></strong>[(105, 57000)]</pre>
+<p>Here, we are using the <kbd>sqlite3</kbd> module. First, we import the module and create a connection using the <kbd>connect()</kbd> method. The <kbd>connect()</kbd> method will take the database name and path; if the database does not exist, it will create the database with the given name and on the given location path. Once you have established a connection with the database, then you need to create the <kbd>Cursor</kbd> object and execute the SQL query using the <kbd>execute()</kbd> method. We can create a table in the <kbd>execute()</kbd> method, as given in the example <kbd>emp</kbd> table, which is created in the employee database. Similarly, we can write the data using the <kbd>execute()</kbd> method with an <kbd>insert</kbd> query argument and commit the data into the database using the <kbd>commit()</kbd> method. Data can also be extracted using the <kbd>execute()</kbd> method by passing the <kbd>select</kbd> query as an argument and fetched using <kbd>fetchall()</kbd> and the <kbd>fetchone()</kbd> method. <kbd>fetchone()</kbd> extracts a single record and <kbd>fetchall()</kbd> extracts all the records from a database table.</p>
+<h1 id="uuid-a72dc362-9c0a-42cd-865d-af3e3c533fec">Reading and writing data from MySQL</h1>
+<p>MySQL is a fast, open-source, and easy-to-use relational or tabular database. It is suitable for small and large business applications. It is very friendly with database-driven web development applications. There are lots of ways to access data in Python from MySQL. Connectors such as MySQLdb, <kbd>mysqlconnector</kbd>, and <kbd>pymysql</kbd> are available for MySQL database connectivity. For this connectivity purpose, you should install a MySQL relational database and the <kbd>mysql-python</kbd> connector. The MySQL setup details are available on its website: <span><a href="https://www.mysql.com/downloads/">https://www.mysql.com/downloads/</a></span>.</p>
+<p>You can use the <kbd>pymysql</kbd> connector as the client library and it can be installed using <kbd>pip</kbd>:</p>
+<pre>pip install pymysql</pre>
+<p>We can establish a connection with the following steps:</p>
+<ol>
+<li>Import the library.</li>
+<li>Create a database connection.</li>
+<li>Create a cursor object.</li>
+<li>Execute the SQL query.</li>
+<li>Fetch the records or response for the update or insert the record.</li>
+<li>Close the connection.</li>
+</ol>
+<p>In our examples, we are trying database connectivity using <kbd>mysqlconnecter</kbd> and <kbd>pymysql</kbd>. Before running the database connectivity script, the first step is to design and create a database and then create a table in MySQL.</p>
+<p>Let's create a database using the following query:</p>
+<pre>&gt;&gt; create database employee</pre>
+<p>Change the database to the employee database:</p>
+<pre>&gt;&gt; use employee</pre>
+<p>Create a table in the database:</p>
+<pre>&gt;&gt; create table emp(eid int, salary int);</pre>
+<p>Now we can insert and fetch the records from a table in MySQL. Let's look at the following example to understand the database connectivity:</p>
+<pre># import pymysql connector module<br/>import pymysql<br/><br/># Create a connection object using connect() method <br/>connection = pymysql.connect(host='localhost', # IP address of the MySQL database server<br/>                             user='root', # user name<br/>                             password='root',# password<br/>                             db='emp', # database name<br/>                             charset='utf8mb4', # character set<br/>                             cursorclass=pymysql.cursors.DictCursor) # cursor type<br/><br/>try:<br/>    with connection.cursor() as cur:<br/>        # Inject a record in database<br/>        sql_query = "INSERT INTO `emp` (`eid`, `salary`) VALUES (%s, %s)"<br/>        cur.execute(sql_query, (104,43000))<br/><br/>    # Commit the record insertion explicitly.<br/>    connection.commit()<br/><br/>    with connection.cursor() as cur:<br/>        # Read records from employee table<br/>        sql_query = "SELECT * FROM `emp`"<br/>        cur.execute(sql_query )<br/>        table_data = cur.fetchall()<br/>        print(table_data)<br/>except:<br/>    print("Exception Occurred")<br/>finally:<br/>    connection.close()</pre>
+<p>Here, we are using the <kbd>pymysql</kbd> module. First, we import the module and create a connection. The <kbd>connect()</kbd> function will take the host address, which is <kbd>localhost</kbd>, in our case (we can also use the IP address of the remote database), username, password, database name, character set, and cursor class.</p>
+<p>After establishing the connection, we can read or write the data. In our example, we are writing the data using the <kbd>insert</kbd> SQL query and retrieving it using the <kbd>select</kbd> query. In the insert query, we are executing the query and passing the argument that we want to enter into the database, and committing the results into the database using the <kbd>commit()</kbd> method. When we read the records using the select query, we will get some number of records. We can extract those records using the <kbd>fetchone()</kbd> and <kbd>fetchall()</kbd> functions. The <kbd>fetchone()</kbd> method extracts only single records and the <kbd>fetchall()</kbd> method extracts multiple records from a database table.</p>
+<p>One more thing; here, all the read-write operations are performed in a <kbd>try</kbd> block and the connection is closed in the final block. We can also try one more <span>module</span><span> </span><kbd>mysql.connector</kbd><span> for MySQL and Python connectivity.</span> It can be installed using<span> </span><kbd>pip</kbd>:</p>
+<pre>pip install mysql-connector-python</pre>
+<p>Let's look at the following example to understand the database connectivity:</p>
+<pre># Import the required connector<br/>import mysql.connector<br/>import pandas as pd<br/><br/># Establish a database connection to mysql<br/>connection=mysql.connector.connect(user='root',password='root',host='localhost',database='emp')<br/><br/># Create a cursor<br/>cur=connection.cursor()<br/><br/># Running sql query<br/>cur.execute("select * from emp")<br/><br/># Fetch all the records and print it one by one<br/>records=cur.fetchall()<br/>for i in records:<br/>    print(i)<br/><br/># Create a DataFrame from fetched records.<br/>df = pd.DataFrame(records)<br/><br/># Assign column names to DataFrame<br/>df.columns = [i[0] for i in cur.description]<br/><br/># close the connection<br/>connection.close()</pre>
+<p><span>In the </span><span>preceding</span><span> code</span><span> </span><span>example</span>, we are connecting to Python with the MySQL database using the <kbd>mysql.connector</kbd> module and the approach and steps for retrieving data are the same as with the <kbd>pymysql</kbd> module. We are also writing the extracted records into a <kbd>pandas</kbd> DataFrame by just passing fetched records into the DataFrame object and assigning column names from the cursor description.</p>
+<h2 id="uuid-06e1b3a9-a31b-46bf-b190-84f30a8c3425">Inserting a whole DataFrame into the database</h2>
+<p>In the preceding program, a single record is inserted using the <kbd>insert</kbd> command. If we want to insert multiple records, we need to run a loop to insert the multiple records into the database. We can also use the <kbd>to_sql()</kbd> function to insert multiple records in a single line of code:</p>
+<pre># Import the sqlalchemy engine<br/>from sqlalchemy import create_engine<br/><br/># Instantiate engine object<br/>en = create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"<br/>                .format(user="root", <br/>                        pw="root", <br/>                        db="emp"))<br/><br/># Insert the whole dataframe into the database<br/>df.to_sql('emp', con=en, if_exists='append',chunksize=1000, index= False)</pre>
+<p><span>In th</span><span>e </span><span>preceding</span><span> code</span><span> </span><span>example</span>, we will create an engine for a database connection with username, password, and database <span>parameters</span><span>. The</span> <kbd>to_sql()</kbd> <span>function writes multiple records from the DataFrame to a SQL database. It will take the table name, the </span><kbd>con</kbd> <span>parameter for the connection engine object, the </span><kbd>if_exists</kbd> <span>parameter for checking whether data will append to a new table or replace with a new table, and</span> <kbd>chunksize</kbd> <span>for writing data in batches.</span></p>
+<h1 id="uuid-a7ddf915-19d7-4356-b83d-65d9be8ea6d7">Reading and writing data from MongoDB</h1>
+<p>MongoDB is a document-oriented non-relational (NoSQL) database. It uses JSON-like notation, <strong>BSON</strong> (<strong>Binary Object Notation</strong>) to store the data. MongoDB offers the following features:</p>
+<ul>
+<li>It is a free, open-source, and cross-platform database software.</li>
+<li>It is easy to learn, can build faster applications, supports flexible schemas, handles diverse data types, and has the capability to scale in a distributed environment.</li>
+<li>It works on concepts of documents.</li>
+<li>It has a database, collection, document, field, and primary key.</li>
+</ul>
+<p>We can read and write data in Python from MongoDB using the <kbd>pymongo</kbd> connector. For this connectivity purpose, we need to install MongoDB and the <kbd>pymongo</kbd> connector. You can download MongoDB from its official web portal: <span><a href="https://www.mongodb.com/download-center/community">https://www.mongodb.com/download-center/community</a></span>. PyMongo is a pure Python MongoDB client library that can be installed using <kbd>pip</kbd>:</p>
+<pre>pip install pymongo</pre>
+<p>Let's try database connectivity using <kbd>pymongo</kbd>:</p>
+<pre># Import pymongo<br/>import pymongo<br/><br/># Create mongo client<br/>client = pymongo.MongoClient()<br/><br/># Get database<br/>db = client.employee<br/><br/># Get the collection from database<br/>collection = db.emp<br/><br/># Write the data using insert_one() method<br/>employee_salary = {"eid":114, "salary":25000}<br/>collection.insert_one(employee_salary)<br/><br/># Create a dataframe with fetched data<br/>data = pd.DataFrame(list(collection.find()))</pre>
+<p>Here, we are trying to extract data from database collection in MongoDB by creating a Mongo client, inserting data, extracting collection details, and assigning it to the DataFrame. Let's see how to create a database connection with the columnar database Cassandra in the next section. </p>
+<h1 id="uuid-7b569ae4-f32b-48bd-a5ac-c5b10d659bfc">Reading and writing data from Cassandra</h1>
+<p>Cassandra is scalable, highly available, durable, and fault-tolerant, has lower admin overhead, has faster read-write, and is a resilient column-oriented database. It is easier to learn and configure. It provides solutions for quite complex problems. It also supports replication across multiple data centers. Plenty of big companies, for example, Apple, eBay, and Netflix use Cassandra.</p>
+<p class="mce-root">We can read and write data in Python from Cassandra using the <kbd>cassandra-driver</kbd> connector. For this connectivity purpose, we need to install Cassandra and <kbd>cassandra-driver</kbd> connectors. You can download Cassandra from its official website: <span><a href="http://cassandra.apache.org/download/">http://cassandra.apache.org/download/</a></span>. <kbd>cassandra-driver</kbd> is a pure Python Cassandra client library that can be installed using <kbd>pip</kbd>:</p>
+<pre>pip install cassandra-driver</pre>
+<p>Let's try database connectivity using <kbd>cassandra-driver</kbd>:</p>
+<pre># Import the cluster<br/>from cassandra.cluster import Cluster<br/><br/># Creating a cluster object<br/>cluster = Cluster()<br/><br/># Create connections by calling Cluster.connect():<br/>conn = cluster.connect()<br/><br/># Execute the insert query<br/>conn.execute("""INSERT INTO employee.emp_details (eid, ename, age) VALUES (%(eid)s, %(ename)s, %(age)s)""", {'eid':101, 'ename': "Steve Smith", 'age': 42})<br/><br/># Execute the select query<br/>rows = conn.execute('SELECT * FROM employee.emp_details')<br/><br/># Print the results<br/>for emp_row in rows:<br/>    print(emp_row.eid, emp_row.ename, emp_row.age)<br/><br/># Create a dataframe with fetched data<br/>data = pd.DataFrame(rows)</pre>
+<p><span>Here, we are trying to extract data from the Cassandra database by creating a cluster object, creating a connection using the <kbd>connect()</kbd> method, executing an insert, and selecting query data. After running the query, we are printing the results and assigning the extracted records to the <kbd>pandas</kbd> DataFrame. Let's move on now to another NoSQL database: Redis.</span></p>
+<h1 id="uuid-b636f0a6-e200-4f9b-a853-0b81efe5be2b">Reading and writing data from Redis</h1>
+<p>Redis is an open-source NoSQL database. It is a key-value database, in-memory, extremely fast, and highly available. It can also be employed as a cache or act as a message broker. In-memory means it uses RAM for the storage of data and handles bigger-sized data using virtual memory. Redis offers a cache service or permanent storage. Redis supports a variety of data structures, such as string, set, list, bitmap, geospatial indexes, and hyperlogs. Redis can deal with geospatial, streaming, and time-series data. It is offered with cloud services such as AWS and Google Cloud.</p>
+<p>We can read and write data in Python from Redis using the Redis connector. For this connectivity purpose, we need to install Redis and the Redis connector. You can download Redis from the following link: <span><a href="https://github.com/rgl/redis/downloads">https://github.com/rgl/redis/downloads</a></span>. Redis is a pure Python Redis client library that can be installed using <kbd>pip</kbd>:</p>
+<pre class="mce-root">pip install redis</pre>
+<p>Let's try database connectivity using Redis:</p>
+<pre># Import module<br/>import redis<br/><br/># Create connection<br/>r = redis.Redis(host='localhost', port=6379, db=0)<br/><br/># Setting key-value pair<br/>r.set('eid', '101')<br/><br/># Get value for given key<br/>value=r.get('eid')<br/><br/># Print the value<br/>print(value)</pre>
+<p><span>Here, we are trying to extract data from the Redis key-value database. First, we have created a connection with the database. We are setting the key-value pairs into the Redis database using the <kbd>set()</kbd> method and we have also extracted the value using the <kbd>get()</kbd> method with the given key parameter.</span></p>
+<p><span>Finally, its time to shift to the last topic of this chapter, which is PonyORM for <strong>object-relational mapping</strong> (<strong>ORM</strong>). </span></p>
+<h1 id="uuid-6d538e86-a20e-46b1-8f08-759e9707dd57">PonyORM</h1>
+<p>PonyORM is a powerful ORM package that is written in pure Python. It is fast and easy to use and performs operations with minimum effort. It provides automatic query optimization and a GUI database schema editor. It also supports automatic transaction management, automatic caching, and composite keys. PonyORM uses Python generator expressions, which are translated in SQL. We can install it using <kbd>pip</kbd>:</p>
+<pre>$ pip install pony</pre>
+<p>Let's see an example of ORM using <kbd>pony</kbd>:</p>
+<pre># Import pony module<br/>from pony.orm import *<br/><br/># Create database<br/>db = Database()<br/><br/># Define entities<br/>class Emp(db.Entity):<br/>    eid = PrimaryKey(int,auto=True)<br/>    salary = Required(int)<br/><br/># Check entity definition<br/>show(Emp)<br/><br/># Bind entities to MySQL database<br/>db.bind('mysql', host='localhost', user='root', passwd='12345', db='employee')<br/><br/># Generate required mappings for entities<br/>db.generate_mapping(create_tables=True)<br/><br/># turn on the debug mode<br/>sql_debug(True)<br/><br/># Select the records from Emp entities or emp table<br/>select(e for e in Emp)[:]<br/><br/># Show the values of all the attribute<br/>select(e for e in Emp)[:].show()<br/><br/><strong>Output:</strong><br/>eid|salary<br/>---+------<br/>104|43000 <br/>104|43000 </pre>
+<p><span>In the preceding code example, we are performing ORM. First, we have created a <kbd>Database</kbd> object and defined entities using an <kbd>Emp</kbd> class. After that, we have attached the entities to the database using <kbd>db.bind()</kbd>. We can bind it with four databases: <kbd>sqlite</kbd>, <kbd>mysql</kbd>, <kbd>postgresql</kbd>, and <kbd>oracle</kbd>. In our example, we are using MySQL and passing its credential details, such as username, password, and database name. We can perform the mapping of entities with data using <kbd>generate_mapping()</kbd>. The <kbd>create_tables=True</kbd> argument creates the tables if it does not exist. <kbd>sql_debug(True)</kbd> will turn on the debug mode. The <kbd>select()</kbd> function translates a Python generator into a SQL query and returns a <kbd>pony</kbd> object. This <kbd>pony</kbd> object will be converted into a list of entities using the slice operator (<kbd>[:]</kbd>) and the <kbd>show()</kbd> function will display all the records in a tabular fashion. </span></p>
+<h1 id="uuid-15ed42cc-5f79-417a-8535-a72374c2ba56">Summary</h1>
+<p>In this chapter, we learned about retrieving, processing, and storing data in different formats. We have looked at reading and writing data from various file formats and sources, such as CSV, Excel, JSON, HDF5, HTML, <kbd>pickle</kbd>, table, and Parquet files. We also <span>learned how to read and write from various relational and NoSQL databases, such as SQLite3, MySQL, MongoDB, Cassandra, and Redis.</span></p>
+<p>The next chapter, <a href="5e8db48a-32f4-4b31-ba39-33376d7cafa3.xhtml"><span>Chapter</span> 7</a>, <em>Cleaning Messy Data</em>, is about the important topic of data preprocessing and feature engineering with Python. <span>The chapter starts with exploratory data analysis, and leads to filtering, handling missing values, and outliers. After cleaning, the focus will be on data transformation, such as encoding, scaling, and splitting.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

@@ -1,0 +1,724 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Machine Learning Using Jupyter</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">In this chapter, we will use several algorithms for machine learning under Jupyter. We have coding in both R and Python to portray the breadth of options available to the Jupyter developer.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Naive Bayes</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">Naive Bayes is an algorithm that uses probability to classify the data according to Bayes theorem for strong independence of the features. Bayes theorem estimates the probability of an event based on prior conditions. So, overall, we use a set of feature values to estimate a value assuming the same conditions hold true when those features have similar values.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Naive Bayes using R</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">Our first implementation of naive Bayes uses the R programming language. The R implementation of the algorithm is encoded in the <kbd class="calibre21">e1071</kbd> library. <kbd class="calibre21">e1071</kbd> appears to have been the department identifier at the school where the package was developed.</p>
+<p class="calibre5">We first install the package, and load the library:</p>
+<pre class="commandlinepackt"><strong class="calibre3">#install.packages("e1071", repos="http://cran.r-project.org") 
+library(e1071) 
+library(caret) 
+set.seed(7317) 
+data(iris)</strong> </pre>
+<p class="calibre5">Some notes on these steps:</p>
+<ul class="calibre19">
+<li class="calibre20">The <kbd class="calibre21">install.packages</kbd> call is commented out as we don't want to run this every time we run the script.</li>
+<li class="calibre20"><kbd class="calibre21">e1071</kbd> is the naive Bayes algorithm package.</li>
+<li class="calibre20">The <kbd class="calibre21">caret</kbd> package contains a method to partition a dataset randomly.</li>
+<li class="calibre20">We set the <kbd class="calibre21">seed</kbd> so as to be able to reproduce the results.</li>
+<li class="calibre20">We are using the <kbd class="calibre21">iris</kbd> dataset for this example. Specifically, using the other <kbd class="calibre21">iris</kbd> factors to predict the species.</li>
+</ul>
+<p class="calibre5">Invocations of the package look as follows:</p>
+<pre class="commandlinepackt"><strong class="calibre3">model &lt;- naiveBayes(response ~ ., data=training) 
+prediction &lt;- predict(model, test, type="class")</strong> </pre>
+<p class="calibre5">Where the parameters to <kbd class="calibre21">naiveBayes</kbd> are:</p>
+<ul class="calibre19">
+<li class="calibre20">Formula of the form <em class="calibre28">y ~ x1 + x2 ....</em>-attempt to predict <em class="calibre28">y</em> based on <em class="calibre28">x1, x2, ...</em></li>
+<li class="calibre20">Data frame</li>
+<li class="calibre20">Optional Laplace smoothing</li>
+<li class="calibre20">Optional subset of the data based on a Boolean filter</li>
+<li class="calibre20">Optional function for handling <kbd class="calibre21">na</kbd> values (<kbd class="calibre21">na.action</kbd>)—default is to pass</li>
+</ul>
+<p class="calibre5">Once we have our model established we can then attempt a prediction using the <kbd class="calibre21">predict()</kbd> function with parameters for:</p>
+<ul class="calibre19">
+<li class="calibre20">Model (from the preceding call)</li>
+<li class="calibre20">Data frame</li>
+<li class="calibre20">Type whether the data is class or raw (conditionals)</li>
+</ul>
+<p class="calibre5">So, we continue with the <kbd class="calibre21">iris</kbd> example with:</p>
+<pre class="commandlinepackt"><strong class="calibre3">trainingIndices &lt;- createDataPartition(iris$Species, p=0.75, list=FALSE) 
+training &lt;- iris[trainingIndices,] 
+testing &lt;- iris[-trainingIndices,] 
+nrow(training) 
+nrow(testing) 
+114 
+36</strong> </pre>
+<p class="calibre5">Where we split the data into 75% training and 25% for testing, as you can see by the number of rows in each data frame.</p>
+<p class="calibre5">Next, we construct out model—we are trying to predict <kbd class="calibre21">Species</kbd> from the other features/columns of the data frame:</p>
+<pre class="commandlinepackt"><strong class="calibre3">model &lt;- naiveBayes(Species ~ ., data=training) 
+model</strong> </pre>
+<div class="packt_figure"><img class="image-border152" src="Images/51a11daa-cfed-4f6c-8573-14f8c4a9d173.png"/></div>
+<p class="calibre5">It is interesting that the Apriori assumption is an even split between the possibilities. Sepal length, width, and petal length have strong influences on species.</p>
+<p class="calibre5">We make our prediction based on the model against the testing data:</p>
+<pre class="commandlinepackt"><strong class="calibre3">prediction &lt;- predict(model, testing, type="class")</strong> </pre>
+<p class="calibre5">Now, we need to measure the accuracy of the model. Normally we could use a scatter diagram using <kbd class="calibre21">x</kbd> from actual and <kbd class="calibre21">y</kbd> from predicted, but we have categorical data. We could build a vector of actual versus predicted and compare the two in a new results data frame:</p>
+<pre class="commandlinepackt"><strong class="calibre3">results &lt;- data.frame(testing$Species, prediction) 
+results["accurate"] &lt;- results['testing.Species'] == results['prediction'] 
+nrow(results) 
+nrow(results[results$accurate == TRUE,]) 
+36 
+35</strong> </pre>
+<p class="calibre5">We end up with a model providing 97% (<kbd class="calibre21">35</kbd>/<kbd class="calibre21">36</kbd>) accuracy. This is a very good performance level, almost within the statistical boundary of excellent (+/- 2%).</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Naive Bayes using Python</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">The Python implementation of the algorithm is in the <kbd class="calibre21">sklearn</kbd> library. The whole process is much simpler. First, load the <kbd class="calibre21">iris</kbd> dataset:</p>
+<pre class="commandlinepackt"><strong class="calibre3">from sklearn import datasets 
+irisb = datasets.load_iris() 
+iris = irisb['data'] 
+iris.shape</strong> </pre>
+<p class="calibre5">Call upon the built-in Gaussian naive Bayes estimator for a model and prediction in one step:</p>
+<pre class="commandlinepackt"><strong class="calibre3">from sklearn.naive_bayes import GaussianNB 
+gnb = GaussianNB() 
+y_pred = gnb.fit(irisb.data, irisb.target).predict(irisb.data)</strong> </pre>
+<p class="calibre5">Determine the accuracy of the model:</p>
+<pre class="commandlinepackt"><strong class="calibre3">print("Number of errors out of a total %d points : %d"  
+      % (irisb.data.shape[0],(irisb.target != y_pred).sum())) 
+Number of errors out of a total 150 points : 6</strong></pre>
+<p class="calibre5">We end up with very similar results for estimation accuracy.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Nearest neighbor estimator</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">Using nearest neighbor, we have an unclassified object and a set of objects that are classified. We then take the attributes of the unclassified object, compare against the known classifications in place, and select the class that is closest to our unknown. The comparison distances resolve to Euclidean geometry computing the distances between two points (where known attributes fall in comparison to the unknown's attributes).</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Nearest neighbor using R</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">For this example, we are using the housing data from <kbd class="calibre21">ics.edu</kbd>. First, we load the data and assign column names:</p>
+<pre class="commandlinepackt"><strong class="calibre3">housing &lt;- read.table("http://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data") 
+colnames(housing) &lt;- c("CRIM", "ZN", "INDUS", "CHAS", "NOX", "RM", "AGE", "DIS", "RAD", "TAX", "PRATIO", "B", "LSTAT", "MDEV") 
+summary(housing)</strong> </pre>
+<p class="calibre5">We reorder the data so the key (the housing price <kbd class="calibre21">MDEV</kbd>) is in ascending order:</p>
+<pre class="commandlinepackt"><strong class="calibre3">housing &lt;- housing[order(housing$MDEV),</strong>] </pre>
+<p class="calibre5">Now, we can split the data into a training set and a test set:</p>
+<pre class="commandlinepackt"><strong class="calibre3">#install.packages("caret") 
+library(caret) 
+set.seed(5557) 
+indices &lt;- createDataPartition(housing$MDEV, p=0.75, list=FALSE) 
+training &lt;- housing[indices,] 
+testing &lt;- housing[-indices,] 
+nrow(training) 
+nrow(testing) 
+381 
+125</strong> </pre>
+<p class="calibre5">We build our nearest neighbor model using both sets:</p>
+<pre class="commandlinepackt"><strong class="calibre3">library(class) 
+knnModel &lt;- knn(train=training, test=testing, cl=training$MDEV) 
+knnModel 
+10.5 9.7 7 6.3 13.1 16.3 16.1 13.3 13.3...</strong> </pre>
+<p class="calibre5">Let us look at the results:</p>
+<pre class="commandlinepackt"><strong class="calibre3">plot(knnModel)</strong> </pre>
+<div class="packt_figure"><img class="image-border153" src="Images/b83dd910-3b61-49bc-9a9f-c64dc16daa2f.png"/></div>
+<p class="calibre5">There is a slight Poisson distribution with the higher points near the left side. I think this makes sense as <em class="calibre18">natural</em> data. The start and end tails are dramatically going off page.</p>
+<p class="calibre5">What about the accuracy of this model? I did not find a clean way to translate the predicted factors in the <kbd class="calibre21">knnModel</kbd> to numeric values, so I extracted them to a flat file, and then loaded them in separately:</p>
+<pre class="commandlinepackt"><strong class="calibre3">predicted &lt;- read.table("housing-knn-predicted.csv") 
+colnames(predicted) &lt;- c("predicted") 
+predicted</strong></pre>
+<table class="msotablegrid">
+<tbody class="calibre11">
+<tr class="calibre12">
+<td class="calibre13">predicted</td>
+</tr>
+<tr class="calibre16">
+<td class="calibre13">10.5</td>
+</tr>
+<tr class="calibre12">
+<td class="calibre13">9.7</td>
+</tr>
+<tr class="calibre17">
+<td class="calibre13">7.0</td>
+</tr>
+</tbody>
+</table>
+<p class="calibre5"> </p>
+<p class="calibre5">Then we can build up a <kbd class="calibre21">results</kbd> data frame:</p>
+<pre class="commandlinepackt"><strong class="calibre3">results &lt;- data.frame(testing$MDEV, predicted)</strong> </pre>
+<p class="calibre5">And compute our accuracy:</p>
+<pre class="commandlinepackt"><strong class="calibre3">results["accuracy"] &lt;- results['testing.MDEV'] / results['predicted'] 
+head(results) 
+mean(results$accuracy) 
+1.01794816307793</strong></pre>
+<table class="msotablegrid">
+<tbody class="calibre11">
+<tr class="calibre12">
+<td class="calibre13"><strong class="calibre3">testing.MDEV</strong></td>
+<td class="calibre13"><strong class="calibre3">predicted</strong></td>
+<td class="calibre13"><strong class="calibre3">accuracy</strong></td>
+</tr>
+<tr class="calibre16">
+<td class="calibre13"><kbd class="calibre21">5.6</kbd></td>
+<td class="calibre13"><kbd class="calibre21">10.5</kbd></td>
+<td class="calibre13"><kbd class="calibre21">0.5333333</kbd></td>
+</tr>
+<tr class="calibre12">
+<td class="calibre13"><kbd class="calibre21">7.2</kbd></td>
+<td class="calibre13"><kbd class="calibre21">9.7</kbd></td>
+<td class="calibre13"><kbd class="calibre21">0.7422680</kbd></td>
+</tr>
+<tr class="calibre16">
+<td class="calibre13"><kbd class="calibre21">8.1</kbd></td>
+<td class="calibre13"><kbd class="calibre21">7.0</kbd></td>
+<td class="calibre13"><kbd class="calibre21">1.1571429</kbd></td>
+</tr>
+<tr class="calibre12">
+<td class="calibre13"><kbd class="calibre21">8.5</kbd></td>
+<td class="calibre13"><kbd class="calibre21">6.3</kbd></td>
+<td class="calibre13"><kbd class="calibre21">1.3492063</kbd></td>
+</tr>
+<tr class="calibre16">
+<td class="calibre13"><kbd class="calibre21">10.5</kbd></td>
+<td class="calibre13"><kbd class="calibre21">13.1</kbd></td>
+<td class="calibre13"><kbd class="calibre21">0.8015267</kbd></td>
+</tr>
+<tr class="calibre34">
+<td class="calibre13"><kbd class="calibre21">10.8</kbd></td>
+<td class="calibre13"><kbd class="calibre21">16.3</kbd></td>
+<td class="calibre13"><kbd class="calibre21">0.6625767</kbd></td>
+</tr>
+</tbody>
+</table>
+<p class="calibre5">So, we are estimating within 2% (<kbd class="calibre21">1.01</kbd>) of our testing data.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Nearest neighbor using Python</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">In Python, we have very similar steps for producing nearest neighbor estimation.<br class="calibre42"/>
+First, we import the packages to be used:</p>
+<pre class="commandlinepackt"><strong class="calibre3">from sklearn.neighbors import NearestNeighbors 
+import numpy as np 
+import pandas as pd</strong> </pre>
+<p class="calibre5">Numpy and pandas are standards. Nearest neighbors is one of the <kbd class="calibre21">sklearn</kbd> features.<br class="calibre42"/>
+Now, we load in our housing data:</p>
+<pre class="commandlinepackt"><strong class="calibre3">housing = pd.read_csv("http://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data",<br class="calibre2"/>                       header=None, sep='\s+') 
+housing.columns = ["CRIM", "ZN", "INDUS", "CHAS", "NOX", "RM", "AGE", \ 
+"DIS", "RAD", "TAX", "PRATIO", \ 
+"B", "LSTAT", "MDEV"] 
+housing.head(5)</strong> </pre>
+<div class="packt_figure"><br class="calibre2"/>
+<img class="image-border154" src="Images/0e325f2b-f9ef-48b4-977e-43f90fb4f279.png"/></div>
+<p class="calibre5">The same data that we saw previously in R.<br class="calibre42"/>
+Let us see how big it is:</p>
+<pre class="commandlinepackt"><strong class="calibre3">len(housing) 
+506</strong> </pre>
+<p class="calibre5">And break up the data into a <kbd class="calibre21">training</kbd> and <kbd class="calibre21">testing</kbd> set:</p>
+<pre class="commandlinepackt"><strong class="calibre3">mask = np.random.rand(len(housing)) &lt; 0.8 
+training = housing[mask] 
+testing = housing[~mask] 
+len(training) 
+417 
+len(testing) 
+89</strong> </pre>
+<p class="calibre5">Find the nearest neighbors:</p>
+<pre class="commandlinepackt"><strong class="calibre3">nbrs = NearestNeighbors().fit(housing)</strong> </pre>
+<p class="calibre5">Display their indices and distances. Indices are varying quite a lot. Distances seem to be in bands:</p>
+<pre class="commandlinepackt"><strong class="calibre3">distances, indices = nbrs.kneighbors(housing) 
+indices 
+array([[  0, 241,  62,  81,   6], 
+       [  1,  47,  49,  87,   2], 
+       [  2,  85,  87,  84,   5], 
+       ...,  
+       [503, 504, 219,  88, 217], 
+       [504, 503, 219,  88, 217], 
+       [505, 502, 504, 503,  91]], dtype=int32) 
+distances 
+array([[  0.        ,  16.5628085 , 17.09498324,18.40127391, 
+         19.10555821], 
+       [  0.        ,  16.18433277, 20.59837827, 22.95753545, 
+         23.05885288] 
+       [  0.        ,  11.44014392, 15.34074743, 19.2322435 , 
+         21.73264817], 
+       ...,  
+       [  0.        ,   4.38093898,  9.44318468, 10.79865973, 
+         11.95458848], 
+       [  0.        ,   4.38093898,  8.88725757, 10.88003717, 
+         11.15236419], 
+       [  0.        ,   9.69512304, 13.73766871, 15.93946676, 
+         15.94577477]]) </strong></pre>
+<p class="calibre5">Build a nearest neighbors model from the <kbd class="calibre21">training</kbd> set:</p>
+<pre class="commandlinepackt"><strong class="calibre3">from sklearn.neighbors import KNeighborsRegressor 
+knn = KNeighborsRegressor(n_neighbors=5) 
+x_columns = ["CRIM", "ZN", "INDUS", "CHAS", "NOX", "RM", "AGE", "DIS", "RAD", "TAX", "PRATIO", "B", "LSTAT"] 
+y_column = ["MDEV"] 
+knn.fit(training[x_columns], training[y_column]) 
+KNeighborsRegressor(algorithm='auto', leaf_size=30, metric='minkowski', 
+          metric_params=None, n_jobs=1, n_neighbors=5, p=2, 
+          weights='uniform') </strong></pre>
+<p class="calibre5">It is interesting that with Python we do not have to store models off separately. Methods are stateful.</p>
+<p class="calibre5">Make our predictions:</p>
+<pre class="commandlinepackt"><strong class="calibre3">predictions = knn.predict(testing[x_columns])<br class="calibre2"/></strong><strong class="calibre3">predictions<br class="calibre2"/></strong><strong class="calibre3">array([[ 20.62],<br class="calibre2"/></strong><strong class="calibre3">       [ 21.18],<br class="calibre2"/></strong><strong class="calibre3">       [ 23.96],<br class="calibre2"/></strong><strong class="calibre3">       [ 17.14],<br class="calibre2"/></strong><strong class="calibre3">       [ 17.24],<br class="calibre2"/></strong><strong class="calibre3">       [ 18.68],<br class="calibre2"/></strong><strong class="calibre3">       [ 28.88],<br class="calibre2"/></strong></pre>
+<p class="calibre5">Determine how well we have predicted the housing price:</p>
+<pre class="commandlinepackt"><strong class="calibre3">columns = ["testing","prediction","diff"] 
+index = range(len(testing)) 
+results = pd.DataFrame(index=index, columns=columns) 
+ 
+results['prediction'] = predictions 
+ 
+results = results.reset_index(drop=True) 
+testing = testing.reset_index(drop=True) 
+results['testing'] = testing["MDEV"] 
+ 
+results['diff'] = results['testing'] - results['prediction'] 
+results['pct'] = results['diff'] / results['testing'] 
+results.mean() 
+testing       22.159551 
+prediction    22.931011 
+diff          -0.771461 
+pct           -0.099104</strong> </pre>
+<p class="calibre5">We have a mean difference of ¾ versus an average value of <kbd class="calibre21">22</kbd>. This should mean an average percent difference of about 3%, but the average percentage difference calculated is close to 10%. So, we are not estimating well under Python.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Decision trees</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">In this section, we will use decision trees to predict values. A decision tree has a logical flow where the user makes decisions based on attributes following the tree down to a root level where a classification is then provided.</p>
+<p class="calibre5">For this example, we are using automobile characteristics, such as vehicle weight, to determine whether the vehicle will produce good mileage. The information is extracted from the page at <a href="https://alliance.seas.upenn.edu/~cis520/wiki/index.php?n=Lectures.DecisionTrees" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9">https://alliance.seas.upenn.edu/~cis520/wiki/index.php?n=Lectures.DecisionTrees</a>. I copied the data out to Excel and then wrote it as a CSV for use in this example.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Decision trees in R</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">We load the libraries to use <kbd class="calibre21">rpart</kbd> and <kbd class="calibre21">caret</kbd>. <kbd class="calibre21">rpart</kbd> has the decision tree modeling package. <kbd class="calibre21">caret</kbd> has the data partition function:</p>
+<pre class="commandlinepackt"><strong class="calibre3">library(rpart) 
+library(caret) 
+set.seed(3277)</strong> </pre>
+<p class="calibre5">We load in our <kbd class="calibre21">mpg</kbd> dataset and split it into a training and testing set:</p>
+<pre class="commandlinepackt"><strong class="calibre3">carmpg &lt;- read.csv("car-mpg.csv") 
+indices &lt;- createDataPartition(carmpg$mpg, p=0.75, list=FALSE) 
+training &lt;- carmpg[indices,] 
+testing &lt;- carmpg[-indices,] 
+nrow(training) 
+nrow(testing) 
+33 
+9</strong> </pre>
+<p class="calibre5">We develop a model to predict <kbd class="calibre21">mpg</kbd> acceptability based on the other factors:</p>
+<pre class="commandlinepackt"><strong class="calibre3">fit &lt;- rpart(mpg ~ cylinders + displacement + horsepower + weight + acceleration +<br class="calibre2"/>             modelyear + maker, method="anova", data=training) 
+fit 
+n= 33  
+ 
+node), split, n, deviance, yval 
+      * denotes terminal node 
+ 
+1) root 33 26.727270 1.909091   
+2) weight&gt;=3121.5 10  0.000000 1.000000 * 
+3) weight&lt; 3121.5 23 14.869570 2.304348   
+6) modelyear&gt;=78.5 9  4.888889 1.888889 * 
+7) modelyear&lt; 78.5 14  7.428571 2.571429 *</strong> </pre>
+<p class="calibre5">The display is a text display of the decision tree. You can see the decision tree graphically as follows:</p>
+<pre class="commandlinepackt"><strong class="calibre3">plot(fit) 
+text(fit, use.n=TRUE, all=TRUE, cex=.5)</strong> </pre>
+<div class="packt_figure"><img class="aligncenter1" src="Images/821221be-1044-4c3d-ab67-3df2a9a1ef5a.png"/></div>
+<p class="calibre5">It appears to be a very simple model. There must have been a change to mileage for the 1980 year as that is the main driver for the decision tree.<br class="calibre42"/>
+Finally, we predict values and compare them against our <kbd class="calibre21">testing</kbd> set:</p>
+<pre class="commandlinepackt"><strong class="calibre3">predicted &lt;- predict(fit, newdata=testing) 
+predicted 
+testing</strong> </pre>
+<div class="packt_figure"><br class="calibre2"/>
+<img class="image-border155" src="Images/2cc05716-1435-4010-84ac-025c3cd37b73.png"/></div>
+<p class="calibre5">It looks like the package has converted <kbd class="calibre21">Bad</kbd>, <kbd class="calibre21">OK</kbd>, and <kbd class="calibre21">Good</kbd> into a numerical equivalent where <kbd class="calibre21">1</kbd> is <kbd class="calibre21">Bad</kbd> and others are <kbd class="calibre21">OK</kbd> or <kbd class="calibre21">Good</kbd>. Overall, we are not sure if we have a good model. There is clearly not much data to work with. A larger test set would clear up the model.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Decision trees in Python</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">We can perform the same analysis in Python. Load a number of imports that are to be used:</p>
+<pre class="commandlinepackt"><strong class="calibre3">import pandas as pd 
+import numpy as np 
+from os import system 
+import graphviz #pip install graphviz  
+from sklearn.cross_validation import train_test_split 
+from sklearn.tree import DecisionTreeClassifier 
+from sklearn.metrics import accuracy_score 
+from sklearn import tree</strong> </pre>
+<p class="calibre5">Read in the <kbd class="calibre21">mpg</kbd> data file:</p>
+<pre class="commandlinepackt"><strong class="calibre3">carmpg = pd.read_csv("car-mpg.csv") 
+carmpg.head(5)</strong> </pre>
+<div class="packt_figure"><br class="calibre2"/>
+<img class="image-border156" src="Images/aba23356-a720-4d52-9562-bf7b5f910d2c.png"/></div>
+<p class="calibre5">Break up the data into factors and results:</p>
+<pre class="commandlinepackt"><strong class="calibre3">columns = carmpg.columns 
+mask = np.ones(columns.shape, dtype=bool) 
+i = 0 #The specified column that you don't want to show 
+mask[i] = 0 
+mask[7] = 0 #maker is a string 
+X = carmpg[columns[mask]] 
+Y = carmpg["mpg"]</strong> </pre>
+<p class="calibre5">Split up the data between training and testing sets:</p>
+<pre class="commandlinepackt"><strong class="calibre3">X_train, X_test, y_train, y_test  
+= train_test_split( X, Y, test_size = 0.3,  
+random_state = 100)</strong> </pre>
+<p class="calibre5">Create a decision tree model:</p>
+<pre class="commandlinepackt"><strong class="calibre3">clf_gini = tree.DecisionTreeClassifier(criterion = "gini",  
+random_state = 100, max_depth=3, min_samples_leaf=5)</strong> </pre>
+<p class="calibre5">Calculate the model fit:</p>
+<pre class="commandlinepackt"><strong class="calibre3">clf_gini.fit(X_train, y_train) 
+DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=3, 
+            max_features=None, max_leaf_nodes=None, 
+            min_impurity_split=1e-07, min_samples_leaf=5, 
+            min_samples_split=2, min_weight_fraction_leaf=0.0, 
+            presort=False, random_state=100, splitter='best') </strong></pre>
+<p class="calibre5">Graph out the tree:</p>
+<pre class="commandlinepackt"><strong class="calibre3">#I could not get this to work on a Windows machine 
+#dot_data = tree.export_graphviz(clf_gini, out_file=None,  
+#                         filled=True, rounded=True,   
+#                         special_characters=True)   
+#graph = graphviz.Source(dot_data)   
+#graph</strong> </pre>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Neural networks</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">We can model the housing data as a neural network where the different data elements are inputs into the system and the output of the network is the house price. With a neural net we end up with a graphical model that provides the factors to apply to each input in order to arrive at our housing price.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Neural networks in R</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">There is a neural network package available in R. We load that in:</p>
+<pre class="commandlinepackt"><strong class="calibre3">#install.packages('neuralnet', repos="http://cran.r-project.org") 
+library("neuralnet")</strong> </pre>
+<p class="calibre5">Load in the housing data:</p>
+<pre class="commandlinepackt"><strong class="calibre3">filename = "http://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data" 
+housing &lt;- read.table(filename) 
+colnames(housing) &lt;- c("CRIM", "ZN", "INDUS", "CHAS", "NOX",  
+                       "RM", "AGE", "DIS", "RAD", "TAX", "PRATIO", 
+                       "B", "LSTAT", "MDEV")</strong> </pre>
+<p class="calibre5">Split up the housing data into <span class="calibre8">training</span> and test sets (we have seen this coding in prior examples):</p>
+<pre class="commandlinepackt"><strong class="calibre3">housing &lt;- housing[order(housing$MDEV),] 
+#install.packages("caret") 
+library(caret) 
+set.seed(5557) 
+indices &lt;- createDataPartition(housing$MDEV, p=0.75, list=FALSE) 
+training &lt;- housing[indices,] 
+testing &lt;- housing[-indices,] 
+nrow(training) 
+nrow(testing) 
+testing$MDEV </strong></pre>
+<p class="calibre5">Calculate our <kbd class="calibre21">neuralnet</kbd> model:</p>
+<pre class="commandlinepackt"><strong class="calibre3">nnet &lt;- neuralnet(MDEV ~ CRIM + ZN + INDUS + CHAS + NOX  
+                  + RM + AGE + DIS + RAD + TAX + PRATIO  
+                  + B + LSTAT, 
+                  training, hidden=10, threshold=0.01) 
+nnet</strong> </pre>
+<p class="calibre5">The display information for the <kbd class="calibre21">neuralnet</kbd> model is quite extensive. The first sets of display are listed as follows. It is unclear if any of these points are useful:</p>
+<pre class="commandlinepackt"><strong class="calibre3">$call 
+neuralnet(formula = MDEV ~ CRIM + ZN + INDUS + CHAS + NOX + RM +  
+    AGE + DIS + RAD + TAX + PRATIO + B + LSTAT, data = training,  
+    hidden = 10, threshold = 0.01) 
+ 
+$response 
+    MDEV 
+399  5.0 
+406  5.0 
+... 
+$covariate 
+           [,1]  [,2]  [,3] [,4]   [,5]  [,6]  [,7]    [,8] [,9] [,10] [,11] 
+  [1,] 38.35180   0.0 18.10    0 0.6930 5.453 100.0  1.4896   24   666  20.2 
+  [2,] 67.92080   0.0 18.10    0 0.6930 5.683 100.0  1.4254   24   666  20.2 
+  [3,]  9.91655   0.0 18.10    0 0.6930 5.852  77.8  1.5004   24   666  20.2 
+....</strong> </pre>
+<p class="calibre5">Display the model:</p>
+<pre class="commandlinepackt"><strong class="calibre3">plot(nnet, rep="best")</strong> </pre>
+<div class="packt_figure"><img class="image-border157" src="Images/ec97c3f6-3876-4ca4-9f8e-f7ac12d67f25.png"/></div>
+<p class="calibre5">This is just the top half of the graph. As you can see, every factor is adjusted into the model to arrive at our housing price. This is not useful—every factor cannot be that important.<br class="calibre42"/>
+Determine how accurate we are with this model:</p>
+<pre class="commandlinepackt"><strong class="calibre3">results &lt;- compute(nnet, testing[,-14]) 
+diff &lt;- results$net.result - testing$MDEV 
+sum( (diff - mean(diff) )^2 ) #sum of squares 
+9275.74672 
+</strong></pre>
+<p class="calibre5">Given the model appears to be very inaccurate I am not sure going through the same steps in Python would be beneficial.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Random forests</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">The random forests algorithm attempts a number of random decision trees and provides the tree that works best within the parameters used to drive the model.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Random forests in R</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">With R we include the packages we are going to use:</p>
+<pre class="commandlinepackt"><strong class="calibre3">install.packages("randomForest", repos="http://cran.r-project.org") 
+library(randomForest) 
+</strong></pre>
+<p class="calibre5">Load the data:</p>
+<pre class="commandlinepackt"><strong class="calibre3">filename = "http://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data" 
+housing &lt;- read.table(filename) 
+colnames(housing) &lt;- c("CRIM", "ZN", "INDUS", "CHAS", "NOX",  
+                       "RM", "AGE", "DIS", "RAD", "TAX", "PRATIO", 
+                       "B", "LSTAT", "MDEV") 
+</strong></pre>
+<p class="calibre5">Split it up:</p>
+<pre class="commandlinepackt"><strong class="calibre3">housing &lt;- housing[order(housing$MDEV),] 
+#install.packages("caret") 
+library(caret) 
+set.seed(5557) 
+indices &lt;- createDataPartition(housing$MDEV, p=0.75, list=FALSE) 
+training &lt;- housing[indices,] 
+testing &lt;- housing[-indices,] 
+nrow(training) 
+nrow(testing) 
+</strong></pre>
+<p class="calibre5">Calculate our model:</p>
+<pre class="commandlinepackt"><strong class="calibre3">forestFit &lt;- randomForest(MDEV ~ CRIM + ZN + INDUS + CHAS + NOX  
+                  + RM + AGE + DIS + RAD + TAX + PRATIO  
+                  + B + LSTAT, data=training) 
+forestFit 
+Call: 
+ randomForest(formula = MDEV ~ CRIM + ZN + INDUS + CHAS + NOX +      RM + AGE + DIS + RAD + TAX + PRATIO + B + LSTAT, data = training)  
+               Type of random forest: regression 
+                     Number of trees: 500 
+No. of variables tried at each split: 4 
+ 
+          Mean of squared residuals: 11.16163 
+                    % Var explained: 87.28</strong> </pre>
+<p class="calibre5">This is one of the more informative displays about a model—we see the model explains 87% of the variable.</p>
+<p class="calibre5">Make our prediction:</p>
+<pre class="commandlinepackt"><strong class="calibre3">forestPredict &lt;- predict(forestFit, newdata=testing) 
+See how well the model worked: 
+diff &lt;- forestPredict - testing$MDEV 
+sum( (diff - mean(diff) )^2 ) #sum of squares 
+1391.95553131418</strong> </pre>
+<p class="calibre5">This is one of the lowest sum of squares among the models we produced in this chapter.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre5">In this chapter, we used several machine learning algorithms, some of them in R and Python to compare and contrast. We used naive Bayes to determine how the data might be used. We applied nearest neighbor in a couple of different ways to see our results. We used decision trees to come up with an algorithm for predicting. We tried to use neural network to explain housing prices. Finally, we used the random forest algorithm to do the same—with the best results!<br class="calibre42"/>
+In the next chapter, we will look at optimizing Jupyter notebooks.</p>
+<p class="calibre5"/>
+<p class="calibre5"/>
+<p class="calibre5"/>
+<p class="calibre5"/>
+<p class="calibre5"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  </body></html>

@@ -1,0 +1,854 @@
+<html><head></head><body><div id="sbo-rt-content"><div class="chapter" title="Chapter 8. Analytics Study: Prediction - Financial Time Series Analysis and Forecasting"><div class="titlepage"><div><div><h1 class="title"><a id="ch08"/>Chapter 8. Analytics Study: Prediction - Financial Time Series Analysis and Forecasting</h1></div></div></div><div class="blockquote"><blockquote class="blockquote"><p>"When making important decisions, it's ok to trust your instincts but always verify with data"</p></blockquote></div><p>                                                                                          – <span class="emphasis"><em>David Taieb</em></span>
+</p><p>The study of time series is a very important field of data science with multiple applications in industry, including the weather, medicine, sales, and, of course, finance. It is a broad and complex subject and covering it in detail would be outside the scope of this book, but we'll try to touch upon a few of the important concepts in this chapter, staying sufficiently high level as not to require any particular specific knowledge from the reader. We also show how Python is particularly well adapted to time series analysis from data manipulation with libraries like pandas (<a class="ulink" href="https://pandas.pydata.org">https://pandas.pydata.org</a>) for data analysis and NumPy (<a class="ulink" href="http://www.numpy.org">http://www.numpy.org</a>) for scientific computation, to visualization with Matplotlib (<a class="ulink" href="https://matplotlib.org">https://matplotlib.org</a>) and Bokeh (<a class="ulink" href="https://bokeh.pydata.org">https://bokeh.pydata.org</a>).</p><p>This chapter starts with an introduction to the NumPy library and its most important APIs that will be put to good use when building descriptive analytics to analyze time series representing stock historical financial data. Using Python libraries such as <code class="literal">statsmodels</code> (<a class="ulink" href="https://www.statsmodels.org/stable/index.html">https://www.statsmodels.org/stable/index.html</a>), we'll show how to do statistical <a id="id517" class="indexterm"/>exploration and find properties like stationarity, <span class="strong"><strong>autocorrelation function</strong></span> (<span class="strong"><strong>ACF</strong></span>), and <span class="strong"><strong>partial autocorrelation function</strong></span> (<span class="strong"><strong>PACF</strong></span>). which <a id="id518" class="indexterm"/>will be useful to find trends in the data and creating forecasting models. We'll then operationalize these analytics by building a PixieApp that summarizes all the important statistics and visualizations about stock historical financial data.</p><p>In the second part, we'll attempt to build a time series forecasting model that predicts future trends of a stock. We'll use an autoregressive model with Integrated Moving Average called <span class="strong"><strong>ARIMA</strong></span> where we use <a id="id519" class="indexterm"/>previous values in the time series to predict the next value. ARIMA is one of the most popular models currently used, although new models based on recurrent neural networks are starting to gain in popularity.</p><p>As usual, we'll conclude the chapter by incorporating the building of an ARIMA time series forecasting model in the <code class="literal">StockExplorer</code> PixieApp.</p><div class="section" title="Getting started with NumPy"><div class="titlepage"><div><div><h1 class="title"><a id="ch08lvl1sec55"/>Getting started with NumPy</h1></div></div></div><p>The NumPy library is one of the main reasons why Python has gained so much traction in the data <a id="id520" class="indexterm"/>scientist community. It is a foundational library upon which a lot of the most popular libraries, such as pandas (<a class="ulink" href="https://pandas.pydata.org">https://pandas.pydata.org</a>), Matplotlib (<a class="ulink" href="https://matplotlib.org">https://matplotlib.org</a>), SciPy (<a class="ulink" href="https://www.scipy.org">https://www.scipy.org</a>), and scikit-learn (<a class="ulink" href="http://scikit-learn.org">http://scikit-learn.org</a>) are built.</p><p>The key capabilities <a id="id521" class="indexterm"/>provided by NumPy are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">A very powerful multidimensional NumPy array called ndarray with very high-performance <a id="id522" class="indexterm"/>mathematical operations (at least compared to regular Python lists and arrays)</li><li class="listitem" style="list-style-type: disc">Universal functions also called <code class="literal">ufunc</code> for short, for providing very efficient and easy-to-use element by element operations on one or more ndarray</li><li class="listitem" style="list-style-type: disc">Powerful ndarray slicing and selection capabilities</li><li class="listitem" style="list-style-type: disc">Broadcasting functions that make it possible to apply arithmetic operations on ndarray of different shapes provided that some rules are respected</li></ul></div><p>Before we start exploring the NumPy APIs, there is one API that is absolutely essential to know: <code class="literal">lookfor()</code>. With this method, you can find a function using a query string, which is very useful considering the hundreds of powerful APIs provided by NumPy.</p><p>For example, I can look for a function that computes the average mean of an array:</p><div class="informalexample"><pre class="programlisting">import numpy as np
+np.lookfor("average")</pre></div><p>The results are as follows:</p><div class="informalexample"><pre class="programlisting">Search results for 'average'
+----------------------------
+numpy.average
+    Compute the weighted average along the specified axis.
+numpy.irr
+    Return the Internal Rate of Return (IRR).
+numpy.mean
+    Compute the arithmetic mean along the specified axis.
+numpy.nanmean
+    Compute the arithmetic mean along the specified axis, ignoring NaNs.
+numpy.ma.average
+    Return the weighted average of array over the given axis.
+numpy.ma.mean
+    Returns the average of the array elements along given axis.
+numpy.matrix.mean
+    Returns the average of the matrix elements along the given axis.
+numpy.chararray.mean
+    Returns the average of the array elements along given axis.
+numpy.ma.MaskedArray.mean
+    Returns the average of the array elements along given axis.
+numpy.cov
+    Estimate a covariance matrix, given data and weights.
+numpy.std
+    Compute the standard deviation along the specified axis.
+numpy.sum
+    Sum of array elements over a given axis.
+numpy.var
+    Compute the variance along the specified axis.
+numpy.sort
+    Return a sorted copy of an array.
+numpy.median
+    Compute the median along the specified axis.
+numpy.nanstd
+    Compute the standard deviation along the specified axis, while
+numpy.nanvar
+    Compute the variance along the specified axis, while ignoring NaNs.
+numpy.nanmedian
+    Compute the median along the specified axis, while ignoring NaNs.
+numpy.partition
+    Return a partitioned copy of an array.
+numpy.ma.var
+    Compute the variance along the specified axis.
+numpy.apply_along_axis
+    Apply a function to 1-D slices along the given axis.
+numpy.ma.apply_along_axis
+    Apply a function to 1-D slices along the given axis.
+numpy.ma.MaskedArray.var
+    Compute the variance along the specified axis.</pre></div><p>Within seconds, I can find a few candidate functions without having to leave my Notebook to consult the documentation. In the preceding case, I can spot a few functions that are interesting— <code class="literal">np.average</code> and <code class="literal">np.mean</code>—for which I still need to know their arguments. Again, instead of looking up the documentation which takes time and breaks the flow of what I <a id="id523" class="indexterm"/>was doing, I use a little-known capability of Jupyter Notebooks that provides me with the signature and docstring of the function inline. To invoke the inline help of a function, simply position the cursor at the end of the function and use the <span class="emphasis"><em>Shift</em></span> + <span class="emphasis"><em>Tab</em></span> combination. Calling <span class="emphasis"><em>Shift</em></span> + <span class="emphasis"><em>Tab</em></span> a second time will expand the pop-up window to show more of the text as shown in the following screenshot:</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note245"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: <span class="emphasis"><em>Shift</em></span> + <span class="emphasis"><em>Tab</em></span> only applies to a function.</p></div></div><div class="mediaobject"><img src="Images/B09699_08_01.jpg" alt="Getting started with NumPy" width="1000" height="349"/><div class="caption"><p>Inline help in Jupyter Notebook.</p></div></div><p>Using this method, I can rapidly iterate over the candidate functions until I find the one that fits my needs.</p><p>It is important to note that <code class="literal">np.lookfor()</code> is not limited to querying the NumPy module; you could search in other modules as well. For example, the following code searches for <code class="literal">acf</code> (autocorrelation function) related methods in the <code class="literal">statsmodels</code> package:</p><div class="informalexample"><pre class="programlisting">import statsmodels
+np.lookfor("acf", module = statsmodels)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note246"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode1.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode1.py</a>
+</p></div></div><p>This produces the following results:</p><div class="informalexample"><pre class="programlisting">Search results for 'acf'
+------------------------
+statsmodels.tsa.vector_ar.var_model.var_acf
+    Compute autocovariance function ACF_y(h) up to nlags of stable VAR(p)
+statsmodels.tsa.vector_ar.var_model._var_acf
+    Compute autocovariance function ACF_y(h) for h=1,...,p
+statsmodels.tsa.tests.test_stattools.TestPACF
+    Set up for ACF, PACF tests.
+statsmodels.sandbox.tsa.fftarma.ArmaFft.acf2spdfreq
+    not really a method
+statsmodels.tsa.stattools.acf
+    Autocorrelation function for 1d arrays.
+statsmodels.tsa.tests.test_stattools.TestACF_FFT
+    Set up for ACF, PACF tests.
+...</pre></div><div class="section" title="Creating a NumPy array"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec48"/>Creating a NumPy array</h2></div></div></div><p>There are many <a id="id524" class="indexterm"/>ways to create a NumPy array. Here are the methods most commonly used:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">From a Python list or tuple using <code class="literal">np.array()</code>, for example, <code class="literal">np.array([1, 2, 3, 4])</code>.</li><li class="listitem" style="list-style-type: disc">From one of the NumPy factory functions:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">np.random</code>: A module that provides a very rich set of functions for randomly generating values. This module is composed of the following categories:<p> Simple random data: <code class="literal">rand</code>, <code class="literal">randn</code>, <code class="literal">randint</code>, and so on</p><p> Permutations: <code class="literal">shuffle</code>, <code class="literal">permutation</code>
+</p><p> Distributions: <code class="literal">geometric</code>, <code class="literal">logistic</code>, and so on</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note247"/>Note</h3><p>You can find more information on the <code class="literal">np.random</code> module here:</p><p>
+<a class="ulink" href="https://docs.scipy.org/doc/numpy-1.14.0/reference/routines.random.html">https://docs.scipy.org/doc/numpy-1.14.0/reference/routines.random.html</a>
+</p></div></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">np.arange</code>: Return an ndarray with evenly spaced values within a given interval.<p> Signature: <code class="literal">numpy.arange([start, ]stop, [step, ]dtype=None)</code>
+</p><p> For example: <code class="literal">np.arange(1, 100, 10)</code>
+</p><p> Results: <code class="literal">array([ 1, 11, 21, 31, 41, 51, 61, 71, 81, 91])</code>
+</p></li><li class="listitem" style="list-style-type: disc"><code class="literal">np.linspace</code>: Similar to <code class="literal">np.arange</code>, it returns an ndarray with evenly spaced values within a given interval, the difference being that with <code class="literal">linspace</code> you specify the number of samples you want instead of the number of steps.<p> For example: <code class="literal">np.linspace(1,100,8, dtype=int)</code>
+</p><p> Results: <code class="literal">array([  1,  15,  29,  43,  57,  71,  85, 100])</code>
+</p></li><li class="listitem" style="list-style-type: disc"><code class="literal">np.full</code>, <code class="literal">np.full_like</code>, <code class="literal">np.ones</code>, <code class="literal">np.ones_like</code>, <code class="literal">np.zeros</code>, <code class="literal">np.zeros_like</code>: Create an ndarray initialized with a constant value.<p> For example: <code class="literal">np.ones( (2,2), dtype=int)</code>
+</p><p> Results: <code class="literal">array([[1, 1], [1, 1]])</code>
+</p></li><li class="listitem" style="list-style-type: disc"><code class="literal">np.eye</code>, <code class="literal">np.identity</code>, <code class="literal">np.diag</code>: Creates an ndarray with constant values in the diagonal:<p> For example: <code class="literal">np.eye(3,3)</code>
+</p><p> Results: <code class="literal">array([[1, 0, 0],[0, 1, 0],[0, 0, 1]])</code>
+</p></li></ul></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note248"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: When the <code class="literal">dtype</code> argument is not provided, NumPy tries to infer it from the input argument. However, it may happen that the type returned is not the correct one; for example, float is returned when it should be an integer. In this case, you should use the <code class="literal">dtype</code> argument to force the type. For example:</p><div class="informalexample"><pre class="programlisting">np.arange(1, 100, 10, dtype=np.integer)</pre></div></div></div><p>Why NumPy arrays are so much faster than their Python lists and arrays counterpart?</p><p>As mentioned before, operations on NumPy arrays run much faster than their Python counterpart. This is because Python is a dynamic language that doesn't know, a priori, the type it's dealing with and <a id="id525" class="indexterm"/>therefore has to constantly query the metadata associated with it to dispatch it to the right method. On the other hand, NumPy is highly optimized to deal with large multidimensional arrays of data by, among other things, delegating the execution of the CPU-intensive routine to external highly optimized C libraries that have been precompiled.</p><p>To be able to do that, NumPy places two important constraints on ndarrays:</p></li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>ndarrays are immutable</strong></span>: Therefore, if you want to change the shape or the size of an ndarray or if you want to add/delete elements, you always must create a new one. For example, the following code creates an ndarray using the <code class="literal">arange()</code> function which returns a one-dimensional array with evenly spaced values, and then reshapes it to fit a 4 by 5 matrix:<div class="informalexample"><pre class="programlisting">ar = np.arange(20)
+print(ar)
+print(ar.reshape(4,5))</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note249"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode2.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode2.py</a>
+</p></div></div><p>The results are as follows:</p><div class="informalexample"><pre class="programlisting">before:
+   [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
+after: 
+   [[ 0  1  2  3  4]
+   [ 5  6  7  8  9]
+   [10 11 12 13 14]
+   [15 16 17 18 19]]</pre></div></li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Elements in an ndarray must be of the same type</strong></span>: ndarray carries the element type in the <code class="literal">dtype</code> member. When creating a new ndarray using the <code class="literal">nd.array()</code> function, NumPy <a id="id526" class="indexterm"/>will automatically infer a type that is suitable for all elements.<p>For example: <code class="literal">np.array([1,2,3]).dtype</code> will be <code class="literal">dtype('int64')</code>.</p><p>
+<code class="literal">np.array([1,2,'3']).dtype</code> will be <code class="literal">dtype('&lt;U21')</code> where <code class="literal">&lt;</code> means little endian (see <a class="ulink" href="https://en.wikipedia.org/wiki/Endianness">https://en.wikipedia.org/wiki/Endianness</a>) and <code class="literal">U21</code> means a 21-character Unicode string.</p></li></ul></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note250"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: You can find detailed information about all the supported data types here:</p><p>
+<a class="ulink" href="https://docs.scipy.org/doc/numpy/reference/arrays.dtypes.html">https://docs.scipy.org/doc/numpy/reference/arrays.dtypes.html</a>
+</p></div></div></div><div class="section" title="Operations on ndarray"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec49"/>Operations on ndarray</h2></div></div></div><p>Most often, we have <a id="id527" class="indexterm"/>the need to summarize data over an ndarray. Fortunately, NumPy provides a very rich set of functions (also called <span class="strong"><strong>reduction functions</strong></span>) that provide out-of-the-<a id="id528" class="indexterm"/>box summarization over an ndarray or an axis of the ndarray.</p><p>For reference, a NumPy axis corresponds to a dimension of the array. For example, a two-dimensional ndarray has two axes: one running across rows, which is referred to as axis 0 and one running across columns which is called axis 1.</p><p>The following diagram illustrates the axes in a two-dimensional array:</p><div class="mediaobject"><img src="Images/B09699_08_02.jpg" alt="Operations on ndarray" width="573" height="547"/><div class="caption"><p>Axes in a two-dimensional array</p></div></div><p>Most of the reduction functions we'll discuss next take an axis as an argument. They fall into the following categories:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Mathematical functions</strong></span>:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Trigonometric: <code class="literal">np.sin</code>, <code class="literal">np.cos</code>, and so on</li><li class="listitem" style="list-style-type: disc">Hyperbolic: <code class="literal">np.sinh</code>, <code class="literal">np.cosh</code>, and so on</li><li class="listitem" style="list-style-type: disc">Rounding: <code class="literal">np.around</code>, <code class="literal">np.floor</code>, and so on</li><li class="listitem" style="list-style-type: disc">Sums, products, differences: <code class="literal">np.sum</code>, <code class="literal">np.prod</code>, <code class="literal">np.cumsum</code>, and so on</li><li class="listitem" style="list-style-type: disc">Exponents and logarithms: <code class="literal">np.exp</code>, <code class="literal">np.log</code>, and so on</li><li class="listitem" style="list-style-type: disc">Arithmetic: <code class="literal">np.add</code>, <code class="literal">np.multiply</code>, and so on</li><li class="listitem" style="list-style-type: disc">Miscellaneous: <code class="literal">np.sqrt</code>, <code class="literal">np.absolute</code>, and so on</li></ul></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note251"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: All these unary functions (functions that take only one argument) work directly at the ndarray level. For example, we can use <code class="literal">np.square</code> to square all the values in an array at once:</p><p>Code: <code class="literal">np.square(np.arange(10))</code>
+</p><p>Results: <code class="literal">array([ 0,  1,  4,  9, 16, 25, 36, 49, 64, 81])</code>
+</p><p>You can find more information on NumPy mathematical functions here:</p><p>
+<a class="ulink" href="https://docs.scipy.org/doc/numpy/reference/routines.math.html">https://docs.scipy.org/doc/numpy/reference/routines.math.html</a>
+</p></div></div></li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>Statistical functions</strong></span>:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Order statistics: <code class="literal">np.amin</code>, <code class="literal">np.amax</code>, <code class="literal">np.percentile</code>, and so on</li><li class="listitem" style="list-style-type: disc">Averages <a id="id529" class="indexterm"/>and variances: <code class="literal">np.median</code>, <code class="literal">np.var</code>, <code class="literal">np.std</code>, and so on</li><li class="listitem" style="list-style-type: disc">Correlating: <code class="literal">np.corrcoef</code>, <code class="literal">np.correlate</code>, <code class="literal">np.cov</code>, and so on</li><li class="listitem" style="list-style-type: disc">Histograms: <code class="literal">np.histogram</code>, <code class="literal">np.bincount</code>, and so on</li></ul></div></li></ul></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note252"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: pandas provides very tight integration with NumPy and lets you apply these NumPy operations on pandas DataFrames. We'll use this capability quite a bit when analyzing time series in the rest of this chapter.</p></div></div><p>The following code <a id="id530" class="indexterm"/>example creates a pandas DataFrame and computes the square on all the columns:</p><div class="mediaobject"><img src="Images/B09699_08_03.jpg" alt="Operations on ndarray" width="807" height="498"/><div class="caption"><p>Applying NumPy operations to pandas DataFrames</p></div></div></div><div class="section" title="Selections on NumPy arrays"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec50"/>Selections on NumPy arrays</h2></div></div></div><p>NumPy arrays support similar <a id="id531" class="indexterm"/>slicing operations as Python arrays and lists. So, using an ndarray created with the <code class="literal">np.arrange()</code> method, we can do the following:</p><div class="informalexample"><pre class="programlisting">sample = np.arange(10)
+print("Sample:", sample)
+print("Access by index: ", sample[2])
+print("First 5 elements: ", sample[:5])
+print("From 8 to the end: ", sample[8:])
+print("Last 3 elements: ", sample[-3:])
+print("Every 2 elements: ", sample[::2])</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note253"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode3.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode3.py</a>
+</p></div></div><p>Which produces the following results:</p><div class="informalexample"><pre class="programlisting">Sample: [0 1 2 3 4 5 6 7 8 9]
+Access by index:  2
+First 5 elements:  [0 1 2 3 4]
+From index 8 to the end:  [8 9]
+Last 3 elements:  [7 8 9]
+Every 2 elements:  [0 2 4 6 8]</pre></div><p>Selections using slices also work with NumPy arrays that have multiple dimensions. We can use slices for every dimension in the array. This is not the case for Python arrays and lists which only allow indexing using integers of slices.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note254"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: For reference a slice in Python has the following syntax:</p><div class="informalexample"><pre class="programlisting">start:end:step</pre></div></div></div><p>As an example, let's create a NumPy array with the shape <code class="literal">(3,4)</code>, that is, 3 rows * 4 columns:</p><div class="informalexample"><pre class="programlisting">my_nparray = np.arange(12).reshape(3,4)
+print(my_nparray)</pre></div><p>Returns:</p><div class="informalexample"><pre class="programlisting">array([[ 0,  1,  2,  3],
+       [ 4,  5,  6,  7],
+       [ 8,  9, 10, 11]])</pre></div><p>Suppose that I want to select only the middle of the matrix, that is, [5, 6]. I can simply apply slices on rows and columns, for example, <code class="literal">[1:2]</code> to select the second row and <code class="literal">[1:3]</code> to select the second and third values in the second row:</p><div class="informalexample"><pre class="programlisting">print(my_nparray[1:2, 1:3])</pre></div><p>Returns:</p><div class="informalexample"><pre class="programlisting">array([[5, 6]])</pre></div><p>Another interesting NumPy <a id="id532" class="indexterm"/>feature is that we can also use predicates to index an ndarray with Boolean values.</p><p>For example:</p><div class="informalexample"><pre class="programlisting">print(sample &gt; 5 )</pre></div><p>Returns:</p><div class="informalexample"><pre class="programlisting">[False False False False False False  True  True  True  True]</pre></div><p>We can then use the Boolean ndarray to select subsets of data with a simple and elegant syntax.</p><p>For example:</p><div class="informalexample"><pre class="programlisting">print( sample[sample &gt; 5] )</pre></div><p>Returns:</p><div class="informalexample"><pre class="programlisting">[6 7 8 9]</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note255"/>Note</h3><p>This is only a small preview of all the selection capabilities of NumPy. For more information on NumPy selection, you can visit:</p><p>
+<a class="ulink" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.indexing.html">https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.indexing.html</a>
+</p></div></div></div><div class="section" title="Broadcasting"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec51"/>Broadcasting</h2></div></div></div><p>Broadcasting is a <a id="id533" class="indexterm"/>very convenient feature of NumPy. It lets you perform arithmetic operations on ndarrays having different shapes. The term <span class="strong"><strong>broadcasting</strong></span> comes from <a id="id534" class="indexterm"/>the fact that the smaller array is automatically duplicated to fit the bigger array so that they have compatible shapes. There are however a set of rules that govern how broadcasting works.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note256"/>Note</h3><p>You can find more information on broadcasting here:</p><p>
+<a class="ulink" href="https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html">https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html</a>
+</p></div></div><p>The simplest form of NumPy broadcasting is <span class="strong"><strong>scalar broadcasting</strong></span>, which lets you perform element-wise arithmetic operations between an ndarray and a scalar (that is, a number).</p><p>For example:</p><div class="informalexample"><pre class="programlisting">my_nparray * 2</pre></div><p>Returns:</p><div class="informalexample"><pre class="programlisting">array([[ 0,  2,  4,  6],
+       [ 8, 10, 12, 14],
+       [16, 18, 20, 22]])</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note257"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: In the following discussion, we assume that we want to operate on two ndarrays which do not have the same dimensions.</p></div></div><p>Broadcasting with smaller arrays needs to follow only one rule: one of the arrays must have at least one of its dimensions equal to 1. The idea is to duplicate the smaller array along the dimensions that don't match until they do.</p><p>The following diagram, taken from the <a class="ulink" href="http://www.scipy-lectures.org/">http://www.scipy-lectures.org/</a> website, illustrates very nicely the different cases for adding two arrays:</p><div class="mediaobject"><img src="Images/B09699_08_04.jpg" alt="Broadcasting" width="1000" height="623"/><div class="caption"><p>Broadcasting flow explained</p><p>Source: <a class="ulink" href="http://www.scipy-lectures.org/_images/numpy_broadcasting.png">http://www.scipy-lectures.org/_images/numpy_broadcasting.png</a></p></div></div><p>The three use cases demonstrated in the preceding diagram are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>The array's dimensions match</strong></span>: Perform the sum element-wise as usual.</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>The smaller array has only 1 row</strong></span>: Duplicate the rows until the dimensions fit the first array. The same algorithm would be used if the smaller array had only 1 column.</li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>The first array has only 1 column and the second array only 1 row</strong></span>:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Duplicate the <a id="id535" class="indexterm"/>columns in the first array until we have the same number of columns as the second <a id="id536" class="indexterm"/>array</li><li class="listitem" style="list-style-type: disc">Duplicate the rows in the second array until we have the same number of rows as the first array</li></ul></div></li></ul></div><p>The following code sample shows NumPy broadcasting in action:</p><div class="informalexample"><pre class="programlisting">my_nparray + np.array([1,2,3,4])</pre></div><p>Results:</p><div class="informalexample"><pre class="programlisting">array([[ 1,  3,  5,  7],
+       [ 5,  7,  9, 11],
+       [ 9, 11, 13, 15]])</pre></div><p>In this section, we provided a <a id="id537" class="indexterm"/>basic introduction to NumPy, at least enough to get us started and follow the code samples that we'll cover in the rest of this chapter. In the next section, we will start the <a id="id538" class="indexterm"/>discussion on time series with statistical data exploration to find patterns that will help us to identify underlying structures in the data.</p></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content"><div class="section" title="Statistical exploration of time series"><div class="titlepage"><div><div><h1 class="title"><a id="ch08lvl1sec56"/>Statistical exploration of time series</h1></div></div></div><p>For the sample application, we'll use <a id="id539" class="indexterm"/>stock historical <a id="id540" class="indexterm"/>financial data provided by the Quandl data platform financial APIs (<a class="ulink" href="https://www.quandl.com/tools/api">https://www.quandl.com/tools/api</a>) and the <code class="literal">quandl</code> Python library (<a class="ulink" href="https://www.quandl.com/tools/python">https://www.quandl.com/tools/python</a>).</p><p>To get started, we need to install the <code class="literal">quandl</code> library by running the following command in its own cell:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>!pip install quandl</strong></span>
+</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note258"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: As always, don't forget to restart the kernel after the installation is complete.</p></div></div><p>Access to the Quandl data is free but limited to 50 calls a day, but you can bypass this limit by creating a free account and get an API key:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Go to <a class="ulink" href="https://www.quandl.com">https://www.quandl.com</a> and create a new account by clicking on the <span class="strong"><strong>SIGN UP</strong></span> button on the top right.</li><li class="listitem">Fill up the form in three steps of the sign-up wizard. (I chose <span class="strong"><strong>Personal</strong></span>, but depending on your situation, you may want to choose <span class="strong"><strong>Business</strong></span> or <span class="strong"><strong>Academic</strong></span>.)</li><li class="listitem">At the end of the process, you should receive an email confirmation with a link to activate the account.</li><li class="listitem">Once the account is activated, log in to the Quandl platform website and click on <span class="strong"><strong>Account Settings</strong></span> in the top right-hand menu, and then go to the <span class="strong"><strong>API KEY</strong></span> tab.</li><li class="listitem">Copy the API key provided in this page. This value will be used to programmatically set the key in the <code class="literal">quandl</code> Python library as shown in the following code:<div class="informalexample"><pre class="programlisting">import quandl
+quandl.ApiConfig.api_key = "YOUR_KEY_HERE"</pre></div></li></ol></div><p>The <code class="literal">quandl</code> library is mainly composed of two APIs:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">quandl.get(dataset, **kwargs)</code>: This returns a pandas DataFrame or a NumPy array for the requested dataset(s). The <code class="literal">dataset</code> argument can be either a string (single dataset) or a list of strings (multi dataset). Each dataset follows the syntax <code class="literal">database_code/dataset_code</code> when <code class="literal">database_code</code> is a data publisher and <code class="literal">dataset_code</code> related to the resource. (See next how to get a full list of all the <code class="literal">database_code</code> and <code class="literal">dataset_code</code>).<p>The keyword arguments <a id="id541" class="indexterm"/>enable you to <a id="id542" class="indexterm"/>refine the query. You can find the full list of supported arguments in the <code class="literal">quandl</code> code on GitHub: <a class="ulink" href="https://github.com/quandl/quandl-python/blob/master/quandl/get.py">https://github.com/quandl/quandl-python/blob/master/quandl/get.py</a>.</p><p>One interesting keyword argument called <code class="literal">returns</code> controls the data structure returned by the method and can take the following two values:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">pandas</code>: Returns a pandas DataFrame</li><li class="listitem" style="list-style-type: disc"><code class="literal">numpy</code>: Returns a NumPy array</li></ul></div></li><li class="listitem" style="list-style-type: disc"><code class="literal">quandl.get_table(datatable_code, **kwargs)</code>: Returns a non-time series dataset (called <code class="literal">datatable</code>) about a resource. We will not be using this method in this chapter, but you can find out more about it by looking at the code: <a class="ulink" href="https://github.com/quandl/quandl-python/blob/master/quandl/get_table.py">https://github.com/quandl/quandl-python/blob/master/quandl/get_table.py</a>.</li></ul></div><p>To get the list of <code class="literal">database_code</code>, we use the Quandl REST API: <code class="literal">https://www.quandl.com/api/v3/databases?api_key=YOUR_API_KEY&amp;page=n</code> which uses pagination.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note259"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: In the preceding URL, replace the <code class="literal">YOUR_API_KEY</code> value with your actual API key.</p></div></div><p>The returned payload is in the following JSON format:</p><div class="informalexample"><pre class="programlisting">{
+  <span class="strong"><strong>"databases"</strong></span>: [{
+         "id": 231,
+         "name": "Deutsche Bundesbank Data Repository",
+         "database_code": "BUNDESBANK",
+         "description": "Data on the German economy, ...",
+         "datasets_count": 49358,
+         "downloads": 43209922,
+         "premium": false,
+         "image": "https://quandl--upload.s3.amazonaws/...thumb_bundesbank.png",
+         "favorite": false,
+         "url_name": "Deutsche-Bundesbank-Data-Repository"
+       },...
+],
+  <span class="strong"><strong>"meta"</strong></span>: {
+    "query": "",
+    "per_page": 100,
+    "current_page": 1,
+    "prev_page": null,
+    "total_pages": 3,
+    "total_count": 274,
+    "next_page": 2,
+    "current_first_item": 1,
+    "current_last_item": 100
+  }
+}</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note260"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode4.json">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode4.json</a>
+</p></div></div><p>We use a <code class="literal">while</code> loop to load all the available pages relying on the <code class="literal">payload['meta']['next_page']</code> value to <a id="id543" class="indexterm"/>know when to stop. At each iteration, we append the list of <code class="literal">database_code</code> information into an <a id="id544" class="indexterm"/>array called <code class="literal">databases</code> as shown in the following code:</p><div class="informalexample"><pre class="programlisting">import requests
+databases = []
+page = 1
+while(page is not None):
+    payload = requests.get("https://www.quandl.com/api/v3/databases?api_key={}&amp;page={}"\
+                    .format(quandl.ApiConfig.api_key, page)).json()
+<span class="strong"><strong>    databases += payload['databases']</strong></span>
+<span class="strong"><strong>    page = payload['meta']['next_page']</strong></span>
+</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note261"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode5.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode5.py</a>
+</p></div></div><p>The <code class="literal">databases</code> variable now contains an array of JSON objects containing the metadata about each <code class="literal">database_code</code>. We use the PixieDust <code class="literal">display()</code> API to look at the data in a nice searchable table:</p><div class="informalexample"><pre class="programlisting">import pixiedust
+display(databases)</pre></div><p>In the following screenshot of the PixieDust table, we use the <span class="strong"><strong>Filter</strong></span> button described in <a class="link" href="ch02.xhtml" title="Chapter 2. Python and Jupyter Notebooks to Power your Data Analysis">Chapter 2</a>, <span class="emphasis"><em>Python and Jupyter Notebooks to Power your Data Analysis</em></span>, to access the statistics about the count of <a id="id545" class="indexterm"/>datasets available in each <a id="id546" class="indexterm"/>database, for example, min, max and mean:</p><div class="mediaobject"><img src="Images/B09699_08_05.jpg" alt="Statistical exploration of time series" width="1000" height="784"/><div class="caption"><p>List of Quandl database codes</p></div></div><p>After searching for a database that contains stock information from the <span class="strong"><strong>New York Stock Exchange</strong></span> (<span class="strong"><strong>NYSE</strong></span>), I found the <code class="literal">XNYS</code> database <a id="id547" class="indexterm"/>as shown here:</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note262"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: Make sure to increase the number of the value displayed to <code class="literal">300</code> in the chart options dialog, so all the results are shown in the table.</p></div></div><div class="mediaobject"><img src="Images/B09699_08_06.jpg" alt="Statistical exploration of time series" width="1000" height="513"/><div class="caption"><p>Looking for a database with stock data from NYSE</p></div></div><p>Unfortunately, the <code class="literal">XNYS</code> database is not public and requires a paid subscription. I ended up using the <code class="literal">WIKI</code> database code, which for some reason was not part of the list returned by the preceding API request, but which I <a id="id548" class="indexterm"/>found in some code examples.</p><p>I then used the <code class="literal">https://www.quandl.com/api/v3/databases/{database_code}/codes</code> REST API to get the list of datasets. Fortunately, this API <a id="id549" class="indexterm"/>returns a CSV compressed in a ZIP file, which the PixieDust <code class="literal">sampleData()</code> method can handle easily, as shown in the following code:</p><div class="informalexample"><pre class="programlisting">codes = pixiedust.sampleData( "https://www.quandl.com/api/v3/databases/WIKI/codes?api_key=" + quandl.ApiConfig.api_key)
+display(codes)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note263"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode6.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode6.py</a>
+</p></div></div><p>In the PixieDust table interface, we click on the <span class="strong"><strong>Options</strong></span> dialog to increase the number of values displayed to <code class="literal">4000</code> so that we can fit the entire dataset (which is 3,198) and use the search bar to look for particular stocks <a id="id550" class="indexterm"/>as shown <a id="id551" class="indexterm"/>in the following screenshot:</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note264"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: The search bar only searches for the rows that are displayed in the browser, which can be a smaller set when the dataset is too large. Since in this case, the dataset is too large, it would be impractical to increase the number of rows to display; it is recommended to use the <span class="strong"><strong>Filter</strong></span> instead which guarantees to query the entire dataset.</p><p>The CSV file returned by the <code class="literal">quandl</code> API doesn't have a header, but <code class="literal">PixieDust.sampleData()</code> expects one to be there. This is currently a limitation that will be addressed in the future.</p></div></div><div class="mediaobject"><img src="Images/B09699_08_07.jpg" alt="Statistical exploration of time series" width="1000" height="756"/><div class="caption"><p>List of datasets for the WIKI database</p></div></div><p>For the rest of this section, we load the Microsoft stock (ticker symbol MSFT) historical time series data for the last several years and start exploring its statistical properties. In the following code, we use <code class="literal">quandl.get()</code> with the <code class="literal">WIKI/MSFT</code> dataset. We add a column called <code class="literal">daily_spread</code> that computes the daily gain/loss by calling the pandas <code class="literal">diff()</code> method, which returns the difference between the current and previous adjusted close price. Note that the returned pandas DataFrame uses the dates as <a id="id552" class="indexterm"/>an index, but PixieDust does <a id="id553" class="indexterm"/>not support plotting time series by the index at this time. Therefore, in the following code, we call <code class="literal">reset_index()</code> to convert the <code class="literal">DateTime</code> index into a new column called <code class="literal">Date</code> that contains the dates information:</p><div class="informalexample"><pre class="programlisting">msft = quandl.get('WIKI/MSFT')
+msft['daily_spread'] = <span class="strong"><strong>msft['Adj. Close'].diff()</strong></span>
+msft = msft.reset_index()</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note265"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode7.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode7.py</a>
+</p></div></div><p>For our first data exploration, we use <code class="literal">display()</code> to create a line chart of the stock adjusted closing price over time using the Bokeh renderer.</p><p>The following screenshot shows the <span class="strong"><strong>Options</strong></span> configuration and the resulting line chart:</p><div class="mediaobject"><img src="Images/B09699_08_08.jpg" alt="Statistical exploration of time series" width="1000" height="363"/><div class="caption"><p>MSFT Price over time, adjusted for dividend distribution, stock split, and other corporate actions</p></div></div><p>We can also generate a chart <a id="id554" class="indexterm"/>that shows the daily <a id="id555" class="indexterm"/>spread for each day of the period, as shown in the following screenshot:</p><div class="mediaobject"><img src="Images/B09699_08_09.jpg" alt="Statistical exploration of time series" width="1000" height="370"/><div class="caption"><p>Daily Spread for the MSFT stock</p></div></div><div class="section" title="Hypothetical investment"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl3sec07"/>Hypothetical investment</h2></div></div></div><p>As an exercise, let's try to create a chart that shows how a hypothetical investment of $10,000 in the <a id="id556" class="indexterm"/>selected stock (MSFT) would fare over time. To do this, we must compute a DataFrame that contains the total investment value for each day of the period, factoring in the daily spread that we calculated in the previous paragraph and use the PixieDust <code class="literal">display()</code> API to visualize the data.</p><p>We use pandas ability to select rows using a predicate based on dates to first filter the DataFrame to select only the data points in the period we are interested in. We then calculate the number of shares bought by dividing the initial investment of $10,000 by the closing price on the first day of the period and add the initial investment value. All this computation is made very easy, thanks to the efficient series computation of pandas and the underlying NumPy foundational library. We use the <code class="literal">np.cumsum()</code> method (<a class="ulink" href="https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.cumsum.html">https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.cumsum.html</a>) to compute the cumulative sum of all the daily gains adding the initial investment value of $10,000.</p><p>Finally, we make the chart easier to read by using the <code class="literal">resample()</code> method that converts the frequency from daily to monthly computing the new values using the average for the month.</p><p>The following code computes the growth DataFrame using a period starting in May 2016:</p><div class="informalexample"><pre class="programlisting">import pandas as pd
+tail = msft[<span class="strong"><strong>msft['Date'] &gt; '2016-05-16'</strong></span>]
+investment = np.cumsum((10000 / tail['Adj. Close'].values[0]) * tail['daily_spread']) + 10000
+investment = investment.astype(int)
+investment.index = tail['Date']
+investment = investment.resample('M').mean()
+investment = pd.DataFrame(investment).reset_index()
+display(investment)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note266"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode8.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode8.py</a>
+</p></div></div><p>The following screenshot shows the graph generated by the <code class="literal">display()</code> API including the configuration options:</p><div class="mediaobject"><img src="Images/B09699_08_10.jpg" alt="Hypothetical investment" width="1000" height="370"/><div class="caption"><p>Hypothetical portfolio growth</p></div></div></div><div class="section" title="Autocorrelation function (ACF) and partial autocorrelation function (PACF)"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec53"/>Autocorrelation function (ACF) and partial autocorrelation function (PACF)</h2></div></div></div><p>Before trying to generate predictive models, it is essential to understand whether the time series has identifiable <a id="id557" class="indexterm"/>patterns, such as seasonality or trends. One popular technique is to look at how data points correlate with previous data points according to a <a id="id558" class="indexterm"/>specified time lag. The intuition is that the autocorrelation would reveal internal structures, such as for example, identifying periods when high correlation (positive or negative) occurs. You can experiment with different lag values (that is, for each data point, how many previous points are you taking into account) to find the right periodicity.</p><p>Computing the ACF usually requires calculating the Pearson R correlation coefficient for the set of data points (<a class="ulink" href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">https://en.wikipedia.org/wiki/Pearson_correlation_coefficient</a>) which is not a trivial thing to do. The good news is that the <code class="literal">statsmodels</code> Python library has a <code class="literal">tsa</code> package (<span class="strong"><strong>tsa</strong></span> stands for <span class="strong"><strong>time series analysis</strong></span>) that provides <a id="id559" class="indexterm"/>helper methods for computing the ACF, that are tightly integrated with pandas Series.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note267"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: If not already done, we install the <code class="literal">statsmodels</code> package using the following command, restarting the kernel after completion:</p><div class="informalexample"><pre class="programlisting">!pip install statsmodels</pre></div></div></div><p>The following code uses <code class="literal">plot_acf()</code> from the <code class="literal">tsa.api.graphics</code> package to compute and visualize the ACF for the adjusted close price of the MSFT stock time series:</p><div class="informalexample"><pre class="programlisting">import statsmodels.tsa.api as smt
+import matplotlib.pyplot as plt
+smt.graphics.plot_acf(msft['Adj. Close'], lags=100)
+plt.show()</pre></div><p>The following is the result:</p><div class="mediaobject"><img src="Images/B09699_08_11.jpg" alt="Autocorrelation function (ACF) and partial autocorrelation function (PACF)" width="841" height="553"/><div class="caption"><p>ACF for MSFT with lags = 100</p></div></div><p>The preceding chart shows the autocorrelation of the data at a number of previous data points (lag) given by the <span class="emphasis"><em>x</em></span> abscissa. So, at lag <code class="literal">0</code>, you always have an autocorrelation of <code class="literal">1.0</code> (you always correlate perfectly with yourself), lag <code class="literal">1</code> shows the autocorrelation with the previous data <a id="id560" class="indexterm"/>point, lag <code class="literal">2</code> shows the autocorrelation with the data point that is two steps behind. We can clearly see that the autocorrelation decreases as the <a id="id561" class="indexterm"/>lags increase. In the preceding chart, we used only 100 lags, and we see that the autocorrelation still remains statistically significant at around 0.9, which tells us that data separated by long periods of time is not correlated. This suggests that the data has a trend, which is quite obvious when glancing at the overall price chart. </p><p>To confirm this hypothesis, we plot the ACF chart with a bigger <code class="literal">lags</code> argument, say <code class="literal">1000</code> (which is not unreasonable given the fact that our series has more than 10,000 data points), as shown in the following screenshot:</p><div class="mediaobject"><img src="Images/B09699_08_12.jpg" alt="Autocorrelation function (ACF) and partial autocorrelation function (PACF)" width="788" height="511"/><div class="caption"><p>ACF for MSFT with lags = 1000</p></div></div><p>We now clearly see that the autocorrelation falls below the significance level at around <code class="literal">600</code> lags.</p><p>To better illustrate how the ACF works, let's generate a time series that is periodic, without a trend and see what we can learn. For example, we can use <code class="literal">np.cos()</code> on a series of evenly spaced points generated with <code class="literal">np.linspace()</code>:</p><div class="informalexample"><pre class="programlisting">smt.graphics.plot_acf(np.cos(np.linspace(0, 1000, 100)), lags=50)
+plt.show()</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note268"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode9.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode9.py</a>
+</p></div></div><p>The results are as follows:</p><div class="mediaobject"><img src="Images/B09699_08_13.jpg" alt="Autocorrelation function (ACF) and partial autocorrelation function (PACF)" width="787" height="574"/><div class="caption"><p>ACF for a periodic series with no trends</p></div></div><p>In the preceding chart, we can see that the autocorrelation spikes again at regular intervals (every 5 lags or so), clearly showing periodicity (also called seasonality when dealing with real-world data).</p><p>Using ACF to detect structure in your time series can sometimes lead to problems, especially when you <a id="id562" class="indexterm"/>have strong periodicity. In this case, you'll always see a spike in autocorrelation at a multiple of the period, no matter how far back you try to <a id="id563" class="indexterm"/>autocorrelate your data and this could lead to the wrong interpretation. To work around this problem, we use the PACF which uses a shorter lag and unlike ACF, doesn't reuse correlations previously found in shorter time periods. The math for ACF and PACF is rather complex, but the reader only needs to understand the intuition behind it and happily use libraries such as <code class="literal">statsmodels</code> to do the heavy lifting computation. One resource I used to get more information on ACF and PACF can be found here: <a class="ulink" href="https://www.mathworks.com/help/econ/autocorrelation-and-partial-autocorrelation.html">https://www.mathworks.com/help/econ/autocorrelation-and-partial-autocorrelation.html</a>.</p><p>Back to our MSFT stock time series, the following code shows how to plot its PACF using the <code class="literal">smt.graphics</code> package:</p><div class="informalexample"><pre class="programlisting">import statsmodels.tsa.api as smt
+smt.graphics.<span class="strong"><strong>plot_pacf</strong></span>(msft['Adj. Close'], lags=50)
+plt.show()</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note269"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode10.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode10.py</a>
+</p></div></div><p>The results are shown in the following screenshot:</p><div class="mediaobject"><img src="Images/B09699_08_14.jpg" alt="Autocorrelation function (ACF) and partial autocorrelation function (PACF)" width="660" height="469"/><div class="caption"><p>Partial autocorrelation for the MSFT stock time series</p></div></div><p>We'll get back to ACF and PACF later on in this chapter when we discuss time series forecasting with the ARIMA model.</p><p>In this section, we've discussed multiple ways to explore the data. It is of course by no means exhaustive, but <a id="id564" class="indexterm"/>we get the idea of how tools <a id="id565" class="indexterm"/>such as Jupyter, pandas, NumPy, and PixieDust make it easier to experiment and fail fast if necessary. In the next section, we will build a PixieApp that brings all these charts together.</p></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content"><div class="section" title="Putting it all together with the StockExplorer PixieApp"><div class="titlepage"><div><div><h1 class="title"><a id="ch08lvl1sec57"/>Putting it all together with the StockExplorer PixieApp</h1></div></div></div><p>For the first version of our <code class="literal">StockExplorer</code> PixieApp, we want to operationalize the data exploration of a stock data time series selected by the user. Similar to the other PixieApps we've built, the first screen has a simple layout with an input box where the user can enter a list of stock tickers <a id="id566" class="indexterm"/>separated by commas, and an <span class="strong"><strong>Explore</strong></span> button to start data exploration. The main screen is composed of a vertical navigator bar with a menu for each type of data exploration. To make the PixieApp code more modular and easier to maintain and extend, we implement each data exploration screen in its own child PixieApp which is triggered by the vertical navigation bar. Also, each child PixieApp inherits from a base class called <code class="literal">BaseSubApp</code> that provides common functionalities useful to all the subclasses. The following diagram shows the overall UI layout as well as a class diagram for all the child PixieApps:</p><div class="mediaobject"><img src="Images/B09699_08_15.jpg" alt="Putting it all together with the StockExplorer PixieApp" width="1000" height="566"/><div class="caption"><p>UI layout of the StockExplorer PixieApp</p></div></div><p>Let's first look at the implementation for the welcome screen. It is implemented in the default route for the <code class="literal">StockExplorer</code> PixieApp class. The <a id="id567" class="indexterm"/>following code shows a partial implementation of the <code class="literal">StockExplorer</code> class to include the default route only.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note270"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: Do not try to run this code yet, until the full implementation is provided.</p></div></div><div class="informalexample"><pre class="programlisting">@PixieApp
+class StockExplorer():
+    @route()
+    def main_screen(self):
+        return """
+&lt;style&gt;
+    div.outer-wrapper {
+        display: table;width:100%;height:300px;
+    }
+    div.inner-wrapper {
+        display: table-cell;vertical-align: middle;height: 100%;width: 100%;
+    }
+&lt;/style&gt;
+&lt;div class="outer-wrapper"&gt;
+    &lt;div class="inner-wrapper"&gt;
+        &lt;div class="col-sm-3"&gt;&lt;/div&gt;
+        &lt;div class="input-group col-sm-6"&gt;
+          &lt;input id="stocks{{prefix}}" type="text"
+              class="form-control"
+              value="MSFT,AMZN,IBM"
+              placeholder="Enter a list of stocks separated by comma e.g MSFT,AMZN,IBM"&gt;
+          &lt;span class="input-group-btn"&gt;
+<span class="strong"><strong>            &lt;button class="btn btn-default" type="button" pd_options="explore=true"&gt;</strong></span>
+                &lt;pd_script&gt;
+self.select_tickers('$val(stocks{{prefix}})'.split(','))
+                &lt;/pd_script&gt;
+                Explore
+            &lt;/button&gt;
+          &lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+"""</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note271"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode11.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode11.py</a>
+</p></div></div><p>The preceding code is very similar to the other sample PixieApps we've seen so far. The <span class="strong"><strong>Explore</strong></span> button contains the following two PixieApp attributes:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">A <code class="literal">pd_script</code> child <a id="id568" class="indexterm"/>element, which calls a Python snippet to set the stock tickers. We also use the <code class="literal">$val</code> directive to retrieve the user-entered value for the stock tickers:<div class="informalexample"><pre class="programlisting">&lt;pd_script&gt;
+   self.select_tickers('$val(stocks{{prefix}})'.split(','))
+&lt;/pd_script&gt;</pre></div></li><li class="listitem" style="list-style-type: disc">The <code class="literal">pd_options</code> attribute, which points to the <code class="literal">explore</code> route:<div class="informalexample"><pre class="programlisting">pd_options="explore=true"</pre></div></li></ul></div><p>The <code class="literal">select_tickers</code> helper method stores the list of tickers in a dictionary member variable and selects the first one as the active ticker. For performance reasons, we only load the data when needed, that is, when setting the active ticker for the first time or when the user clicks on a particular ticker in the UI.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note272"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: As in previous chapters, the <code class="literal">[[StockExplorer]]</code> notation indicates that the code that follows is part of the <code class="literal">StockExplorer</code> class.</p></div></div><div class="informalexample"><pre class="programlisting">[[StockExplorer]]
+def select_tickers(self, tickers):
+        self.tickers = {ticker.strip():{} for ticker in tickers}
+        self.set_active_ticker(tickers[0].strip())
+
+def set_active_ticker(self, ticker):
+    self.active_ticker = ticker
+<span class="strong"><strong>    if 'df' not in self.tickers[ticker]:</strong></span>
+        self.tickers[ticker]['df'] = quandl.get('WIKI/{}'.format(ticker))
+        self.tickers[ticker]['df']['daily_spread'] = self.tickers[ticker]['df']['Adj. Close'] - self.tickers[ticker]['df']['Adj. Open']
+        self.tickers[ticker]['df'] = self.tickers[ticker]['df'].reset_index()</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note273"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode12.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode12.py</a>
+</p></div></div><p>The lazy loading of the stock data for a particular ticker symbol into a pandas DataFrame is done in <code class="literal">set_active_ticker()</code>. We first check whether the DataFrame has already been loaded by looking if the <code class="literal">df</code> key is <a id="id569" class="indexterm"/>present and, if not, we call the <code class="literal">quandl</code> API with the <code class="literal">dataset_code</code>: <code class="literal">'WIKI/{ticker}'</code>. We also add a column that computes the daily spread of the stock that will be displayed in the basic exploration screen. Finally, we need to call <code class="literal">reset_index()</code> (<a class="ulink" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.reset_index.html">https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.reset_index.html</a>) on the DataFrame to convert the index which is a <code class="literal">DateTimeIndex</code> into its own column called <code class="literal">Date</code>. The reason is that the PixieDust <code class="literal">display()</code> doesn't yet support visualization of DataFrame with a <code class="literal">DateTimeIndex</code>.</p><p>In the <code class="literal">explore</code> route, we return an HTML fragment that builds the layout for the whole screen. As shown in the preceding mock-up, we use the <code class="literal">btn-group-vertical</code> and <code class="literal">btn-group-toggle</code> bootstrap classes to create the vertical navigation bar. The list of menus and associated child PixieApp are defined in the <code class="literal">tabs</code> Python variable, and we use Jinja2 <code class="literal">{%for loop%}</code> to build the content. We also add a placeholder <code class="literal">&lt;div&gt;</code> element with <code class="literal">id ="analytic_screen{{prefix}}"</code> that will be the recipient of the child PixieApp screen.</p><p>The <code class="literal">explore</code> route <a id="id570" class="indexterm"/>implementation is shown here:</p><div class="informalexample"><pre class="programlisting">[[StockExplorer]] 
+@route(explore="*")
+<span class="strong"><strong>    @templateArgs</strong></span>
+    def stock_explore_screen(self):
+<span class="strong"><strong>        tabs = [("Explore","StockExploreSubApp"),</strong></span>
+<span class="strong"><strong>                ("Moving Average", "MovingAverageSubApp"),</strong></span>
+<span class="strong"><strong>                ("ACF and PACF", "AutoCorrelationSubApp")]</strong></span>
+        return """
+&lt;style&gt;
+    .btn:active, .btn.active {
+        background-color:aliceblue;
+    }
+&lt;/style&gt;
+&lt;div class="page-header"&gt;
+    &lt;h1&gt;Stock Explorer PixieApp&lt;/h1&gt;
+&lt;/div&gt;
+&lt;div class="container-fluid"&gt;
+    &lt;div class="row"&gt;
+        &lt;div class="btn-group-vertical btn-group-toggle col-sm-2"
+             data-toggle="buttons"&gt;
+<span class="strong"><strong>            {%for title, subapp in tabs%}</strong></span>
+            &lt;label class="btn btn-secondary {%if loop.first%}active{%endif%}"
+                pd_options<span class="strong"><strong>="show_analytic={{subapp}}"</strong></span>
+                pd_target="analytic_screen{{prefix}}"&gt;
+                &lt;input type="radio" {%if loop.first%}checked{%endif%}&gt;
+                    {{title}}
+            &lt;/label&gt;
+<span class="strong"><strong>            {%endfor%}</strong></span>
+        &lt;/div&gt;
+        &lt;div id="analytic_screen{{prefix}}" class="col-sm-10"&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+"""</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note274"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode13.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode13.py</a></p><p>In the preceding code, notice that we use the <code class="literal">@templateArgs</code> decorator because we want to use the <code class="literal">tabs</code> variable, which is created locally to the method implementation, in the Jinja2 template.</p></div></div><p>Each menu in the vertical navigation bar points to the same <code class="literal">analytic_screen{{prefix}}</code> target and invokes the <code class="literal">show_analytic</code> route with the selected child PixieApp class name referenced by <code class="literal">{{subapp}}</code>.</p><p>In turn, the <code class="literal">show_anatytic</code> route simply returns an HTML fragment with a <code class="literal">&lt;div&gt;</code> element that has a <code class="literal">pd_app</code> attribute referencing the child PixieApp class name. We also use the <code class="literal">pd_render_onload</code> attribute <a id="id571" class="indexterm"/>to ask PixieApp to render the content of the <code class="literal">&lt;div&gt;</code> element as soon as it is loaded in the browser DOM.</p><p>The following code is for the <code class="literal">show_analytic</code> route:</p><div class="informalexample"><pre class="programlisting">    @route(show_analytic="*")
+    def show_analytic_screen(self, show_analytic):
+        return """
+&lt;div <span class="strong"><strong>pd_app="{{show_analytic}}" pd_render_onload</strong></span>&gt;&lt;/div&gt;
+"""</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note275"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode14.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode14.py</a>
+</p></div></div><div class="section" title="BaseSubApp – base class for all the child PixieApps"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl3sec08"/>BaseSubApp – base class for all the child PixieApps</h2></div></div></div><p>Let's now look at the implementation for each of the child PixieApps and how the base class <code class="literal">BaseSubApp</code> is used to <a id="id572" class="indexterm"/>provide common <a id="id573" class="indexterm"/>functionalities. For each child PixieApp we want the user to be able to select a stock ticker through a tabbed interface as shown in the following screenshot:</p><div class="mediaobject"><img src="Images/B09699_08_16.jpg" alt="BaseSubApp – base class for all the child PixieApps" width="409" height="114"/><div class="caption"><p>Tab widget for MSFT, IBM, AMZN tickers</p></div></div><p>Instead of repeating the HTML fragment for every child PixieApp, we use a technique that I particularly like which consists of creating a Python decorator called <code class="literal">add_ticker_selection_markup</code> that dynamically changes how the function behaves (for more information on Python decorators, see <a class="ulink" href="https://wiki.python.org/moin/PythonDecorators">https://wiki.python.org/moin/PythonDecorators</a>). This decorator is created in the <code class="literal">BaseSubApp</code> class <a id="id574" class="indexterm"/>and will automatically prepend the tab selection widget HTML markup for the route, as shown in the following code:</p><div class="informalexample"><pre class="programlisting">[[BaseSubApp]]
+def add_ticker_selection_markup(refresh_ids):
+    def deco(fn):
+        def wrap(self, *args, **kwargs):
+            return """
+<span class="strong"><strong>&lt;div class="row" style="text-align:center"&gt;</strong></span>
+<span class="strong"><strong>    &lt;div class="btn-group btn-group-toggle"</strong></span>
+<span class="strong"><strong>         style="border-bottom:2px solid #eeeeee"</strong></span>
+<span class="strong"><strong>         data-toggle="buttons"&gt;</strong></span>
+<span class="strong"><strong>        {%for ticker, state in this.parent_pixieapp.tickers.items()%}</strong></span>
+<span class="strong"><strong>        &lt;label class="btn btn-secondary {%if this.parent_pixieapp.active_ticker == ticker%}active{%endif%}"</strong></span>
+<span class="strong"><strong>            pd_refresh=\"""" + ",".join(refresh_ids) + """\" pd_script="self.parent_pixieapp.set_active_ticker('{{ticker}}')"&gt;</strong></span>
+<span class="strong"><strong>            &lt;input type="radio" {%if this.parent_pixieapp.active_ticker == ticker%}checked{%endif%}&gt; </strong></span>
+<span class="strong"><strong>                {{ticker}}</strong></span>
+<span class="strong"><strong>        &lt;/label&gt;</strong></span>
+<span class="strong"><strong>        {%endfor%}</strong></span>
+<span class="strong"><strong>    &lt;/div&gt;</strong></span>
+<span class="strong"><strong>&lt;/div&gt;</strong></span>
+            """ + <span class="strong"><strong>fn</strong></span>(self, *args, **kwargs)
+        return wrap
+    return deco</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note276"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode15.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode15.py</a>
+</p></div></div><p>At first glance, the <a id="id575" class="indexterm"/>preceding code may appear very hard to read as the <code class="literal">add_ticker_selection_markup</code> decorator method contains two <a id="id576" class="indexterm"/>levels of anonymous nested methods. Let's try to explain the purpose for each of them including the main <code class="literal">add_ticker_selection_markup</code> decorator method:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">add_ticker_selection_markup</code>: This is the main decorator method that takes one argument called <code class="literal">refresh_ids</code> which will be used in the generated markup. This method returns an anonymous function called <code class="literal">deco</code> that takes a function argument.</li><li class="listitem" style="list-style-type: disc"><code class="literal">deco</code>: This is the wrapper method that takes one argument called <code class="literal">fn</code> which is a pointer to the original function to which the decorator is applied. This method returns an anonymous function called <code class="literal">wrap</code> which will be called in lieu of the original function when it is called in the user code.</li><li class="listitem" style="list-style-type: disc"><code class="literal">wrap</code>: This is the final wrapper method that takes three arguments:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><code class="literal">self</code>: Pointer to the host class for the function</li><li class="listitem" style="list-style-type: disc"><code class="literal">*args</code>: Any variable arguments that the original method defines (could be empty)</li><li class="listitem" style="list-style-type: disc"><code class="literal">**kwargs</code>: Any keyword <a id="id577" class="indexterm"/>arguments that the original method defines (could be empty)</li></ul></div><p>The <code class="literal">wrap</code> method can access <a id="id578" class="indexterm"/>the variables that are outside its scope through the Python closure mechanism. In this case, it uses the <code class="literal">refresh_ids</code> to generate the tab widget markup, and then calls the <code class="literal">fn</code> function with the <code class="literal">self</code>, <code class="literal">args</code>, and <code class="literal">kwargs</code> arguments.</p></li></ul></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note277"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: Do not worry if the preceding explanation is still confusing, even after reading it multiple times. You can just use the decorator for now, and it won't affect your ability to understand the rest of the chapter.</p></div></div></div><div class="section" title="StockExploreSubApp – first child PixieApp"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl3sec09"/>StockExploreSubApp – first child PixieApp</h2></div></div></div><p>We can now implement the first child PixieApp called <code class="literal">StockExploreSubApp</code>. In the main screen, we <a id="id579" class="indexterm"/>create two <code class="literal">&lt;div&gt;</code> elements that each have a <code class="literal">pd_options</code> attribute that calls the <code class="literal">show_chart</code> route with <code class="literal">Adj. Close</code> and <code class="literal">daily_spread</code> as values. In turn, the <code class="literal">show_chart</code> route returns a <code class="literal">&lt;div&gt;</code> element with a <code class="literal">pd_entity</code> attribute pointing to the <code class="literal">parent_pixieapp.get_active_df()</code> method with a <code class="literal">&lt;pd_options&gt;</code> element that contains a JSON payload <a id="id580" class="indexterm"/>for displaying a Bokeh line chart with <code class="literal">Date</code> as the <span class="emphasis"><em>x</em></span> abscissa and whatever value is passed as an argument as the column for the <span class="emphasis"><em>y</em></span> ordinate. We also decorate the route with the <code class="literal">BaseSubApp.add_ticker_selection_markup</code> decorator using the ID of the preceding two <code class="literal">&lt;div&gt;</code> elements as the <code class="literal">refresh_ids</code> argument.</p><p>The following code shows the implementation for the <code class="literal">StockExplorerSubApp</code> child PixieApp:</p><div class="informalexample"><pre class="programlisting">@PixieApp
+class StockExploreSubApp(BaseSubApp):
+    @route()
+<span class="strong"><strong>    @BaseSubApp.add_ticker_selection_markup(['chart{{prefix}}', 'daily_spread{{prefix}}'])</strong></span>
+    def main_screen(self):
+        return """
+&lt;div class="row" style="min-height:300px"&gt;
+    &lt;div class="col-xs-6" id="<span class="strong"><strong>chart{{prefix}}</strong></span>" pd_render_onload pd_options="show_chart=Adj. Close"&gt;
+    &lt;/div&gt;
+    &lt;div class="col-xs-6" id="<span class="strong"><strong>daily_spread{{prefix}}</strong></span>" pd_render_onload pd_options="show_chart=daily_spread"&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+"""
+        
+    @route(show_chart="*")
+    def show_chart_screen(self, show_chart):
+        return """
+&lt;div pd_entity="<span class="strong"><strong>parent_pixieapp.get_active_df()</strong></span>" pd_render_onload&gt;
+    &lt;pd_options&gt;
+    {
+      "handlerId": "lineChart",
+      "valueFields": <span class="strong"><strong>"{{show_chart}}",</strong></span>
+      "rendererId": "bokeh",
+      "keyFields": "Date",
+      "noChartCache": "true",
+      "rowCount": "10000"
+    }
+    &lt;/pd_options&gt;
+&lt;/div&gt;
+        """</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note278"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode16.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode16.py</a>
+</p></div></div><p>In the <a id="id581" class="indexterm"/>preceding <code class="literal">show_chart</code> route, the <code class="literal">pd_entity</code> uses <a id="id582" class="indexterm"/>the <code class="literal">get_active_df()</code> method from the <code class="literal">parent_pixieapp</code> which is defined in the <code class="literal">StockExplorer</code> main class as follows:</p><div class="informalexample"><pre class="programlisting">[[StockExplorer]]
+def get_active_df(self):
+    return self.tickers[self.active_ticker]['df']</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note279"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode17.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode17.py</a>
+</p></div></div><p>As a reminder, the <code class="literal">StockExploreSubApp</code> is associated <a id="id583" class="indexterm"/>with the menu through a tuple in the <code class="literal">tabs</code> array variable declared in the <code class="literal">Explore</code> route of the <code class="literal">StockExplorer</code> route:</p><div class="informalexample"><pre class="programlisting">tabs = [<span class="strong"><strong>("Explore","StockExploreSubApp")</strong></span>, ("Moving Average", "MovingAverageSubApp"),("ACF and PACF", "AutoCorrelationSubApp")]</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note280"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode18.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode18.py</a>
+</p></div></div><p>The following <a id="id584" class="indexterm"/>screenshot shows the <code class="literal">StockExploreSubApp</code>:</p><div class="mediaobject"><img src="Images/B09699_08_17.jpg" alt="StockExploreSubApp – first child PixieApp" width="1000" height="421"/><div class="caption"><p>StockExploreSubApp main screen</p></div></div></div><div class="section" title="MovingAverageSubApp – second child PixieApp"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl3sec10"/>MovingAverageSubApp – second child PixieApp</h2></div></div></div><p>The second child PixieApp is <code class="literal">MovingAverageSubApp</code> which displays a line chart of the moving average <a id="id585" class="indexterm"/>for the selected stock ticker with a lag that is configurable through a slider control. Similar to the ticker selection tab, the lag slider will be needed in another child PixieApp. We could use the same decorator technique <a id="id586" class="indexterm"/>we use for the ticker selection tab control, but here we want to be able to position the lag slider anywhere on the page. So instead, we'll use a <code class="literal">pd_widget</code> control called <code class="literal">lag_slider</code> that we define in the <code class="literal">BaseSubApp</code> class and return an HTML fragment for the slider control. It also adds a <code class="literal">&lt;script&gt;</code> element that uses the jQuery <code class="literal">slider</code> method available in the jQuery UI module (see <a class="ulink" href="https://api.jqueryui.com/slider">https://api.jqueryui.com/slider</a> for more information). We also add a <code class="literal">change</code> handler function <a id="id587" class="indexterm"/>that is called when the user has selected a new value. In this handler, we call the <code class="literal">pixiedust.sendEvent</code> function to publish an event of the <code class="literal">lagSlider</code> type and a payload containing the new value for the lag. It is the responsibility of the caller to add a <code class="literal">&lt;pd_event_handler&gt;</code> element to listen to that event and process the payload.</p><p>The following code shows the implementation of the <code class="literal">lag_slider</code> <code class="literal">pd_widget</code>:</p><div class="informalexample"><pre class="programlisting">[[BaseSubApp]]
+@route(widget="<span class="strong"><strong>lag_slider</strong></span>")
+def slider_screen(self):
+    return """
+&lt;div&gt;
+    &lt;label class="field"&gt;Lag:&lt;span id="slideval{{prefix}}"&gt;50&lt;/span&gt;&lt;/label&gt;
+    &lt;i class="fa fa-info-circle" style="color:orange"
+       data-toggle="pd-tooltip"
+       title="Selected lag used to compute moving average, ACF or PACF"&gt;&lt;/i&gt;
+    &lt;div id="slider{{prefix}}" name="slider" data-min=30 
+         data-max=300
+         data-default=50 style="margin: 0 0.6em;"&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+$("[id^=slider][id$={{prefix}}]").each(function() {
+    var sliderElt = $(this)
+    var min = sliderElt.data("min")
+    var max = sliderElt.data("max")
+    var val = sliderElt.data("default")
+<span class="strong"><strong>    sliderElt.slider</strong></span>({
+        min: isNaN(min) ? 0 : min,
+        max: isNaN(max) ? 100 : max,
+        value: isNaN(val) ? 50 : val,
+        change: function(evt, ui) {
+            $("[id=slideval{{prefix}}]").text(ui.value);
+            <span class="strong"><strong>pixiedust.sendEvent({type:'lagSlider',value:ui.value})</strong></span>
+        },
+        slide: function(evt, ui) {
+            $("[id=slideval{{prefix}}]").text(ui.value);
+        }
+    });
+})
+&lt;/script&gt;
+        """</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note281"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode19.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode19.py</a>
+</p></div></div><p>In the <code class="literal">MovingAverageSubApp</code> we use the <code class="literal">add_ticker_selection_markup</code> decorator with <code class="literal">chart{{prefix}}</code> as an argument in the default route to add the ticker selection tab and add a <code class="literal">&lt;div&gt;</code> element with <code class="literal">pd_widget</code> named <code class="literal">lag_slider</code>, including a <code class="literal">&lt;pd_event_handler&gt;</code> to set the <code class="literal">self.lag</code> variable and refresh the <code class="literal">chart</code> div. The <code class="literal">chart</code> div uses a <code class="literal">pd_entity</code> attribute with the <code class="literal">get_moving_average_df()</code> method that calls the <code class="literal">rolling</code> method (<a class="ulink" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.rolling.html">https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.rolling.html</a>) on the pandas Series returned from the selected pandas DataFrame and calls the <code class="literal">mean()</code> method on it. Because the PixieDust <code class="literal">display()</code> does <a id="id588" class="indexterm"/>not yet support <a id="id589" class="indexterm"/>pandas Series, we build a pandas DataFrame using the series index as a column called <code class="literal">x</code> and return it in the <code class="literal">get_moving_average_df()</code> method.</p><p>The following code shows the implementation of the <code class="literal">MovingAverageSubApp</code> child PixieApp</p><div class="informalexample"><pre class="programlisting">@PixieApp
+class MovingAverageSubApp(BaseSubApp):
+    @route()
+<span class="strong"><strong>    @BaseSubApp.add_ticker_selection_markup(['chart{{prefix}}'])</strong></span>
+    def main_screen(self):
+        return """
+&lt;div class="row" style="min-height:300px"&gt;
+    &lt;div class="page-header text-center"&gt;
+        &lt;h1&gt;Moving Average for {{this.parent_pixieapp.active_ticker}}&lt;/h1&gt;
+    &lt;/div&gt;
+    &lt;div class="col-sm-12" id="chart{{prefix}}" pd_render_onload pd_entity="<span class="strong"><strong>get_moving_average_df()</strong></span>"&gt;
+        &lt;pd_options&gt;
+        {
+          "valueFields": "Adj. Close",
+          "keyFields": "x",
+          "rendererId": "bokeh",
+          "handlerId": "lineChart",
+          "rowCount": "10000"
+        }
+        &lt;/pd_options&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="row"&gt;
+    &lt;div pd_widget="lag_slider"&gt;
+        &lt;pd_event_handler 
+            pd_source="lagSlider"
+<span class="strong"><strong>            pd_script="self.lag = eventInfo['value']"</strong></span>
+<span class="strong"><strong>            pd_refresh="chart{{prefix}}"&gt;</strong></span>
+        &lt;/pd_event_handler&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+"""
+    def get_moving_average_df(self):
+        ma = <span class="strong"><strong>self.parent_pixieapp.get_active_df()['Adj. Close'].rolling(window=self.lag).mean()</strong></span>
+        ma_df = pd.DataFrame(ma)
+        ma_df["x"] = ma_df.index
+        return ma_df</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note282"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode20.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode20.py</a>
+</p></div></div><p>The following screenshot shows the chart displayed by the <code class="literal">MovingAverageSubApp</code>:</p><div class="mediaobject"><img src="Images/B09699_08_18.jpg" alt="MovingAverageSubApp – second child PixieApp" width="1000" height="760"/><div class="caption"><p>MovingAverageSubApp screenshot</p></div></div></div><div class="section" title="AutoCorrelationSubApp – third child PixieApp"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl3sec11"/>AutoCorrelationSubApp – third child PixieApp</h2></div></div></div><p>For the third child, PixieApp called <code class="literal">AutoCorrelationSubApp</code>; we display the ACF and PACF of the <a id="id590" class="indexterm"/>selected stock DataFrame, which are computed using the <code class="literal">statsmodels</code> package.</p><p>The following code <a id="id591" class="indexterm"/>shows the implementation of the <code class="literal">AutoCorrelationSubApp</code> which also uses the <code class="literal">add_ticker_selection_markup</code> decorator and the <code class="literal">pd_widget</code> named <code class="literal">lag_slider</code>:</p><div class="informalexample"><pre class="programlisting">import statsmodels.tsa.api as smt
+@PixieApp
+class AutoCorrelationSubApp(BaseSubApp):
+    @route()
+    <span class="strong"><strong>@BaseSubApp.add_ticker_selection_markup(['chart_acf{{prefix}}', 'chart_pacf{{prefix}}'])</strong></span>
+    def main_screen(self):
+        return """
+&lt;div class="row" style="min-height:300px"&gt;
+    &lt;div class="col-sm-6"&gt;
+        &lt;div class="page-header text-center"&gt;
+            &lt;h1&gt;Auto-correlation Function&lt;/h1&gt;
+        &lt;/div&gt;
+        &lt;div id="chart_acf{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_acf=true</strong></span>"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="col-sm-6"&gt;
+        &lt;div class="page-header text-center"&gt;
+            &lt;h1&gt;Partial Auto-correlation Function&lt;/h1&gt;
+        &lt;/div&gt;
+        &lt;div id="chart_pacf{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_pacf=true</strong></span>"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt; 
+
+&lt;div class="row"&gt;
+    &lt;div pd_widget="lag_slider"&gt;
+        &lt;pd_event_handler 
+            pd_source="lagSlider"
+            pd_script="self.lag = eventInfo['value']"
+            pd_refresh="chart_acf{{prefix}},chart_pacf{{prefix}}"&gt;
+        &lt;/pd_event_handler&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+"""
+<span class="strong"><strong>    @route(show_acf='*')</strong></span>
+<span class="strong"><strong>    @captureOutput</strong></span>
+    def show_acf_screen(self):
+        <span class="strong"><strong>smt.graphics.plot_acf</strong></span>(self.parent_pixieapp.get_active_df()['Adj. Close'], lags=self.lag)
+    
+<span class="strong"><strong>    @route(show_pacf='*')</strong></span>
+<span class="strong"><strong>    @captureOutput</strong></span>
+    def show_pacf_screen(self):
+        <span class="strong"><strong>smt.graphics.plot_pacf</strong></span>(self.parent_pixieapp.get_active_df()['Adj. Close'], lags=self.lag)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note283"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode21.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode21.py</a>
+</p></div></div><p>In the preceding code, we define two routes: <code class="literal">show_acf</code> and <code class="literal">show_pacf</code> which respectively call the <code class="literal">plot_acf</code> and <code class="literal">plot_pacf</code> methods of the <code class="literal">smt.graphics</code> package. We also use the <code class="literal">@captureOutput</code> decorator to signal the PixieApp framework to capture the output generated by <code class="literal">plot_acf</code> and <code class="literal">plot_pacf</code>.</p><p>The following screenshot shows the charts displayed by <code class="literal">AutoCorrelationSubApp</code>:</p><div class="mediaobject"><img src="Images/B09699_08_19.jpg" alt="AutoCorrelationSubApp – third child PixieApp" width="1000" height="487"/><div class="caption"><p>AutoCorrelationSubApp screenshot</p></div></div><p>In this section, we <a id="id592" class="indexterm"/>showed how to put together a <a id="id593" class="indexterm"/>sample PixieApp that does basic data exploration on a time series and display various statistical charts. The complete Notebook can be found here: <a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/StockExplorer%20-%20Part%201.ipynb">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/StockExplorer%20-%20Part%201.ipynb</a>.</p><p>In the next section, we try to <a id="id594" class="indexterm"/>build a time series forecast model using a very popular model called <span class="strong"><strong>Autoregressive Integrated Moving Average</strong></span> (<span class="strong"><strong>ARIMA</strong></span>).</p></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content"><div class="section" title="Time series forecasting using the ARIMA model"><div class="titlepage"><div><div><h1 class="title"><a id="ch08lvl1sec58"/>Time series forecasting using the ARIMA model</h1></div></div></div><p>ARIMA is <a id="id595" class="indexterm"/>one of the most popular time <a id="id596" class="indexterm"/>series forecasting models and as its name indicates is made up of three terms:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>AR</strong></span>: Stands for <span class="strong"><strong>autoregression</strong></span>, which is nothing more than applying a linear regression algorithm using one observation and its own lagged observations as training data.<p>The AR model uses the following formula:</p><div class="mediaobject"><img src="Images/B09699_08_31.jpg" alt="Time series forecasting using the ARIMA model" width="295" height="32"/></div><p>Where <span class="inlinemediaobject"><img src="Images/B09699_08_32.jpg" alt="Time series forecasting using the ARIMA model" width="20" height="30"/></span> are the weights of the models learned from the previous observations <a id="id597" class="indexterm"/>and <span class="inlinemediaobject"><img src="Images/B09699_08_33.jpg" alt="Time series forecasting using the ARIMA model" width="18" height="30"/></span> is the residual error for observation <span class="emphasis"><em>t</em></span>.</p><p>We also call <span class="emphasis"><em>p</em></span> the <a id="id598" class="indexterm"/>order of the autoregression model, which is defined as the number of lag observations included in the preceding formula. </p><p>For example:</p><p>
+<span class="emphasis"><em>AR(2)</em></span> is defined as:</p><div class="mediaobject"><img src="Images/B09699_08_34.jpg" alt="Time series forecasting using the ARIMA model" width="187" height="30"/></div><p>
+<span class="emphasis"><em>AR(1)</em></span> is defined as:</p><div class="mediaobject"><img src="Images/B09699_08_35.jpg" alt="Time series forecasting using the ARIMA model" width="120" height="30"/></div></li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>I</strong></span>: Stands for <span class="strong"><strong>integrated</strong></span>. For the ARIMA model to work, it is assumed that the time series is stationary or can be made stationary. A series is said to be stationary (<a class="ulink" href="https://en.wikipedia.org/wiki/Stationary_process">https://en.wikipedia.org/wiki/Stationary_process</a>) if its mean and variance doesn't change over time.<div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note284"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: There is also the notion of strict stationarity which requires that the joint probability distribution of a subset of observations doesn't change when shifted in time.</p><p>Using mathematical notation, strict stationarity translates to:</p><p> <span class="inlinemediaobject"><img src="Images/B09699_08_36.jpg" alt="Time series forecasting using the ARIMA model" width="157" height="34"/></span> and <span class="inlinemediaobject"><img src="Images/B09699_08_37.jpg" alt="Time series forecasting using the ARIMA model" width="210" height="34"/></span> are the same for any <span class="emphasis"><em>t</em></span>, <span class="emphasis"><em>m</em></span>, and <span class="emphasis"><em>k,</em></span> with <span class="emphasis"><em>F</em></span> being the joint probability distribution.</p><p>In practice, this condition is too strong, and the preceding weaker definition provided is preferred.</p></div></div><p>We can make a time series stationary through a transformation that uses differencing of the log between an observation and the one before that, as shown in the following equation:</p><div class="mediaobject"><img src="Images/B09699_08_38.jpg" alt="Time series forecasting using the ARIMA model" width="164" height="30"/></div><p>It is possible that multiple log differencing transformations are needed before <a id="id599" class="indexterm"/>the time <a id="id600" class="indexterm"/>series is actually made stationary. We call <span class="emphasis"><em>d</em></span> the number of times we transform the series using log differencing.</p><p>For example:</p><p>
+<span class="emphasis"><em>I(0)</em></span> is defined as no log differencing needed (the model is then called ARMA).</p><p>
+<span class="emphasis"><em>I(1)</em></span> is defined as 1 log differencing needed.</p><p>
+<span class="emphasis"><em>I(2)</em></span> is defined as 2 log differencing needed.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note285"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: It is important to remember to do the reverse transformation for as many integrations that were made, after predicting a value.</p></div></div></li><li class="listitem" style="list-style-type: disc"><span class="strong"><strong>MA</strong></span>: Stands for <span class="strong"><strong>moving average</strong></span>. The MA model uses the residual error from the mean of the current observation and the weighted residual errors of the lagged observations. We can define the model using the following formula:<div class="mediaobject"><img src="Images/B09699_08_39.jpg" alt="Time series forecasting using the ARIMA model" width="320" height="32"/></div><p>Where </p><div class="mediaobject"><img src="Images/B09699_08_40.jpg" alt="Time series forecasting using the ARIMA model" width="18" height="22"/></div><p> is the mean of the time series, <span class="inlinemediaobject"><img src="Images/B09699_08_33.jpg" alt="Time series forecasting using the ARIMA model" width="18" height="30"/></span> are the residual errors in the series and <span class="inlinemediaobject"><img src="Images/B09699_08_41.jpg" alt="Time series forecasting using the ARIMA model" width="22" height="32"/></span> are the weights for the lagged residual errors.</p><p>We call <span class="emphasis"><em>q</em></span> the size of the moving average window.</p><p>For example:</p><p>
+<span class="emphasis"><em>MA(0)</em></span> is defined as no moving average needed (the model is then called AR).</p><p>
+<span class="emphasis"><em>MA(1)</em></span> is defined as using a moving average window of 1. The formula becomes:</p><div class="mediaobject"><img src="Images/B09699_08_42.jpg" alt="Time series forecasting using the ARIMA model" width="150" height="30"/></div></li></ul></div><p>As per the preceding definition, we use the notation <span class="emphasis"><em>ARIMA(p,d,q)</em></span> to define an ARIMA model with an autoregression model of order <span class="emphasis"><em>p</em></span>, an integration/differencing of order <span class="emphasis"><em>d</em></span>, and a moving average window of size <span class="emphasis"><em>q</em></span>.</p><p>Implementing all the <a id="id601" class="indexterm"/>code to build an ARIMA model can be very time-consuming. Fortunately, the <code class="literal">statsmodels</code> library implements an <code class="literal">ARIMA</code> class in the <code class="literal">statsmodels.tsa.arima_model</code> package that provides all the <a id="id602" class="indexterm"/>computation needed to train a model with the <code class="literal">fit()</code> method and predict values with the <code class="literal">predict()</code> method. It also takes care of the log differencing to make the time series stationary. The trick is to find the parameters <span class="emphasis"><em>p</em></span>, <span class="emphasis"><em>d</em></span>, and <span class="emphasis"><em>q</em></span> for building the optimal ARIMA model. For this, we use the ACF and PACF chart as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">The <span class="emphasis"><em>p</em></span> value corresponds to the number of lags (on the <span class="emphasis"><em>x</em></span> abscissa) where the ACF chart crosses the statistical significance threshold for the first time.</li><li class="listitem" style="list-style-type: disc">Similarly, the <span class="emphasis"><em>q</em></span> value corresponds to the number of lags (on the <span class="emphasis"><em>x</em></span> abscissa) where the PACF chart crosses the statistical significance threshold for the first time.</li></ul></div><div class="section" title="Build an ARIMA model for the MSFT stock time series"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl3sec12"/>Build an ARIMA model for the MSFT stock time series</h2></div></div></div><p>As a reminder, the price chart for the MSFT stock time series looks like this:</p><div class="mediaobject"><img src="Images/B09699_08_20.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="1000" height="644"/><div class="caption"><p>MSFT stock series chart</p></div></div><p>Before we <a id="id603" class="indexterm"/>start building our model, let's first withhold the last 14 days of the data for testing and use the rest for training.</p><p>The following code <a id="id604" class="indexterm"/>defines two new variables: <code class="literal">train_set</code> and <code class="literal">test_set</code>:</p><div class="informalexample"><pre class="programlisting">train_set, test_set = msft[:-14], msft[-14:]</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note286"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: If you're still not familiar with the preceding slicing notation, please refer to the section on NumPy at the beginning of this chapter</p></div></div><p>From the preceding chart, we can clearly observe a growth trend starting in 2012 but no clear seasonality. Therefore, we can safely assume that there is no stationarity. Let's first try to apply a log differencing transformation once and plot the corresponding ACF and PACF chart.</p><p>In the following code, we build the <code class="literal">logmsft</code> pandas Series by using <code class="literal">np.log()</code> on the <code class="literal">Adj. Close</code> column <a id="id605" class="indexterm"/>and then build the <code class="literal">logmsft_diff</code> pandas DataFrame using the difference between <code class="literal">logmsft</code> and the lag of 1 (using the <code class="literal">shift()</code> method). As <a id="id606" class="indexterm"/>was done before, we also call <code class="literal">reset_index()</code> to convert the <code class="literal">Date</code> index into a column so that the PixieDust <code class="literal">display()</code> can process it:</p><div class="informalexample"><pre class="programlisting">logmsft = <span class="strong"><strong>np.log(train_set['Adj. Close'])</strong></span>
+logmsft.index = train_set['Date']
+logmsft_diff = pd.DataFrame(<span class="strong"><strong>logmsft - logmsft.shift()</strong></span>).reset_index()
+logmsft_diff.dropna(inplace=True)
+display(logmsft_diff)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note287"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode22.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode22.py</a>
+</p></div></div><p>The results are shown in the following screenshot:</p><div class="mediaobject"><img src="Images/B09699_08_21.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="1000" height="600"/><div class="caption"><p>MSFT stock series after log differencing applied</p></div></div><p>From looking at the preceding graph, we can reasonably think that we've succeeded at making the time series <a id="id607" class="indexterm"/>stationary with 0 as the mean. We can also use a more rigorous way to test for stationarity by <a id="id608" class="indexterm"/>using the Dickey-Fuller test (<a class="ulink" href="https://en.wikipedia.org/wiki/Dickey%E2%80%93Fuller_test">https://en.wikipedia.org/wiki/Dickey%E2%80%93Fuller_test</a>) which tests the null hypothesis that a unit root is present in an <span class="emphasis"><em>AR(1)</em></span> model.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note288"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: In statistics, statistical hypothesis testing consists of challenging whether a proposed hypothesis is true, by taking a sample and deciding whether the claim remains true. We look at the p-value (<a class="ulink" href="https://en.wikipedia.org/wiki/P-value">https://en.wikipedia.org/wiki/P-value</a>) which helps determine the significance of the results. More details on statistical hypothesis testing can be found here:</p><p>
+<a class="ulink" href="https://en.wikipedia.org/wiki/Statistical_hypothesis_testing">https://en.wikipedia.org/wiki/Statistical_hypothesis_testing</a>
+</p></div></div><p>The following code uses the <code class="literal">adfuller</code> method from the <code class="literal">statsmodels.tsa.stattools</code> package:</p><div class="informalexample"><pre class="programlisting">from statsmodels.tsa.stattools import adfuller
+import pprint
+
+ad_fuller_results = adfuller(
+<span class="strong"><strong>logmsft_diff['Adj. Close']</strong></span>, autolag = 'AIC', regression = 'c'
+)
+labels = ['Test Statistic','p-value','#Lags Used','Number of Observations Used']
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint({labels[i]: ad_fuller_results[i] for i in range(4)})</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note289"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode23.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode23.py</a>We use the <code class="literal">pprint</code> package which is very useful for <span class="emphasis"><em>pretty-printing</em></span> any Python data structures. More info on <code class="literal">pprint</code> can be found here:</p><p>
+<a class="ulink" href="https://docs.python.org/3/library/pprint.html">https://docs.python.org/3/library/pprint.html</a>
+</p></div></div><p>The <a id="id609" class="indexterm"/>results (explained in detail at: <a class="ulink" href="http://www.statsmodels.org/devel/generated/statsmodels.tsa.stattools.adfuller.html">http://www.statsmodels.org/devel/generated/statsmodels.tsa.stattools.adfuller.html</a>) are shown here:</p><div class="informalexample"><pre class="programlisting">{
+    'Number of lags used': 3,
+    'Number of Observations Used': 8057,
+    'Test statistic': -48.071592138591136,
+    'MacKinnon's approximate p-value': 0.0
+}</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note290"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode24.json">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode24.json</a>
+</p></div></div><p>The p-value is below <a id="id610" class="indexterm"/>the significance level; therefore, we can reject the null hypothesis that a unit root is present in the <span class="emphasis"><em>AR(1)</em></span> model, which gives us confidence that the time series is stationary.</p><p>We then plot the ACF and PACF chart which will give us the <span class="emphasis"><em>p</em></span> and <span class="emphasis"><em>q</em></span> parameters of the ARIMA model:</p><p>The following code builds the ACF chart:</p><div class="informalexample"><pre class="programlisting">import statsmodels.tsa.api as smt
+smt.graphics.plot_acf(logmsft_diff['Adj. Close'], lags=100)
+plt.show()</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note291"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode25.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode25.py</a>
+</p></div></div><p>The results are shown in the following screenshot:</p><div class="mediaobject"><img src="Images/B09699_08_22.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="797" height="563"/><div class="caption"><p>ACF for the log difference MSFT DataFrame</p></div></div><p>From the <a id="id611" class="indexterm"/>preceding ACF graph, we can see that the correlation crosses the statistical significance threshold for the first <a id="id612" class="indexterm"/>time at a lag of 1. Therefore, we'll use <span class="emphasis"><em>p = 1</em></span> as the AR order of our ARIMA model.</p><p>We do the same for the PACF:</p><div class="informalexample"><pre class="programlisting">smt.graphics.plot_pacf(logmsft_diff['Adj. Close'], lags=100)
+plt.show()</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note292"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode26.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode26.py</a>
+</p></div></div><p>The results are shown in the following screenshot:</p><div class="mediaobject"><img src="Images/B09699_08_23.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="775" height="555"/><div class="caption"><p>PACF for the log difference MSFT DataFrame</p></div></div><p>From the preceding PACF graph, we can also see that the correlation crosses the statistical <a id="id613" class="indexterm"/>significance threshold for the first time at a lag of 1. Therefore, we'll use <span class="emphasis"><em>q = 1</em></span> as the MA order of our ARIMA model.</p><p>We also had to apply the log <a id="id614" class="indexterm"/>differencing transformation only once. Therefore we'll use <span class="emphasis"><em>d = 1</em></span> for the integrated part of the ARIMA model.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note293"/>Note</h3><p>
+<span class="strong"><strong>Note</strong></span>: When calling the <code class="literal">ARIMA</code> class, if you use <span class="emphasis"><em>d = 0</em></span>, then you may have to do the log differencing manually and, in this case, you'll need to revert the transformation yourself on the predicted values. If not, the <code class="literal">statsmodels</code> package will take care of reverting the transformation before returning the predicted value.</p></div></div><p>The following code trains an ARIMA model on the <code class="literal">train_set</code> time series using <span class="emphasis"><em>p = 1</em></span>, <span class="emphasis"><em>d = 1</em></span>, and <span class="emphasis"><em>q=1</em></span> as values to the order tuple argument of the <code class="literal">ARIMA</code> constructor. We then call the <code class="literal">fit()</code> method to proceed with the training and obtain a model:</p><div class="informalexample"><pre class="programlisting">from statsmodels.tsa.arima_model import ARIMA
+
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    arima_model_class = ARIMA(<span class="strong"><strong>train_set['Adj. Close']</strong></span>, dates=<span class="strong"><strong>train_set['Date']</strong></span>, order=<span class="strong"><strong>(1,1,1)</strong></span>)
+    arima_model = arima_model_class.<span class="strong"><strong>fit</strong></span>(disp=0)
+
+    print(arima_model.resid.describe())</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note294"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode27.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode27.py</a></p><p><span class="strong"><strong>Note</strong></span>: We use the <code class="literal">warnings</code> package to avoid getting the mutiple deprecation warnings that may happen if you are using older versions of NumPy and pandas.</p></div></div><p>In the preceding code, we use <code class="literal">train_set['Adj. Close']</code> as an argument to the <code class="literal">ARIMA</code> constructor. Since <a id="id615" class="indexterm"/>we are using a Series for the data, we also need to pass the <code class="literal">train_set['Date']</code> series for the <code class="literal">dates</code> argument. Note that if we passed a pandas DataFrame instead with a <code class="literal">DateIndex</code> index, then we <a id="id616" class="indexterm"/>wouldn't have to use the <code class="literal">dates</code> argument. The final argument to the <code class="literal">ARIMA</code> constructor is the <code class="literal">order</code> argument which is a tuple of three values indicating the <span class="emphasis"><em>p</em></span>, <span class="emphasis"><em>d</em></span>, and <span class="emphasis"><em>q</em></span> order, as discussed at the beginning of this section.</p><p>We then call the <code class="literal">fit()</code> method that returns the actual ARIMA model that we'll use to predict values. For information purposes, we print statistics about the residual errors of the model using <code class="literal">arima_model.resid.describe()</code>.</p><p>The results are shown here:</p><div class="informalexample"><pre class="programlisting">count    8.061000e+03
+mean    -5.785533e-07
+std      4.198119e-01
+min     -5.118915e+00
+25%     -1.061133e-01
+50%     -1.184452e-02
+75%      9.848486e-02
+max      5.023380e+00
+dtype: float64</pre></div><p>The mean residual error is <span class="inlinemediaobject"><img src="Images/B09699_08_43.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="94" height="27"/></span> which is very close to zero and therefore shows that the model may be overfitting the training data.</p><p>Now that we have a model let's try to diagnose it. We define a method called <code class="literal">plot_predict</code> that <a id="id617" class="indexterm"/>takes a model, a series of dates and a number indicating how far back we want to look. We then call the ARIMA <code class="literal">plot_predict()</code> method to create a chart with both the predicted and observed values.</p><p>The following code <a id="id618" class="indexterm"/>shows the implementation for the <code class="literal">plot_predict()</code> method, including calling it twice with <code class="literal">100</code> and <code class="literal">10</code>:</p><div class="informalexample"><pre class="programlisting">def plot_predict(model, dates_series, num_observations):
+    fig = plt.figure(figsize = (12,5))
+    model.plot_predict(
+        start = str(dates_series[len(dates_series)-num_observations]),
+        end = str(dates_series[len(dates_series)-1])
+    )
+    plt.show()
+
+plot_predict(arima_model, train_set['Date'], 100)
+plot_predict(arima_model, train_set['Date'], 10)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note295"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode28.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode28.py</a>
+</p></div></div><p>The results are shown here:</p><div class="mediaobject"><img src="Images/B09699_08_24.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="1000" height="386"/><div class="caption"><p>Observations versus Forecast chart</p></div></div><p>The preceding charts show how close the predictions are to the actual observations from the training set. We <a id="id619" class="indexterm"/>now use the test set that was withheld before to further diagnose the model. For this part, we use the <code class="literal">forecast()</code> method which predicts the next data point. For each value of the <code class="literal">test_set</code>, we build a <a id="id620" class="indexterm"/>new ARIMA model from an array of observations called history that contains the training data augmented with each predicted value.</p><p>The following code shows the implementation for the <code class="literal">compute_test_set_predictions()</code> method that takes a <code class="literal">train_set</code> and a <code class="literal">test_set</code> as arguments and returns a pandas DataFrame with a <code class="literal">forecast</code> column containing all the predicted values and a <code class="literal">test</code> column containing the corresponding actual observed values:</p><div class="informalexample"><pre class="programlisting">def compute_test_set_predictions(train_set, test_set):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        history = train_set['Adj. Close'].values
+        forecast = np.array([])
+        for t in range(len(test_set)):
+            prediction = <span class="strong"><strong>ARIMA(history, order=(1,1,0)).fit(disp=0).forecast()</strong></span>
+            history = np.append(history, test_set['Adj. Close'].iloc[t])
+            forecast = np.append(forecast, prediction[0])
+        return <span class="strong"><strong>pd.DataFrame(</strong></span>
+<span class="strong"><strong>          {"forecast": forecast,</strong></span>
+<span class="strong"><strong>           "test": test_set['Adj. Close'],</strong></span>
+<span class="strong"><strong>           "Date": pd.date_range(start=test_set['Date'].iloc[len(test_set)-1], periods = len(test_set))</strong></span>
+<span class="strong"><strong>          }</strong></span>
+<span class="strong"><strong>        )</strong></span>
+
+results = compute_test_set_predictions(train_set, test_set)
+display(results)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note296"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode29.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode29.py</a>
+</p></div></div><p>The following screenshot shows the result chart:</p><div class="mediaobject"><img src="Images/B09699_08_25.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="1000" height="609"/><div class="caption"><p>Chart of predicted versus acutal values</p></div></div><p>We can measure the error using the popular <code class="literal">mean_squared_error</code> method (<a class="ulink" href="https://en.wikipedia.org/wiki/Mean_squared_error">https://en.wikipedia.org/wiki/Mean_squared_error</a>) of the scikit-learn package (<a class="ulink" href="http://scikit-learn.org">http://scikit-learn.org</a>) which is defined as follows:</p><div class="mediaobject"><img src="Images/B09699_08_44.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="182" height="62"/></div><p>Where <span class="inlinemediaobject"><img src="Images/B09699_08_45.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="18" height="30"/></span> is the <a id="id621" class="indexterm"/>actual value and <span class="inlinemediaobject"><img src="Images/B09699_08_46.jpg" alt="Build an ARIMA model for the MSFT stock time series" width="18" height="34"/></span>is the predicted value.</p><p>The following <a id="id622" class="indexterm"/>code defines a <code class="literal">compute_mean_squared_error</code> method that takes a test and a forecast series and returns the value of the mean squared error:</p><div class="informalexample"><pre class="programlisting">from sklearn.metrics import mean_squared_error
+def compute_mean_squared_error(test_series, forecast_series):
+    return <span class="strong"><strong>mean_squared_error</strong></span>(test_series, forecast_series)
+
+print('Mean Squared Error: {}'.format(
+<span class="strong"><strong>compute_mean_squared_error( test_set['Adj. Close'], results.forecast))</strong></span>
+)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note297"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode30.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode30.py</a>
+</p></div></div><p>The result is shown here:</p><div class="informalexample"><pre class="programlisting">Mean Squared Error: 6.336538843075749</pre></div></div><div class="section" title="StockExplorer PixieApp Part 2 – add time series forecasting using the ARIMA model"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec56"/>StockExplorer PixieApp Part 2 – add time series forecasting using the ARIMA model</h2></div></div></div><p>In this section, we improve the <code class="literal">StockExplorer</code> PixieApp by adding a menu that provides time series forecasting for the selected stock ticker using an ARIMA model. We create a new class called <code class="literal">ForecastArimaSubApp</code> and update the <code class="literal">tabs</code> variable in the main <code class="literal">StockExplorer</code> class.</p><div class="informalexample"><pre class="programlisting">[[StockExplorer]]
+@route(explore="*")
+@templateArgs
+def stock_explore_screen(self):
+   tabs = [("Explore","StockExploreSubApp"),
+           ("Moving Average", "MovingAverageSubApp"),
+           ("ACF and PACF", "AutoCorrelationSubApp"),
+<span class="strong"><strong>            ("Forecast with ARIMA", "ForecastArimaSubApp")</strong></span>]
+   ...</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note298"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode31.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode31.py</a>
+</p></div></div><p>The <code class="literal">ForecastArimaSubApp</code> child PixieApp is composed of two screens. The first screen displays the time series <a id="id623" class="indexterm"/>chart as well as the ACF and the PACF charts. The goal of this screen is to provide the user with the necessary data <a id="id624" class="indexterm"/>exploration to figure out what are the values for the <span class="emphasis"><em>p</em></span>, <span class="emphasis"><em>d</em></span>, and <span class="emphasis"><em>q</em></span> order of the ARIMA model, as explained in the previous section. By looking at the time series chart, we can figure out whether the time series is stationary (which, as a reminder, is a requirement for building the ARIMA model). If not, the user can click on the <span class="strong"><strong>Add differencing</strong></span> button to try to make the DataFrame stationery by using a log differencing transformation. The three charts are then updated using the transformed DataFrame.</p><p>The following code shows the default route for the <code class="literal">ForecastArimaSubApp</code> child PixieApp:</p><div class="informalexample"><pre class="programlisting">from statsmodels.tsa.arima_model import ARIMA
+
+@PixieApp
+class ForecastArimaSubApp(BaseSubApp):
+    def setup(self):
+        self.entity_dataframe = self.parent_pixieapp.get_active_df().copy()
+        self.differencing = False
+        
+    def set_active_ticker(self, ticker):
+<span class="strong"><strong>        BaseSubApp.set_active_ticker(self, ticker)</strong></span>
+        self.setup()
+
+    @route()
+<span class="strong"><strong>    @BaseSubApp.add_ticker_selection_markup([])</strong></span>
+    def main_screen(self):
+        return """
+&lt;div class="page-header text-center"&gt;
+    &lt;h2&gt;1. Data Exploration to test for Stationarity
+        &lt;button class="btn btn-default"
+                pd_script="<span class="strong"><strong>self.toggle_differencing()</strong></span>" pd_refresh&gt;
+            {%if this.differencing%}Remove differencing{%else%}Add differencing{%endif%}
+        &lt;/button&gt;
+        &lt;button class="btn btn-default"
+                pd_options="<span class="strong"><strong>do_forecast=true</strong></span>"&gt;
+            Continue to Forecast
+        &lt;/button&gt;
+    &lt;/h2&gt;
+&lt;/div&gt;
+
+&lt;div class="row" style="min-height:300px"&gt;
+    &lt;div class="col-sm-10" id="chart{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_chart=Adj. Close</strong></span>"&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="row" style="min-height:300px"&gt;
+    &lt;div class="col-sm-6"&gt;
+        &lt;div class="page-header text-center"&gt;
+            &lt;h3&gt;Auto-correlation Function&lt;/h3&gt;
+        &lt;/div&gt;
+        &lt;div id="chart_acf{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_acf=true</strong></span>"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="col-sm-6"&gt;
+        &lt;div class="page-header text-center"&gt;
+            &lt;h3&gt;Partial Auto-correlation Function&lt;/h3&gt;
+        &lt;/div&gt;
+        &lt;div id="chart_pacf{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_pacf=true</strong></span>"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+        """</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note299"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode32.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode32.py</a>
+</p></div></div><p>The preceding code follows a pattern that we should now be familiar with:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Define a <code class="literal">setup</code> method that is guaranteed to be called when the PixieApp starts. In this method, we make a copy of the selected DataFrame obtained from the parent PixieApp. We also maintain a variable called <code class="literal">self.differencing</code> that <a id="id625" class="indexterm"/>tracks whether the user clicked on the <span class="strong"><strong>Add differencing</strong></span> button.</li><li class="listitem" style="list-style-type: disc">We create a default <a id="id626" class="indexterm"/>route that shows the first screen that is composed of the following components:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">A header with two buttons: <code class="literal">Add differencing</code> for making the time series stationary and <code class="literal">Continue to forecast</code> to display the second screen which we'll discuss later. The <code class="literal">Add differencing</code> button toggles to <code class="literal">Remove differencing</code> when the differencing has been applied.</li><li class="listitem" style="list-style-type: disc">A <code class="literal">&lt;div&gt;</code> element that invokes the <code class="literal">show_chart</code> route to display the time series chart.</li><li class="listitem" style="list-style-type: disc">A <code class="literal">&lt;div&gt;</code> element that invokes the <code class="literal">show_acf</code> route to display the ACF chart.</li><li class="listitem" style="list-style-type: disc">A <code class="literal">&lt;div&gt;</code> element that invokes the <code class="literal">show_pacf</code> route to display the PACF chart.</li></ul></div></li><li class="listitem" style="list-style-type: disc">We use an empty array <code class="literal">[]</code> as an argument to the <code class="literal">@BaseSubApp.add_ticker_selection_markup</code> decorator to make sure that the entire screen is refreshed when the user selects another stock ticker, and to restart from the first screen. We also need to reset the internal variables. To achieve this, we made a change to the <code class="literal">add_ticker_selection_markup</code> to define a new method in <code class="literal">BaseSubApp</code> called <code class="literal">set_active_ticker</code> that is a wrapper method to the <code class="literal">set_active_ticker</code> from the parent PixieApp. The idea is to let subclasses override this method and inject extra code if needed. We also change the <code class="literal">pd_script</code> attribute for the tab element to invoke this method when the user selects a new ticker symbol as shown in the following code:<div class="informalexample"><pre class="programlisting">[[BaseSubApp]]
+def add_ticker_selection_markup(refresh_ids):
+        def deco(fn):
+            def wrap(self, *args, **kwargs):
+                return """
+&lt;div class="row" style="text-align:center"&gt;
+    &lt;div class="btn-group btn-group-toggle"
+         style="border-bottom:2px solid #eeeeee"
+         data-toggle="buttons"&gt;
+        {%for ticker, state in this.parent_pixieapp.tickers.items()%}
+        &lt;label class="btn btn-secondary {%if this.parent_pixieapp.active_ticker == ticker%}active{%endif%}"
+            pd_refresh=\"""" + ",".join(refresh_ids) + """\" pd_script="<span class="strong"><strong>self.set_active_ticker('{{ticker}}')</strong></span>"&gt;
+            &lt;input type="radio" {%if this.parent_pixieapp.active_ticker == ticker%}checked{%endif%}&gt; 
+                {{ticker}}
+        &lt;/label&gt;
+        {%endfor%}
+    &lt;/div&gt;
+&lt;/div&gt;
+                """ + fn(self, *args, **kwargs)
+            return wrap
+        return deco
+    
+<span class="strong"><strong>    def set_active_ticker(self, ticker):</strong></span>
+<span class="strong"><strong>        self.parent_pixieapp.set_active_ticker(ticker)</strong></span>
+</pre></div></li></ul></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note300"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode33.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode33.py</a>
+</p></div></div><p>In the <code class="literal">ForecastArimaSubApp</code> child PixieApp, we then override the <code class="literal">set_active_tracker</code> method, first calling the super and then calling the <code class="literal">self.setup()</code> to reinitialize the internal variables:</p><div class="informalexample"><pre class="programlisting">[[ForecastArimaSubApp]]
+def set_active_ticker(self, ticker):
+        BaseSubApp.set_active_ticker(self, ticker)
+        self.setup()</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note301"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode34.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode34.py</a>
+</p></div></div><p>The route implementation for the first forecast screen is pretty straightforward. The <code class="literal">Add differencing</code> / <code class="literal">Remove differencing</code> button has a <code class="literal">pd_script</code> attribute that calls the <code class="literal">self.toggle_differencing()</code> method and the <code class="literal">pd_refresh</code> attribute to update the entire page. It <a id="id627" class="indexterm"/>also defines the three <code class="literal">&lt;div&gt;</code> elements that respectively call the <code class="literal">show_chart</code>, <code class="literal">show_acf</code>, and <code class="literal">show_pacf</code> routes as shown in the <a id="id628" class="indexterm"/>following code:</p><div class="informalexample"><pre class="programlisting">[[ForecastArimaSubApp]]
+@route()
+    @BaseSubApp.add_ticker_selection_markup([])
+    def main_screen(self):
+        return """
+&lt;div class="page-header text-center"&gt;
+  &lt;h2&gt;1. Data Exploration to test for Stationarity
+    &lt;button class="btn btn-default"
+            pd_script="<span class="strong"><strong>self.toggle_differencing()</strong></span>" pd_refresh&gt;
+    {%if this.differencing%}<span class="strong"><strong>Remove differencing</strong></span>{%else%}<span class="strong"><strong>Add differencing</strong></span>{%endif%}
+    &lt;/button&gt;
+    &lt;button class="btn btn-default" pd_options="do_forecast=true"&gt;
+        Continue to Forecast
+    &lt;/button&gt;
+  &lt;/h2&gt;
+&lt;/div&gt;
+
+&lt;div class="row" style="min-height:300px"&gt;
+  &lt;div class="col-sm-10" id="chart{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_chart=Adj. Close</strong></span>"&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="row" style="min-height:300px"&gt;
+    &lt;div class="col-sm-6"&gt;
+        &lt;div class="page-header text-center"&gt;
+            &lt;h3&gt;Auto-correlation Function&lt;/h3&gt;
+        &lt;/div&gt;
+        &lt;div id="chart_acf{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_acf=true</strong></span>"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="col-sm-6"&gt;
+      &lt;div class="page-header text-center"&gt;
+         &lt;h3&gt;Partial Auto-correlation Function&lt;/h3&gt;
+      &lt;/div&gt;
+      &lt;div id="chart_pacf{{prefix}}" pd_render_onload pd_options="<span class="strong"><strong>show_pacf=true</strong></span>"&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+        """</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note302"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode35.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode35.py</a>
+</p></div></div><p>The <code class="literal">toggle_differencing()</code> method tracks the current differencing state with the <code class="literal">self.differencing</code> variable and <a id="id629" class="indexterm"/>either makes a copy of the active DataFrame from the <code class="literal">parent_pixieapp</code> or applies a log differencing <a id="id630" class="indexterm"/>transformation to the <code class="literal">self.entity_dataframe</code> variable as shown in the following code:</p><div class="informalexample"><pre class="programlisting">def toggle_differencing(self):
+   if self.differencing:
+       self.entity_dataframe = <span class="strong"><strong>self.parent_pixieapp.get_active_df().copy()</strong></span>
+       self.differencing = False
+   else:
+       log_df = <span class="strong"><strong>np.log(self.entity_dataframe['Adj. Close'])</strong></span>
+       log_df.index = self.entity_dataframe['Date']
+       self.entity_dataframe = pd.DataFrame(<span class="strong"><strong>log_df - log_df.shift()</strong></span>).reset_index()
+       self.entity_dataframe.dropna(inplace=True)
+       self.differencing = True</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note303"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode36.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode36.py</a>
+</p></div></div><p>The <code class="literal">show_acf</code> and <code class="literal">show_pacf</code> routes are pretty straightforward. They respectively call the <code class="literal">smt.graphics.plot_acf</code> and <code class="literal">smt.graphics.plot_pacf</code> methods. They also use the <code class="literal">@captureOutput</code> decorator to pass through the chart image to the target widget:</p><div class="informalexample"><pre class="programlisting">@route(show_acf='*')
+<span class="strong"><strong>@captureOutput</strong></span>
+def show_acf_screen(self):
+    <span class="strong"><strong>smt.graphics.plot_acf</strong></span>(self.entity_dataframe['Adj. Close'], lags=50)
+
+@route(show_pacf='*')
+<span class="strong"><strong>@captureOutput</strong></span>
+def show_pacf_screen(self):
+    <span class="strong"><strong>smt.graphics.plot_pacf</strong></span>(self.entity_dataframe['Adj. Close'], lags=50)</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note304"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode37.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode37.py</a>
+</p></div></div><p>The following screenshot shows the data exploration page of the forecast child PixieApp without the differencing:</p><div class="mediaobject"><img src="Images/B09699_08_26.jpg" alt="StockExplorer PixieApp Part 2 – add time series forecasting using the ARIMA model" width="570" height="612"/><div class="caption"><p>First forecast screen without applying differencing</p></div></div><p>As expected, the charts are consistent with a time series that is not stationary. When the user clicks on the <span class="strong"><strong>Add differencing</strong></span> button, the following screen is shown:</p><div class="mediaobject"><img src="Images/B09699_08_27.jpg" alt="StockExplorer PixieApp Part 2 – add time series forecasting using the ARIMA model" width="592" height="639"/><div class="caption"><p>First forecast screen with differencing applied</p></div></div><p>The next step is to implement the <code class="literal">do_forecast</code> route that is invoked by the <span class="strong"><strong>Continue to Forecast</strong></span> button. This route is responsible for building the ARIMA model; it starts by showing a configuration page with three input texts that let the user enter the <span class="emphasis"><em>p</em></span>, <span class="emphasis"><em>d</em></span>, and <span class="emphasis"><em>q</em></span> orders, which have been inferred by looking at the charts in the data exploration screen. We add a <code class="literal">Go</code> button to proceed with the model building using the <code class="literal">build_arima_model</code> route which we'll <a id="id631" class="indexterm"/>discuss later in this section. The header also has a <code class="literal">Diagnose Model</code> button that invokes another page responsible for <a id="id632" class="indexterm"/>evaluating the accuracy of the model.</p><p>The implementation of the <code class="literal">do_forecast</code> route is shown here. Note that we use the <code class="literal">add_ticker_selection_markup</code> with an empty array to refresh the entire page when the user selects another stock ticker:</p><div class="informalexample"><pre class="programlisting">[[ForecastArimaSubApp]] 
+@route(do_forecast="true")
+<span class="strong"><strong>    @BaseSubApp.add_ticker_selection_markup([])</strong></span>
+    def do_forecast_screen(self):
+        return """
+&lt;div class="page-header text-center"&gt;
+    &lt;h2&gt;2. Build Arima model
+        &lt;button class="btn btn-default"
+                pd_options="<span class="strong"><strong>do_diagnose=true</strong></span>"&gt;
+            Diagnose Model
+        &lt;/button&gt;
+    &lt;/h2&gt;
+&lt;/div&gt;
+&lt;div class="row" id="forecast{{prefix}}"&gt;
+    &lt;div style="font-weight:bold"&gt;Enter the p,d,q order for the ARIMA model you want to build&lt;/div&gt;
+
+    &lt;div class="form-group" style="margin-left: 20px"&gt;
+        &lt;label class="control-label"&gt;Enter the p order for the AR model:&lt;/label&gt;
+        &lt;input type="text" class="form-control"
+               id="p_order{{prefix}}"
+               value="1" style="width: 100px;margin-left:10px"&gt;
+
+        &lt;label class="control-label"&gt;Enter the d order for the Integrated step:&lt;/label&gt;
+        &lt;input type="text" class="form-control"
+               id="d_order{{prefix}}" value="1"
+               style="width: 100px;margin-left:10px"&gt;
+
+        &lt;label class="control-label"&gt;Enter the q order for the MA model:&lt;/label&gt;
+        &lt;input type="text" class="form-control" 
+               id="q_order{{prefix}}" value="1"
+               style="width: 100px;margin-left:10px"&gt;
+    &lt;/div&gt;
+
+    &lt;center&gt;
+        &lt;button class="btn btn-default"
+               pd_target="forecast{{prefix}}"
+            pd_options="<span class="strong"><strong>p_order=$val(p_order{{prefix}});d_order=$val(p_order{{prefix}});q_order=$val(p_order{{prefix}})</strong></span>"&gt;
+        Go
+        &lt;/button&gt;
+    &lt;/center&gt;
+&lt;/div&gt;
+"""</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note305"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode38.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode38.py</a>
+</p></div></div><p>The following screenshot shows the configuration page of the <span class="strong"><strong>Build ARIMA model</strong></span> page:</p><div class="mediaobject"><img src="Images/B09699_08_28.jpg" alt="StockExplorer PixieApp Part 2 – add time series forecasting using the ARIMA model" width="874" height="419"/><div class="caption"><p>Configuration page of the Build Arima model page</p></div></div><p>The <span class="strong"><strong>Go</strong></span> button has a <code class="literal">pd_options</code> attribute that invokes a route with three states: <code class="literal">p_order</code>, <code class="literal">d_order</code>, and <code class="literal">q_order</code> with values taken from the three input boxes associated with each attribute.</p><p>The route for building the ARIMA model is shown in the following code. It starts by splitting the active DataFrame into a training and test set, withholding 14 observations for the test set. It then builds <a id="id633" class="indexterm"/>the model and computes the residual errors. Once the model is successfully built, we return an HTML markup that contains <a id="id634" class="indexterm"/>a chart showing the predicted values for the training set versus the actual values in the training set. This is done by calling the <code class="literal">plot_predict</code> route. Finally, we also show statistics about the residual errors for the model by creating a <code class="literal">&lt;div&gt;</code> element with a <code class="literal">pd_entity</code> attribute pointing to the residuals variable with a <code class="literal">&lt;pd_options&gt;</code> child element that configures a table view of all the statistics</p><p>The chart showing the predictions versus the actual training set is using the <code class="literal">plot_predict</code> route which calls the <code class="literal">plot_predict</code> method we created earlier in the Notebook. We also use the <code class="literal">@captureOutput</code> decorator to dispatch the chart image to the correct widget.</p><p>The implementation of the <code class="literal">plot_predict</code> route is shown here:</p><div class="informalexample"><pre class="programlisting">    @route(plot_predict="true")
+    @captureOutput
+    def plot_predict(self):
+        <span class="strong"><strong>plot_predict(self.arima_model, self.train_set['Date'], 100)</strong></span>
+</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note306"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode39.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode39.py</a>
+</p></div></div><p>The <code class="literal">build_arima_model</code> route implementation is shown here:</p><div class="informalexample"><pre class="programlisting">@route(<span class="strong"><strong>p_order="*",d_order="*",q_order="*"</strong></span>)
+def build_arima_model_screen(self, p_order, d_order, q_order):
+    #Build the arima model
+    self.train_set = self.parent_pixieapp.get_active_df()[:-14]
+    self.test_set = self.parent_pixieapp.get_active_df()[-14:]
+    self.arima_model = ARIMA(
+        self.train_set['Adj. Close'], dates=self.train_set['Date'],
+        order=<span class="strong"><strong>(int(p_order),int(d_order),int(q_order))</strong></span>
+    ).fit(disp=0)
+    self.residuals = <span class="strong"><strong>self.arima_model.resid.describe().to_frame().reset_index()</strong></span>
+    return """
+&lt;div class="page-header text-center"&gt;
+    &lt;h3&gt;ARIMA Model succesfully created&lt;/h3&gt;
+&lt;div&gt;
+&lt;div class="row"&gt;
+    &lt;div class="col-sm-10 col-sm-offset-3"&gt;
+        &lt;div pd_render_onload pd_options=<span class="strong"><strong>"plot_predict=true"</strong></span>&gt;
+        &lt;/div&gt;
+        &lt;h3&gt;Predicted values against the train set&lt;/h3&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="row"&gt;
+    &lt;div pd_render_onload pd_entity=<span class="strong"><strong>"residuals"</strong></span>&gt;
+        <span class="strong"><strong>&lt;pd_options&gt;</strong></span>
+<span class="strong"><strong>        {</strong></span>
+<span class="strong"><strong>          "handlerId": "tableView",</strong></span>
+<span class="strong"><strong>          "table_noschema": "true",</strong></span>
+<span class="strong"><strong>          "table_nosearch": "true",</strong></span>
+<span class="strong"><strong>          "table_nocount": "true"</strong></span>
+<span class="strong"><strong>        }</strong></span>
+<span class="strong"><strong>        &lt;/pd_options&gt;</strong></span>
+    &lt;/div&gt;
+    &lt;h3&gt;&lt;center&gt;Residual errors statistics&lt;/center&gt;&lt;/h3&gt;
+&lt;div&gt;
+        """</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note307"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode40.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode40.py</a>
+</p></div></div><p>The following screenshot shows the result for the <span class="strong"><strong>Build Arima model</strong></span> page:</p><div class="mediaobject"><img src="Images/B09699_08_29.jpg" alt="StockExplorer PixieApp Part 2 – add time series forecasting using the ARIMA model" width="1000" height="864"/><div class="caption"><p>Model building page</p></div></div><p>The final screen of the forecast child app is the <span class="emphasis"><em>diagnose model</em></span> screen invoked by the <code class="literal">do_diagnose</code> route. In <a id="id635" class="indexterm"/>this screen, we simply display a line chart for the DataFrame returned by the <code class="literal">compute_test_set_predictions</code> method we <a id="id636" class="indexterm"/>created earlier in the Notebook with the <code class="literal">train_set</code> and <code class="literal">test_set</code> variables. The <code class="literal">&lt;div&gt;</code> element for this chart is using a <code class="literal">pd_entity</code> attribute that calls an intermediary class method called <code class="literal">compute_test_set_predictions</code>. It also has a <code class="literal">&lt;pd_options&gt;</code> child element with the <code class="literal">display()</code> options for showing the line chart.</p><p>The following code shows the implementation of the <code class="literal">do_diagnose_screen</code> route:</p><div class="informalexample"><pre class="programlisting">    def compute_test_set_predictions(self):
+        return <span class="strong"><strong>compute_test_set_predictions(self.train_set, self.test_set)</strong></span>
+
+    @route(do_diagnose="true")
+    <span class="strong"><strong>@BaseSubApp.add_ticker_selection_markup([])</strong></span>
+    def do_diagnose_screen(self):
+        return """
+&lt;div class="page-header text-center"&gt;&lt;h2&gt;3. Diagnose the model against the test set&lt;/h2&gt;&lt;/div&gt;
+&lt;div class="row"&gt;
+    &lt;div class="col-sm-10 center" pd_render_onload pd_entity="<span class="strong"><strong>compute_test_set_predictions()</strong></span>"&gt;
+        &lt;pd_options&gt;
+<span class="strong"><strong>        {</strong></span>
+<span class="strong"><strong>          "keyFields": "Date",</strong></span>
+<span class="strong"><strong>          "valueFields": "forecast,test",</strong></span>
+<span class="strong"><strong>          "handlerId": "lineChart",</strong></span>
+<span class="strong"><strong>          "rendererId": "bokeh",</strong></span>
+<span class="strong"><strong>          "noChartCache": "true"          </strong></span>
+<span class="strong"><strong>        }</strong></span>
+        &lt;/pd_options&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+"""</pre></div><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note308"/>Note</h3><p>You can find the code file here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode41.py">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/sampleCode41.py</a>
+</p></div></div><p>The following screenshot shows the results of the diagnose page:</p><div class="mediaobject"><img src="Images/B09699_08_30.jpg" alt="StockExplorer PixieApp Part 2 – add time series forecasting using the ARIMA model" width="1000" height="770"/><div class="caption"><p>Model diagnose screen</p></div></div><p>In this section, we have shown how to improve the <code class="literal">StockExplorer</code> sample PixieApp to include forecasting <a id="id637" class="indexterm"/>capabilities using the ARIMA model. Incidentally, we've demonstrated how to use the PixieApp programming model to create a three-step wizard that first performs some data exploration, then <a id="id638" class="indexterm"/>configures the parameters of the model and builds it and finally diagnoses the model against the test set.</p><div class="note" title="Note" style=""><div class="inner"><h3 class="title"><a id="note309"/>Note</h3><p>The complete implementation of the notebook can be found here:</p><p>
+<a class="ulink" href="https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/StockExplorer%20-%20Part%202.ipynb">https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%208/StockExplorer%20-%20Part%202.ipynb</a>
+</p></div></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content"><div class="section" title="Summary"><div class="titlepage"><div><div><h1 class="title"><a id="ch08lvl1sec59"/>Summary</h1></div></div></div><p>In this chapter, we touched upon the topic of time series analysis and forecasting. Of course, we've only scratched the surface, and there is certainly much more to explore. It is also a very important field for the industry, especially in the finance world, with very active research. For example, we see more and more data scientists trying to build time series forecasting models based on recurrent neural network (<a class="ulink" href="https://en.wikipedia.org/wiki/Recurrent_neural_network">https://en.wikipedia.org/wiki/Recurrent_neural_network</a>) algorithms, with great success. We've also demonstrated how Jupyter Notebooks combined with PixieDust and the ecosystem of libraries, such as <code class="literal">pandas</code>, <code class="literal">numpy</code>, and <code class="literal">statsmodels,</code> help accelerate the development of analytics as well as its operationalization into applications that are consumable by the line of business user.</p><p>In the next chapter, we will look at another important data science use case: graphs. We'll build a sample application related to flight travel and discuss how and when we should apply graph algorithms to solve data problems.</p></div></div>
+
+
+
+  </body></html>

@@ -1,0 +1,584 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Chapter 6. Machine Learning 1"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title"><a id="ch06" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Chapter 6. Machine Learning 1</h1></div></div></div><p class="calibre11">In this chapter, we will cover the following topics:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Preparing data for model building</li><li class="listitem">Finding the nearest neighbors</li><li class="listitem">Classifying documents using Naïve Bayes</li><li class="listitem">Building decision trees to solve multiclass problems</li></ul></div><div class="calibre2" title="Introduction"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch06lvl1sec67" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Introduction</h1></div></div></div><p class="calibre11">In this chapter, we will look at supervised learning techniques. In the previous chapter, we saw unsupervised techniques including clustering and learning vector quantization. We will start with a classification problem and then proceed to regression. The input for a classification problem is a set of records or instances in the next chapter.</p><p class="calibre11">Each record or instance can be written as a set (X,y), where X is a set of attributes and y is a corresponding class label.</p><p class="calibre11">Learning a target function, F, that maps each record's attribute set to one of the predefined class label, y, is the job of a classification algorithm.</p><p class="calibre11">The general steps for a classification algorithm are as follows:</p><div class="calibre2"><ol class="orderedlist"><li class="listitem1">Find an appropriate algorithm</li><li class="listitem1">Learn a model using a training set, and validate the model using a test set</li><li class="listitem1">Apply the model to predict any unseen instance or record</li></ol></div><p class="calibre11">The first step is to identify the right classification algorithm. There is no prescribed way of choosing the right algorithm, it comes from repeated trial and error. After choosing the algorithm, a training and a test set is created, which is provided to the algorithm to learn a model, that is, a target function F, as defined previously. After creating the model using a training set, a test set is used to validate the model. Usually, we use a confusion matrix to validate the model. We will discuss more about confusion matrices in our recipe: Finding the nearest neighbors.</p><p class="calibre11">We will begin with a recipe that will show us how to divide our input dataset into training and test sets. We will follow this with a lazy learner algorithm for classification, called K-Nearest Neighbor. We will then look at Naïve Bayes classifiers. We will venture into a recipe that deals with multiclass problems using decision trees. Our choice of algorithms in this chapter is not random. All the three algorithms that we will cover in this chapter are capable of handling multiclass problems, in addition to binary problems. In multiclass problems, we have more than two class labels to which the instances can belong.</p></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Preparing data for model building"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch06lvl1sec68" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Preparing data for model building</h1></div></div></div><p class="calibre11">In this recipe, we will look at how to create a train and a test dataset from the given dataset for the classification problem. A test dataset is never shown to the model. In real-world scenarios, we<a id="id442" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> typically build another dataset called dev. Dev stands for development dataset: a dataset that we can use to continuously<a id="id443" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> tune our model during successive runs. The model is trained using the train set, and model performance metrics such as accuracy are measured in dev. Based on this result, the model is further tuned in case improvements are required. In later chapters, we will cover recipes that can do more sophisticated data splitting than just a simple train test split.</p><div class="calibre2" title="Getting ready"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec238" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Getting ready</h2></div></div></div><p class="calibre11">We will use the Iris dataset for this recipe. It's easy to demonstrate the concept with this dataset as we are familiar with it because we have used it for many of our previous recipes.</p></div><div class="calibre2" title="How to do it…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec239" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How to do it…</h2></div></div></div><div class="calibre2"><pre class="programlisting"># Load the necesssary Library
+from sklearn.cross_validation import train_test_split
+from sklearn.datasets import load_iris
+import numpy as np
+
+def get_iris_data():
+    """
+    Returns Iris dataset
+    """
+    # Load iris dataset
+    data = load_iris()
+    
+    # Extract the dependend and independent variables
+    # y is our class label
+    # x is our instances/records
+    x    = data['data']
+    y    = data['target']
+    
+    # For ease we merge them
+    # column merge
+    input_dataset = np.column_stack([x,y])
+
+    # Let us shuffle the dataset
+    # We want records distributed randomly
+    # between our test and train set
+    
+    np.random.shuffle(input_dataset)
+
+    return input_dataset
+
+# We need  80/20 split.
+# 80% of our records for Training
+# 20% Remaining for our Test set
+train_size = 0.8
+test_size  = 1-train_size
+
+# get the data
+input_dataset = get_iris_data()
+# Split the data
+train,test = train_test_split(input_dataset,test_size=test_size)
+
+# Print the size of original dataset
+print "Dataset size ",input_dataset.shape
+# Print the train/test split
+print "Train size ",train.shape
+print "Test  size",test.shape</pre></div><p class="calibre11">This was<a id="id444" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> pretty simple. Let's see if the class labels <a id="id445" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>are proportionately distributed between the training and the test sets. This is a typical class imbalance problem:</p><p class="calibre11">def get_class_distribution(y):</p><div class="calibre2"><pre class="programlisting">"""
+Given an array of class labels
+Return the class distribution
+"""
+    distribution = {}
+    set_y = set(y)
+    for y_label in set_y:
+        no_elements = len(np.where(y == y_label)[0])
+        distribution[y_label] = no_elements
+    dist_percentage = {class_label: count/(1.0*sum(distribution.values())) for class_label,count in distribution.items()}
+    return dist_percentage
+        
+    
+
+def print_class_label_split(train,test):
+  """
+  Print the class distribution
+  in test and train dataset
+  """  
+    y_train = train[:,-1]
+    
+    train_distribution = get_class_distribution(y_train)
+    print "\nTrain data set class label distribution"
+    print "=========================================\n"
+    for k,v in train_distribution.items():
+        print "Class label =%d, percentage records =%.2f"%(k,v)
+    
+    y_test = test[:,-1]    
+    
+    test_distribution = get_class_distribution(y_test)
+    
+    print "\nTest data set class label distribution"
+    print "=========================================\n"
+    
+    for k,v in test_distribution.items():
+        print "Class label =%d, percentage records =%.2f"%(k,v)
+
+print_class_label_split(train,test)</pre></div><p class="calibre11">Let's see<a id="id446" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> how we distribute the class labels <a id="id447" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>uniformly between the train and the test sets:</p><div class="calibre2"><pre class="programlisting"># Perform Split the data
+stratified_split = StratifiedShuffleSplit(input_dataset[:,-1],test_size=test_size,n_iter=1)
+
+for train_indx,test_indx in stratified_split:
+    train = input_dataset[train_indx]
+    test =  input_dataset[test_indx]
+    print_class_label_split(train,test)</pre></div></div><div class="calibre2" title="How it works…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec240" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How it works…</h2></div></div></div><p class="calibre11">After we import the necessary library modules, we must write a convenient function, <code class="literal">get_iris_data()</code>, which will return the Iris dataset. We then column concatenate the <code class="literal">x</code> and <code class="literal">y</code> arrays into a single array called <code class="literal">input_dataset</code>. We then shuffle the dataset so that the records can be distributed randomly to the test and the train datasets. The function returns<a id="id448" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> a single array of both the instances <a id="id449" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>and the class labels.</p><p class="calibre11">We want to include 80 percent of the record in our training dataset, and use the remaining as our test dataset. The <code class="literal">train_size</code> and <code class="literal">test_size</code> variables hold a percentage of the values, which should be in the training and testing dataset.</p><p class="calibre11">We must call the <code class="literal">get_iris_data()</code> function in order to get the input data. We then leverage the <code class="literal">train_test_split</code> function from scikit-learn's <code class="literal">cross_validation</code> model to split the input dataset into two.</p><p class="calibre11">Finally, we can print the size of the original dataset, followed by the test and the train datasets:</p><div class="mediaobject"><img src="Images/B04041_06_04.jpg" alt="How it works…" class="calibre101"/></div><p class="calibre11">Our original dataset has 150 rows and five columns. Remember that there are only four attributes; the fifth column is the class label. We had column concatenated x and y.</p><p class="calibre11">As you can see, 80 percent of the 150 rows, that is, 120 records, have been assigned to our training set. We have shown how we can easily split our input data into the train and the test sets.</p><p class="calibre11">Remember this is a classification problem. The algorithm should be trained to predict the correct class label for a given unknown instance or record. For this, we need to provide the algorithm and an equal distribution of all the classes during training. The Iris dataset is a three-class problem. We should have equal representation from all the three classes. Let's see if our method has taken care of this.</p><p class="calibre11">We must define a function called <code class="literal">get_class_distribution</code>, which takes a single <code class="literal">y</code> parameter's array of class labels. This function returns a dictionary, where the key is the class label<a id="id450" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> and the value is a percentage of the number <a id="id451" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>of records for this distribution. Thus, this dictionary gives us the distribution of the class labels. We must call this function in the following function to get to know what our class distribution is in the train and the test datasets.</p><p class="calibre11">The <code class="literal">print_class_label_split</code> function is self-explanatory. We must pass the train and the test datasets as the argument. As we have concatenated our <code class="literal">x</code> and <code class="literal">y</code>, the last column is our class label. We then extract the train and test class labels in <code class="literal">y_train</code> and <code class="literal">y_test</code>. We pass them to <code class="literal">get_class_distribution</code> to get a dictionary of the class labels and their distribution, and finally, we print it.</p><p class="calibre11">We can then finally invoke <code class="literal">print_class_label_split</code>, and our output should look as follows:</p><div class="mediaobject"><img src="Images/B04041_06_05.jpg" alt="How it works…" class="calibre102"/></div><p class="calibre11">Let's now examine the output. As you can see, our training set has a different distribution of the class labels compared with the test set. Exactly 40 percent of the instances in the test set belong to <code class="literal">class label 1</code>. This is not the right way to do the split. We should have an equal distribution in both the training and the test datasets.</p><p class="calibre11">In the final piece of code, we leverage <code class="literal">StratifiedShuffleSplit</code> from scikit-learn in order to achieve equal class distribution in the training and the test sets. Let's examine the parameters of <code class="literal">StratifiedShuffleSplit</code>:</p><div class="calibre2"><pre class="programlisting">stratified_split = StratifiedShuffleSplit(input_dataset[:,-1],test_size=test_size,n_iter=1)</pre></div><p class="calibre11">The first parameter is the input dataset. We pass all the rows and the last column. Our test size is defined by the <code class="literal">test_size</code> variable, which we had initially declared. We can assume that we need only one split using the <code class="literal">n_iter</code> variable. We then proceed to invoke <code class="literal">print_class_label_split</code> to print the class label distribution. Let's examine the output:</p><div class="mediaobject"><img src="Images/B04041_06_06.jpg" alt="How it works…" class="calibre102"/></div><p class="calibre11">Now, we have the class labels distributed uniformly between the test and train sets.</p></div><div class="calibre2" title="There's more..."><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec241" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>There's more...</h2></div></div></div><p class="calibre11">We need <a id="id452" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>to prepare the data carefully before <a id="id453" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>its use in a machine learning algorithm. Providing a uniform class distribution to both the train and the test sets is key to building a successful classification model.</p><p class="calibre11">In practical machine learning scenarios, we create another dataset called as dev set in addition to the train and test sets. We may not get our model right in the first iteration. We don't want to show our test dataset to our model as this may bias our next iteration of model building. Hence, we create this dev set, which we can use as we iterate through our model building exercise.</p><p class="calibre11">The 80/20 rule of thumb that we specified in this recipe is an ideal scenario. However, in many practical applications, we may not have enough data to leave out that many instances for a test set. There are a few practical techniques, such as cross-validation, which come into play in such scenarios. In our next chapter, we will look at the various cross-validation techniques.</p></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Finding the nearest neighbors"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch06lvl1sec69" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Finding the nearest neighbors</h1></div></div></div><p class="calibre11">Before we jump into our recipe, let's spend some time understanding how to check if our classification model is performing to our satisfaction. In the introduction section, we introduced a term called confusion matrix.</p><p class="calibre11">A confusion matrix<a id="id454" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> is a matrix arrangement of the actual versus the predicted class labels. Let's say we have a two-class problem, that is, our <code class="literal">y</code> can take either value, <code class="literal">T</code> or <code class="literal">F</code>. Let's say we trained a classifier to predict our <code class="literal">y</code>. In our test data, we know the actual value of <code class="literal">y</code>. We have the predicted value of our <code class="literal">y</code> from our model. w0 values we can<a id="id455" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> fill our confusion matrix, as follows:</p><div class="mediaobject"><img src="Images/B04041_06_02.jpg" alt="Finding the nearest neighbors" class="calibre103"/></div><p class="calibre11">Here is a table where we conveniently list our results from the test set. Remember that we know the class labels in our test set; hence, we can compare our classification model output with the actual class label.</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Under <code class="literal">TP</code>, which is an abbreviation for True Positive, we have a count of all those records in the test set whose label is <code class="literal">T</code>, and where the model also predicted <code class="literal">T</code></li><li class="listitem">Under <code class="literal">FN</code>, which is an abbreviation for False Negative, we have a count of all the records whose actual label is <code class="literal">T</code>, but the algorithm predicted N</li><li class="listitem"><code class="literal">FP</code> stands for False Positive, where the actual label is <code class="literal">F</code>, but the algorithm predicted it as <code class="literal">T</code></li><li class="listitem"><code class="literal">TN</code> stands for True Negative, where the algorithm predicted both the label and the actual class label as <code class="literal">F</code></li></ul></div><p class="calibre11">With the knowledge of this confusion matrix, we can now derive performance metrics with which we can measure the quality of our classification model. In future chapters, we will explore more metrics, but for now, we will introduce the accuracy and error rate.</p><p class="calibre11">Accuracy is <a id="id456" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>defined as the ratio of a correct prediction to the total number <a id="id457" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>of predictions. From the confusion matrix, we know that the sum of TP and TN is the total number of correct predictions:</p><div class="mediaobject"><img src="Images/B04041_06_03.jpg" alt="Finding the nearest neighbors" class="calibre104"/></div><p class="calibre11">Accuracy from the training set is always very optimistic. One should look at the test set's accuracy value to determine the true performance of the model.</p><p class="calibre11">Armed with this knowledge, let's jump into our recipe. The first classification algorithm that we will look <a id="id458" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>at is K-Nearest Neighbor, in short, KNN. Before going into the details of KNN, let's look at a very simple classification algorithm, called the rote classifier algorithm. The rote classifier memorizes the entire training data, that is, it loads all the data in the memory. We need to perform classification <a id="id459" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>on an unseen new training instance: it will try to match the new training instance with any of the training instances in the memory. It matches every attribute of the test instance with every attribute in the training instance. If it finds a match, it predicts the class label of the test instance as the class label of the matched training instance.</p><p class="calibre11">You should know<a id="id460" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> by now that this classifier will fail if the test instance is not similar to any of the training instances loaded into the memory.</p><p class="calibre11">KNN is similar to rote classifier, except that instead of looking for an exact match, it uses a similarity measure. Similar to rote classifier, KNN loads all the training sets into the memory. When it needs to classify a test instance, it measures the distance between the test instance and all the training instances. Using this distance, it chooses K closest instances in the training set. Now, the prediction for the test set is based on the majority classes of the K nearest neighbors.</p><p class="calibre11">For example, if we have a two-class classification problem and we choose our K value as three, and if the given test record's three nearest neighbors have classes, 1, 1, and 0, it will classify the test instance as 1, which is the majority.</p><p class="calibre11">KNN belongs to a family <a id="id461" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>of algorithms called instance-based learning. Additionally, as the decision to classify a test instance is taken last, it's also called<a id="id462" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> a lazy learner.</p><div class="calibre2" title="Getting ready"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec242" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Getting ready</h2></div></div></div><p class="calibre11">For this recipe, we will generate some data using scikit's make_classification method. We will generate a matrix of four columns / attributes / features and 100 instances:</p><div class="calibre2"><pre class="programlisting">from sklearn.datasets import make_classification
+
+import numpy as np
+import matplotlib.pyplot as plt
+import itertools
+
+from sklearn.ensemble import BaggingClassifier
+from sklearn.neighbors import KNeighborsClassifier
+
+def get_data():
+    """
+    Make a sample classification dataset
+    Returns : Independent variable y, dependent variable x
+    """
+    x,y = make_classification(n_features=4)
+    return x,y
+    
+
+
+
+
+
+def plot_data(x,y):
+    """
+    Plot a scatter plot fo all variable combinations
+    """
+    subplot_start = 321
+    col_numbers = range(0,4)
+    col_pairs = itertools.combinations(col_numbers,2)
+    
+    for col_pair in col_pairs:
+        plt.subplot(subplot_start)
+        plt.scatter(x[:,col_pair[0]],x[:,col_pair[1]],c=y)
+        title_string = str(col_pair[0]) + "-" + str(col_pair[1])
+        plt.title(title_string)
+        x_label = str(col_pair[0])
+        y_label = str(col_pair[1])
+        plt.xlabel(x_label)
+        plt.xlabel(y_label)
+        subplot_start+=1
+    
+    plt.show()
+
+
+x,y = get_data()    
+plot_data(x,y)</pre></div><p class="calibre11">The <code class="literal">get_data</code> function<a id="id463" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> internally calls <code class="literal">make_classification</code> to generate test data for any classification task.</p><p class="calibre11">It's always good practice to visualize the data before starting to feed it into any algorithm. Our <code class="literal">plot_data</code> function produces a scatter plot between all the variables:</p><div class="mediaobject"><img src="Images/B04041_06_07.jpg" alt="Getting ready" class="calibre105"/></div><p class="calibre11">We have plotted all the <a id="id464" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>variable combinations. The top two charts there in show combinations between the 0th and 1st column, followed by 0th and 2nd. The points are also colored by their class labels. This gives an idea of how much information is these variable combination to do a classification task.</p></div><div class="calibre2" title="How to do it…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec243" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How to do it…</h2></div></div></div><p class="calibre11">We will separate our dataset preparation and model training into two different methods: <code class="literal">get_train_test </code>to get the train and test data, and <code class="literal">build_model</code> to build our model. Finally, we will use <code class="literal">test_model</code> to validate the usefulness of our model:</p><div class="calibre2"><pre class="programlisting">from sklearn.cross_validation import StratifiedShuffleSplit
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report
+
+   
+
+def get_train_test(x,y):
+    """
+    Perpare a stratified train and test split
+    """
+    train_size = 0.8
+    test_size = 1-train_size
+    input_dataset = np.column_stack([x,y])
+    stratified_split = StratifiedShuffleSplit(input_dataset[:,-1],test_size=test_size,n_iter=1)
+
+    for train_indx,test_indx in stratified_split:
+        train_x = input_dataset[train_indx,:-1]
+        train_y = input_dataset[train_indx,-1]
+        test_x =  input_dataset[test_indx,:-1]
+        test_y = input_dataset[test_indx,-1]
+    return train_x,train_y,test_x,test_y
+    
+
+def build_model(x,y,k=2):
+    """
+    Fit a nearest neighbour model
+    """
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(x,y)
+    return knn
+
+def test_model(x,y,knn_model):
+    y_predicted = knn_model.predict(x)
+    print classification_report(y,y_predicted)
+    
+    
+if __name__ == "__main__":
+
+    # Load the data    
+    x,y = get_data()
+    
+    # Scatter plot the data
+    plot_data(x,y)
+    
+    # Split the data into train and test    
+    train_x,train_y,test_x,test_y = get_train_test(x,y)
+    
+    # Build the model
+    knn_model = build_model(train_x,train_y)
+    
+    # Test the model
+    print "\nModel evaluation on training set"
+    print "================================\n"
+    test_model(train_x,train_y,knn_model)
+    
+    print "\nModel evaluation on test set"
+    print "================================\n"
+    test_model(test_x,test_y,knn_model)</pre></div></div><div class="calibre2" title="How it works…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec244" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How it works…</h2></div></div></div><p class="calibre11">Let's try to follow the code from our main method. We must start by calling <code class="literal">get_data</code> and plotting it using <code class="literal">plot_data</code>, as described in the previous section.</p><p class="calibre11">As mentioned<a id="id465" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> previously, we need to separate a part of the training data for the testing that is required to evaluate our model. We then invoke the <code class="literal">get_train_test</code> method to do the same.</p><p class="calibre11">In <code class="literal">get_train_test</code>, we decide our train test split size, which is the standard 80/20. We then use 80 percent of our data to train our model. Now, we combine both x and y to a single matrix before the split using NumPy's <code class="literal">column_stack</code> method.</p><p class="calibre11">We then leverage <code class="literal">StratifiedShuffleSplit</code> discussed in the previous recipe in order to get a uniform class label distribution between our training and test sets.</p><p class="calibre11">Armed with our train and test sets, we are now ready to build our classifier. We must invoke the build model with our training set, attributes <code class="literal">x</code>, and class labels <code class="literal">y</code>. This function also takes <code class="literal">K</code>, the number of neighbors, as a parameter, with a default value of two.</p><p class="calibre11">We use scikit-learn's KNN implementation, <code class="literal">KNeighborsClassifier</code>. We then create an object of the classifier and call the <code class="literal">fit</code> method to build our model.</p><p class="calibre11">We are ready to test how good the model is using our training data. We can pass our training data (x and y) and our model to the <code class="literal">test_model</code> function.</p><p class="calibre11">We know our actual class labels (y). We then invoke the predict function with our x to get the predicted labels. We then print some of the model evaluation metrics. We can start with printing the accuracy of the model, follow it up with a confusion matrix, and then finally show the output of  a function called <code class="literal">classification_report</code>. scikit-learn's metrics module provides a function called <code class="literal">classification_report</code>, which can print several model evaluation metrics.</p><p class="calibre11">Let's look at our model metrics:</p><div class="mediaobject"><img src="Images/B04041_06_08.jpg" alt="How it works…" class="calibre106"/></div><p class="calibre11">As you can <a id="id466" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>see, our accuracy score is 91.25 percent. We will not repeat the definition of accuracy; you can refer to the introduction section.</p><p class="calibre11">Let's now look at our confusion matrix. The top left cell is the true positive cell. We can see that we have no false negatives but we have seven false positives (the first cell in the 2nd row).</p><p class="calibre11">Finally, we have precision, recall, an F1 score, and support in our classification report. Let's look at their definitions:</p><p class="calibre11">
+<code class="literal">Precision</code> is the ratio of the true positive and the sum of the true positive and false positive</p><p class="calibre11">
+<code class="literal">Accuracy</code> is the ratio of the true positive and the sum of the true positive and false negative</p><p class="calibre11">An F1 score is the harmonic mean of precision and sensitivity</p><p class="calibre11">We will see more about this metric in a separate recipe in a future chapter. For now, let's say we shall have high precision and recall values.</p><p class="calibre11">It is good to know that we have around 91 percent accuracy for our model, but the real test will be when it is run on the test data. Let's see the metrics for our test data:</p><div class="mediaobject"><img src="Images/B04041_06_09.jpg" alt="How it works…" class="calibre107"/></div><p class="calibre11">It is good to<a id="id467" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> know that our model has 95 percent accuracy for the test data, which is an indication of a good job in fitting the model.</p></div><div class="calibre2" title="There's more…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec245" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>There's more…</h2></div></div></div><p class="calibre11">Let's look a little bit deeper into the model that we have built:</p><div class="mediaobject"><img src="Images/B04041_06_10.jpg" alt="There's more…" class="calibre108"/></div><p class="calibre11">We invoked a function called <code class="literal">get_params</code>. This function returns all the parameters that are passed to the model. Let's examine each of the parameters.</p><p class="calibre11">The first parameter refers to the underlying data structure used by the KNN implementation. As every record in the training set has to be compared against every other record, brute force implementation may be compute-resource heavy. Hence, we can choose either <code class="literal">kd_tree</code> or <code class="literal">ball_tree</code> as the data structure. A brute will use the brute force method of looping through all the records for every record.</p><p class="calibre11">Leaf size is the parameter that is passed to the <code class="literal">kd_tree</code> or <code class="literal">ball_tree</code> method.</p><p class="calibre11">Metric is the distance measure used to find the neighbors. The p-value of two reduces Minkowski to Euclidean distance.</p><p class="calibre11">Finally, we<a id="id468" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> have the weights parameter. KNN decides the class label of the test instance based on the class label of its K nearest neighbors. A majority vote decides the class label for the test instance. However, if we set the weights to distance, then each neighbor is given a weight that is inversely proportional to its distance. Hence, in order to decide the class label of a test set, weighted voting is performed, rather than simple voting.</p></div><div class="calibre2" title="See also"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec246" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>See also</h2></div></div></div><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong1"><em class="calibre15">Preparing data for model building</em></span> recipe in <a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="ch06.xhtml" title="Chapter 6. Machine Learning 1">Chapter 6</a>, <span class="strong1"><em class="calibre15">Machine Learning I</em></span></li><li class="listitem"><span class="strong1"><em class="calibre15">Working with distance measures</em></span> recipe in <a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="ch05.xhtml" title="Chapter 5. Data Mining – Needle in a Haystack">Chapter 5</a>, <span class="strong1"><em class="calibre15">Data Mining - Finding a needle in a haystack</em></span></li></ul></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Classifying documents using Naïve Bayes"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch06lvl1sec70" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Classifying documents using Naïve Bayes</h1></div></div></div><p class="calibre11">We will look at a document classification problem in this recipe. The algorithm that we will use is the Naïve Bayes classifier. The Bayes' rule is the engine powering the Naïve Bayes algorithm, as follows:</p><div class="mediaobject"><img src="Images/B04041_06_11.jpg" alt="Classifying documents using Naïve Bayes" class="calibre109"/></div><p class="calibre11">It shows<a id="id469" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> how likely it is for the event X to happen, given<a id="id470" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> that we know event Y has already happened. Now, in our recipe, we will categorize or classify the text. Ours is a binary classification problem: given a movie review, we want to classify if the review is positive or negative.</p><p class="calibre11">In Bayesian terminology, we need to find the conditional probability: the probability that the review is positive given the review, and the probability that the review is negative given the review. Let's write it as an equation:</p><div class="mediaobject"><img src="Images/B04041_06_12.jpg" alt="Classifying documents using Naïve Bayes" class="calibre110"/></div><p class="calibre11">For any review, if we have the preceding two probability values, we can classify the review as positive or negative by comparing these values. If the conditional probability for negative<a id="id471" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> is greater than the conditional <a id="id472" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>probability for positive, we classify the review as negative, and vice versa.</p><p class="calibre11">Let's now discuss these probabilities using Bayes' rule:</p><div class="mediaobject"><img src="Images/B04041_06_13.jpg" alt="Classifying documents using Naïve Bayes" class="calibre111"/></div><p class="calibre11">As we are going to compare these two equations to finalize our prediction, we can ignore the denominator, which is a simple scaling factor.</p><p class="calibre11">The LHS (left-hand side) of the preceding equation is called the posterior probability.</p><p class="calibre11">Let's look at the numerator of the RHS (right-hand side):</p><div class="mediaobject"><img src="Images/B04041_06_14.jpg" alt="Classifying documents using Naïve Bayes" class="calibre112"/></div><p class="calibre11">
+<code class="literal">P(positive)</code> is the probability of a positive class called the prior. It's our belief about the positive class label distribution based on our training set.</p><p class="calibre11">We will estimate it from our training test. It's calculated as follows:</p><div class="mediaobject"><img src="Images/B04041_06_15.jpg" alt="Classifying documents using Naïve Bayes" class="calibre113"/></div><p class="calibre11">P(review|positive) is the likelihood. It answers the question: what is the likelihood of getting the review, given that the class is positive. Again, we will estimate it from our training set.</p><p class="calibre11">Before we expand on the likelihood equation further, let's introduce the concept of independence assumption. The algorithm is prefixed as naïve because of this assumption. Contrary<a id="id473" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> to the reality, we assume that the words<a id="id474" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> appear in a document independent of each other. We will use this assumption to calculate the likelihood.</p><p class="calibre11">A review is a list of words. Let's put it in mathematical notation:</p><div class="mediaobject"><img src="Images/B04041_06_16.jpg" alt="Classifying documents using Naïve Bayes" class="calibre114"/></div><p class="calibre11">With the independence assumption, we can say that the probability of each of these words occurring together in a review is the product of all the individual probabilities of the constituent words in the review.</p><p class="calibre11">Now we can write the likelihood equation as follows:</p><div class="mediaobject"><img src="Images/B04041_06_17.jpg" alt="Classifying documents using Naïve Bayes" class="calibre115"/></div><p class="calibre11">So, given a new review, we can use these two equations, the prior and likelihood, to calculate whether the review is positive or negative.</p><p class="calibre11">Hopefully, you have followed till now. There is still a one last piece to the puzzle: how do we calculate the probability for the individual words?</p><div class="mediaobject"><img src="Images/B04041_06_18.jpg" alt="Classifying documents using Naïve Bayes" class="calibre116"/></div><p class="calibre11">This step refers to training the model.</p><p class="calibre11">From our training set, we will take each review. We also know its label. For each word in this review, we will calculate the conditional probability and store it in a table. We can thus use these values to predict any future test instance.</p><p class="calibre11">Enough theory! Let's dive into our recipe.</p><div class="calibre2" title="Getting ready"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec247" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Getting ready</h2></div></div></div><p class="calibre11">For this recipe, we will use the NLTK library for both the data and the algorithm. During the installation <a id="id475" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>of NLTK, we can also download the <a id="id476" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>datasets. One such dataset is the movie review dataset. The movie review data is segregated into two categories, positive and negative. For each category, we have a list of words; the reviews are preseparated into words:</p><div class="calibre2"><pre class="programlisting">
+<code class="literal">from nltk.corpus import movie_reviews</code>
+</pre></div><p class="calibre11">As shown here, we will include the datasets by importing the corpus module from NLTK.</p><p class="calibre11">We will leverage the <code class="literal">NaiveBayesClassifier</code> class, defined in NLTK, to build the model. We will pass our training data to a function called <code class="literal">train()</code> to build our model.</p></div><div class="calibre2" title="How to do it…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec248" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How to do it…</h2></div></div></div><p class="calibre11">Let's start with importing the necessary function. We will follow it up with two utility functions. The first one retrieves the movie review data and the second one helps us split our data for the model into training and testing:</p><div class="calibre2"><pre class="programlisting">from nltk.corpus import movie_reviews
+from sklearn.cross_validation import StratifiedShuffleSplit
+import nltk
+from nltk.corpus import stopwords
+from nltk.collocations import BigramCollocationFinder
+from nltk.metrics import BigramAssocMeasures
+
+
+def get_data():
+    """
+    Get movie review data
+    """
+    dataset = []
+    y_labels = []
+    # Extract categories
+    for cat in movie_reviews.categories():
+        # for files in each cateogry    
+        for fileid in movie_reviews.fileids(cat):
+            # Get the words in that category
+            words = list(movie_reviews.words(fileid))
+            dataset.append((words,cat))
+            y_labels.append(cat)
+    return dataset,y_labels
+
+
+def get_train_test(input_dataset,ylabels):
+    """
+    Perpare a stratified train and test split
+    """
+    train_size = 0.7
+    test_size = 1-train_size
+    stratified_split = StratifiedShuffleSplit(ylabels,test_size=test_size,n_iter=1,random_state=77)
+
+    for train_indx,test_indx in stratified_split:
+        train   = [input_dataset[i] for i in train_indx]
+        train_y = [ylabels[i] for i in train_indx]
+        
+        test    = [input_dataset[i] for i in test_indx]
+        test_y  = [ylabels[i] for i in test_indx]
+    return train,test,train_y,test_y</pre></div><p class="calibre11">We will<a id="id477" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> now introduce three functions, which are<a id="id478" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> primarily feature-generating functions. We need to provide features or attributes to our classifier. These functions, given a review, generate a set of features from the review:</p><div class="calibre2"><pre class="programlisting">def build_word_features(instance):
+    """
+    Build feature dictionary
+    Features are binary, name of the feature is word iteslf
+    and value is 1. Features are stored in a dictionary
+    called feature_set
+    """
+    # Dictionary to store the features
+    feature_set = {}
+    # The first item in instance tuple the word list
+    words = instance[0]
+    # Populate feature dicitonary
+    for word in words:
+        feature_set[word] = 1
+    # Second item in instance tuple is class label
+    return (feature_set,instance[1])
+
+def build_negate_features(instance):
+    """
+    If a word is preceeded by either 'not' or 'no'
+    this function adds a prefix 'Not_' to that word
+    It will also not insert the previous negation word
+    'not' or 'no' in feature dictionary
+    """
+    # Retreive words, first item in instance tuple
+    words = instance[0]
+    final_words = []
+    # A boolean variable to track if the 
+    # previous word is a negation word
+    negate = False
+    # List of negation words
+    negate_words = ['no','not']
+    # On looping throught the words, on encountering
+    # a negation word, variable negate is set to True
+    # negation word is not added to feature dictionary
+    # if negate variable is set to true
+    # 'Not_' prefix is added to the word
+    for word in words:
+        if negate:
+            word = 'Not_' + word
+            negate = False
+        if word not in negate_words:
+            final_words.append(word)
+        else:
+            negate = True
+    # Feature dictionary
+    feature_set = {}
+    for word in final_words:
+        feature_set[word] = 1
+    return (feature_set,instance[1])
+
+def remove_stop_words(in_data):
+    """
+    Utility function to remove stop words
+    from the given list of words
+    """
+    stopword_list = stopwords.words('english')
+    negate_words = ['no','not']
+    # We dont want to remove the negate words
+    # Hence we create a new stop word list excluding
+    # the negate words
+    new_stopwords = [word for word in stopword_list if word not in negate_words]
+    label = in_data[1]
+    # Remove stopw words
+    words = [word for word in in_data[0] if word not in new_stopwords]
+    return (words,label)
+
+
+def build_keyphrase_features(instance):
+    """
+    A function to extract key phrases
+    from the given text.
+    Key Phrases are words of importance according to a measure
+    In this key our phrase of is our length 2, i.e two words or bigrams
+    """
+    feature_set = {}
+    instance = remove_stop_words(instance)
+    words = instance[0]
+   
+    bigram_finder  = BigramCollocationFinder.from_words(words)
+    # We use the raw frequency count of bigrams, i.e. bigrams are
+    # ordered by their frequency of occurence in descending order
+    # and top 400 bigrams are selected.
+    bigrams        = bigram_finder.nbest(BigramAssocMeasures.raw_freq,400)
+    for bigram in bigrams:
+        feature_set[bigram] = 1
+    return (feature_set,instance[1])</pre></div><p class="calibre11">Let's now <a id="id479" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>write a function to build our model and later<a id="id480" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> probe our model to find the usefulness of our model:</p><div class="calibre2"><pre class="programlisting">def build_model(features):
+    """
+    Build a naive bayes model
+    with the gvien feature set.
+    """
+    model = nltk.NaiveBayesClassifier.train(features)
+    return model    
+    
+def probe_model(model,features,dataset_type = 'Train'):
+    """
+    A utility function to check the goodness
+    of our model.
+    """
+    accuracy = nltk.classify.accuracy(model,features)
+    print "\n" + dataset_type + " Accuracy = %0.2f"%(accuracy*100) + "%" 
+    
+def show_features(model,no_features=5):
+    """
+    A utility function to see how important
+    various features are for our model.
+    """
+    print "\nFeature Importance"
+    print "===================\n"
+    print model.show_most_informative_features(no_features)        </pre></div><p class="calibre11">It is very<a id="id481" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> hard to get the model right at the first<a id="id482" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> pass. We need to play around with different features, and parameter tuning. This is mostly a trial and error process. In the next section of code, we will show our different passes by improving our model:</p><div class="calibre2"><pre class="programlisting">def build_model_cycle_1(train_data,dev_data):
+    """
+    First pass at trying out our model
+    """
+    # Build features for training set
+    train_features =map(build_word_features,train_data)
+    # Build features for test set
+    dev_features = map(build_word_features,dev_data)
+    # Build model
+    model = build_model(train_features)    
+    # Look at the model
+    probe_model(model,train_features)
+    probe_model(model,dev_features,'Dev')
+    
+    return model
+    
+def build_model_cycle_2(train_data,dev_data):
+    """
+    Second pass at trying out our model
+    """
+
+    # Build features for training set
+    train_features =map(build_negate_features,train_data)
+    # Build features for test set
+    dev_features = map(build_negate_features,dev_data)
+    # Build model
+    model = build_model(train_features)    
+    # Look at the model
+    probe_model(model,train_features)
+    probe_model(model,dev_features,'Dev')
+    
+    return model
+
+    
+def build_model_cycle_3(train_data,dev_data):
+    """
+    Third pass at trying out our model
+    """
+    
+    # Build features for training set
+    train_features =map(build_keyphrase_features,train_data)
+    # Build features for test set
+    dev_features = map(build_keyphrase_features,dev_data)
+    # Build model
+    model = build_model(train_features)    
+    # Look at the model
+    probe_model(model,train_features)
+    probe_model(model,dev_features,'Dev')
+    test_features = map(build_keyphrase_features,test_data)
+    probe_model(model,test_features,'Test')
+    
+    return model</pre></div><p class="calibre11">Finally, we<a id="id483" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> will write a code with which we<a id="id484" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> can invoke all our functions that were defined previously:</p><div class="calibre2"><pre class="programlisting">if __name__ == "__main__":
+    
+    # Load data
+    input_dataset, y_labels = get_data()
+    # Train data    
+    train_data,all_test_data,train_y,all_test_y = get_train_test(input_dataset,y_labels)
+    # Dev data
+    dev_data,test_data,dev_y,test_y = get_train_test(all_test_data,all_test_y)
+
+    # Let us look at the data size in our different 
+    # datasets
+    print "\nOriginal  Data Size   =", len(input_dataset)
+    print "\nTraining  Data Size   =", len(train_data)
+    print "\nDev       Data Size   =", len(dev_data)
+    print "\nTesting   Data Size   =", len(test_data)    
+
+    # Different passes of our model building exercise    
+    model_cycle_1 =  build_model_cycle_1(train_data,dev_data)
+    # Print informative features
+    show_features(model_cycle_1)    
+    model_cycle_2 = build_model_cycle_2(train_data,dev_data)
+    show_features(model_cycle_2)
+    model_cycle_3 = build_model_cycle_3(train_data,dev_data)
+    show_features(model_cycle_3)</pre></div></div><div class="calibre2" title="How it works…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec249" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How it works…</h2></div></div></div><p class="calibre11">Let's try to<a id="id485" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> follow this recipe from the main function. We started with invoking the <code class="literal">get_data</code> function. As explained before, the movie review <a id="id486" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>data is stored as two categories, positive and negative. Our first loop goes through these categories. With these categories, we retrieved the file IDs for these categories in the second loop. Using these file IDs, we retrieve the words, as follows:</p><div class="calibre2"><pre class="programlisting">            words = list(movie_reviews.words(fileid))</pre></div><p class="calibre11">We will append these words to a list called <code class="literal">dataset</code>. The class label is appended to another list called <code class="literal">y_labels</code>.</p><p class="calibre11">Finally, we return the words and corresponding class labels:</p><div class="calibre2"><pre class="programlisting">    return dataset,y_labels</pre></div><p class="calibre11">Equipped with the dataset, we need to divide this dataset into the test and the train datasets:</p><div class="calibre2"><pre class="programlisting"> # Train data    
+    train_data,all_test_data,train_y,all_test_y = get_train_test(input_dataset,y_labels)</pre></div><p class="calibre11">We invoked the <code class="literal">get_train_test</code> function with an input dataset and the class labels. This function provides us with a stratified sample. We are using 70 percent of our data for the training set and the rest for the test set.</p><p class="calibre11">Once again, we invoke <code class="literal">get_train_test</code> with the test dataset returned from the previous step:</p><div class="calibre2"><pre class="programlisting">    # Dev data
+    dev_data,test_data,dev_y,test_y = get_train_test(all_test_data,all_test_y)</pre></div><p class="calibre11">We created a separate dataset and called it the dev dataset. We need this dataset to tune our model. We want our test set to really behave as a test set. We don't want to expose our test set during the different passes of our model building exercise.</p><p class="calibre11">Let's print the size of our train, dev, and test datasets:</p><div class="mediaobject"><img src="Images/B04041_06_19.jpg" alt="How it works…" class="calibre117"/></div><p class="calibre11">As you <a id="id487" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>can see, 70 percent of the original data is<a id="id488" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> assigned to our training set. We have again split the rest 30 percent into a 70/30 percent split for <code class="literal">Dev</code> and <code class="literal">Testing</code>.</p><p class="calibre11">Let's start our model building activity. We will call <code class="literal">build_model_cycle_1</code> with our training and dev datasets. In this function, we will first create our features by calling <code class="literal">build_word_feature</code> using a map on all the instances in our dataset. The <code class="literal">build_word_feature</code> is a simple feature-generating function. Every word is a feature. The output of this function is a dictionary of features, where the key is the word itself and the value is one. These types of features are typically called Bag of Words (BOW). The <code class="literal">build_word_features</code> is invoked using both the training and the dev data:</p><div class="calibre2"><pre class="programlisting">    # Build features for training set
+    train_features =map(build_negate_features,train_data)
+    # Build features for test set
+    dev_features = map(build_negate_features,dev_data)</pre></div><p class="calibre11">We will now proceed to train our model with the generated feature:</p><div class="calibre2"><pre class="programlisting">    # Build model
+    model = build_model(train_features)    </pre></div><p class="calibre11">We need to test how good our model is. We use the <code class="literal">probe_model</code> function to do this. <code class="literal">Probe_model</code> takes three parameters. The first parameter is the model of interest, the second parameter is the feature against which we want to see how good our model is, and the last parameter is a string used for display purposes. The <code class="literal">probe_model</code> function calculates the accuracy metric using the accuracy function in the <code class="literal">nltk.classify</code> module.</p><p class="calibre11">We invoke <code class="literal">probe_model</code> twice: once with the training data to see how good the model is on our training dataset, and then once with our dev dataset:</p><div class="calibre2"><pre class="programlisting">    # Look at the model
+    probe_model(model,train_features)
+    probe_model(model,dev_features,'Dev')</pre></div><p class="calibre11">Let's now look at the accuracy figures:</p><div class="mediaobject"><img src="Images/B04041_06_20.jpg" alt="How it works…" class="calibre118"/></div><p class="calibre11">Our <a id="id489" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>model is behaving very well using the training data. This is not surprising as the model has already seen it during the training <a id="id490" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>phase. It's doing a good job at classifying the training record correctly. However, our dev accuracy is very poor. Our model is able to classify only 60 percent of the dev instances correctly. Surely our features are not informative enough to help our model classify the unseen instances with a good accuracy. It will be good to see which features are contributing more towards discriminating a review into positive and negative:</p><div class="calibre2"><pre class="programlisting">show_features(model_cycle_1) </pre></div><p class="calibre11">We will invoke the <code class="literal">show_features</code> function to look at the features' contribution towards the model. The <code class="literal">Show_features</code> function utilizes the <code class="literal">show_most_informative_feature</code> function from the NLTK classifier object. The most important features in our first model are as follows:</p><div class="mediaobject"><img src="Images/B04041_06_21.jpg" alt="How it works…" class="calibre119"/></div><p class="calibre11">The way to read it is: the feature <code class="literal">stupidity = 1</code> is 15 times more effective for classifying a review as negative.</p><p class="calibre11">Let's now do a second round of building this model using a new set of features. We will do this by invoking <code class="literal">build_model_cycle_2</code>. <code class="literal">build_model_cycle_2</code> is very similar to <code class="literal">build_model_cycle_1</code> except for the feature generation function called inside map function.</p><p class="calibre11">The feature<a id="id491" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> generation function is called <code class="literal">build_negate_features</code>. Typically, words such as not and no are called negation <a id="id492" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>words. Let's assume that our reviewer says that the movie is not good. If we use our previous feature generator, the word good would be treated equally in both the positive and negative reviews. We know that the word good should be used to discriminate the positive reviews. To avoid this problem, we will look for the negation words no and not in our word list. We want to modify our example sentence as follows:</p><div class="calibre2"><pre class="programlisting">"movie is not good" to "movie is not_good"</pre></div><p class="calibre11">This way, <code class="literal">no_good</code> can be used as a good feature to discriminate the negative reviews from the positive reviews. The <code class="literal">build_negate_features</code> function does this job.</p><p class="calibre11">Let's now look at our probing output for the model built with this negation feature:</p><div class="mediaobject"><img src="Images/B04041_06_22.jpg" alt="How it works…" class="calibre120"/></div><p class="calibre11">We improved our model accuracy on our dev data by almost 2 percent. Let's now look at the most informative features for this model:</p><div class="mediaobject"><img src="Images/B04041_06_23.jpg" alt="How it works…" class="calibre121"/></div><p class="calibre11">Look at the last feature. Adding negation to funny, the '<code class="literal">Not_funny</code>' feature is 11.7 times more informative for discriminating a review as negative.</p><p class="calibre11">Can we do better on our model accuracy ? Currently, we are at 70 percent. Let's do a third run with a new set of features. We will do this by invoking <code class="literal">build_model_cycle_3</code>. <code class="literal">build_model_cycle_3</code> is very similar to <code class="literal">build_model_cycle_2</code> except for the feature generation function called inside map function.</p><p class="calibre11">The <code class="literal">build_keyphrase_features</code> function is used as a feature generator. Let's look at the function in detail. Instead of using the words as features, we will generate key phrases from the review and use them as features. Key phrases are phrases that we consider important<a id="id493" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> using some metric. Key phrases can <a id="id494" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>be made of either two, three, or n words. In our case, we will use two words (bigrams) to build our key phrase. The metric that we will use is the raw frequency count of these phrases. We will choose the phrases whose frequency count is higher. We will do some simple preprocessing before generating our key phrases. We will remove all the stopwords and punctuation from our word list. The <code class="literal">remove_stop_words</code> function is invoked to remove the stopwords and punctuation. NLTK's corpus module has a list of English stopwords. We can retrieve it as follows:</p><div class="calibre2"><pre class="programlisting">stopword_list = stopwords.words('english')</pre></div><p class="calibre11">Similarly, the string module in Python maintains a list of punctuation. We will remove the stopwords and punctuation as follows:</p><div class="calibre2"><pre class="programlisting">words = [word for word in in_data[0] if word not in new_stopwords \
+and word not in punctuation]</pre></div><p class="calibre11">However, we will not remove not and <code class="literal">no</code>. We will create a new set of stopwords by not, including the negation words in the previous step:</p><div class="calibre2"><pre class="programlisting">new_stopwords = [word for word in stopword_list if word not in negate_words]</pre></div><p class="calibre11">We will leverage the <code class="literal">BigramCollocationFinder</code> class from NLTK to generate our key phrases:</p><div class="calibre2"><pre class="programlisting">    bigram_finder  = BigramCollocationFinder.from_words(words)
+    # We use the raw frequency count of bigrams, i.e. bigrams are
+    # ordered by their frequency of occurence in descending order
+    # and top 400 bigrams are selected.
+    bigrams        = bigram_finder.nbest(BigramAssocMeasures.raw_freq,400) </pre></div><p class="calibre11">Our metric is the frequency count. You can see that we specified it as <code class="literal">raw_freq</code> in the last line. We will ask the collocation finder to return us a maximum of 400 phrases.</p><p class="calibre11">Loaded with our new feature, we will proceed to build our model and test the correctness of our model. Let's look at the output of our model:</p><div class="mediaobject"><img src="Images/B04041_06_24.jpg" alt="How it works…" class="calibre122"/></div><p class="calibre11">Yes! We have achieved a great deal of improvement on our dev set. From 68 percent accuracy in our first pass with word features, we have moved from 12 percent up to 80 percent with our key phrase features. Let's now expose our test set to this model and check the accuracy:</p><div class="calibre2"><pre class="programlisting">    test_features = map(build_keyphrase_features,test_data)
+    probe_model(model,test_features,'Test')</pre></div><div class="mediaobject"><img src="Images/B04041_06_25.jpg" alt="How it works…" class="calibre123"/></div><p class="calibre11">Our test <a id="id495" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>set's accuracy is greater than our dev <a id="id496" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>set's accuracy. We did a good job in training a good model that works well on an unseen dataset. Before we end this recipe, let's look at the key phrases that are the most informative:</p><div class="mediaobject"><img src="Images/B04041_06_26.jpg" alt="How it works…" class="calibre124"/></div><p class="calibre11">The key phrase, Oscar nomination, is 10 times more helpful in discriminating a review as positive. You can't deny this. We can see that our key phrases are very informative, and hence, our model performed better than the previous two runs.</p></div><div class="calibre2" title="There's more…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec250" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>There's more…</h2></div></div></div><p class="calibre11">How did we know that 400 key phrases and the metric frequency count is the best parameter for bigram generation? Trial and error. Though we didn't list our trial and error process, we pretty much ran it with various combinations such as 200 phrases with pointwise mutual information, and similar other methods.</p><p class="calibre11">This is what needs to be done in the real world. However, instead of a blind search through the parameter space every time, we looked at the most informative features. This gave us a clue on the discriminating power of the features.</p></div><div class="calibre2" title="See also"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec251" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>See also</h2></div></div></div><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong1"><em class="calibre15">Preparing data for model building</em></span> recipe in <a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="ch06.xhtml" title="Chapter 6. Machine Learning 1">Chapter 6</a>, <span class="strong1"><em class="calibre15">Machine Learning I</em></span></li></ul></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Building decision trees to solve multiclass problems"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch06lvl1sec71" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Building decision trees to solve multiclass problems</h1></div></div></div><p class="calibre11">In this recipe, we will look at building decision trees to solve multiclass classification problems. Intuitively, a decision tree can be defined as a process of arriving at an answer by asking a series<a id="id497" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> of questions: a series of if-then<a id="id498" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> statements arranged hierarchically forms a decision tree. Due to this nature, they are easy to understand and interpret.</p><p class="calibre11">Refer to the<a id="id499" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> following link for a detailed introduction to decision trees:</p><p class="calibre11">
+<a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://en.wikipedia.org/wiki/Decision_tree">https://en.wikipedia.org/wiki/Decision_tree</a>
+</p><p class="calibre11">Theoretically, many decision trees can be built for a given dataset. Some of the trees are more accurate than others. There are efficient algorithms for developing a reasonably accurate tree in a limited time. One such algorithm is Hunt's algorithm. Algorithms such as ID3, C4.5, and CART (Classification and Regression Trees) are based on Hunt's algorithm. Hunt's algorithm can be outlined as follows:</p><p class="calibre11">Given a dataset, D, of n records and with each record having m attributes / features / columns and each record labeled either y1, y2, or y3, the algorithm proceeds as follows:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">If all the records in D belong to the same class label, say y1, then y1 is the leaf node of the tree and is labeled y1.</li><li class="listitem">If D has records that belong to more than one class label, a feature test condition is employed to divide the records into smaller subsets. Let's say in the initial run, we run a feature test condition on all the attributes and find a single attribute that is able to split the datasets into three smaller subsets. This attribute becomes the root node. We apply the test condition on all the three subsets to figure out the next level of nodes. This process is performed iteratively.</li></ul></div><p class="calibre11">Notice that when we defined our classification, we defined three class labels, y1, y2, and y3. This is different from the problems that we solved in the previous two recipes, where we had only two labels. This is a multiclass problem. Our Iris dataset that we used in most of our recipes is a three-class problem. We had our records distributed across three class labels. We can generalize it to an n-class problem. Digit recognition is another example by which we need to classify a given image in one of the digits between zero and nine. Many real-word problems are inherently multiclass. Some algorithms are also inherently capable of handling multiclass problems. No change is required for these algorithms. The algorithms that we will discuss in the chapters are all capable of handling multiclass problems. Decision trees, Naïve Bayes, and KNN algorithms are good at handling multiclass problems.</p><p class="calibre11">Let's see how we can leverage decision trees to handle multiclass problems in this recipe. It also helps to have a good understanding of decision trees. Random forest, which we will venture into in the next chapter, is a more sophisticated method used widely in the industry and is based on decision trees.</p><p class="calibre11">Let's now dive into our decision tree recipe.</p><div class="calibre2" title="Getting ready"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec252" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>Getting ready</h2></div></div></div><p class="calibre11">We will use<a id="id500" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> the Iris dataset to demonstrate<a id="id501" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> how to build decision trees. Decision trees are a non-parametric supervised learning method that can be used to solve both classification and regression problems. As explained previously, the advantages<a id="id502" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> of using decision trees are manifold, as follows:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">They are easily interpretable</li><li class="listitem">They require very little data preparation and data-to-feature conversion: remember our feature generation methods in the previous recipe</li><li class="listitem">They naturally support multiclass problems</li></ul></div><p class="calibre11">Decision trees <a id="id503" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>are not without problems. Some of the  problems that they pose are as follows:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">They can easily overfit: a high accuracy in a training set and very poor performance with a test data.</li><li class="listitem">There can be millions of trees that can be fit to a given dataset.</li><li class="listitem">The class imbalance problem may affect decision trees heavily. The class imbalance problem arises when our training set does not consist of an equal number of instances for both the class labels in a binary classification problem. This applies to multiclass problems as well.</li></ul></div><p class="calibre11">An important part of decision trees is the feature test condition. Let's spend some time understanding the<a id="id504" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> feature test condition. Typically, each attribute in our instance can be either understood.</p><p class="calibre11">
+<span class="strong1"><strong class="calibre12">Binary attribute</strong></span>: This is where an attribute can take two possible values, for example, true or false. The feature test condition should return two values in this case.</p><p class="calibre11">
+<span class="strong1"><strong class="calibre12">Nominal attribute</strong></span>: This is where an attribute can take more than two values, for example, n values. The feature test condition should either output n output or group them into binary splits.</p><p class="calibre11">
+<span class="strong1"><strong class="calibre12">Ordinal attribute</strong></span>: This is where an implicit order in their values exists. For example, let's take an imaginary attribute called size, which can take on the values small, medium, or large. There are three values that the attribute can take and there is an order for them: small, medium, large. They are handled by the feature attribute test condition that is similar to the nominal attribute.</p><p class="calibre11">
+<span class="strong1"><strong class="calibre12">Continuous attributes</strong></span>: These are attributes that can take continuous values. They are discretized into ordinal attributes and then handled.</p><p class="calibre11">A feature test <a id="id505" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>condition is a way to split the input<a id="id506" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> records into subsets based on a criteria or metric called impurity. This impurity is calculated with respect to the class label for each attribute in the instance. The attribute contributing to the highest impurity is chosen as the data splitting attribute, or in other words, the node for that level in the tree.</p><p class="calibre11">Let's see an example to explain it. We will use a measure called entropy to calculate the impurity.</p><p class="calibre11">Entropy is defined as follows:</p><div class="mediaobject"><img src="Images/B04041_06_27.jpg" alt="Getting ready" class="calibre125"/></div><p class="calibre11">Where:</p><div class="mediaobject"><img src="Images/B04041_06_28.jpg" alt="Getting ready" class="calibre126"/></div><p class="calibre11">Let's consider an example:</p><div class="calibre2"><pre class="programlisting">X = {2,2}</pre></div><p class="calibre11">We can now calculate the entropy for this set, as follows:</p><div class="mediaobject"><img src="Images/B04041_06_29.jpg" alt="Getting ready" class="calibre127"/></div><p class="calibre11">The entropy<a id="id507" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> for this set is 0. An entropy of 0<a id="id508" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> indicates homogeneity. It is very easy to code entropy in Python. Look at the following code list:</p><div class="calibre2"><pre class="programlisting">import math
+
+def prob(data,element):
+    """Calculates the percentage count of a given element
+
+    Given a list and an element, returns the elements percentage count
+        
+    """
+    element_count =0
+   	# Test conditoin to check if we have proper input
+    if len(data) == 0 or element == None \
+                or not isinstance(element,(int,long,float)):
+        return None      
+    element_count = data.count(element)
+    return element_count / (1.0 * len(data))
+
+
+def entropy(data):
+    """"Calcuate entropy
+    """
+    entropy =0.0
+    
+    if len(data) == 0:
+        return None
+    
+    if len(data) == 1:
+        return 0
+    try:
+        for element in data:
+            p = prob(data,element)
+            entropy+=-1*p*math.log(p,2)
+    except ValueError as e:
+        print e.message
+        
+    
+    return entropy</pre></div><p class="calibre11">For the purpose of finding the best splitting variable, we will leverage the entropy. First, we will calculate the entropy based on the class labels, as follows:</p><div class="mediaobject"><img src="Images/B04041_06_30.jpg" alt="Getting ready" class="calibre128"/></div><p class="calibre11">Let's define <a id="id509" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>another term called information<a id="id510" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> gain. Information gain is a measure to find which attribute in the given instance is most useful for discrimination between the class labels.</p><p class="calibre11">Information gain<a id="id511" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> is the difference between an entropy of the parent and an average entropy of the child nodes. At each level in the tree, we will use information gain to build the tree:</p><p class="calibre11">
+<a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://en.wikipedia.org/wiki/Information_gain_in_decision_trees">https://en.wikipedia.org/wiki/Information_gain_in_decision_trees</a>
+</p><p class="calibre11">We will start<a id="id512" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> with all the attributes in a training set and calculate the overall entropy. Let's look at the following example:</p><div class="mediaobject"><img src="Images/B04041_06_34.jpg" alt="Getting ready" class="calibre129"/></div><p class="calibre11">The preceding dataset is imaginary data collected for a user to figure out what kind of movies he is interested in. There are four attributes: the first one is about whether the user watches a movie based on the lead actor, the second attribute is about if the user makes his decision to watch the movie based on whether or not it won an Oscar, and the third one is about if the user decides to watch a movies based on whether or not it is a box office success.</p><p class="calibre11">In order to build a decision tree for the preceding example, we will start with the entropy calculation of the whole dataset. This is a two-class problem, hence c = 2. Additionally, there are a total of four records, hence, the entropy of the whole dataset is as follows:</p><div class="mediaobject"><img src="Images/B04041_06_36.jpg" alt="Getting ready" class="calibre130"/></div><p class="calibre11">The overall entropy of the dataset is 0.811.</p><p class="calibre11">Now, let's<a id="id513" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> look at the first attribute, the<a id="id514" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> lead attribute. For a lead actor, Y, there is one instance class label that says Y and another one that says N. For a lead actor, N, both the instance class labels are N. We will calculate the average entropy as follows:</p><div class="mediaobject"><img src="Images/B04041_06_35.jpg" alt="Getting ready" class="calibre131"/></div><p class="calibre11">It's an average entropy. There are two records with a lead actor as Y and two records with lead actors as N; hence, we have <code class="literal">2/4.0</code> multiplied to the entropy value.</p><p class="calibre11">As the entropy is calculated for this subset of data, we can see that out of the two records, one of them has a class label of Y and another one has a class label of N for the lead actor Y. Similarly, for the lead actor N, both the records have a class label of N. Thus, we get the average entropy for this attribute.</p><p class="calibre11">The average entropy value for the lead actor attribute is 0.5.</p><p class="calibre11">The information gain is now 0.811 – 0.5 = 0.311.</p><p class="calibre11">Similarly, we will find the information gain for all the attributes. The attribute with the highest information gain wins and becomes the root node of the decision tree.</p><p class="calibre11">The same process is repeated in order to find the second level of the nodes, and so on.</p></div><div class="calibre2" title="How to do it…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec253" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How to do it…</h2></div></div></div><p class="calibre11">Let's load the required libraries. We will follow it with two functions, one to load the data and the <a id="id515" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>second one to split the data into <a id="id516" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>a training set and a test it:</p><div class="calibre2"><pre class="programlisting">from sklearn.datasets import load_iris
+from sklearn.cross_validation import StratifiedShuffleSplit
+import numpy as np
+from sklearn import tree
+from sklearn.metrics import accuracy_score,classification_report,confusion_matrix
+import pprint
+
+def get_data():
+    """
+    Get Iris data
+    """
+    data = load_iris()
+    x = data['data']
+    y = data['target']
+    label_names = data['target_names']
+    
+    return x,y,label_names.tolist()
+    
+
+def get_train_test(x,y):
+    """
+    Perpare a stratified train and test split
+    """
+    train_size = 0.8
+    test_size = 1-train_size
+    input_dataset = np.column_stack([x,y])
+    stratified_split = StratifiedShuffleSplit(input_dataset[:,-1], \
+            test_size=test_size,n_iter=1,random_state = 77)
+
+    for train_indx,test_indx in stratified_split:
+        train_x = input_dataset[train_indx,:-1]
+        train_y = input_dataset[train_indx,-1]
+        test_x =  input_dataset[test_indx,:-1]
+        test_y = input_dataset[test_indx,-1]
+    return train_x,train_y,test_x,test_y</pre></div><p class="calibre11">Let's write the functions to help us build and test the decision tree model:</p><div class="calibre2"><pre class="programlisting">def build_model(x,y):
+    """
+    Fit the model for the given attribute 
+    class label pairs
+    """
+    model = tree.DecisionTreeClassifier(criterion="entropy")
+    model = model.fit(x,y)
+    return model
+
+
+def test_model(x,y,model,label_names):
+    """
+    Inspect the model for accuracy
+    """
+    y_predicted = model.predict(x)
+    print "Model accuracy = %0.2f"%(accuracy_score(y,y_predicted) * 100) + "%\n"
+    print "\nConfusion Matrix"
+    print "================="
+    print pprint.pprint(confusion_matrix(y,y_predicted))
+    
+    print "\nClassification Report"
+    print "================="
+    
+    print classification_report(y,y_predicted,target_names=label_names)</pre></div><p class="calibre11">Finally, the<a id="id517" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> main function to invoke all <a id="id518" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>the other functions that we defined is as follows:</p><div class="calibre2"><pre class="programlisting">if __name__ == "__main__":
+    # Load the data
+    x,y,label_names = get_data()
+    # Split the data into train and test    
+    train_x,train_y,test_x,test_y = get_train_test(x,y)
+    # Build model    
+    model = build_model(train_x,train_y)
+    # Evaluate the model on train dataset    
+    test_model(train_x,train_y,model,label_names)    
+    # Evaluate the model on test dataset
+    test_model(test_x,test_y,model,label_names)</pre></div></div><div class="calibre2" title="How it works…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec254" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>How it works…</h2></div></div></div><p class="calibre11">Let's start with the main function. We invoke <code class="literal">get_data</code> in the <code class="literal">x</code>, <code class="literal">y</code>, and <code class="literal">label_names</code> variables in order to retrieve the Iris dataset. We took the label names so that when we see our model accuracy, we can measure it by individual labels. As said previously, the Iris data poses a three-class problem. We will need to build a classifier that can classify any new instances in one of the tree types: setosa, versicolor, or virginica.</p><p class="calibre11">Once again, as in the previous recipes, <code class="literal">get_train_test</code> returns stratified train and test datasets. We then leverage <code class="literal">StratifiedShuffleSplit</code> from scikit-learn to get the training and test datasets with an equal class label distribution.</p><p class="calibre11">We must invoke the <code class="literal">build_model</code> method to induce a decision tree on our training set. The <code class="literal">DecisionTreeClassifier</code> class in the model tree of scikit-learn implements a decision tree:</p><div class="calibre2"><pre class="programlisting">model = tree.DecisionTreeClassifier(criterion="entropy")</pre></div><p class="calibre11">As you <a id="id519" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>can see, we specified that our<a id="id520" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> feature test condition is an entropy using the <code class="literal">criterion</code> variable. We then build the model by calling the <code class="literal">fit</code> function and return the model to the calling program.</p><p class="calibre11">Now, let's proceed to evaluate our model by using the <code class="literal">test_model</code> function. The model takes instances <code class="literal">x</code> , class labels <code class="literal">y</code>, decision tree model <code class="literal">model</code>, and the name of the class labels <code class="literal">label_names</code>.</p><p class="calibre11">The module metric in scikit-learn provides three evaluation criteria:</p><div class="calibre2"><pre class="programlisting">from sklearn.metrics import accuracy_score,classification_report,confusion_matrix</pre></div><p class="calibre11">We defined accuracy in the previous recipe and the introduction section.</p><p class="calibre11">A confusion matrix prints the confusion matrix defined in the introduction section. A confusion matrix is a good way of evaluating the model performance. We are interested in the cell values having true positive and false positive values.</p><p class="calibre11">Finally, we also have <code class="literal">classification_report</code> to print the precision, recall, and F1 score.</p><p class="calibre11">We must evaluate the model on the training data first:</p><div class="mediaobject"><img src="Images/B04041_06_31.jpg" alt="How it works…" class="calibre132"/></div><p class="calibre11">We have<a id="id521" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> done a great job with the training<a id="id522" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> dataset. We have 100 percent accuracy. The true test is with the test dataset where the rubber meets the road.</p><p class="calibre11">Let's look at the model evaluation using the test dataset:</p><div class="mediaobject"><img src="Images/B04041_06_32.jpg" alt="How it works…" class="calibre133"/></div><p class="calibre11">Our classifier has performed extremely well with the test set as well.</p></div><div class="calibre2" title="There's more…"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec255" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>There's more…</h2></div></div></div><p class="calibre11">Let's <a id="id523" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>probe the model to see how the <a id="id524" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>various features contributed towards discriminating the classes.</p><div class="calibre2"><pre class="programlisting">def get_feature_names():
+    data = load_iris()
+    return data['feature_names']
+
+
+def probe_model(x,y,model,label_names):
+
+    feature_names = get_feature_names()
+    feature_importance = model.feature_importances_
+    print "\nFeature Importance\n"
+    print "=====================\n"
+    for i,feature_name in enumerate(feature_names):
+        print "%s = %0.3f"%(feature_name,feature_importance[i])
+
+    # Export the decison tree as a graph
+    tree.export_graphviz(model,out_file='tree.dot')</pre></div><p class="calibre11">The tree classifier object provides an attribute called <code class="literal">feature_importances_</code>, which can be called to retrieve the importance of the various features towards building our model.</p><p class="calibre11">We wrote a<a id="id525" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> simple function, <code class="literal">get_feature_names</code>, in order to retrieve the names of our attributes. However, this can be added as <a id="id526" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/>a part of <code class="literal">get_data</code>.</p><p class="calibre11">Let's look at the print statement output:</p><div class="mediaobject"><img src="Images/B04041_06_33.jpg" alt="There's more…" class="calibre134"/></div><p class="calibre11">This looks as if the petal width and petal length are contributing more towards our classification.</p><p class="calibre11">Interestingly, we can also export the tree built by the classifier as a dot file and it can be visualized using the GraphViz package. In the last line, we export our model as a dot file:</p><div class="calibre2"><pre class="programlisting"># Export the decison tree as a graph
+tree.export_graphviz(model,out_file='tree.dot')</pre></div><p class="calibre11">You can<a id="id527" class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2"/> download and install the Graphviz package to visualize this:</p><p class="calibre11">
+<a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="http://www.graphviz.org/">http://www.graphviz.org/</a>
+</p></div><div class="calibre2" title="See also"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch06lvl2sec256" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"/>See also</h2></div></div></div><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><span class="strong1"><em class="calibre15">Preparing data for model building</em></span> recipe in <a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="ch06.xhtml" title="Chapter 6. Machine Learning 1">Chapter 6</a>, <span class="strong1"><em class="calibre15">Machine Learning I</em></span></li><li class="listitem"><span class="strong1"><em class="calibre15">Finding nearest neighbors</em></span> recipe in <a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="ch06.xhtml" title="Chapter 6. Machine Learning 1">Chapter 6</a>, <span class="strong1"><em class="calibre15">Machine Learning I</em></span></li><li class="listitem"><span class="strong1"><em class="calibre15">Classifying documents using Naive Bayes</em></span> recipe in <a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="ch06.xhtml" title="Chapter 6. Machine Learning 1">Chapter 6</a>, <span class="strong1"><em class="calibre15">Machine Learning I</em></span></li></ul></div></div></div></div>
+
+
+
+  </body></html>

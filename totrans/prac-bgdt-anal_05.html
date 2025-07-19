@@ -1,0 +1,2610 @@
+<html><head></head><body>
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Big Data Mining with NoSQL</h1>
+                </header>
+            
+            <article>
+                
+<p>The term <strong>NoSQL</strong> was first used by Carlo Strozzi, who, in 1998, released the Strozzi NoSQL opensource relational database. In the late 2000s, new paradigms in database architecture emerged, many of which did not adhere to the strict constraints required of relational database systems. These databases, due to their non-conformity with standard database conventions such as ACID compliance, were soon grouped under a broad category known as NoSQL.</p>
+<p>Each NoSQL database claims to be optimal for certain use cases. Although few of them would fit the requirements to be a general-purpose database management system, they all leverage a few common themes across the spectrum of NoSQL systems.</p>
+<p class="mce-root">In this chapter, we will visit some of the broad categories of NoSQL database management systems. We will discuss the primary drivers that initiated the migration to NoSQL database systems and how such databases solved specific business needs that led to their widespread adoption, and conclude with a few hands-on NoSQL exercises.</p>
+<p>The topics covered in this chapter include:</p>
+<ul>
+<li>Why NoSQL?</li>
+<li>NoSQL databases</li>
+<li>In-memory databases</li>
+<li>Columnar databases</li>
+<li>Document-oriented databases</li>
+<li>Key-value databases</li>
+<li>Graph databases</li>
+<li>Other NoSQL types and summary</li>
+<li>Hands-on exercise on NoSQL systems</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Why NoSQL?</h1>
+                </header>
+            
+            <article>
+                
+<p>The term NoSQL generally means <em>Not Only SQL</em>: that is, the underlying database has properties that are different to those of common and traditional database systems. As such, there is no clear distinction that qualifies a database as NoSQL, other than the fact that they do not provide the characteristics of ACID compliance. As such, it would be helpful to understand the nature of ACID properties that have been the mainstay of database systems for many decades, as well as discuss, in brief, the significance of BASE and CAP, two other terminologies central to databases today.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The ACID, BASE, and CAP properties</h1>
+                </header>
+            
+            <article>
+                
+<p>Let's first proceed with ACID and SQL.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">ACID and SQL</h1>
+                </header>
+            
+            <article>
+                
+<p>ACID stands for atomicity, consistency, isolation, and durability:</p>
+<ul>
+<li><strong>Atomicity</strong>: This indicates that database transactions either execute in full or do not execute at all. In other words, either all transactions should be committed, that is, persisted in their entirety, or not committed at all. There is no scope for a partial execution of a transaction.</li>
+<li><strong>Consistency</strong>: The constraints on the data, that is, the rules that determine data management within a database, will be consistent throughout the database. Different instances will not abide by rules that are any different to those in other instances of the database.</li>
+<li><strong>Isolation</strong>: This property defines the rules of how concurrent operations (transactions) will read and write data. For example, if a certain record is being updated while another process reads the same record, the isolation level of the database system will determine which version of the data would be returned back to the user.</li>
+<li><strong>Durability</strong>: The durability of a database system generally indicates that committed transactions will remain persistent even in the event of a system failure. This is generally managed by the use of transaction logs that databases can refer to during recovery.</li>
+</ul>
+<p>The reader may observe that all the properties defined here relate primarily to database transactions. A <strong>transaction</strong> is a unit of operation that abides by the aforementioned rules and makes a change to the database. For example, a typical cash withdrawal from an ATM may have the following logical pathway:</p>
+<ol>
+<li>User withdraws cash from an ATM</li>
+<li>The bank checks the current balance of the user</li>
+<li>The database system deducts the corresponding amount from the user's account</li>
+<li>The database system updates the amount in the user's account to reflect the change</li>
+</ol>
+<p>As such, most databases in popular use prior to the mid-1990s, such as Oracle, Sybase, DB2, and others, were optimized for recording and managing transactional data. Until this time, most databases were responsible for managing transactional data. The rapid growth of the internet in the mid-90s led to new types of data that did not necessarily require the strict ACID compliance requirements. Videos on YouTube, music on Pandora, and corporate email records are all examples of use cases where a a transactional database does not add value beyond simply functioning as a technology layer for storing data.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The BASE property of NoSQL</h1>
+                </header>
+            
+            <article>
+                
+<p>By the late 2000s, data volume had surged and it was apparent that a new alternative model was required in order to manage the data. This new model, called BASE, became a foundational topic that replaced ACID as the preferred model of database management systems.</p>
+<p><strong>BASE</strong> stands for <strong>B</strong>asically <strong>A</strong>vailable <strong>S</strong>oft-state <strong>E</strong>ventually consistency. This implies that the database is <em>basically</em> available for use most of the time; that is, there can be periods during which the services are unavailable (and hence additional redundancy measures should be implemented). <em>Soft-state</em> means that the state of the system cannot be guaranteed - different instances of the same data might have different content as it may not have yet captured recent updates in another part of the cluster. Finally, <em>eventually</em> consistent implies that although the database might not be in the same state at all times, it will eventually get to the same state; that is, become <em>consistent</em>.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The CAP theorem</h1>
+                </header>
+            
+            <article>
+                
+<p>First introduced in the late 1990s by Eric Allen Brewer, the CAP theorem categorizes the constraints, or more generally the characteristics, of distributed database systems. In brief, the CAP theorem postulates that strictly speaking, database systems can guarantee only two of the three properties defined by CAP, as follows:</p>
+<ul>
+<li><strong>Consistency</strong>: The data should be consistent across all instances of the database and hence, when queried, should provide a coherent result across all nodes</li>
+<li><strong>Availability</strong>: Irrespective of the state of any individual node, the system will always respond with a result upon a query being executed (whether or not it is the most recent commit)</li>
+<li><strong>Partition tolerance</strong>: This implies that when nodes are separated across a network, the system should continue to function normally even if any node loses interconnectivity to another node</li>
+</ul>
+<p>It might be evident from this that, since in a cluster nodes will be connected over a <em>network</em> which, by nature can be disrupted, partition tolerance has to be guaranteed in order for the system to continue performing normally. In this case, the contention lies with choosing between consistency and availability. For example, if the system has to be consistent; that is, show the most recent commit across all nodes, all the nodes cannot be <em>available</em> all at the same time as some nodes might not have the most recent commit. In this case, a query on a new update will not execute until all nodes have been updated with the new data. In case of availability, in similar terms, we cannot guarantee consistency, since to be available at all times means that some nodes will not have the same data as another node if a new update has not been written onto the respective node.</p>
+<p>There is a great deal of confusion as well as contention between deciding on whether to ensure consistency or to ensure availability, and as such databases have been categorized as being either <strong>CP</strong> or <strong>AP</strong>. For the purpose of this exercise, we need not get caught up in the terminologies as that would lead to a rather abstract and philosophical discussion. The information on the aforementioned terminologies has been primarily provided to reflect upon some of the foundational theories driving the development of databases.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The need for NoSQL technologies</h1>
+                </header>
+            
+            <article>
+                
+<p>While most database systems were initially designed to manage transactions, the growth of internet-related technologies and new types of data that did not require the strict puritan nature of transactional systems necessitated the development of alternative frameworks.</p>
+<p>For instance, storing the following types of data does not necessarily require a complex <em>transactional database</em>:</p>
+<ul>
+<li>Emails</li>
+<li>Media such as audio/video files</li>
+<li>Social network messages</li>
+<li>Website HTML pages</li>
+<li>Many others</li>
+</ul>
+<p>Additionally, the increase in users, and as a consequence, data volume, signaled the need for developing more robust architectures with the following characteristics:</p>
+<ul>
+<li>Scalable to manage ever increasing data volume</li>
+<li>Leverage commodity hardware to decrease dependency on expensive hardware</li>
+<li>Provide distributed processing capability across multiple nodes to process large-scale datasets</li>
+<li>Be fault-tolerant/provide high availability to handle node and site failures</li>
+</ul>
+<p>Scalable implies that the system can accommodate the increase in data volume by increasing the number of nodes, namely, by scaling horizontally. Further, increasing the number of nodes should have minimal impact on the performance of the system.</p>
+<p>Fault-tolerant implies that the system should be able to handle node failures, which won't be uncommon in a large distributed system with hundreds if not thousands of nodes.</p>
+<p>This led to the development of various groundbreaking and influential systems, of which perhaps the most notable were Google Bigtable and Amazon Dynamo.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Google Bigtable</h1>
+                </header>
+            
+            <article>
+                
+<p>Bigtable was a project that was initiated in 2004 to manage both scalability and performance of the data used for various projects at Google. The seminal paper that describes the characteristics of the system was released in 2006 (<a href="https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf">https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf</a>) titled <em>Bigtable: A Distributed Storage System for Structured Data</em>. In essence, Bigtable was a <em>column-store</em> (more on this later) where each value could be uniquely identified using a row key, a column key, and a timestamp. It was one of the first mainstream databases that epitomized the benefits of storing data in a columnar format rather than using the more common row-based layout. Although columnar databases such as kdb+ and Sybase IQ existed prior to Bigtable, the use of the method by an industry leader to manage petabyte-scale information brought the concept into the limelight.</p>
+<p>The official site of Bigtable summarizes the key-value proposition:</p>
+<div class="packt_quote">Bigtable is designed to handle massive workloads at consistent low latency and high throughput, so it's a great choice for both operational and analytical applications, including IoT, user analytics, and financial data analysis.</div>
+<p>Since the introduction of Bigtable, several other NoSQL databases adopted the convention of columnar data layout; most notably HBase and Accumulo, which are both Apache projects.</p>
+<p>The Bigtable solution is today available for use at <a href="https://cloud.google.com/bigtable/" target="_blank"><span class="URLPACKT">https://cloud.google.com/bigtable/</span></a> where it can be purchased on a subscription basis. The fee for smaller amounts of data is quite nominal and reasonable, whereas larger installations would require more extensive implementations.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Amazon Dynamo</h1>
+                </header>
+            
+            <article>
+                
+<p>Shortly after Google announced Bigtable, Amazon followed with the announcement of its internal Dynamo database at the 21st ACM Symposium on Operating Systems Principles held in October, 2007 (<a href="http://www.sosp2007.org" target="_blank"><span class="URLPACKT">http://www.sosp2007.org</span></a>).</p>
+<p>In the paper, now available on Werner Vogels' site at <a href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank">http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a>, Amazon described a key-value store called Dynamo that was used to power some of Amazon's most critical internal services such as S3 on AWS. The paper brought to bear some key concepts such as key-value storage, consistent hashing, and vector clocks, among others, that were implemented in Dynamo.</p>
+<p>Thus, Dynamo offered an alternative to Bigtable's columnar storage for large-scale datasets by introducing a fundamentally different method that leveraged key-value associations.</p>
+<p>In the next few sections, we will discuss the various types of NoSQL technologies and how each of them has characteristics that make them optimal for certain use cases. NoSQL has ushered in a paradigm shift in how we treat databases, and has provided a much-needed alternative view to data management at a scale that was not feasible previously.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">NoSQL databases</h1>
+                </header>
+            
+            <article>
+                
+<p>In our discussion of NoSQL types and databases, we will primarily focus on the following characteristics of NoSQL databases:</p>
+<ul>
+<li>In-memory databases</li>
+<li>Columnar databases</li>
+<li>Document-oriented databases</li>
+<li>Key-value databases</li>
+<li>Graph databases</li>
+<li>Other NoSQL types and summary</li>
+</ul>
+<p>Most types of NoSQL used in the industry today fall into one or more of these categories. The next few sections will discuss the high-level properties of each of these NoSQL offerings, their main advantages, and products in the market that fall into the respective categories.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">In-memory databases</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>In-memory databases</strong>, as the name implies, leverage the computer memory; that is, the RAM, to store datasets. Before we look into how in-memory databases work, it would be worthwhile to recollect how data transfer happens in a typical computer:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="53" width="324" src="assets/6a7357ec-76ba-4ba4-a9b8-957b76539cb5.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Simple Data Flow Computer Hierarchy</div>
+<p>As shown in the preceding image, data traverses from disk to memory to the CPU. This is a very high-level generalization of the exact process as there are conditions under which the CPU does not need to send an instruction to read data from memory (such as when the data is already present in the CPU L2 Cache - a part of the CPU that contains memory reserved for caching data), but fundamentally the process is linear between the CPU, RAM, and disk.</p>
+<p>Data that is stored on disk can be transferred to the memory at a certain rate that is dependent on the I/O (Input/Output) throughput of the disk. It takes approximately 10-20 milliseconds (ms) to access data from disk. While the exact number varies depending on the size of the data, the minimum seek time (time for the disk to find the location of the data) in itself is approximately 10-15 ms. Compare this with the time it takes to fetch data from memory, which is approximately 100 nanoseconds. Finally, it takes approximately 7 ns to read data from the CPU L2 Cache.</p>
+<p>To put this into perspective, the disk access time of 15 milliseconds, namely, 15,000,000 nanoseconds is 150,000 times <em>slower</em> than the time it takes to access data from memory. In other words, data that is already present in memory can be read at an astounding 150 thousand times faster relative to disk. This is essentially true of reading random data. The time to read sequential data is arguably less sensational, but still nearly an order of magnitude faster.</p>
+<p>If the disk and RAM were represented as cars, the RAM <em>car</em> would have gone all the way to the moon and be on its way back in the time it would take the disk car to go barely two miles. That is how large the difference is.</p>
+<p>Hence, it is natural to conclude from this that if the data were stored in RAM, especially in the case of larger datasets, the access time would be dramatically lower, and consequently the time to process the data (at least on the I/O level) would be significantly reduced.</p>
+<p>Traditionally, all data in terms of databases was stored on disk. With the advent of the internet, the industry started leveraging <em>memcached,</em> which provided a means to store data in key-value pairs in memory via an API. For example, it was, and still is, common for MySQL databases to leverage the memcached API to cache objects in memory to optimize read speeds as well as reduce the load on the primary (MySQL) database.</p>
+<p>However, as data volumes started to increase, the complexity of using the database and memcached method started to take it's toll, and databases that were exclusively designed to store data in memory (and sometimes both on disk and in memory) were being developed at a rapid pace.</p>
+<p>As a result, in-memory databases such as Redis started replacing memcached as the fast cache store for driving websites. In the case of Redis, although the data would be held in memory as key-value pairs, there was an option to persist the data on disk. This differentiated it from solutions such as memcached that were strictly memory caches.</p>
+<p>The primary drivers of the move towards in-memory databases can be summarized as follows:</p>
+<ul>
+<li>Complexity of managing increasing volumes of data such as web traffic by the traditional, for example, MySQL + memcached combination</li>
+<li>Reduced RAM costs, making it more affordable to purchase larger sizes</li>
+<li>Overall industry drive towards NoSQL technologies that led to increased focus and community participation towards the development of newer, innovative database platforms</li>
+<li>Faster data manipulation in memory provided a means to reduce I/O overhead in situations that demanded ultra-fast, low-latency processing of data</li>
+</ul>
+<p>Today, some of the leading options for databases that provide in-memory capabilities in the industry include:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>Open source</strong></p>
+</td>
+<td>
+<p><strong>Commercial</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Redis</p>
+</td>
+<td>
+<p>Kdb+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>memcacheDB</p>
+</td>
+<td>
+<p>Oracle TimesTen</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Aerospike</p>
+</td>
+<td>
+<p>SAP HANA</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>VoltDB</p>
+</td>
+<td>
+<p>HP Vertica</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Ignite</p>
+</td>
+<td>
+<p>Altibase</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Geode</p>
+</td>
+<td>
+<p>Oracle Exalytics</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MonetDB</p>
+</td>
+<td>
+<p>MemSQL</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="packt_infobox">Note that some of these support hybrid architectures whereby data can reside in memory as well as on disk. In general, data would be transferred from memory to disk for persistence. Also, note that some commercial in-memory databases offer community editions that can be downloaded and used at no charge within the terms of the licenses applicable to the respective solution. In these cases, they are both open source as well as commercial.</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Columnar databases</h1>
+                </header>
+            
+            <article>
+                
+<p>Columnar databases have existed since the 90s, but came to prominence after the release of Google Bigtable as mentioned earlier. They are, in essence, a method of storing data that is optimized for querying very large volumes of data in a fast and efficient manner relative to row-based/tuple-based storage.</p>
+<p>The benefits of columnar databases, or more concretely storing each column of data independently, can be illustrated with a simple example.</p>
+<p>Consider a table consisting of 100 million household addresses and phone numbers. Consider also a simple query that requires the user to find the number of households in the state of New York, in the city of Albany, built after 1990. We'll create a hypothetical table to illustrate the difference in querying the data row by row versus column by column.</p>
+<p><strong>Hardware characteristics</strong>:</p>
+<p>Average disk read speed: 200 MB per second</p>
+<p><strong>Database characteristics</strong>:</p>
+<p>Table name: <kbd>housedb</kbd></p>
+<ul>
+<li>Total rows = 100 million</li>
+<li>Total rows with State NY = Two million</li>
+<li>Total rows with State NY and City Albany = 10,000</li>
+<li>Total rows with State NY and City Albany and YearBuilt &gt; 1990 = 500</li>
+</ul>
+<p><strong>Data size</strong>:</p>
+<p>Let us assume that the size of each of the data of each row is as follows:</p>
+<ul>
+<li>PlotNumber, YearBuilt each = 8 bytes = total 16 bytes</li>
+<li>Owner, Address, State and City each = 12 bytes = Total 48 bytes</li>
+<li>Net size in bytes of each row = 16 + 48 = 64 bytes</li>
+</ul>
+<p>Note that the actual size will be higher, as there are several other considerations such as indexing and other table optimizations and related overheads that we won't consider here for the sake of simplicity.</p>
+<p>We will also assume that the columnar database maintains an implicit row index that permits querying the data at certain indices in each column <em>vector</em>.</p>
+<p>The following table shows the first 4 records:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>PlotNumber</strong></p>
+</td>
+<td>
+<p><strong>Owner</strong></p>
+</td>
+<td>
+<p><strong>Address</strong></p>
+</td>
+<td>
+<p><strong>State</strong></p>
+</td>
+<td>
+<p><strong>City</strong></p>
+</td>
+<td>
+<p><strong>YearBuilt</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>1 Main St.</p>
+</td>
+<td>
+<p>WA</p>
+</td>
+<td>
+<p>Seattle</p>
+</td>
+<td>
+<p>1995</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>Mary</p>
+</td>
+<td>
+<p>20 J. Ave.</p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p>Albany</p>
+</td>
+<td>
+<p>1980</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>3</p>
+</td>
+<td>
+<p>Jane</p>
+</td>
+<td>
+<p>5 45<sup>th</sup> St.</p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p>Rye Brook</p>
+</td>
+<td>
+<p>2001</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>4</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>10 A. Blvd.</p>
+</td>
+<td>
+<p>CT</p>
+</td>
+<td>
+<p>Stamford</p>
+</td>
+<td>
+<p>2010</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>In total, the table has 100 million records. The last few are shown as follows:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>PlotNumber</strong></p>
+</td>
+<td>
+<p><strong>Owner</strong></p>
+</td>
+<td>
+<p><strong>Address</strong></p>
+</td>
+<td>
+<p><strong>State</strong></p>
+</td>
+<td>
+<p><strong>City</strong></p>
+</td>
+<td>
+<p><strong>YearBuilt</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>99999997</p>
+</td>
+<td>
+<p>Jim</p>
+</td>
+<td>
+<p>23 B. Lane</p>
+</td>
+<td>
+<p>NC</p>
+</td>
+<td>
+<p>Cary</p>
+</td>
+<td>
+<p>1995</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>99999998</p>
+</td>
+<td>
+<p>Mike</p>
+</td>
+<td>
+<p>5 L. Street</p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p>Syracuse</p>
+</td>
+<td>
+<p>1993</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>99999999</p>
+</td>
+<td>
+<p>Tim</p>
+</td>
+<td>
+<p>10 A. Blvd.</p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p>Albany</p>
+</td>
+<td>
+<p>2001</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>100000000</p>
+</td>
+<td>
+<p>Jack</p>
+</td>
+<td>
+<p>10 A. Blvd.</p>
+</td>
+<td>
+<p>CT</p>
+</td>
+<td>
+<p>Stamford</p>
+</td>
+<td>
+<p>2010</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>The query we will run against this dataset is as follows:</p>
+<pre>select * from housedb where State like 'NY' and City like 'Albany' and YearBuilt &gt; 1990 </pre>
+<p><strong>Scenario A: Searching row by row</strong></p>
+<p>In the first scenario, if we did a naïve row-by-row search, since the data for each column is not stored separately, but the data for each row is scanned, we would have to query across:</p>
+<p>100 million * 64 bytes (size of each row in bytes) = 6,400 million bytes = approximately 6000 MB of data</p>
+<p>At a disk read speed of say, 200 MBps, this means it would take approximately 6000 / 200 = 30 seconds to read all the records to find the matching entries.</p>
+<p><strong>Scenario B: Searching column by column</strong></p>
+<p>Assuming each column of data resides in individual files representing the respective columns, we will look each where clause individually:</p>
+<pre>select * from housedb where State like 'NY' and City like 'Albany' and YearBuilt &gt; 1990 </pre>
+<ol>
+<li>
+<p class="CDPAlignLeft CDPAlign"><strong>Where clause part 1</strong>: <kbd>where State like 'NY'</kbd></p>
+</li>
+</ol>
+<p style="padding-left: 60px">The State column, as described earlier, has 100 million entries each of size 12 bytes.</p>
+<p style="padding-left: 60px">In this case, we only need to search across:</p>
+<p style="padding-left: 60px">100 million * 12 bytes = 1,200 million bytes = 1,000 MB of data.</p>
+<p style="padding-left: 60px">At a data read rate of 200 MBps, this would take 200 MB, and it would take 1000 / 200 = 5 seconds to read the column of data.</p>
+<p style="padding-left: 60px">This returns two million records (as noted earlier database characteristics)</p>
+<ol start="2">
+<li><strong>Where clause part 2</strong>: <kbd>City like 'Albany'</kbd></li>
+</ol>
+<p style="padding-left: 60px">In the preceding step, we had narrowed our window of search to two million records that satisfied the criteria of State NY. In the second where clause step, now, we need not query across all 100 million records. Instead, we can simply look at the two million records that satisfied the criteria to determine which ones belong to City Albany.</p>
+<p style="padding-left: 60px">In this case, we only need to search across:</p>
+<p style="padding-left: 60px"><em>2 million * 12 bytes = 24 million bytes = approximately 20 MB of data</em>.</p>
+<p style="padding-left: 60px">At a data read rate of 200 MBps, this would take 0.1 seconds.</p>
+<p style="padding-left: 60px">This returns 10,000 records (as noted earlier in Database Characteristics).</p>
+<ol start="3">
+<li><strong>Where clause part 3</strong>: <kbd>YearBuilt &gt; 1990</kbd></li>
+</ol>
+<p style="padding-left: 60px">In the preceding step, we further narrowed our window of search to 10,000 records fulfilling both the criteria of State NY and City Albany. In this step, we will query 10,000 records in the YearBuilt column to find which ones fulfil the criteria of YearBuilt &gt; 1990.</p>
+<p style="padding-left: 60px">In this case, we only need to search across:</p>
+<p style="padding-left: 60px"><em>10,000 * 16 bytes = 160,000 bytes = approximately 150 KB of data</em>.</p>
+<p style="padding-left: 60px">At a data read rate of 200 MBps, this would take 0.00075 seconds, which we can round to zero seconds.</p>
+<p>Hence, the net time spent in querying across the data was:</p>
+<ul>
+<li>Where clause part 1: <kbd>where State like 'NY'</kbd> - five seconds</li>
+<li>Where clause part 2: <kbd>City like 'Albany'</kbd> - 0.1 seconds</li>
+<li>Where clause part 3: <kbd>YearBuilt &gt; 1990</kbd> - zero seconds</li>
+</ul>
+<p>Net time taken to read the data = 5.1 seconds.</p>
+<div class="packt_quote packt_infobox">Important: Note that the actual read or more specifically, scan performance, depends on various other factors. The <strong>size of the tuple</strong> (row), the time to reconstruct the tuple (<strong>tuple reconstruction</strong>), <strong>bandwidth of memory</strong> (how fast data can be read into the CPU from Main Memory, and so on), <strong>cache line size</strong> and other factors. In practice, there would be various levels of abstractions due to which the actual performance may be slower. Further there are other considerations such as hardware architecture and parallel operations that can affect positively or otherwise the overall performance. These topics are more advanced and require dedicated reading. <span>The analysis here focuses exclusively on the disk I/O, which is one of the critical aspects of overall performance at a high-level.</span></div>
+<p>The preceding example demonstrates the benefits of querying data that has been stored in columns from a query performance or efficiency perspective based on the size of the data. There is also another benefit offered by columnar data, which is that it allows storage of tables that may have arbitrary schema in columns.</p>
+<p>Consider the first four rows of the prior table. If, for example, we had missing information in some of the rows, that would lead to sparse columns:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>PlotNumber</strong></p>
+</td>
+<td>
+<p><strong>Owner</strong></p>
+</td>
+<td>
+<p><strong>Address</strong></p>
+</td>
+<td>
+<p><strong>State</strong></p>
+</td>
+<td>
+<p><strong>City</strong></p>
+</td>
+<td>
+<p><strong>YearBuilt</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>1 Main St.</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+<td>
+<p>Seattle</p>
+</td>
+<td>
+<p>1995</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>Mary</p>
+</td>
+<td>
+<p>20 J. Ave.</p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>3</p>
+</td>
+<td>
+<p>Jane</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p>Rye Brook</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>4</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>10 A. Blvd.</p>
+</td>
+<td>
+<p>CT</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>Instead of populating NULL values, we can instead create a <kbd>Column Family</kbd> called <kbd>Complete_Address</kbd> that can contain an arbitrary number of key-value pairs corresponding to only those fields that have corresponding data:</p>
+<table>
+<tbody>
+<tr>
+<td>
+<p><strong>PlotNumber</strong></p>
+</td>
+<td>
+<p><strong>Owner</strong></p>
+</td>
+<td>
+<p><strong>Complete_Address</strong></p>
+</td>
+<td>
+<p><strong> </strong></p>
+</td>
+<td>
+<p><strong>YearBuilt</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>Address: 1 Main St.</p>
+</td>
+<td>
+<p>City: Seattle</p>
+</td>
+<td>
+<p>1995</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>Mary</p>
+</td>
+<td>
+<p>Address: 20 J. Ave.</p>
+</td>
+<td>
+<p>State: NY</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>3</p>
+</td>
+<td>
+<p>Jane</p>
+</td>
+<td>
+<p>State: NY</p>
+</td>
+<td>
+<p>City: Rye Brook</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>4</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>Address: 10 A. Blvd.</p>
+</td>
+<td>
+<p>State: CT</p>
+</td>
+<td>
+<p><em>NULL</em></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>A third and very important benefit offered by columnar databases is the ability to retrieve data based on three keys: a row key, a column key, and a timestamp that uniquely identifies each record, permitting very fast access to the data in question.</p>
+<p>For example, since the Owner field can change when the property (PlotNumber) is sold, we can add another field that denotes the date of the record; that is, the date that the record corresponds to. This would allow us to distinguish among properties that had a change of ownership whilst all the other data remained the same:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>PlotNumber</strong></p>
+</td>
+<td>
+<p><strong>Owner</strong></p>
+</td>
+<td>
+<p><strong>Address</strong></p>
+</td>
+<td>
+<p><strong>State</strong></p>
+</td>
+<td>
+<p><strong>City</strong></p>
+</td>
+<td>
+<p><strong>YearBuilt</strong></p>
+</td>
+<td>
+<p><strong>RecordDate</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>1 Main St.</p>
+</td>
+<td>
+<p>WA</p>
+</td>
+<td>
+<p>Seattle</p>
+</td>
+<td>
+<p>1995</p>
+</td>
+<td>
+<p>2001.04.02</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>Mary</p>
+</td>
+<td>
+<p>20 J. Ave.</p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p>Albany</p>
+</td>
+<td>
+<p>1980</p>
+</td>
+<td>
+<p>2007.05.30</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>3</p>
+</td>
+<td>
+<p>Jane</p>
+</td>
+<td>
+<p>5 45<sup>th</sup> St.</p>
+</td>
+<td>
+<p>NY</p>
+</td>
+<td>
+<p>Rye Brook</p>
+</td>
+<td>
+<p>2001</p>
+</td>
+<td>
+<p>2001.10.24</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>4</p>
+</td>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>10 A. Blvd.</p>
+</td>
+<td>
+<p>CT</p>
+</td>
+<td>
+<p>Stamford</p>
+</td>
+<td>
+<p>2010</p>
+</td>
+<td>
+<p>2003.07.20</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Since there can be multiple records for each PlotNumber to accommodate change of ownership, we can now define three keys that could uniquely identify each cell of data in each record, as follows:</p>
+<ul>
+<li>Row key: <kbd>PlotNumber</kbd></li>
+<li>Column key: The column name</li>
+<li>Timestamp key: <kbd>RecordDate</kbd></li>
+</ul>
+<p>Each cell in each record in the table will thus have a unique three-value pair that distinguishes it from the other cells.</p>
+<p>Databases such as Bigtable, Cassandra, and others employ this method to perform data analysis at scale both expeditiously and efficiently.</p>
+<p>Some of the popular columnar databases are listed as follows. Note that there may be repetitions as databases can have multiple NoSQL properties (such as both in-memory and columnar):</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>Open source</strong></p>
+</td>
+<td>
+<p><strong>Commercial</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Parquet</p>
+</td>
+<td>
+<p>Kdb+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MonetDB</p>
+</td>
+<td>
+<p>Teradata</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MariaDB</p>
+</td>
+<td>
+<p>SAP HANA</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Druid</p>
+</td>
+<td>
+<p>HP Vertica</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>HBase</p>
+</td>
+<td>
+<p>Oracle Exadata</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Kudu</p>
+</td>
+<td>
+<p>ParAccel</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Arrow</p>
+</td>
+<td>
+<p>Actian Vector</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Document-oriented databases</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>Document-based or document-oriented</strong> databases became prominent as a means of storing data that had variable structures; that is, there was no fixed schema that each record would fit into all the time. Additionally, the document may have both a structured as well as an <em>unstructured</em> part.</p>
+<p>Structured data is, in essence, data that can be stored in a tabular format such as in a spreadsheet. Data stored in Excel spreadsheets or MySQL tables all belong to the class of structured datasets. Data that cannot be represented in a strict tabular format such as books, audio files, video files, or social network messages are considered unstructured data. As such, in document-oriented databases, we will primarily work with structured and unstructured text data.</p>
+<p>An intuitive explanation of data that can contain both structured and unstructured text can be found in the example of a <strong>phone diary</strong>. Although these have become increasingly rare with the growth of digital data storage, many of us would remember a time when phone numbers were written in pocketbooks. The following image shows how we store data in a phone diary:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="122" width="341" src="assets/1c2e56c2-7734-46a1-9bf9-4e35cd49d90a.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Address Book (Semi-Structured Dataset)</div>
+<p>In the preceding example, the following fields can be considered as structured:</p>
+<ul>
+<li>Name</li>
+<li>Address</li>
+<li>Tel and Fax</li>
+</ul>
+<p class="mce-root">There is a line underneath the Address field where the user can enter arbitrary information, for example, <span class="packt_screen">met at a conference in 2015</span>, <span class="packt_screen">works at company abc</span>. This is essentially a note that the diary keeper wrote when entering the specific information. Since there is no defining characteristic of a free-form field such as this, it could also contain information such as a second phone number, or an alternative address and other information. This would qualify as an unstructured text.</p>
+<p>Further, since the other fields are not interdependent, a user may write the address but not the phone number, or the name and phone number but not the address.</p>
+<p>A document-oriented database, by virtue of its ability to store schema-free data; that is, data that does not conform to any fixed schema such as fixed columns with fixed datatypes, would hence be an appropriate platform to store this information.</p>
+<p>As such, since a phone diary contains a much smaller volume of data, in practice, we could store it in other formats, but the necessity for document-oriented datasets becomes apparent when we are working with large-scale data containing both structured and unstructured information.</p>
+<p>Using the example of a phone diary, the data could be stored in a document-oriented dataset in JSON format, as follows:</p>
+<pre>( 
+ { 
+   "name": "John", 
+   "address": "1 Main St.", 
+   "notes": "Met at conference in 2015", 
+   "tel": 2013249978, 
+ }, 
+ { 
+   "name": "Jack", 
+   "address": "20 J. Blvd", 
+   "notes": "Gym Instructor", 
+   "tel": 2054584538, 
+   "fax": 3482274573 
+ } 
+) </pre>
+<p><strong>JSON</strong>, which stands for <strong>J</strong>ava<strong>S</strong>cript <strong>O</strong>bject <strong>N</strong>otation, provides a means of representing data in a portable text-based key-value pair format. Today, data in JSON is ubiquitous across the industry and has become the standard in storing data that does not have a fixed schema. It is also a great medium to exchange structured data, and as such is used for such datasets frequently.</p>
+<p>The preceding illustration provides a basic example to convey how document-oriented databases work. As such, it is a very simple and hopefully intuitive example. In practice, document-oriented databases such as MongoDB and CouchDB are used to store gigabytes and terabytes of information.</p>
+<p>For example, consider a website that stores data on users and their movie preferences. Each user may have multiple movies they have watched, rated, recommended, movies that they have added to their wishlist, and other such artifacts. In such a case, where there are various arbitrary elements in the dataset, many of which are optional and many of which might contain multiple values (for example, multiple movies recommended by a user), a JSON format to capture information becomes optimal. This is where document-oriented databases provide a superior and optimal platform to store and exchange data.</p>
+<p>More concretely, databases such as MongoDB store information in BSON format - a binary version of JSON documents that have additional optimizations to accommodate datatypes, Unicode characters, and other features to improve upon the performance of basic JSON documents.</p>
+<p>A more comprehensive example of a JSON document stored in MongoDB could be data stored about airline passengers that contains information on numerous attributes specific to individual passengers, for example:</p>
+<pre>{ 
+   "_id" : ObjectId("597cdbb193acc5c362e7ae96"), 
+   "firstName" : "Rick", 
+   "age" : 66, 
+   "frequentFlyer" : ( 
+          "Delta" 
+   ), 
+   "milesEarned" : ( 
+          88154 
+   ) 
+} 
+{ 
+   "_id" : ObjectId("597cdbb193acc5c362e7ae97"), 
+   "firstName" : "Nina", 
+   "age" : 53, 
+   "frequentFlyer" : ( 
+          "Delta", 
+          "JetBlue", 
+          "Delta" 
+   ), 
+   "milesEarned" : ( 
+          59226, 
+          62025, 
+          27493 
+   ) 
+} </pre>
+<p>Each entry is uniquely identified by the <kbd>_id</kbd> field, which allows us to directly query information relevant to the specific user and retrieve data without having to query across millions of records.</p>
+<p>Today, document-oriented databases are used to store a diverse range of datasets. Examples include the use of such  the following:</p>
+<ul>
+<li>Log files and log file-related information</li>
+<li>Articles and other text-based published materials</li>
+<li>Geolocation data</li>
+<li>User/user account-related information</li>
+<li>Many more use cases that are optimal for document/JSON based storage</li>
+</ul>
+<p>Well-known document-oriented databases include the following: </p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>Open source</strong></p>
+</td>
+<td>
+<p><strong>Commercial</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MongoDB</p>
+</td>
+<td>
+<p>Azure Cosmos DB</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CouchDB</p>
+</td>
+<td>
+<p>OrientDB</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Couchbase Server</p>
+</td>
+<td>
+<p>Marklogic</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Key-value databases</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>Key-value databases</strong> operate on the principle of structuring data as pairs of values corresponding to keys. To highlight the benefits of key-value databases, it would help to revisit the significance of hash maps, a common term prevalent in computer science to specify a unique data-structure that provides a constant-time lookup for key pairs.</p>
+<p>An intuitive example for a hash table is as follows:</p>
+<p>Consider a collection of 500 books and five bookcases. Each bookcase has five shelves. The books can be placed in an arbitrary order, but that would make it incredibly difficult to find a specific book and you may need to go through hundreds of books before locating the one you need. One method of categorizing the books would be to assign ranges of letters to each of the bookshelves, for example, A-E, F-J, K-O, P-T, U-Z, and use the first letter of the name of the book to assign it to a specific shelf. However, suppose you have a disproportionate number of books that start with the letters A-E. This means that the case assigned for A-E would have a much higher number of books relative to the other ones.</p>
+<p>A more elegant alternative could be to assign a value to each of the books and use the respective value to determine which bookcase or bookshelf the book belongs to. To assign a number, a specific value to each book, we could sum up the numbers corresponding to each letter of the title of the book using a range of 1-26 for the letters A-Z respectively:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="73" width="286" src="assets/57f7faff-1435-44a3-978a-116c059ef15e.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Our Simple Hash Map</div>
+<p>Since we have five bookcases, each with five shelves, we have a total of 25 shelves. One method of allocating a book to a specific shelf would be to take the numeric value of the book obtained by summing the letters in the title and dividing the value by 26. Any number, when divided by 25, will yield a remainder between 0-25; that is, 26 unique values. We can use this value then to assign the book to a particular shelf. This then becomes our self-created hash function.</p>
+<p>Of the 25 shelves, each of them is now assigned a numeric value corresponding to the values 0-25 respectively, with the last shelf being assigned the values 24 and 25. For example, shelf zero is assigned to store books whose numeric value divided by 26 yields zero, shelf one is assigned to store books whose numeric value divided by 26 yields one, and shelf 25 is assigned to store books whose numeric value divided by 26 yields 24 or 25.</p>
+<p>An example will help to illustrate this concept more concretely.</p>
+<p>Book name: <strong>HAMLET</strong></p>
+<p>Numeric value of title:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img height="113" width="46" class="alignnone size-full wp-image-1193 image-border" src="assets/eb17fd9d-b49f-409b-989b-963f5b7f7594.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Hash values</div>
+<p>Sum total of the numeric value = 8 + 1 + 13 + 12 + 5 + 20 = 59</p>
+<p>Divide number by 26 = 2, remainder seven</p>
+<p>Hence, the book is assigned to shelf number seven.</p>
+<p>We have essentially found a way to methodically assign a shelf to each individual book, and because we have a fixed rule, when a new request for a book arrives, we can find it almost instantaneously since we will know the shelf corresponding to the book.</p>
+<p>The preceding method illustrates the concept of hashing, and in practice, we would use a hash function that would find a unique value for each book, and assuming we could get an arbitrary number of bookshelves and slots in which we can place the books, we could simply use the plain numeric value of the book to identify which shelf it would belong to.</p>
+<p>There would be cases where two books would have the same numeric value, and in those cases we could stack the books in the slot corresponding to the number. In computer science, this effect of multiple values corresponding to a key is known as a collision, and in those cases we would assign multiple items by means of a list or similar datatype.</p>
+<p>In real-life use cases, we have much more complex items to work with than the simple example of books. Generally, we'd use more complex hash functions that lower the chance of collision and accordingly assign the key-value pair. The data w<span>ould</span> be stored in a contiguous array in memory and hence, when a request for a certain key arrived, we could instantaneously find the value by using the hash function to identify the location in memory where the data resides.</p>
+<p>Hence, using key-value pairs to store data can be immensely powerful because the time to retrieve information corresponding to a key can be very fast as there is no need to search through a long list to identify a matching key.</p>
+<p>Key-value databases employ the same principle of assigning unique keys to each record, and the data corresponding to each key is stored in the corresponding location. In our discussion of MongoDB, we saw that records were assigned a certain key identified by the <kbd>_id</kbd> value in each record. In practice, we could use this value to retrieve the corresponding data in constant time.</p>
+<p>As mentioned before, memcached used to be the preferred method to store data in key-value pairs for web services that required very fast access to frequently used data. In essence, it served as a memory cache to store temporary information. With the advent of NoSQL databases, new platforms that extended the limited use case of memcached became prominent. Solutions such as Redis offered not only the ability to store data in key-value pairs in memory, but also the ability to persist the data on disk. In addition, these key-value stores supported horizontal scaling, which permitted the distribution of key-value pairs across hundreds of nodes.</p>
+<p>The disadvantage of key-value storage was that the data could not be queried with the same flexibility as standard databases, which supported multiple levels of indexing and a more richer set of SQL commands. Nevertheless, the benefits of constant time lookup implied that for use cases that required a key-value structure, there were few other solutions that were comparable in both performance and efficiency. For instance, a shopping website with thousands of users could store user profile information in a key-value database and be able to look up individual information by simply applying a hash function corresponding to, for example, the user ID.</p>
+<p>Today, key-value databases use a variety of methods to store data:</p>
+<ul>
+<li><strong>SSTables</strong>: A file of sorted key-value pairs represented as strings (and directly mapped to the <strong>Google File System</strong> (<strong>GFS</strong>)).</li>
+<li><strong>B-trees</strong>: Balanced trees where values are identified by traversing along leaves/nodes.</li>
+<li><strong>Bloom filters</strong>: A more optimal key-value method used when the number of keys is high. It uses multiple hash functions to set the bit-value to one in an array corresponding to keys.</li>
+<li><strong>Shards</strong>: A process involving partitioning data across multiple nodes.</li>
+</ul>
+<p>Well known key-value databases include:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>Open source</strong></p>
+</td>
+<td>
+<p><strong>Commercial</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Redis</p>
+</td>
+<td>
+<p>Amazon DynamoDB</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Cassandra</p>
+</td>
+<td>
+<p>Riak</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Aerospike</p>
+</td>
+<td>
+<p>Oracle NoSQL</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Ignite</p>
+</td>
+<td>
+<p>Azure Cosmos DB</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Accumulo</p>
+</td>
+<td>
+<p>Oracle Berkeley DB</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Graph databases</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>Graph databases</strong> provide an efficient representation of data with records that have inter-relationships. Typical examples are your social network friend list, LinkedIn contacts, Netflix movie subscribers. By leveraging optimized algorithms for searching on tree-based/graph data structures, graph databases can locate information in a novel manner relative to other NoSQL solutions. In such a structure, discrete information and properties are represented as leaves, edges, and nodes.</p>
+<p>The following image shows an atypical representation of a network that can be queried to discover or find complex inter-relationships using a graph database. In practice, production graph databases contain millions of nodes:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="262" width="369" src="assets/9586b4cb-0fb0-4d1d-9a3b-71c89696d7f5.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Graph Database</div>
+<p>Although they are not as prevalent as other types of NoSQL database, graph-based platforms are used for business-critical areas. For instance, credit card companies use graph databases to find new products that an individual cardholder may be interested in by querying across millions of datapoints to assess purchasing behavior of other cardholders with similar purchasing patterns. Social network websites use graph databases to compute similarity scores, provide friend suggestions, and other related metrics.</p>
+<p>Well-known graph databases include the following:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>Open source</strong></p>
+</td>
+<td>
+<p><strong>Commercial</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Giraph</p>
+</td>
+<td>
+<p>Datastax Enterprise Graph</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Neo4j</p>
+</td>
+<td>
+<p>Teradata Aster</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>JanusGraph</p>
+</td>
+<td>
+<p>Oracle Spatial and Graph</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Apache Ignite</p>
+</td>
+<td/>
+</tr>
+</tbody>
+</table>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Other NoSQL types and summary of other types of databases </h1>
+                </header>
+            
+            <article>
+                
+<p>This section described some of the commonly known NoSQL paradigms in use today. There are several other emerging platforms that have their own strengths and unique characteristics. A brief overview of some of them is given here:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>Type</strong></p>
+</td>
+<td>
+<p><strong>Feature</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object-oriented databases</p>
+</td>
+<td>
+<p>Databases that leverage concepts in object-oriented programming to store data represented as objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Cloud databases</p>
+</td>
+<td>
+<p>Databases offered by cloud vendors such as Amazon, Microsoft, and Google that are only available on their respective cloud platforms such as Amazon Redshift, Azure SQL Database, and Google BigQuery.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GPU databases</p>
+</td>
+<td>
+<p>A more recent entrant in the world of databases that leverage GPU (graphic processing unit) cards to process data. Examples include MapD, Kinetica, and others.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>FPGA-accelerated databases</p>
+</td>
+<td>
+<p>With Intel soon announcing the release of new chips that would have embedded FPGAs, companies such as Baidu have started developing FPGA-accelerated systems that leverage FPGA processing power to improve SQL query performance.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Stream processing/IoT databases</p>
+</td>
+<td>
+<p>Databases, or more generally platforms, that are optimized for processing streaming data such as from medical devices and sensors. One of the most popular examples of such a system is Apache Storm.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>A question often asked is whether there is one NoSQL database that is optimal for all use cases. While the databases can have multiple features that support numerous elements of NoSQL systems (generally known as multi-modal databases), in practice, a single solution that performs universally well across a broad set of use cases is rare. In real-world use cases, companies generally implement more than one solution to meet data mining needs. In the next section, we will complete a few hands-on exercises with real-world datasets using NoSQL solutions discussed in this chapter.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Analyzing Nobel Laureates data with MongoDB</h1>
+                </header>
+            
+            <article>
+                
+<p>In the first exercise, we will use <strong>MongoDB</strong>, one of the leading document-oriented databases, to analyze Nobel Laureates from 1902-present. MongoDB provides a simple and intuitive interface to work with JSON files. As discussed earlier, JSON is a flexible format that allows representing data using a structured approach.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">JSON format</h1>
+                </header>
+            
+            <article>
+                
+<p>Consider the following table:</p>
+<table class="MsoTableGrid">
+<tbody>
+<tr>
+<td>
+<p><strong>Firstname</strong></p>
+</td>
+<td>
+<p><strong>Lastname</strong></p>
+</td>
+<td>
+<p><strong>Information</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>John</p>
+</td>
+<td>
+<p>15</p>
+</td>
+<td>
+<p>Subject: History, Grade B</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Jack</p>
+</td>
+<td>
+<p>18</p>
+</td>
+<td>
+<p>Subject: Physics, Grade A</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Jill</p>
+</td>
+<td>
+<p>17</p>
+</td>
+<td>
+<p>Subject: Physics, Grade A+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>The Information field contains a column containing multiple values categorized under Subject and Grade. Such columns that contain multiple data are also known as columns with nested data.</p>
+<p>Portability has been an important aspect of transferring data from one system to another. In general, ODBC connectors are used to transfer data between database systems. Another common format is CSV files with the data represented as comma-separated values. CSV files are optimal for structured data that doesn't contain more complex data structures such as nested values. In such cases, JSON provides an optimal and structured way to capture and preserve information using a key-value pair syntax.</p>
+<p>In JSON representation, the table can be defined as follows:</p>
+<pre>( 
+   { 
+      "Firstname":"John", 
+      "Age":15, 
+      "Information":{ 
+         "Subject":"History", 
+         "Grade":"B" 
+      } 
+   }, 
+   { 
+      "Firstname":"Jack", 
+      "Age":18, 
+      "Information":{ 
+         "Subject":"Physics", 
+         "Grade":"A" 
+      } 
+   }, 
+   { 
+      "Firstname":"Jill", 
+      "Age":17, 
+      "Information":{ 
+         "Subject":"Physics", 
+         "Grade":"A+" 
+      } 
+   } 
+) </pre>
+<p>Notice that the <kbd>Information</kbd> key contains two keys, <kbd>Subject</kbd> and <kbd>Grade</kbd>, with each having a corresponding value.</p>
+<p>Today, most product developers and vendors accommodate the ingestion of JSON-formatted data. Also, due to the simple manner in which complex relationships can be expressed as well as exchanged in text format, JSON has become immensely popular across the world in the developer community.</p>
+<p>MongoDB captures data in JSON format. It internally stores them in BSON—an optimized binary representation of the JSON data.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Installing and using MongoDB</h1>
+                </header>
+            
+            <article>
+                
+<p>MongoDB is supported on all major platforms such as Windows, Linux, and OS X platforms.</p>
+<div class="packt_tip">The details for installing MongoDB can be found on their official website at <a href="https://docs.mongodb.com/manual/installation/"><span class="URLPACKT">https://docs.mongodb.com/manual/installation/</span></a>. Note that we will be using the MongoDB Community Edition.</div>
+<p>For our exercise, we will re-use the Linux CentOS environment from our Cloudera Hadoop Distribution VM.</p>
+<p>The exercise is however not dependent on the platform on which you install MongoDB. Once the installation has been completed, you can execute the commands indicated in this chapter on any other supported platform. If you have access to a separate Linux machine, you can use that as well.</p>
+<p>We will visit some of the common semantics of MongoDB and also download two datasets to compute the highest number of Nobel Prizes grouped by continent. The complete dump of the Nobel Prize data on Nobel Laureates is available from <a href="https://www.nobelprize.org">nobelprize.org</a>. The data contains all the primary attributes of Laureates. We wish to integrate this data with demographic information on the respective countries to extract more interesting analytical information:</p>
+<ol>
+<li><strong>Download MongoDB</strong>: MongoDB can be downloaded from <span class="URLPACKT"><a href="https://www.mongodb.com/download-center#community" target="_blank">https://www.mongodb.com/download-center#community</a>.</span></li>
+</ol>
+<p style="padding-left: 60px">To determine which version is applicable for us, we checked the version of Linux installed on the CDH VM:</p>
+<pre style="padding-left: 60px"><strong>(cloudera@quickstart ~)$ lsb_release -a 
+LSB Version:     :base-4.0-amd64:base-4.0-noarch:core-4.0-amd64:core-4.0-noarch 
+Distributor ID:  CentOS 
+Description:     CentOS release 6.7 (Final) 
+Release:  6.7 
+Codename: Final</strong> </pre>
+<ol start="2">
+<li>Based on the information, we have to use the CentOS version of MongoDB, and accordingly, following the instructions at <a href="https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/" target="_blank"><span class="URLPACKT">https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/</span></a>, we installed the software, shown as follows:</li>
+</ol>
+<pre style="padding-left: 60px"><strong>The first step involved adding the repo as follows. Type in sudo nano /etc/yum.repos.d/mongodb-org-3.4.repo on the command line and enter the text as shown. 
+</strong> 
+ 
+<strong>(root@quickstart cloudera)# sudo nano /etc/yum.repos.d/mongodb-org-3.4.repo 
+ 
+### Type in the information shown below and press CTRL-X 
+### When prompted to save buffer, type in yes</strong><br/><br/><strong>(mongodb-org-3.4)</strong><br/><strong>name=MongoDB Repository</strong><br/><strong>baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.4/x86_64/</strong><br/><strong>gpgcheck=1</strong><br/><strong>enabled=1</strong><br/><strong>gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc</strong></pre>
+<p>The following screenshot shows the contents of the file:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="247" width="531" src="assets/aa4ee91d-8d97-4306-bea2-00886989948f.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Setting up MongoDB repository</div>
+<p>As seen in the following screenshot, type <kbd>Y</kbd> for Yes:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img height="50" width="521" src="assets/9dcc8115-8f1b-44fa-99d6-a48a5e7e1455.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Saving the .repo file</div>
+<p>Save the file as shown in the image as follows. This will now allow us to install <kbd>mongo-db</kbd>:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img height="40" width="510" src="assets/73965396-a01a-47ff-9c5b-dcfda1f44c1b.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Writing and Saving the .repo file</div>
+<pre style="padding-left: 60px"># Back in terminal, type in the following<br/><br/>(cloudera@quickstart ~)$ <strong>sudo yum install -y mongodb-org</strong> 
+ 
+(...) 
+ 
+Installing: 
+ mongodb-org                x86_64         3.4.6-1.el6         mongodb-org-3.4         5.8 k 
+Installing for dependencies: 
+ mongodb-org-mongos         x86_64         3.4.6-1.el6         mongodb-org-3.4          12 M 
+ mongodb-org-server         x86_64         3.4.6-1.el6         mongodb-org-3.4          20 M 
+ mongodb-org-shell          x86_64         3.4.6-1.el6         mongodb-org-3.4          11 M 
+ mongodb-org-tools          x86_64         3.4.6-1.el6         mongodb-org-3.4          49 M 
+ 
+Transaction Summary 
+===================================================================== 
+Install       5 Package(s) 
+ 
+Total download size: 91 M 
+Installed size: 258 M 
+Downloading Packages: 
+(1/5): mongodb-org-3.4.6-1.el6.x86_64.rpm                             | 5.8 kB     00:00      
+(...) 
+ 
+Installed: 
+  mongodb-org.x86_64 0:3.4.6-1.el6                                                            
+ 
+Dependency Installed: 
+  mongodb-org-mongos.x86_64 0:3.4.6-1.el6       mongodb-org-server.x86_64 0:3.4.6-1.el6       
+  mongodb-org-shell.x86_64 0:3.4.6-1.el6        mongodb-org-tools.x86_64 0:3.4.6-1.el6        
+ 
+Complete! 
+ 
+ 
+### Attempting to start mongo without first starting the daemon will produce an error message ### 
+### You need to start the mongo daemon before you can use it ### 
+ 
+<strong>(cloudera@quickstart ~)$ mongo 
+</strong>MongoDB shell version v3.4.6 
+connecting to: mongodb://127.0.0.1:27017 
+2017-07-30T10:50:58.708-0700 W NETWORK  (thread1) Failed to connect to 127.0.0.1:27017, in(checking socket for error after poll), reason: Connection refused 
+2017-07-30T10:50:58.708-0700 E QUERY    (thread1) Error: couldn't connect to server 127.0.0.1:27017, connection attempt failed : 
+connect@src/mongo/shell/mongo.js:237:13 
+@(connect):1:6 
+exception: connect failed</pre>
+<div>
+<pre style="padding-left: 60px">### The first step is to create the MongoDB dbpath - this is where MongoDB will store all data 
+ 
+### Create a folder called, mongodata, this will be the mongo dbpath ### 
+ 
+<strong>(cloudera@quickstart ~)$ mkdir mongodata</strong></pre></div>
+<div>
+<pre style="padding-left: 60px">### Start mongod ### 
+ 
+(cloudera@quickstart ~)$ mongod --dbpath mongodata 
+2017-07-30T10:52:17.200-0700 I CONTROL  (initandlisten) MongoDB starting : pid=16093 port=27017 dbpath=mongodata 64-bit host=quickstart.cloudera 
+(...) 
+2017-07-30T10:52:17.321-0700 I INDEX    (initandlisten) build index done.  scanned 0 total records. 0 secs 
+2017-07-30T10:52:17.321-0700 I COMMAND  (initandlisten) setting featureCompatibilityVersion to 3.4 
+2017-07-30T10:52:17.321-0700 I NETWORK  (thread1) waiting for connections on port 27017 </pre>
+<p>Open a new terminal and download the JSON data files as shown in the following screenshot:</p>
+</div>
+<div class="CDPAlignCenter CDPAlign"><img height="146" width="230" src="assets/79111799-378b-41db-b833-2ed975307233.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Selecting Open Terminal from Terminal App on Mac OS X</div>
+<pre># Download Files<br/># laureates.json and country.json ###<br/># Change directory to go to the mongodata folder that you created earlier 
+<strong>(cloudera@quickstart ~)$ cd mongodata 
+</strong> 
+<strong>(cloudera@quickstart mongodata)$ curl -o laureates.json "http://api.nobelprize.org/v1/laureate.json" 
+</strong>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current 
+                                 Dload  Upload   Total   Spent    Left  Speed 
+100  428k    0  428k    0     0   292k      0 --:--:--  0:00:01 --:--:--  354k 
+ 
+ 
+### Clean the file laureates.json 
+### Delete content upto the first ( on the first line of the file 
+### Delete the last } character from the file 
+### Store the cleansed dataset in a file called laureates.json </pre>
+<p>Note that the file needs to be slightly modified. The code is shown in the following image:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="115" width="289" src="assets/89ea74b9-5871-4841-91b6-66b3003aaee8.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Modifying the .json file for our application</div>
+<pre><strong>(cloudera@quickstart mongodata)$ cat laureates.json | sed 's/^{"laureates"://g' | sed 's/}$//g' &gt; mongofile.json 
+</strong> 
+ 
+### Import the file laureates.json into MongoDB 
+### mongoimport is a utility that is used to import data into MongoDB 
+### The command below will import data from the file, mongofile.json 
+### Into a db named nobel into a collection (i.e., a table) called laureates 
+ 
+<strong>(cloudera@quickstart mongodata)$ mongoimport --jsonArray --db nobel --collection laureates --file mongofile.json 
+</strong>2017-07-30T11:06:35.228-0700   connected to: localhost 
+2017-07-30T11:06:35.295-0700   imported 910 documents </pre>
+<p>In order to combine the data in <kbd>laureate.json</kbd> with country-specific information, we need to download the <kbd>countryInfo.txt</kbd> from <a href="http://geonames.org" target="_blank">geonames.org</a>  We will now download the second file that we need for the exercise, <kbd>country.json</kbd>. We will use both <kbd>laureates.json</kbd> and <kbd>country.json</kbd> for the exercise.</p>
+<p><kbd>### country.json</kbd>: Download it from <a href="http://www.geonames.org" target="_blank">http://www.geonames.org</a> (license: <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank">https://creativecommons.org/licenses/by/3.0/</a>). Modify the start and end of the JSON string to import into MongoDB as shown as follows:</p>
+<pre># The file country.json contains descriptive information about all countries<br/># We will use this file for our tutorial<br/><br/>### Download country.json
+ 
+<strong>(cloudera@quickstart mongodata)$ curl -o country.json "https://raw.githubusercontent.com/xbsd/packtbigdata/master/country.json" 
+</strong>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current 
+                                 Dload  Upload   Total   Spent    Left  Speed 
+100  113k  100  113k    0     0   360k      0 --:--:-- --:--:-- --:--:--  885k 
+
+### The file, country.json has already been cleaned and can be imported directly into MongoDB 
+<strong>(cloudera@quickstart mongodata)$ mongoimport --jsonArray --db nobel --collection country --file country.json 
+</strong>2017-07-30T12:10:35.554-0700   connected to: localhost 
+2017-07-30T12:10:35.580-0700   imported 250 documents 
+ 
+### MONGO SHELL ### 
+<strong>(cloudera@quickstart mongodata)$ mongo 
+</strong>MongoDB shell version v3.4.6 
+connecting to: mongodb://127.0.0.1:27017 
+MongoDB server version: 3.4.6 
+Server has startup warnings:  
+(...) 
+ 
+2017-07-30T10:52:17.298-0700 I CONTROL  (initandlisten)  
+ 
+### Switch to the database nobel using the 'use &lt;databasename&gt;' command 
+<strong>&gt; use nobel 
+</strong>switched to db nobel 
+ 
+### Show all collections (i.e., tables) 
+### This will show the tables that we imported into MongoDB - country and laureates
+<strong>&gt; show collections 
+</strong>country 
+laureates 
+&gt;  
+ 
+### Collections in MongoDB are the equivalent to tables in SQL 
+ 
+### 1. Common Operations 
+ 
+### View collection statistics using db.&lt;dbname&gt;.stats() 
+<strong>&gt; db.laureates.stats() 
+</strong> 
+   "ns" : "nobel.laureates", # Name Space 
+   "size" : 484053,          # Size in Bytes 
+   "count" : 910,            # Number of Records 
+   "avgObjSize" : 531,       # Average Object Size 
+   "storageSize" : 225280,   # Data size 
+ 
+ 
+# Check space used (in bytes) 
+<strong>&gt; db.laureates.storageSize() 
+</strong>225280 
+ 
+ 
+# Check number of records
+<strong>&gt; db.laureates.count() 
+</strong>910 
+<br/> 
+### 2. View data from collection 
+### 
+### There is an extensive list of commands that can be used in MongoDB. As such discussing them all is outside the scope of the text. However, a few of the familiar commands have been given below as a marker to help the reader get started with the platform. 
+ 
+ 
+### See first record for laureates using findOne() 
+### findOne() will show the first record in the collection 
+<strong>&gt; db.laureates.findOne() 
+</strong> 
+{ 
+   "_id" : ObjectId("597e202bcd8724f48de485d4"), 
+   "id" : "1", 
+   "firstname" : "Wilhelm Conrad", 
+   "surname" : "Röntgen", 
+   "born" : "1845-03-27", 
+   "died" : "1923-02-10", 
+   "bornCountry" : "Prussia (now Germany)", 
+   "bornCountryCode" : "DE", 
+   "bornCity" : "Lennep (now Remscheid)", 
+   "diedCountry" : "Germany", 
+   "diedCountryCode" : "DE", 
+   "diedCity" : "Munich", 
+   "gender" : "male", 
+   "prizes" : ( 
+          { 
+                 "year" : "1901", 
+                 "category" : "physics", 
+                 "share" : "1", 
+                 "motivation" : "\"in recognition of the extraordinary services he has rendered by the discovery of the remarkable rays subsequently named after him\"", 
+                 "affiliations" : ( 
+                        { 
+                               "name" : "Munich University", 
+                               "city" : "Munich", 
+                               "country" : "Germany" 
+                        } 
+                 ) 
+          } 
+   ) 
+} 
+ 
+### See all records for laureates
+<strong>&gt; db.laureates.find() 
+</strong> 
+{ "_id" : ObjectId("597e202bcd8724f48de485d4"), "id" : "1", "firstname" : "Wilhelm Conrad", "surname" : "Röntgen", "born" : "1845-03-27", "died" : "1923-02-10", "bornCountry" : "Prussia (now Germany)", "bornCountryCode" : "DE", "bornCity" : "Lennep (now Remscheid)" 
+(...) 
+ 
+... 
+ 
+### MongoDB functions accept JSON formatted strings as parameters to options 
+### Some examples are shown below for reference 
+  
+### Query a field - Find all Nobel Laureates who were male 
+<strong>&gt; db.laureates.find({"gender":"male"}) 
+</strong>
+(...) 
+{ "_id" : ObjectId("597e202bcd8724f48de485d5"), "id" : "2", "firstname" : "Hendrik Antoon", "surname" : "Lorentz", "born" : "1853-07-18", "died" : "1928-02-04", "bornCountry" : "the Netherlands", "bornCountryCode" : "NL", "bornCity" : "Arnhem", "diedCountry" : "the Netherlands", "diedCountryCode" : "NL", "gender" : "male", "prizes" : ( { "year" : "1902", "category" : "physics", "share" : "2", "motivation" : "\"in recognition of the extraordinary service they rendered by their researches into the influence of magnetism upon radiation phenomena\"", "affiliations" : ( { "name" : "Leiden University", "city" : "Leiden", "country" : "the Netherlands" } ) } ) } 
+(...) </pre>
+<p>Query a field - find all Nobel Laureates who were born in the US and received a Nobel Prize in Physics. Note that here we have a nested field (category is under prizes as shown). Hence, we will use the dot notation as shown in the coming image.</p>
+<p>Image illustrating <kbd>category</kbd>, one of the nested fields:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="118" width="254" src="assets/aad94718-e2e9-47dc-9789-3c79f0eb94ba.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Nested JSON Fields</div>
+<pre><strong>&gt; db.laureates.find({"bornCountryCode":"US", "prizes.category":"physics", "bornCity": /Chicago/})</strong> 
+ 
+{ "_id" : ObjectId("597e202bcd8724f48de48638"), "id" : "103", "firstname" : "Ben Roy", "surname" : "Mottelson", "born" : "1926-07-09", "died" : "0000-00-00", "bornCountry" : "USA", "bornCountryCode" : "US", "bornCity" : "Chicago, IL", 
+... 
+ 
+ 
+### Check number of distinct prize categories using distinct 
+<strong>&gt; db.laureates.distinct("prizes.category") 
+</strong>( 
+   "physics", 
+   "chemistry", 
+   "peace", 
+   "medicine", 
+   "literature", 
+   "economics" 
+) 
+ 
+### Using Comparison Operators 
+### MongoDB allows users to chain multiple comparison operators
+### Details on MongoDB operators can be found at: https://docs.mongodb.com/manual/reference/operator/ 
+ 
+# Find Nobel Laureates born in either India or Egypt using the $in operator
+<strong>&gt; db.laureates.find ( { bornCountryCode: { $in: ("IN","EG") } } ) 
+</strong> 
+{ "_id" : ObjectId("597e202bcd8724f48de485f7"), "id" : "37", "firstname" : "Sir Chandrasekhara Venkata", "surname" : "Raman", "born" : "1888-11-07", "died" : "1970-11-21", "bornCountry" : "India", "bornCountryCode" : "IN", "bornCity" : "Tiruchirappalli", "diedCountry" : "India", "diedCountryCode" : "IN", "diedCity" : "Bangalore", "gender" : "male", "prizes" : ( { "year" : "1930", "category" : "physics", "share" : "1", "motivation" : "\"for his work on the scattering of light and for the discovery of the effect named after him\"", "affiliations" : ( { "name" : "Calcutta University", "city" : "Calcutta", "country" : "India" } ) } ) } 
+... 
+ 
+### Using Multiple Comparison Operators 
+ 
+### Find Nobel laureates who were born in either US or China and won prize in either Physics or Chemistry using the $and and $or operator 
+<strong>&gt; db.laureates.find( { 
+$and : ({ $or : ( { bornCountryCode : "US" }, { bornCountryCode : "CN" } ) },<br/>{ $or : ( { "prizes.category" : "physics" }, { "prizes.category" : "chemistry" }  ) } 
+    ) 
+} ) 
+</strong> 
+{ "_id" : ObjectId("597e202bcd8724f48de485ee"), "id" : "28", "firstname" : "Robert Andrews", "surname" : "Millikan", "born" : "1868-03-22", "died" : "1953-12-19", "bornCountry" : "USA", "bornCountryCode" : "US", "bornCity" : "Morrison, IL", "diedCountry" : "USA", "diedCountryCode" : "US", "diedCity" : "San Marino, CA", "gender" : "male", "prizes" : ( { "year" : "1923", "category" : "physics", "share" : "1", "motivation" : "\"for his work on the elementary charge of electricity and on the photoelectric effect\"", "affiliations" : ( { "name" : "California Institute of Technology (Caltech)", "city" : "Pasadena, CA", "country" : "USA" } ) } ) } 
+... 
+ 
+### Performing Aggregations is one of the common operations in MongoDB queries 
+### MongoDB allows users to perform pipeline aggregations, map-reduce aggregations and single purpose aggregations 
+ 
+### Details on MongoDB aggregations can be found at the URL 
+### https://docs.mongodb.com/manual/aggregation/ 
+ 
+### Aggregation Examples 
+ 
+### Count and aggregate total Nobel laureates by year and sort in descending order 
+### Step 1: Use the $group operator to indicate that prize.year will be the grouping variable 
+### Step 2: Use the $sum operator (accumulator) to sum each entry under a variable called totalPrizes 
+### Step 3: Use the $sort operator to rank totalPrizes 
+ 
+<strong>&gt; db.laureates.aggregate( 
+  {$group: {_id: '$prizes.year', totalPrizes: {$sum: 1}}},  
+  {$sort: {totalPrizes: -1}} 
+);</strong> 
+ 
+{ "_id" : ( "2001" ), "totalPrizes" : 15 } 
+{ "_id" : ( "2014" ), "totalPrizes" : 13 } 
+{ "_id" : ( "2002" ), "totalPrizes" : 13 } 
+{ "_id" : ( "2000" ), "totalPrizes" : 13 } 
+ 
+(...) 
+ 
+### To count and aggregate total prizes by country of birth 
+<strong>&gt; db.laureates.aggregate( 
+  {$group: {_id: '$bornCountry', totalPrizes: {$sum: 1}}}, 
+  {$sort: {totalPrizes: -1}} 
+);</strong> 
+ 
+{ "_id" : "USA", "totalPrizes" : 257 } 
+{ "_id" : "United Kingdom", "totalPrizes" : 84 } 
+{ "_id" : "Germany", "totalPrizes" : 61 } 
+{ "_id" : "France", "totalPrizes" : 51 } 
+...
+ 
+### MongoDB also supports PCRE (Perl-Compatible) Regular Expressions 
+### For more information, see https://docs.mongodb.com/manual/reference/operator/query/regex 
+ 
+### Using Regular Expressions: Find count of nobel laureates by country of birth whose prize was related to 'radiation' (as indicated in the field motivation under prizes) 
+ 
+<strong>&gt; db.laureates.aggregate( 
+  {$match : { "prizes.motivation" : /radiation/ }}, 
+  {$group: {_id: '$bornCountry', totalPrizes: {$sum: 1}}},  
+  {$sort: {totalPrizes: -1}} 
+);</strong> 
+ 
+{ "_id" : "USA", "totalPrizes" : 4 } 
+{ "_id" : "Germany", "totalPrizes" : 2 } 
+{ "_id" : "the Netherlands", "totalPrizes" : 2 } 
+{ "_id" : "United Kingdom", "totalPrizes" : 2 } 
+{ "_id" : "France", "totalPrizes" : 1 } 
+{ "_id" : "Prussia (now Russia)", "totalPrizes" : 1 } 
+ 
+ 
+#### Result: We see that the highest number of prizes (in which radiation was mentioned as a key-word) was the US 
+ 
+### Interestingly, we can also do joins and other similar operations that allow us to combine the data with other data sources 
+### In this case, we'd like to join the data in laureates with the data from country information obtained earlier 
+### The collection country contains many interesting fields, but for this exercise, we will show how to find the total number of nobel laureates by continent 
+ 
+### The Left Join 
+ 
+### Step 1: Use the $lookup operator to define the from/to fields, collection names and assign the data to a field named countryInfo 
+<br/>### We can join the field bornCountryCode from laureates with the field countryCode from the collection country 
+<strong>&gt; db.laureates.aggregate( 
+  {$lookup: { from: "country", localField: "bornCountryCode", foreignField: "countryCode", as: "countryInfo" }})</strong> 
+
+{ "_id" : ObjectId("597e202bcd8724f48de485d4"), "id" : "1", "firstname" : "Wilhelm Conrad", "surname" : "Röntgen", "born" : "1845-03-27", "died" : "1923-02-10", "bornCountry" : "Prussia (now Germany)", "bornCountryCode" : "DE", "bornCity" : "Lennep (now (..) "country" : "Germany" } ) } ), "countryInfo" : ( { "_id" : ObjectId("597e2f2bcd8724f48de489aa"), "continent" : "EU", "capital" : "Berlin", "languages" : "de", "geonameId" : 2921044, "south" : 47.2701236047002, ...
+ 
+### With the data joined, we can now perform combined aggregations 
+ 
+### Find the number of Nobel laureates by continent 
+<strong>&gt; db.laureates.aggregate( 
+  {$lookup: { from: "country", localField: "bornCountryCode", foreignField: "countryCode", as: "countryInfo" }}, 
+  {$group: {_id: '$countryInfo.continent', totalPrizes: {$sum: 1}}}, 
+  {$sort: {totalPrizes: -1}} 
+);</strong> 
+ 
+... ); 
+{ "_id" : ( "EU" ), "totalPrizes" : 478 } 
+{ "_id" : ( "NA" ), "totalPrizes" : 285 } 
+{ "_id" : ( "AS" ), "totalPrizes" : 67 } 
+...
+This indicates that Europe has by far the highest number of Nobel Laureates.  </pre>
+<p>There are many other operations that can be performed, but the intention of the prior section was to introduce MongoDB at a high level with a simple use case. The URLs given in this chapter contain more in-depth information on using MongoDB.</p>
+<p>There are also several visualization tools in the industry that are used to interact with and visualize data stored in MongoDB collections using a point-and-click interface. A simple yet powerful tool called MongoDB Compass is available at <a href="https://www.mongodb.com/download-center?filter=enterprise?jmp=nav#compass" target="_blank">https://www.mongodb.com/download-center?filter=enterprise?jmp=nav#compass.</a></p>
+<p>Navigate to the previously mentioned URL and download the version of Compass that is appropriate for your environment:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="342" width="555" src="assets/8a0c6779-586c-43e0-b01a-1218f24f78ec.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Downloading MongoDB Compass</div>
+<p>After installation, you'll see a welcome screen. Click on <span class="packt_screen">Next</span> until you see the main dashboard:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/4e5fdace-8e95-40e7-a0d8-5e2af7313798.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">MongoDB Compass Screenshot</div>
+<p>Click on <span class="packt_screen">Performance</span> to view the current status of MongoDB:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/c0f2af9b-958b-4ee4-ab32-1168f5ccd99e.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">MongoDB Performance Screen</div>
+<p>Expand the nobel database by clicking on the arrow next to the word on the left sidebar. You can click and drag on different parts of the bar charts and run ad hoc queries. This is very useful if you want to get an overall understanding of the dataset without necessarily having to run all queries by hand, as shown in the following screenshot:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/ef06d694-d31f-458a-9c50-d9da40944e0a.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Viewing our file in MongoDB Compass</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Tracking physician payments with real-world data</h1>
+                </header>
+            
+            <article>
+                
+<p>Physicians and hospitals alike receive payments from various external organizations, such as pharmaceutical companies who engage sales representatives to not only educate practitioners on their products, but also provide gifts or payments in kind or otherwise. In theory, gifts or payments made to physicians are not intended to influence their prescribing behavior, and pharmaceutical companies adopt careful measures to maintain checks and balances on payments being made to healthcare providers.</p>
+<p>In 2010, President Obama's signature <strong>Affordable Care Act</strong> (<strong>ACA</strong>), also known in popular parlance as Obamacare, went into effect. Alongside the ACA, a separate legislation known as the Sunshine Act made reporting items of monetary value (directly or indirectly) mandatory for pharmaceutical companies and other organizations. While such rules existed in the past, rarely were such rules available in the public domain. By making detailed payment records made to all physicians available publicly, the Sunshine Act introduced an unprecedented level of transparency in monetary dealings involving healthcare providers.</p>
+<p>The data is freely available on the website of CMS Open Payments at <a href="https://openpaymentsdata.cms.gov" target="_blank"><span class="URLPACKT">https://openpaymentsdata.cms.gov</span></a>.</p>
+<p>The site provides an interface to query the data, but does not have any means to perform large-scale data aggregation. For example, if a user wanted to find the total payments made in the state of CT, there is no simple and easy way to run the query through the default web-based tool. An API that provides the functionality is available, but requires a degree of familiarity and technical knowledge to use effectively. There are third-party products that provide such facilities, but in most cases they are expensive, and end users cannot modify the software to their particular needs.</p>
+<p>In this tutorial, we will develop a fast, highly efficient web-based application to analyze tens of millions of records that capture payments made to physicians in 2016. We will be using a combination of a NoSQL database, R, and RStudio to create the final product - the web-based portal through which end users can query the database in real time.</p>
+<p class="mce-root">The technologies we will use to develop the application are as follows:</p>
+<ul>
+<li>Kdb+ NoSQL database: <a href="http://www.kx.com" target="_blank">http://www.kx.com</a></li>
+<li>R</li>
+<li>RStudio</li>
+</ul>
+<p>For the tutorial, I will be using the VM image we downloaded for our Hadoop exercise. The tools can also be installed on Windows, Mac, and other Linux machines. The choice of the VM is mainly to provide a consistent and local OS independent platform.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Installing kdb+, R, and RStudio</h1>
+                </header>
+            
+            <article>
+                
+<p>A Packt Data Science VM download has been provided, which contains all the necessary software required for this chapter. However, if you prefer to install the software on your local machine instead, instructions, have been provided in the following sections. You can skip the installation sections and proceed directly to the section on <em>Developing the Open Payment Application.</em></p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Installing kdb+</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>kdb+</strong> is a time-series, in-memory, columnar database that has been used in the financial industry for almost 20 years. It is one of the fastest database platforms available for performing large-scale data mining, but one that is not as well-known as other NoSQL tools due to the fact that it has been used almost exclusively by hedge funds and investment banks for most of its existence. In particular, due to its speed and low overhead in processing vast amounts of data, it is used by algorithmic trading desks that engage in high-frequency trading.</p>
+<p>With kdb+, it is fairly simple to analyze tens of millions and even hundreds of millions of records on a laptop. The main constraints would be at a hardware level - such as the amount of memory, disk space, and CPU that is available to process the data. In this tutorial, we will install the free 32-bit edition of kdb+ available for non-commercial use.</p>
+<p>kdb+ is not open source, but academic institutes can use the 64-bit license at no charge by writing to <kbd>academic@kx.com</kbd>.</p>
+<p>There are certain key characteristics of kdb+ that make it very well suited to large-scale data analysis:</p>
+<ul>
+<li><strong>Low-level implementation</strong>: The database is written in C, thus reducing common causes of performance issues with most contemporary NoSQL databases that rely heavily on Java, which implements multiple layers of abstraction to provide processing capabilities</li>
+<li><strong>Architectural simplicity</strong>: The entire binary for the kdb+ database is about 500-600 KB. This is a fraction of the size of an MP3 song and can be easily downloaded even on a dial-up connection</li>
+<li><strong>MapReduce</strong>: The database implements an internal MapReduce process that allows queries to execute across multiple cores simultaneously</li>
+<li><strong>No installation</strong>: The database requires no system-level privileges and users can start using kdb+ with their user account on most systems</li>
+<li><strong>Enterprise-ready</strong>: The database has been used for nearly 20 years and is a very mature product used in global enterprise environments for analysis of high-frequency trading data among other applications</li>
+<li><strong>Wide availability of interfaces</strong>: The database has a wide range of interfaces for languages such as C, C++,C#, Java, R, Python, MATLAB, and others to allow easy integration with existing software</li>
+</ul>
+<p class="CDPAlignLeft CDPAlign">The steps to install kdb+ are given as follows. Please note that if you are using the Packt Data Science VM, no additional installation is necessary. The instructions have been provided primarily for users who would like to install the software afresh.</p>
+<div class="packt_infobox">Although the instructions are for Linux, the installation process is also quite simple for both Windows and Macs. The instructions herein are geared towards the Packt Data Science VM. The instructions for downloading the Packt Data Science VM was provided in <a href="5ca02405-8ab4-4274-8611-af003aab7c9f.xhtml" target="_blank">Chapter 3</a>, <em>The Analytics Toolkit</em></div>
+<ol>
+<li>Visit <a href="http://www.kx.com" target="_blank"><span class="URLPACKT">www.kx.com</span></a> and click on the <strong>Download</strong> drop-down option from the <span class="packt_screen">Connect with us</span> menu item. You may also directly go to the download page located at <span class="URLPACKT"><a href="https://kx.com/download/" target="_blank">https://kx.com/download/</a>:</span></li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/e9289227-5a28-4ab9-904b-c657bd510ec5.png"/></div>
+<div class="CDPAlignCenter CDPAlign packt_figref">Kx Systems Homepage</div>
+<p style="padding-left: 60px">The download page is as shown in the following screenshot:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img height="313" width="408" src="assets/9b9d30ed-0252-4ce2-a401-54f17703e792.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Downloading KDB+</div>
+<ol start="2">
+<li>Click on Download on the next page.</li>
+<li>You'll be taken to <a href="https://kx.com/download/" target="_blank"><span class="URLPACKT">https://kx.com/download/</span></a> where you can select the respective download of your choice after agreeing to the terms. If you are using the VM, download the <em>Linux-86 version</em>.</li>
+<li>Select <span class="packt_screen">Save File</span> to save the downloaded ZIP file in your Downloads folder:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="513" width="752" src="assets/d2c2ea7a-99f1-4c01-8108-f1c3022ad91a.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">KDB+ 32-bit license terms</div>
+<div style="padding-left: 60px">Go to the folder where the file was downloaded and copy the ZIP file under your home directory:</div>
+<div class="CDPAlignCenter CDPAlign"><img height="85" width="370" src="assets/579d8cf0-22ad-4b55-8b29-c28309916eaa.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">KDB+ Zip file download</div>
+<p>For Mac or Linux systems, this will be the <kbd>~/</kbd> folder. In Windows, copy the ZIP file under <kbd>C:\</kbd> and unzip to extract the <kbd>q</kbd> folder. The following instructions are mainly for Linux-based systems:</p>
+<pre><strong>$ cd Downloads/ # cd to the folder where you have downloaded the zip file 
+<br/>$ unzip linuxx86.zip  
+Archive:  linuxx86.zip 
+  inflating: q/README.txt             
+  inflating: q/l32/q                  
+  inflating: q/q.q                    
+  inflating: q/q.k                    
+  inflating: q/s.k                    
+  inflating: q/trade.q                
+  inflating: q/sp.q                   
+ 
+$ mv ~/Downloads/q ~/ 
+$ cd ~/q 
+$ cd l32 
+$ ./q 
+</strong>KDB+ 3.5 2017.06.15 Copyright (C) 1993-2017 Kx Systems 
+l32/ 1()core 3830MB cloudera quickstart.cloudera 10.0.2.15 NONEXPIRE   
+ 
+Welcome to kdb+ 32bit edition 
+For support please see http://groups.google.com/d/forum/personal-kdbplus 
+Tutorials can be found at http://code.kx.com/wiki/Tutorials 
+To exit, type \\ 
+To remove this startup msg, edit q.q 
+q)\\<strong><br/></strong></pre>
+<pre><strong>/NOTE THAT YOU MAY NEED TO INSTALL THE FOLLOWING IF YOU GET AN ERROR MESSAGE STATING THAT THE FILE q CANNOT BE FOUND. IN THAT CASE, INSTALL THE REQUISITE SOFTWARE AS SHOWN BELOW 
+ 
+$ sudo dpkg --add-architecture i386 
+$ sudo apt-get update 
+$ sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386</strong> </pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Installing R</h1>
+                </header>
+            
+            <article>
+                
+<p>The frontend of the application will be developed using R. There are three options for installing R to complete the tutorial:</p>
+<ol>
+<li>If you have installed Microsoft R from <a href="5ca02405-8ab4-4274-8611-af003aab7c9f.xhtml" target="_blank">Chapter 3</a>, <em>The Analytics Toolkit</em>, and will be using your local machine for the tutorial, no further installation is necessary.</li>
+<li>Alternatively, if you will be using the Packt Data Science Virtualbox VM, no further installation will be needed.</li>
+<li>If you plan to install R from the official R website, the binary can be downloaded from any of the download sites (mirrors) listed at <span class="URLPACKT"><a href="https://cran.r-project.org/mirrors.html" target="_blank">https://cran.r-project.org/mirrors.html</a>:</span></li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="173" width="598" src="assets/7f9ebd70-ea4f-476f-b714-919b06cc8d90.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Installing Open Source R</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Installing RStudio</h1>
+                </header>
+            
+            <article>
+                
+<p>We will use RStudio in order to build our web-based application. You can either download the binary for RStudio from the website or install it from the terminal. RStudio is available in two versions - RStudio Desktop and RStudio Server. Both versions can be used to build the application. The Server version provides an interface that can be used by multiple users, whereas the Desktop version is generally used locally on the user's machine.</p>
+<div class="packt_infobox">The instructions also appear in <a href="5ca02405-8ab4-4274-8611-af003aab7c9f.xhtml" target="_blank">Chapter 3</a>, <em>The Analytics Toolkit</em>. They have been provided here for reference.</div>
+<p>There are two methods to complete the installation for the R tutorial:</p>
+<ol>
+<li>
+<p>If you will be using the Packt Data Science VM, no further installation is necessary.</p>
+</li>
+<li>
+<p>If you will be using your local machine for the tutorial, you can download RStudio Desktop from <a href="https://www.rstudio.com/products/rstudio/download/#download" target="_blank"><span class="URLPACKT">https://www.rstudio.com/products/rstudio/download/#download</span></a> or RStudio Server (only for Linux users) from <span class="URLPACKT"><a href="https://www.rstudio.com/products/rstudio/download-server/" target="_blank">https://www.rstudio.com/products/rstudio/download-server/</a>.</span></p>
+</li>
+</ol>
+<p>The following instructions have been provided for users wishing to download RStudio from the vendor's website and perform a fresh installation:</p>
+<p>Go to the website of <a href="https://www.rstudio.com">https://www.rstudio.com</a> and click on <strong>Products</strong> | <strong>RStudio</strong>:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/e837fc9d-1779-490c-b54c-b67d629a5459.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Open Source R Studio Desktop Versions</div>
+<p>On the RStudio page, click on <strong>Download RStudio Desktop</strong>:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="227" width="502" class=" image-border" src="assets/b5f21797-de0a-45d2-9ccc-60f722008cee.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Selecting RStudio Desktop</div>
+<p>Select the free version of RStudio Desktop:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="324" width="541" class=" image-border" src="assets/84689f5f-ffdb-45d6-a79c-c82d51286f1d.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Selecting Open Source R Studio Desktop</div>
+<p>RStudio is available for Windows, Mac, and Linux.</p>
+<p>Download the appropriate executable for your system and proceed to perform the installation:</p>
+<div class="CDPAlignCenter CDPAlign"><img style="color: black;font-size: 1em" class=" image-border" src="assets/28deddcd-3a2f-41fd-9a98-f972e2431336.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">RStudio Binaries (Versions)</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The CMS Open Payments Portal</h1>
+                </header>
+            
+            <article>
+                
+<p>In this section, we will begin developing our application for CMS Open Payments.</p>
+<p>The Packt Data Science VM contains all the necessary software for this tutorial. To download the VM, please refer to <a href="5ca02405-8ab4-4274-8611-af003aab7c9f.xhtml" target="_blank">Chapter 3</a>, <em>The Analytics Toolkit</em>.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Downloading the CMS Open Payments data</h1>
+                </header>
+            
+            <article>
+                
+<p>The CMS Open Payments data is available directly as a web-based download from the CMS website. We'll download the data using the Unix wget utility, but first we have to register with the CMS website to get our own API key:</p>
+<ol>
+<li>Go to <a href="https://openpaymentsdata.cms.gov" target="_blank">https://openpaymentsdata.cms.gov</a> and click on the <span class="packt_screen">Sign In</span> link at the top-right of the page:</li>
+</ol>
+<p class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/bbfb3158-5088-41d9-b493-9e5a32e32215.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Homepage of CMS OpenPayments</div>
+<p style="padding-left: 60px" class="mce-root"> Click on <strong>Sign Up</strong>:</p>
+<p class="CDPAlignCenter CDPAlign"><img height="384" width="698" class=" image-border" src="assets/fe7d94fb-fb98-4fa3-8c90-8985828bfdd3.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Sign-Up Page on CMS OpenPayments</div>
+<p style="padding-left: 60px">Enter your information and click on the <strong>Create My Account</strong> button:</p>
+<p class="CDPAlignCenter CDPAlign"><img height="450" width="655" class=" image-border" src="assets/57d32c92-42e6-4e9c-a8b7-dcdde3218f79.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Sign-Up Form for CMS OpenPayments</div>
+<p style="padding-left: 60px"> <strong>Sign In</strong> to your account:</p>
+<p class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/3b96353c-5ee6-41a9-86d9-73976eb3c805.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Signing into CMS OpenPayments</div>
+<p style="padding-left: 60px">Click on <strong>Manage</strong> under <strong>Packt Developer's Applications</strong>. Note that Applications here refers to apps that you may create that will query data available on the CMS website:</p>
+<p class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/f7312ecd-95c0-4b9e-8a99-d3fc66d3d842.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Creating 'Applications'</div>
+<p style="padding-left: 60px">Assign a name for the application (examples are shown in the following image):</p>
+<p class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/936b7e4a-ffa6-4c41-96ca-a5e6d695f7e5.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Defining an application</div>
+<p style="padding-left: 60px"> You'll get a notification that the <strong>Application Token</strong> has been created:</p>
+<p class="CDPAlignCenter CDPAlign"><img height="234" width="474" class=" image-border" src="assets/457be983-e31e-4bd4-9435-8509fdb84e4f.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Creating the Application Token</div>
+<p style="padding-left: 60px" class="mce-root">The system will generate an <strong>App Token</strong>. Copy the <strong>App Token</strong>:</p>
+<p class="CDPAlignCenter CDPAlign"><img height="188" width="446" class=" image-border" src="assets/0db9fc01-86f3-4a94-bb24-b8aed05f5c32.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">The Application Token</div>
+<ol start="2">
+<li>Now, log in to the Packt Data Science VM as user packt and execute the following shell command after replacing the term <kbd>YOURAPPTOKEN</kbd> with the one that you were assigned (it will be a long string of characters/numbers). Note that for the tutorial, we will only download a few of the columns and restrict the data to only physicians (the other option is hospitals).</li>
+</ol>
+<p>You can reduce the volume of the data downloaded by reducing the value of the limit specified at the end of the command to a lower number. In the command, we have used <kbd>12000000</kbd> (12 million), which would let us download the entire 2016 dataset representing physician payments. The application will still work if, for example, you were to download only one million entries instead of the approximately 11-12 million records.</p>
+<div class="packt_infobox">Note: Two approaches are shown below. One using the Token and the other without using the Token. Application Tokens allow users to have a higher throttling limit. More information can be found at <a href="https://dev.socrata.com/docs/app-tokens.html">https://dev.socrata.com/docs/app-tokens.html</a></div>
+<pre><strong># Replace YOURAPPTOKEN and 12000000 with your API Key and desired record limit respectively<br/><br/>cd /home/packt; </strong><br/><br/><strong>time wget -O cms2016.csv 'https://openpaymentsdata.cms.gov/resource/vq63-hu5i.csv?$$app_token=YOURAPPTOKEN&amp;$query=select Physician_First_Name as firstName,Physician_Last_Name as lastName,Recipient_City as city,Recipient_State as state,Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name as company,Total_Amount_of_Payment_USDollars as payment,Date_of_Payment as date,Nature_of_Payment_or_Transfer_of_Value as paymentNature,Product_Category_or_Therapeutic_Area_1 as category,Name_of_Drug_or_Biological_or_Device_or_Medical_Supply_1 as product where covered_recipient_type like "Covered Recipient Physician" limit 12000000'<br/></strong></pre>
+<div class="packt_infobox packt_tip"><strong>Important</strong>: It is possible to also download the file without using an app token. However, the method should be used sparingly. The URL to download the file without using an application token is shown as follows:</div>
+<pre><span><strong># Downloading without using APP TOKEN</strong><br/><strong><br/>wget -O cms2016.csv 'https://openpaymentsdata.cms.gov/resource/vq63-hu5i.csv?$query=select Physician_First_Name as firstName,Physician_Last_Name as lastName,Recipient_City as city,Recipient_State as state,Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name as company,Total_Amount_of_Payment_USDollars as payment,Date_of_Payment as date,Nature_of_Payment_or_Transfer_of_Value as paymentNature,Product_Category_or_Therapeutic_Area_1 as category,Name_of_Drug_or_Biological_or_Device_or_Medical_Supply_1 as product where covered_recipient_type like "Covered Recipient Physician" limit 12000000'</strong></span></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Creating the Q application</h1>
+                </header>
+            
+            <article>
+                
+<p>This section describes the process of creating the kdb+/Q application, beginning with the process of loading data from the database and creating the scripts that will serve as the backend for the application.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Loading the data</h1>
+                </header>
+            
+            <article>
+                
+<p>Log in to the VM using the ID <kbd>packt</kbd> (<span class="packt_screen">passwor</span><span class="packt_screen"><span class="packt_screen">d</span>:</span> <kbd>packt</kbd>):</p>
+<p class="CDPAlignCenter CDPAlign"><img height="311" width="684" class=" image-border" src="assets/7a4e6913-3fe7-45d7-8d12-6b2bdb2f5699.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Logging into the Packt VM</div>
+<pre><strong># We will start KDB+ - the NoSQL database that we'll use for the tutorial<br/><br/># Launch the Q Console by typing: 
+ 
+packt@vagrant:~$ rlwrap ~/q/l32/q -s 4 -p 5001 
+ 
+KDB+ 3.5 2017.06.15 Copyright (C) 1993-2017 Kx Systems 
+l32/ 1()core 3951MB packt vagrant 127.0.1.1 NONEXPIRE 
+ 
+Welcome to kdb+ 32bit edition 
+For support please see http://groups.google.com/d/forum/personal-kdbplus 
+Tutorials can be found at http://code.kx.com/wiki/Tutorials 
+To exit, type \\ 
+To remove this startup msg, edit q.q 
+q)<br/></strong></pre>
+<pre># Enter the following at the Q console. Explanations for each of the commands have been provided in the comments (using /):<strong> 
+ 
+</strong>/change to the home directory for user packt 
+<strong>\cd /home/packt/ 
+ 
+</strong>/Define the schema of the cms table 
+<strong>d:(`category`city`company`date`firstName`lastName`payment`paymentNature`product`state)!"SSSZSSFSSS"; 
+ 
+</strong>/Read the headersfrom the cms csv file. These will be our table column names 
+<strong> 
+columns:system "head -1 cms2016.csv"; 
+columns:`$"," vs ssr(raze columns;"\"";""); 
+ 
+</strong>/Run Garbage Collection 
+<strong>.Q.gc(); 
+ 
+</strong>/Load the cms csv file 
+<strong>\ts cms2016:(d columns;enlist",")0:`:cms2016.csv; 
+ 
+</strong>/Add a month column to the data 
+<strong>\ts cms2016: `month`date xasc update month:`month$date, date:`date$date from cms2016 
+ 
+.Q.gc(); 
+ 
+</strong>/Modify character columns to be lower case. The data contains u 
+<strong>\ts update lower firstName from `cms2016 
+\ts update lower lastName from `cms2016 
+\ts update lower city from `cms2016 
+\ts update lower state from `cms2016 
+\ts update lower product from `cms2016 
+\ts update lower category from `cms2016 
+\ts update lower paymentNature from `cms2016 
+\ts update lower company from `cms2016<br/>.Q.gc() 
+ 
+cms2016:`month`date`firstName`lastName`company`state`city`product`category`payment`paymentNature xcols cms2016 
+ 
+count cms2016 /11 million 
+ 
+</strong>/Function to save the data that was read from the CMS csv file<br/><strong>
+savedata:{show (string .z.T)," Writing: ",string x;cms::delete month from select from cms2016 where month=x; .Q.dpft(`:cms;x;`date;`cms)} 
+ 
+</strong></pre>
+<pre>/Save the data in monthly partitions in the current folder <br/><strong><br/>savedata each 2016.01m +til 12</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The backend code</h1>
+                </header>
+            
+            <article>
+                
+<p>Once the script completes, exit from the Q prompt by typing in <kbd>\\</kbd> and pressing <em>Enter</em>.</p>
+<p>Copy the following text into a file called <kbd>cms.q</kbd>:</p>
+<pre>system "p 5001" 
+ 
+system "l /home/packt/cms" 
+ 
+/firstCap: Takes a string (sym) input and capitalizes the first letter of each word separated by a blank space <br/>firstCap:{" " sv {@(x;0;upper)} each (" " vs string x) except enlist ""}<br/>/VARIABLES AND HELPER TABLES 
+ 
+/alldata: Aggregates data from the primary cms database 
+alldata: distinct `company`product xasc update showCompany:`$firstCap each company, showProduct:`$firstCap each product from ungroup select distinct product by company from cms where not null product 
+ 
+/minDate: First month 
+minDate:exec date from select min date from cms where month=min month 
+ 
+/maxDate: Last month 
+maxDate:exec date from select max date from cms where month=max month 
+ 
+/companyStateCity: Cleans and normalises the company names (capitalisations, etc) 
+companyStateCity:select asc upper distinct state, asc `$firstCap each distinct city by company from cms 
+ 
+ 
+/FUNCTIONS <br/>/getShowProduct: Function to get product list from company name  getShowProduct:{$((`$"Select All") in x;raze exec showProduct from alldata;exec showProduct from alldata where showCompany in x)}<br/>/getShowState: Function to get state list from company name getShowState:{$((`$"Select All") in x;raze exec state from companyStateCity;exec state from companyStateCity where company = exec first company from alldata where showCompany in x)}<br/>/getShowCity: Function to get city list from company name <br/>getShowCity:{$((`$"Select All") in x;raze exec city from companyStateCity;exec city from companyStateCity where company = exec first company from alldata where showCompany in x)}<br/>/getShowInfo: Generic Function for Product, State and City <br/>getShowInfo:{y:`$"|" vs y;:asc distinct raze raze $(x~`product;getShowProduct each y;x~`state;getShowState each y;x~`city;getShowCity each y;"")}<br/><br/>/Example: Run this after loading the entire script after removing the comment mark (/) from the beginning 
+/getShowInfo(`state;"Abb Con-cise Optical Group Llc|Select All|Abbott Laboratories") 
+
+/Convert encoded URL into a Q dictionary 
+decodeJSON:{.j.k .h.uh x} 
+ 
+/Convert atoms to list 
+ensym:{$(0&gt;type x;enlist x;x)}
+ 
+/Date functions 
+ 
+withinDates:{enlist (within;`date;"D"$x(`date))} 
+withinMonths:{enlist (within;`month;`month$"D"$x(`date))} 
+/Helper function to remove null keys <br/>delNullDict:{kx!x kx:where {not x~0n} each x}<br/>/If showdata=enlist 1, 
+ 
+/Function to process the data for displaying results only 
+ <br/>getData:{"x is the dictionary from web";d:`$dx:lower delNullDict x; enz:`$delete showData,date,columns from dx; ?(`cms;(withinMonths x),(withinDates x),{(in;x 0;enlist 1_x)} each ((key enz),'value enz);0b;(dc)!dc:ensym `$x`columns)}<br/><br/>/Aggregation Function<br/> <br/>aggDict:(`$("Total Payment";"Number of Payments";"Minimum Payment";"Maximum Payment";"Average Payment"))!((sum;`payment);(#:;`i);(min;`payment);(max;`payment);(avg;`payment))<br/>/Function to aggregate the data <br/>getDataGroups:{(aggDict;x) "x is the dictionary from web";d:`$dx:lower delNullDict x; enz:`$delete showData,date,columns,aggVars,aggData from dx; ?(`cms;(withinMonths x),(withinDates x),{(in;x 0;enlist 1_x)} each ((key enz),'value enz);xv!xv:ensym `$x`aggVars;xa!aggDict xa:ensym `$x`aggData)}(aggDict;)<br/><br/>/Generic Function to create error messages<br/> <br/>errtable:{tab:(()Time:enlist `$string .z.Z;Alert:enlist x);(tab;"Missing Fields")}<br/><br/>/Validation for input<br/> <br/>initialValidation:{$(0n~x(`company);:errtable `$"Company must be selected";(`aggVars in key x) and ((0=count x(`aggVars)) or 0n~x(`aggData));:errtable `$"Both Metric and Aggregate Data field should be selected when using Aggregate Data option";x)}<br/>/Special Handling for some variables, in this case month specialHandling:{0N!x;$(`month in cols x; update `$string month from x;x)}<br/><br/>/Normalise Columns<br/>columnFix:{(`$firstCap each cols x) xcol x}<br/><br/>/Use comma separator for numeric values<br/>commaFmt: {((x&lt;0)#"-"),(reverse","sv 3 cut reverse string floor a),1_string(a:abs x)mod 1}<br/><br/>/Wrapper for show data and aggregate data options<br/>getRes:{0N!x;.Q.gc();st:.z.t;x:decodeJSON x; if (not x ~ ix:initialValidation x;:ix); res:$(`aggData in key x;getDataGroups x;getData x);res:specialHandling res; res:columnFix res;ccms:count cms; cres:count res; en:.z.t; .Q.gc();:(res;`$(string en),": Processed ",(commaFmt ccms)," records in ",(string en - st)," seconds. Returned result with ",(commaFmt cres)," rows.\n")</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Creating the frontend web portal</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>R Shiny</strong>, a package intended to make development of web-based applications simple, started gaining traction since it was introduced in around 2012-2013. In general, R developers tend not to be very frontend development savvy as their main areas of work would be related to statistics or similar disciplines.</p>
+<p>As data science, as a profession and a mainstream activity became popular, the need to create sophisticated web-based applications became necessary as a means of delivering results to end users in a dynamic environment.</p>
+<p>JavaScript, which had all but lost its original appeal, made a surprise comeback and soon enough the web world was abuzz with the release of various leading JavaScript packages for web development and visualization, such as D3, Angular, Ember, and others ever since 2010-2011.</p>
+<p>But these were mostly used by seasoned JavaScript developers, few of whom were also proficient in R. Developing a solution that would help bridge the gap between JavaScript web-based application development and R programming became a necessity for R developers to showcase and share their work with a broader audience.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">R Shiny platform for developers</h1>
+                </header>
+            
+            <article>
+                
+<p>R Shiny introduced a platform for R developers to create JavaScript-based web applications without having to get involved, or, for that, matter even be proficient in JavaScript.</p>
+<p>In order to build our application, we will leverage R Shiny and create an interface to connect to the CMS Open Payments data we set up in the prior section.</p>
+<p>If you are using your own R installation (locally), you'll need to install a few R packages. Note that if you are using a Linux workstation, you may need to install some additional Linux packages. For example, in Ubuntu Linux, you'll need to install the following. You may already have some of the packages, in which case you'll receive a message indicating that no further changes were needed for the respective package:</p>
+<pre><strong>sudo apt-get install software-properties-common libssl-dev libcurl4-openssl-dev gdebi-core rlwrap</strong> </pre>
+<div class="packt_infobox">If you are using the Packt Data Science VM, you can proceed directly to developing the application as these Linux packages have already been installed for you.</div>
+<p>The Shiny application requires a few additional R packages to provide all its functionalities. Note that R packages are different from the Linux packages described previously. R packages, which number in the thousands, provide specialized functions for specific subject areas. For the web application, we will install a few R packages that will let us leverage some of the features in the web-based application.</p>
+<p>The following steps outline the process of creating the web portal:</p>
+<ol>
+<li>Log in to RStudio. If you are using the Packt Data Science VM, go to<span> </span><kbd>http://localhost:8787/auth-sign-in</kbd>. Log in with the user ID<span> </span><strong>packt</strong><span> </span>and password<span> </span><strong>packt</strong><span> </span>(same as user ID).</li>
+</ol>
+<div class="packt_infobox"><span>Note that if you had installed RStudio locally, you'll not have a separate login screen. The instruction is purely for the Packt Data Science VM:</span></div>
+<div class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/12c68685-ff73-4579-a21c-98849e8b3b39.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Logging into RStudio Server (Only for Packt VM)</div>
+<p style="padding-left: 60px">If you receive an error message stating that the site cannot be loaded, it may be due to the fact that the port forwarding has not been set up. To fix the issue, make the following changes:</p>
+<ol start="2">
+<li>In VirtualBox, right-click on the<span> </span><span class="packt_screen">VM</span><span> </span>and select<span> </span><span class="packt_screen">Settings.</span></li>
+<li>Click on<span> </span><span class="packt_screen">Network</span> under <span class="packt_screen">Settings</span><span> </span>and expand the arrow next to <strong>Advanced</strong>:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="256" width="519" class=" image-border" src="assets/06f21a60-4570-4f94-899f-56ac4a3252c7.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Setting up the VM parameters</div>
+<ol start="4">
+<li>Click on Port Forwarding and add a rule to forward port 8787 from the VM to the host. The rule marked as Packt Rule has to be added, shown as follows:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="267" width="541" class=" image-border" src="assets/6b314a56-7f40-446f-91be-e897722d4fd5.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Configuring Port Forwarding</div>
+<ol start="5">
+<li>After logging in, you'll see the following screen. This is the interface for RStudio, which you'll be using to complete the exercise. We'll discuss R and RStudio in much more detail in later chapters, and this section illustrates the process to create the basic web application:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/c1d7dd91-08c0-4587-beff-d4778a0b216b.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">The RStudio Console</div>
+<ol start="6">
+<li>Install the necessary R packages. Click on<span> </span><span class="packt_screen">File</span><span> </span>|<span> </span><span class="packt_screen">R Script</span><span> </span>and copy and paste the code below.</li>
+<li>Then, click on<span> </span><span class="packt_screen">Source</span><span> </span>to execute the following lines:</li>
+</ol>
+<pre>install.packages(c("shiny","shinydashboard","data.table", 
+                   "DT","rjson","jsonlite","shinyjs","devtools")) 
+ 
+library(devtools) 
+devtools::install_github('kxsystems/rkdb', quiet=TRUE) </pre>
+<div class="CDPAlignCenter CDPAlign"><img height="168" width="560" src="assets/c6b69841-8844-46fc-8402-ce3d0ce6b64c.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Installing required packages in R via RStudio</div>
+<ol start="8">
+<li><span>Click on</span><span> </span><span class="packt_screen">File</span><span>|</span><span class="packt_screen">New File<span>|</span></span><span class="packt_screen">Shiny Web App:</span></li>
+</ol>
+<div class="CDPAlignCenter CDPAlign">&gt;<img height="242" width="542" src="assets/c8c2361f-3059-4d7b-a1cf-b050cac17ceb.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Creating a new RShiny Application</div>
+<ol start="9">
+<li><span>Type in <kbd>cmspackt</kbd> under <span class="packt_screen">application name</span> and click on <span class="packt_screen">Create:</span></span></li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="217" width="464" src="assets/1ae74872-4594-43a0-8ced-0261aee782cf.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Assigning a name to the RShiny Application</div>
+<p style="padding-left: 60px"><span>This will create a <kbd>cmspackt</kbd> folder in the home directory, shown as follows:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img src="assets/1d1c3d4f-f324-4da0-b296-a15bd122852f.png"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">The app.R file for the R Shiny Application</div>
+<ol start="10">
+<li><span>Copy and paste the following code into the <kbd>app.R</kbd> section:</span></li>
+</ol>
+<pre class="mce-root CDPAlignLeft CDPAlign"># # This is a Shiny web application. You can run the application by clicking # the 'Run App' button above. # # Find out more about building applications with Shiny here: # # http://shiny.rstudio.com/ <br/><br/>#<br/># This is a Shiny web application. You can run the application by clicking<br/># the 'Run App' button above.<br/>#<br/># Find out more about building applications with Shiny here:<br/>#<br/># http://shiny.rstudio.com/<br/>#<br/><br/>library(shiny)<br/>library(shinydashboard)<br/>library(data.table)<br/>library(DT)<br/>library(rjson)<br/>library(jsonlite)<br/>library(shinyjs)<br/>library(rkdb)<br/><br/>ui &lt;- dashboardPage (skin="purple", dashboardHeader(title = "CMS Open Payments 2016"),<br/>  dashboardSidebar(<br/>  useShinyjs(),<br/>  sidebarMenu(<br/>  uiOutput("month"),<br/>  uiOutput("company"),<br/>  uiOutput("product"),<br/>  uiOutput("state"),<br/>  uiOutput("city"),<br/>  uiOutput("showData"),<br/>  uiOutput("displayColumns"),<br/>  uiOutput("aggregationColumns"),<br/>  actionButton("queryButton", "View Results")<br/>  <br/>  )<br/>  ),dashboardBody(<br/>  tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "packt.css")),<br/>  textOutput("stats"),<br/>  dataTableOutput("tableData")<br/>  ),<br/>  title = "CMS Open Payments Data Mining"<br/>)<br/><br/># Define server logic required to draw a histogram<br/>server &lt;- function(input, output, session) {<br/>  <br/>  h &lt;- open_connection("localhost","5001")<br/>  <br/>  minDate &lt;- execute(h,"minDate")<br/>  maxDate &lt;- execute(h,"maxDate")<br/>  startDate &lt;- minDate<br/>  endDate &lt;- startDate + 31<br/>  <br/>cmsdata &lt;- data.table(dbColumns=c("month","date","firstName","lastName","city","state","company","product","category","payment","paymentNature"), webColumns=c("Month","Date","First Name","Last Name","City","State","Company","Product","Category","Payment","Payment Nature"))<br/>  <br/>companyData &lt;- execute(h,"exec distinct showCompany from alldata")<br/>  <br/>gbyVars &lt;- c("Company","Product","State","City","Category","Payment Nature")<br/><br/>PLACEHOLDERLIST &lt;- list(<br/>    placeholder = 'Please select an option below',<br/>    onInitialize = I('function() { this.setValue(""); }')<br/>  )<br/><br/>PLACEHOLDERLIST2 &lt;- list(<br/>    placeholder = 'Select All',<br/>    onInitialize = I('function() { this.setValue(""); }')<br/>  )<br/>    <br/>output$month &lt;- renderUI({<br/>    dateRangeInput("date", label = 'PAYMENT DATE', start = startDate, end = endDate, min = minDate, max = maxDate)<br/>  })<br/>  <br/>output$company &lt;- renderUI({<br/>    selectizeInput("company","COMPANY" , companyData, multiple = TRUE,options = PLACEHOLDERLIST)<br/>  })<br/> <br/>output$product &lt;- renderUI({<br/>    productQuery &lt;- paste0("getShowInfo(`product;\"",paste(input$company,collapse="|"),"\")")<br/>    productVals &lt;- execute(h,productQuery)<br/>    selectizeInput("product", "DRUG/PRODUCT" , productVals, multiple = TRUE,options = PLACEHOLDERLIST2)<br/>  }) <br/>  <br/>output$state &lt;- renderUI({<br/>    stateQuery &lt;- paste0("getShowInfo(`state;\"",paste(input$company,collapse="|"),"\")")<br/>    stateVals &lt;- execute(h,stateQuery)<br/>    selectizeInput("state", "STATE" , stateVals, multiple = TRUE,options = PLACEHOLDERLIST2)<br/>  }) <br/>  <br/>output$city &lt;- renderUI({<br/>    cityQuery &lt;- paste0("getShowInfo(`city;\"",paste(input$company,collapse="|"),"\")")<br/>    cityVals &lt;- execute(h,cityQuery)<br/>    selectizeInput("city", "CITY" , cityVals, multiple = TRUE,options = PLACEHOLDERLIST2)<br/>  })<br/>  <br/>output$showData &lt;- renderUI({<br/>    selectInput("showData", label = "DISPLAY TYPE", choices = list("Show Data" = 1, "Aggregate Data" = 2), selected = 1)<br/>  })<br/>  <br/>output$displayColumns &lt;- renderUI({<br/>    if (is.null(input$showData)) {selectInput("columns", "SHOW DATA",cmsdata$webColumns, selectize = FALSE, multiple = TRUE, size=11)}<br/>    else if(input$showData == 1) {selectInput("columns", "SHOW DATA",cmsdata$webColumns, selectize = FALSE, multiple = TRUE, size=11) } <br/>    else if(input$showData == 2) {selectInput("aggVars", "AGGREGATE DATA",gbyVars, selectize = FALSE, multiple = TRUE, size=6) }<br/>  }) <br/><br/>output$aggregationColumns &lt;- renderUI ({ conditionalPanel(<br/>    condition = "input.showData != 1",<br/>    selectInput("aggData", "CALCULATE METRICS" , c("Total Payment","Number of Payments","Minimum Payment","Maximum Payment","Average Payment"), selectize = TRUE, multiple = TRUE)<br/>  )})<br/>  <br/>getTableData &lt;- eventReactive(input$queryButton, {<br/>    disable("queryButton")<br/>    queryInfo &lt;- (list(date=as.character(input$date),company=input$company, product=input$product, state=input$state, city=input$city,columns=cmsdata$dbColumns(cmsdata$webColumns %in% input$columns),showData=input$showData))<br/>    if (input$showData !=1) {queryInfo &lt;- c(queryInfo, list(aggVars=cmsdata$dbColumns(cmsdata$webColumns %in% input$aggVars), aggData=input$aggData))} else {queryInfo &lt;- c(queryInfo)}<br/>    JSON &lt;- rjson::toJSON(queryInfo)<br/>    getQuery &lt;- paste0("getRes \"",URLencode(JSON),"\"")<br/>    finalResults &lt;- execute(h,getQuery)<br/>    enable("queryButton")<br/>    print (finalResults)<br/>    fres &lt;&lt;- finalResults<br/>    print (class(finalResults((1))))<br/>    print (finalResults)<br/>    finalResults<br/>  })<br/>  <br/> output$tableData &lt;- renderDataTable({ datatable(getTableData()((1)))})<br/> output$stats &lt;- renderText({(getTableData())((2))})<br/> <br/>}<br/><br/># Run the application <br/>shinyApp(ui = ui, server = server)</pre>
+<ol start="11">
+<li>Click on<span> </span><span class="packt_screen">New Folder</span><span> </span>in the lower-right box:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="109" width="183" src="assets/a039acf3-9819-4b74-928f-9e1cd6368a76.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Creating a folder for CSS files</div>
+<ol start="12">
+<li>Rename the new folder to <kbd>cmspackt/www</kbd>, shown as follows:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="124" width="262" src="assets/607404fd-4ad4-4764-a04c-e27d0ebff3a3.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Assigning a name to the folder</div>
+<ol start="13">
+<li>Click on<span> </span><span class="packt_screen">File</span><span> </span>|<span> </span><span class="packt_screen">New File</span> |<span class="packt_screen">Text File:</span></li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="132" width="357" src="assets/27544c53-5a66-4238-ae1a-8ae9de529128.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Creating the CSS File</div>
+<ol start="14">
+<li>Copy and paste the following code:</li>
+</ol>
+<pre class="mce-root CDPAlignLeft CDPAlign">.shiny-text-output, .shiny-bount-output { 
+  margin: 1px; 
+  font-weight: bold; 
+} 
+ 
+.main-header .logo { 
+height: 20px; 
+font-size: 14px; 
+font-weight: bold; 
+line-height: 20px; 
+} 
+ 
+.main-header .sidebar-toggle { 
+  padding: 0px; 
+} 
+ 
+.main-header .navbar { 
+  min-height: 0px !important; 
+} 
+ 
+.left-side, .main-sidebar { 
+  padding-top: 15px !important; 
+} 
+ 
+.form-group { 
+  margin-bottom: 2px; 
+} 
+ 
+.selectize-input { 
+  min-height: 0px !important; 
+  padding-top: 1px !important; 
+  padding-bottom: 1px !important; 
+  padding-left: 12px !important; 
+  padding-right: 12px !important; 
+} 
+ 
+.sidebar { 
+  height: 99vh;  
+  overflow-y: auto; 
+} 
+ 
+section.sidebar .shiny-input-container { 
+    padding: 5px 15px 0px 12px; 
+} 
+ 
+.btn { 
+  padding: 1px; 
+  margin-left: 15px; 
+  color:#636363; 
+  background-color:#e0f3f8; 
+  border-color:#e0f3f8; 
+} 
+ 
+.btn.focus, .btn:focus, .btn:hover { 
+  color: #4575b4; 
+  background-color:#fff; 
+  border-color:#fff; 
+} 
+ 
+pre { 
+    display: inline-table; 
+    width: 100%; 
+    padding: 2px; 
+    margin: 0 0 5px; 
+    font-size: 12px; 
+    line-height: 1.42857143; 
+    color: rgb(51, 52, 53); 
+    word-break: break-all; 
+    word-wrap: break-word; 
+    background-color: rgba(10, 9, 9, 0.06); 
+    border: 1px rgba(10, 9, 9, 0.06); 
+    /* border-radius: 4px */ 
+} 
+ 
+.skin-red .sidebar a { 
+    color: #fff; 
+} 
+ 
+.sidebar { 
+  color: #e0f3f8; 
+  background-color:#4575b4; 
+  border-color:#4575b4; 
+}</pre>
+<ol start="15">
+<li>Click on <span class="packt_screen">File | </span><span class="packt_screen">Save As</span> to save the file, as follows:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="223" width="235" class=" image-border" src="assets/3cb929de-b700-4f88-b88e-124f2689ec3b.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Select Save As for the CSS File</div>
+<ol start="16">
+<li>Save as <kbd>/home/packt/cmspackt/www/packt.css</kbd>, shown as follows:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/1ed14459-0a0a-4fc0-aaea-c89a574cf876.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Saving the CSS File</div>
+<p><strong> </strong>Your application is now ready for use!</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Putting it all together - The CMS Open Payments application</h1>
+                </header>
+            
+            <article>
+                
+<p>In the prior sections, we have learned how to:</p>
+<ul>
+<li>Download the datasets</li>
+<li>Create the backend database</li>
+<li>Create the code for the backend database</li>
+<li>Set up RStudio</li>
+<li>Create the R Shiny application</li>
+</ul>
+<p>To start the application, complete the following steps:</p>
+<ol>
+<li>
+<p>Start the Q application, make sure you are in the home directory. Type pwd and hit Enter. This will show the present working directory of <kbd>/home/packt</kbd> as shown in the coming image.</p>
+</li>
+<li>Next, type <kbd>q</kbd> and hit <span class="packt_screen">Enter.</span></li>
+<li>At the <kbd>q</kbd> prompt, type in <kbd>\l cms.q</kbd>.</li>
+</ol>
+<p style="padding-left: 60px">Note that <kbd>cms.q</kbd> is the file we created in our earlier section when developing the Q application.</p>
+<p>The script will load the database and return back to the <kbd>q)</kbd> prompt:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="178" width="454" class=" image-border" src="assets/21059576-46c9-4666-bdb7-d8b5c1c04210.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Putting it all together: Loading the CMS KDB+ Q Script in KDB+ Session</div>
+<ol start="4">
+<li>Launch the CMS Open Payment application</li>
+<li>In RStudio, open the <kbd>app.R</kbd> file (which contains the R Code) and click on <span class="packt_screen">Run App</span> at the top-right, shown as follows:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="330" width="526" class=" image-border" src="assets/58e42772-85d4-407f-af98-f324ec235ade.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Running the RShiny Application</div>
+<p>This will launch the web application, shown as follows:</p>
+<div class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/63e5338e-1ad6-4996-94ff-b1eff05d1ba9.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">The RShiny Application</div>
+<p>We have now finished developing a complete CMS Open Payments application that allows the end user to filter, aggregate, and analyze the data. Now, you can run queries by selecting various options on the screen. There are two functionalities in the app:</p>
+<ul>
+<li>Filtering data (default view)</li>
+<li>Aggregating data (you can switch to this option by selecting Aggregate Data from the Display Type menu)</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Applications</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>A filtering example</strong>: To see payments made by a company for a certain drug in the state of NY:</p>
+<div class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/3be31cd1-a953-4cc6-a6ad-2e29e2071aeb.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">Using the RShiny Application</div>
+<p>Note that the system processed 11 million records in 21 milliseconds, as shown in the header message. The name of the company and the product has been blanked out in the screenshot for privacy, but you are free to try out different options for both fields.</p>
+<div class="packt_infobox">Note that in the default VM, we are using only one core with very limited memory, and the speed with which the data is processed using kdb+ even on a laptop with very limited resources easily exceeds the performance of many well-to-do commercial solutions.</div>
+<div class="packt_figref">
+<p><strong>An aggregation example</strong>: To see total payments grouped by state, payment category, and payment nature for a specific company and product, select the options for the fields <em>Aggregate Data</em> and <em>Calculate Metrics</em>. Please note that the name of the company and the product have been hidden in the screenshot for privacy reasons only.</p>
+<p>Note the message at the top that states:</p>
+<p><img height="24" width="630" class=" image-border" src="assets/5abd0a19-3bf8-45ff-a9aa-9d41ab2e3125.png"/></p>
+<p>Log message indicating query and application performance</p>
+<p>This indicates the speed with which the underlying kdb+ database processed the data. In this case, it filtered and <em>aggregated 11 million records in 22 milliseconds</em> for the given options.</p>
+</div>
+<div class="CDPAlignCenter CDPAlign"><img class=" image-border" src="assets/5d5b097a-918a-4613-a01d-8572efd32706.png"/></div>
+<div class="mce-root CDPAlignCenter CDPAlign packt_figref">CMS OpenPayments Application Screenshot</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article>
+                
+<p class="mce-root">This chapter introduced the concept of NoSQL. The term has gained popularity in recent years, especially due to its relevance and direct application to <strong>big data</strong> analytics. We discussed the core terminologies in NoSQL, their various types, and popular software used in the industry for such capabilities. We concluded with a couple of tutorials using MongoDB and kdb+.</p>
+<p>We also built an application using R and R Shiny to create a dynamic web interface to interact with the data loaded in kdb+.</p>
+<p>The next chapter will introduce another common technology in data science today, known as Spark. It is yet another toolkit that empowers data scientists across the world today.</p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

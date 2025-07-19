@@ -1,0 +1,275 @@
+<html><head></head><body>
+        <section>
+
+                            <header class="header-title chapter-title">
+                    Unsupervised Learning - PCA and Clustering
+                </header>
+            
+            <article>
+                
+<p> Unsupervised learning is one of the most important branches of machine learning. It enables us to make predictions when we don't have target labels. In unsupervised learning, the model learns only via features because the dataset doesn't have a target label column. Most machine learning problems start with something that helps automate the process. For example, when you want to develop a prediction model for detecting diabetes patients, you need a set of target labels for each patient in your dataset. In the initial stages, arranging target labels for any machine learning problem is not an easy task, because it requires changing the business process to get the labels, whether by manual in-house labeling or collecting the data again with labels. </p>
+<p>In this chapter, our focus is on learning about unsupervised learning techniques that can handle situations where target labels are not available. We will especially cover dimensionality reduction techniques and clustering techniques. <span>Dimensionality reduction will be used where we have a large number of features and we want to reduce that amount. This will reduce the model complexity and training cost because it means we can achieve the results we want with just a few features.  </span></p>
+<p>Clustering techniques find groups in data based on similarity. These groups essentially represent <em>unsupervised classification</em>. In clustering, classes or labels for feature observations are found in an unsupervised manner. Clustering is useful for various business operations, such as cognitive search, recommendations, segmentation, and document clustering<span>.</span></p>
+<p><span>Here are the topics of this chapter:</span></p>
+<ul>
+<li>Unsupervised learning</li>
+<li>Reducing the dimensions of data</li>
+<li>Principal component analysis</li>
+<li>Clustering</li>
+<li>Partitioning data using k-means clustering</li>
+</ul>
+<ul>
+<li>Hierarchical clustering</li>
+<li>DBSCAN clustering</li>
+<li>Spectral clustering</li>
+<li>Evaluating clustering performance </li>
+</ul>
+<h1 id="uuid-e3859eb5-3132-4b73-a34f-a70eb6ccc999">Technical requirements</h1>
+<p>This chapter has the following technical requirements:</p>
+<ul>
+<li>You can find the code and the datasets at the following GitHub link:<span> <a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter11">https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter11</a>.<a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Python-Data-Analysis-Third-Edition/Ch11"/></span></li>
+<li>All the code blocks are available in the<span> </span><kbd>ch11.ipynb</kbd> file.  </li>
+<li>This chapter uses only one CSV file (<kbd>diabetes.csv</kbd>) for practice purposes.</li>
+<li>In this chapter, we will use the pandas<span> and scikit-learn Python libraries.</span></li>
+</ul>
+<h1 id="uuid-0e176af2-b461-4745-9606-731bfb2aede1">Unsupervised learning</h1>
+<p>Unsupervised learning means learning by observation, not by example. This type of learning works with unlabeled data. Dimensionality reduction and clustering are examples of such learning. Dimensionality reduction is used to reduce a large number of attributes to just a few that can produce the same results. There are several methods that are available for reducing the dimensionality of data, such as <strong>principal component analysis</strong> (<strong>PCA</strong>), t-SNE, wavelet transformation, and attribute subset selection.</p>
+<p>The term cluster means a group of similar items that are closely related to each other. Clustering is an approach for generating units or groups of items that are similar to each other. This similarity is computed based on certain features or characteristics of items. We can say that a cluster is a set of data points that are similar to others in its cluster and dissimilar to data points of other clusters. Clustering has numerous applications, such as in searching documents, business intelligence, information security, and recommender<span> </span>systems:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img src="assets/6c4790eb-c2f7-4f6e-8e3d-fb3daf08f6ab.png" style=""/></div>
+<p>In the <span><span>preceding</span></span> diagram, we can see how clustering puts data records or observations into a few groups, and dimensionality reduction reduces the number of features or attributes. Let's look at each of these topics in detail in the upcoming sections. </p>
+<h1 id="uuid-98a9d0bd-4a83-4053-afdc-c4d79b3136b5">Reducing the dimensionality of data</h1>
+<p>Reducing dimensionality, or dimensionality reduction, entails scaling down a large number of attributes or columns (features) into a smaller number of attributes. The main objective of this technique is to get the best number of features for classification, regression, and other unsupervised approaches. In machine learning, we face a problem called the curse of dimensionality. This is where there is a large number of attributes or features. This means more data, causing complex models and overfitting problems.</p>
+<p>Dimensionality reduction helps us to deal with the curse of dimensionality. It can transform data linearly and nonlinearly. Techniques for linear transformations include PCA, linear discriminant analysis, and factor analysis. Non-linear transformations include techniques such as t-SNE, Hessian eigenmaps, spectral embedding, and isometric feature mapping. Dimensionality reduction offers the following benefits:</p>
+<ul>
+<li>It filters redundant and less important features.</li>
+<li>It reduces model complexity with less dimensional data.</li>
+<li>It reduces memory and computation costs for model generation.</li>
+<li>It visualizes high-dimensional data.</li>
+</ul>
+<p>In the next section, we will focus on one of the important and popular dimension reduction techniques, PCA. </p>
+<h2 id="uuid-0682d2ee-0dd4-4fbf-b5c2-1cdae31bd1e3">PCA</h2>
+<p>In machine learning, it is considered that having a large amount of data means having a good-quality model for prediction, but a large dataset also poses the challenge of higher dimensionality (or the curse of dimensionality). It causes an increase in complexity for prediction models due to the large number of attributes. PCA is the most commonly used dimensionality reduction method and helps us to identify patterns and correlations in the original dataset to transform it into a lower-dimension dataset with no loss of information.</p>
+<p>The main concept of PCA is the discovery of unseen relationships and correlations among attributes in the original dataset. Highly correlated attributes are so similar as to be redundant. Therefore, PCA removes such redundant attributes. For example, if we have 200 attributes or columns in our data, it becomes very difficult for us to proceed, what with such a huge number of attributes. In such cases, we need to reduce that number to 10 or 20 variables. Another objective of PCA is to reduce the dimensionality without affecting the significant information. For <em>p</em>-dimensional data, the PCA equation can be written as follows:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/84002ca2-8f82-4924-aa1d-eff456166baf.png" style="width:23.67em;height:1.58em;"/></div>
+<p>Principal components are a weighted sum of all the attributes. Here, <img style="font-size: 1em;width:4.75em;height:1.08em;" src="assets/dfcee7e5-ede5-4f6e-979a-853c8d328e60.png"/> are the attributes <span>in the original dataset</span> <span>and </span><img style="font-size: 1em;width:7.33em;height:1.17em;" src="assets/b146c101-372c-42a9-ac1a-44464567cfe2.png"/><span> are</span><span> the weights of the attributes.</span></p>
+<p>Let's take an example. Let's consider the streets in a given city as <span>attributes, </span>and let's say you want to visit this city. Now the question is, how many streets you will visit? Obviously, you will want to visit the popular or main streets of the city, which let's say is 10 out of the 50 available streets. These 10 streets will give you the best understanding of that city. These streets are then principal components, as they explain enough of the variance in the data (the city's streets).</p>
+<h3 id="uuid-1b231e96-11d2-4ac5-aa17-815bf576a00d">Performing PCA</h3>
+<p>Let's perform PCA from scratch in Python:</p>
+<ol>
+<li>Compute the correlation or covariance matrix of a given dataset.</li>
+<li>Find the eigenvalues and eigenvectors of the correlation or covariance matrix.</li>
+<li>Multiply the eigenvector matrix by the original dataset and you will get the principal component matrix.</li>
+</ol>
+<p>Let's implement PCA from scratch:</p>
+<ol>
+<li>We will begin by importing libraries and defining the dataset:</li>
+</ol>
+<pre style="padding-left: 60px" class="mce-root"># Import numpy<br/>import numpy as np<br/># Import linear algebra module<br/>from scipy import linalg as la<br/># Create dataset<br/>data=np.array([[7., 4., 3.],<br/>[4., 1., 8.],<br/>[6., 3., 5.],<br/>[8., 6., 1.],<br/>[8., 5., 7.],<br/>[7., 2., 9.],<br/>[5., 3., 3.],<br/>[9., 5., 8.],<br/>[7., 4., 5.],<br/>[8., 2., 2.]])</pre>
+<ol start="2">
+<li>Calculate the covariance matrix:</li>
+</ol>
+<pre style="padding-left: 60px" class="mce-root"># Calculate the covariance matrix<br/># Center your data<br/>data -= data.mean(axis=0)<br/>cov = np.cov(data, rowvar=False)</pre>
+<ol start="3">
+<li>Calculate the eigenvalues and eigenvector of the covariance matrix:</li>
+</ol>
+<pre style="padding-left: 60px" class="mce-root"># Calculate eigenvalues and eigenvector of the covariance matrix<br/>evals, evecs = la.eig(cov)</pre>
+<ol start="4">
+<li>Multiply the original data matrix by the eigenvector matrix:</li>
+</ol>
+<pre style="padding-left: 60px" class="mce-root"># Multiply the original data matrix with Eigenvector matrix.<br/><br/># Sort the Eigen values and vector and select components<br/>num_components=2<br/>sorted_key = np.argsort(evals)[::-1][:num_components]<br/>evals, evecs = evals[sorted_key], evecs[:, sorted_key]<br/><br/>print("Eigenvalues:", evals)<br/>print("Eigenvector:", evecs)<br/>print("Sorted and Selected Eigen Values:", evals)<br/>print("Sorted and Selected Eigen Vector:", evecs)<br/><br/># Multiply original data and Eigen vector<br/>principal_components=np.dot(data,evecs)<br/>print("Principal Components:", principal_components)</pre>
+<p style="padding-left: 60px"><span>This results in the following</span><span> output:</span></p>
+<pre style="padding-left: 60px">Eigenvalues: [0.74992815+0.j 3.67612927+0.j 8.27394258+0.j]<br/>Eigenvector: [[-0.70172743 0.69903712 -0.1375708 ]<br/>[ 0.70745703 0.66088917 -0.25045969]<br/>[ 0.08416157 0.27307986 0.95830278]]<br/><br/>Sorted and Selected Eigen Values: [8.27394258+0.j 3.67612927+0.j]<br/><br/>Sorted and Selected Eigen Vector: [[-0.1375708 0.69903712]<br/>[-0.25045969 0.66088917]<br/>[ 0.95830278 0.27307986]]<br/><br/>Principal Components: [[-2.15142276 -0.17311941]<br/>[ 3.80418259 -2.88749898]<br/>[ 0.15321328 -0.98688598]<br/>[-4.7065185 1.30153634]<br/>[ 1.29375788 2.27912632]<br/>[ 4.0993133 0.1435814 ]<br/>[-1.62582148 -2.23208282]<br/>[ 2.11448986 3.2512433 ]<br/>[-0.2348172 0.37304031]<br/>[-2.74637697 -1.06894049]]</pre>
+<p>Here, we have computed a principal component matrix from scratch. First, we centered the data and computed the covariance matrix. After calculating the covariance matrix, we calculated the eigenvalues and eigenvectors. Finally, we chose two principal components (the number of components should be equal to the number of eigenvalues greater than 1) and multiplied the original data by the sorted and selected eigenvectors. We can also perform PCA using the scikit-learn library.</p>
+<p>Let's perform PCA using scikit-learn in Python:</p>
+<pre># Import pandas and PCA<br/>import pandas as pd<br/><br/># Import principal component analysis<br/>from sklearn.decomposition import PCA<br/><br/># Create dataset<br/>data=np.array([[7., 4., 3.],<br/>[4., 1., 8.],<br/>[6., 3., 5.],<br/>[8., 6., 1.],<br/>[8., 5., 7.],<br/>[7., 2., 9.],<br/>[5., 3., 3.],<br/>[9., 5., 8.],<br/>[7., 4., 5.],<br/>[8., 2., 2.]])<br/><br/># Create and fit_transformed PCA Model<br/>pca_model = PCA(n_components=2)<br/>components = pca_model.fit_transform(data)<br/>components_df = pd.DataFrame(data = components,<br/><br/>columns = ['principal_component_1', 'principal_component_2'])<br/>print(components_df)<br/><br/></pre>
+<p class="mce-root"><span>This results in the following output:</span></p>
+<pre>principal_component_1 principal_component_2<br/><br/>0 2.151423 -0.173119<br/>1 -3.804183 -2.887499<br/>2 -0.153213 -0.986886<br/>3 4.706518 1.301536<br/>4 -1.293758 2.279126<br/>5 -4.099313 0.143581<br/>6 1.625821 -2.232083<br/>7 -2.114490 3.251243<br/>8 0.234817 0.373040<br/>9 2.746377 -1.068940</pre>
+<p>In the preceding code, we performed PCA using the scikit-learn library. First, we created the dataset and instantiated the PCA object. After this, we performed <kbd>fit_transform()</kbd> and generated the principal components.</p>
+<p>That was all about PCA. Now it's time to learn about another unsupervised learning concept, clustering. </p>
+<h1 id="uuid-73481368-37d7-41cc-8f40-267b7fbd13fe" class="mce-root"><span>Clustering</span></h1>
+<p>Clustering means grouping items that are <span>similar to each other</span>. Grouping similar products, grouping similar articles or documents, and grouping similar customers for market segmentation are all examples of clustering. The core principle of clustering is minimizing the intra-cluster distance and maximizing the intercluster distance. The intra-cluster distance is the distance between data items within a group, and the inter-cluster distance is the distance between different groups. The data points are not labeled, so clustering is a kind of unsupervised problem. There are various methods for clustering and each method uses a different way to group the data points. The following diagram shows how data observations are grouped together using clustering:</p>
+<p class="CDPAlignCenter CDPAlign"><span><img src="assets/4aee9f30-6327-4a98-afc5-4fbd8cd8d687.png" style="width:62.83em;height:25.17em;"/></span></p>
+<p>As we are combining similar data points, the question that arises here is how to find the similarity between two data points so we can group similar data objects into the same cluster. In order to measure the similarity or dissimilarity between data points, we can use distance measures such as Euclidean, Manhattan, and Minkowski distance:</p>
+<div class="CDPAlignLeft CDPAlign">                                                <img src="assets/c5729621-be25-414c-a572-53ab75533e6d.png" style=""/></div>
+<div class="CDPAlignLeft CDPAlign">                                              <img src="assets/9d297c3f-c5a0-4b20-8e0f-757fbe84ac29.png" style=""/></div>
+<div class="CDPAlignLeft CDPAlign">                                             <img src="assets/363377f5-ed0b-4456-9d38-b5f05ff03c58.png" style=""/></div>
+<p>Here, the distance formula calculates the distance between two k-dimensional vectors, x<sub>i</sub> and y<sub>i</sub>.</p>
+<p class="mce-root">Now we know what clustering is, but the most important question is, how many numbers of clusters should be considered when grouping the data? That's the biggest challenge for most clustering algorithms. There are lots of ways to decide the number of clusters. Let's discuss those methods in the next section.</p>
+<h2 id="uuid-d44b6132-bf34-4421-8aac-cbc4278e9c44">Finding the number of clusters</h2>
+<p class="mce-root">In this section, we will focus on the most fundamental issue of clustering algorithms, which is discovering the number of clusters in a dataset – there is no definitive answer. However, not all clustering algorithms require a predefined number of clusters. In hierarchical and DBSCAN clustering, there is no need to define the number of clusters, but in k-means, k-medoids, and spectral clustering, we need to define the number of clusters. Selecting the right value for the number of clusters is tricky, so let's look at a couple of the methods for determining the best number of clusters:</p>
+<ul>
+<li>The elbow method</li>
+<li>The silhouette method</li>
+</ul>
+<p>Let's look at these methods in detail.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<h3 id="uuid-421beee7-e7d8-4b08-a36d-fe42174cec70">The elbow method</h3>
+<p>The elbow method is a well-known method for finding out the best number of clusters. In this method, we focus on the percentage of variance for the different numbers of clusters. The core concept of this method is to select the number of clusters that appending another cluster should not cause a huge change in the variance. We can plot a graph for the sum of squares within a cluster using the number of clusters to find the optimal value. The sum of squares is also known as the <strong>Within-Cluster Sum of Squares</strong> (<strong><span>WCSS</span></strong>) or inertia:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/1fcf7f70-3fae-44a8-bc68-82a8557f1729.png" style="width:19.50em;height:4.25em;"/></div>
+<p>Here<img src="assets/38f9dbcc-1544-468e-9c78-f801e65b255c.png" style="width:0.75em;height:1.33em;"/> is the cluster centroid and <img src="assets/ebbb69a9-9801-48c0-bf4a-ac68a5d2db80.png" style="width:0.92em;height:1.50em;"/> is the data points in each cluster:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/770d743c-1fe4-4a53-9339-1c68692c8cb8.png" style=""/></div>
+<p>As you can see, at k = 3, the graph begins to flatten significantly, so we would choose 3 as the number of clusters.</p>
+<p>Let's find the optimal number of clusters using the elbow method in Python:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># import matplotlib<br/>import matplotlib.pyplot as plt<br/><br/># import K-means<br/>from sklearn.cluster import KMeans<br/><br/># Create a DataFrame<br/>data=pd.DataFrame({"X":[12,15,18,10,8,9,12,20],<br/>"Y":[6,16,17,8,7,6,9,18]})<br/>wcss_list = []<br/><br/># Run a loop for different value of number of cluster<br/>for i in range(1, 6):<br/>    # Create and fit the KMeans model<br/>    kmeans_model = KMeans(n_clusters = i, random_state = 123)<br/>    kmeans_model.fit(data)<br/>    <br/>    # Add the WCSS or inertia of the clusters to the score_list<br/>    wcss_list.append(kmeans_model.inertia_)<br/><br/># Plot the inertia(WCSS) and number of clusters<br/>plt.plot(range(1, 6), wcss_list, marker='*')<br/><br/># set title of the plot<br/>plt.title('Selecting Optimum Number of Clusters using Elbow Method')<br/><br/># Set x-axis label<br/>plt.xlabel('Number of Clusters K')<br/><br/># Set y-axis label<br/>plt.ylabel('Within-Cluster Sum of the Squares(Inertia)')<br/><br/># Display plot<br/>plt.show()</pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p>This results in the following o<span>utput:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/6dbc98cd-5a3e-4775-b09c-8dd3aa022614.png" style=""/></div>
+<p> </p>
+<p>In the <span>preceding </span>example, we created a DataFrame with two columns, <kbd>X</kbd> and <kbd><span><span>Y</span></span></kbd>. We generated the clusters using <kbd>K-means</kbd> and computed the WCSS. After this, we plotted the number of clusters and inertia. As you can see at k = 2, the graph begins to flatten significantly, so we would choose 2 as the best number of clusters.</p>
+<h3 id="uuid-f980cc97-554a-4034-a292-c3701053d218">The silhouette method</h3>
+<p>The silhouette method assesses and validates cluster data. It finds how well each data point is classified. The plot of the silhouette score helps us to visualize and interpret how well data points are tightly grouped within their own clusters and separated from others. It helps us to evaluate the number of clusters. Its score ranges from -1 to +1. A positive value indicates a well-separated cluster and a negative value indicates incorrectly assigned data points. The more positive the value, the further data points are from the nearest clusters; a value of zero indicates data points that are at the separation line between two clusters. Let's see the formula for the silhouette score:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/ceb5698c-b585-447b-99fb-a7fa76c37ca7.png" style="width:12.92em;height:3.83em;"/></div>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p><em>a<sub>i</sub> </em>is the average distance of the <em>i</em>th data point from other points within the cluster.</p>
+<p><em>b<sub>i</sub> </em>is the average distance of the <em>i</em>th data point from other cluster points.</p>
+<p>This means we can easily say that <em>S(i)</em> would be between [-1, 1]. So, for <em>S(i)</em> to be near to 1, <em>a<sub>i</sub></em> must be very small compared to <em>b</em><sub><em>i</em>, that is,</sub><em>e. a<sub>i</sub> &lt;&lt; b<sub>i</sub></em>.</p>
+<p>Let's find the optimum number of clusters using the silhouette score in Python:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># import matplotlib for data visualization<br/>import matplotlib.pyplot as plt<br/><br/># import k-means for performing clustering<br/>from sklearn.cluster import KMeans<br/><br/># import silhouette score<br/>from sklearn.metrics import silhouette_score<br/><br/># Create a DataFrame<br/>data=pd.DataFrame({"X":[12,15,18,10,8,9,12,20],<br/>"Y":[6,16,17,8,7,6,9,18]})<br/>score_list = []<br/><br/># Run a loop for different value of number of cluster<br/>for i in range(2, 6):<br/>    # Create and fit the KMeans model<br/>    kmeans_model = KMeans(n_clusters = i, random_state = 123)<br/>    kmeans_model.fit(data)<br/>    <br/>    # Make predictions<br/>    pred=kmeans_model.predict(data)<br/>    # Calculate the Silhouette Score<br/>    score = silhouette_score (data, pred, metric='euclidean')<br/><br/>    # Add the Silhouette score of the clusters to the score_list<br/>    score_list.append(score)<br/><br/># Plot the Silhouette score and number of cluster<br/>plt.bar(range(2, 6), score_list)<br/><br/># Set title of the plot<br/>plt.title('Silhouette Score Plot')<br/><br/># Set x-axis label<br/>plt.xlabel('Number of Clusters K')<br/><br/># Set y-axis label<br/>plt.ylabel('Silhouette Scores')<br/><br/># Display plot<br/>plt.show()<br/><br/></pre>
+<p><span>This results in the following output:</span></p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img style="" src="assets/586ffef3-8bdc-417c-87a0-f59b7ecf6cdd.png"/></div>
+<p>In the preceding example, we created a DataFrame with two columns, <kbd>X</kbd> and <kbd>Y</kbd>. We generated clusters with different numbers of clusters on the created DataFrame using <kbd>K-means</kbd> and computed the silhouette score. After this, we plotted the number of clusters and the silhouette scores using a barplot. As you can see, at k = 2, the silhouette score has the highest value, so we would choose 2 clusters. Let's jump to the k-means clustering technique.</p>
+<p class="mce-root"/>
+<h1 id="uuid-35191137-43e8-4b2b-90c2-0fd6c195986a">Partitioning data using k-means clustering</h1>
+<p>k-means is one of the simplest, most popular, and most well-known clustering algorithms. It is a kind of partitioning clustering method. It partitions input data by defining a random initial cluster center based on a given number of clusters. In the next iteration, it associates the data items to the nearest cluster center using Euclidean distance. In this algorithm, the initial cluster center can be chosen manually or randomly. k-means takes data and the number of clusters as input and performs the following steps:</p>
+<ol>
+<li>Select <em>k</em> random data items as the initial centers of clusters.</li>
+<li>Allocate the data items to the nearest cluster center.</li>
+</ol>
+<ol start="3">
+<li>Select the new cluster center by averaging the values of other cluster items.</li>
+<li>Repeat steps 2 and 3 until there is no change in the clusters.</li>
+</ol>
+<p>This algorithm aims to minimize the sum of squared errors:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/daea790b-7faa-48c1-bd2b-5d94b91df8fb.png" style="width:12.83em;height:5.08em;"/></div>
+<p>k-means is one of the fastest and most robust algorithms of its kind. It works best with a dataset with distinct and separate data items. It generates spherical clusters. k-means requires the number of clusters as input at the beginning. If data items are very much overlapped, it doesn't work well. It captures the local optima of the squared error function. It doesn't perform well with noisy and non-linear data. It also doesn't work well with non-spherical clusters. Let's create a clustering model using k-means clustering:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># import matplotlib for data visualization<br/>import matplotlib.pyplot as plt<br/><br/># Import K-means<br/>from sklearn.cluster import KMeans<br/><br/># Create a DataFrame<br/>data=pd.DataFrame({"X":[12,15,18,10,8,9,12,20],<br/>"Y":[6,16,17,8,7,6,9,18]})<br/><br/># Define number of clusters<br/>num_clusters = 2<br/><br/># Create and fit the KMeans model<br/>km = KMeans(n_clusters=num_clusters)<br/>km.fit(data)<br/><br/># Predict the target variable<br/>pred=km.predict(data)<br/><br/># Plot the Clusters<br/>plt.scatter(data.X,data.Y,c=pred, marker="o", cmap="bwr_r")<br/><br/># Set title of the plot<br/>plt.title('K-Means Clustering')<br/><br/># Set x-axis label<br/>plt.xlabel('X-Axis Values')<br/><br/># Set y-axis label<br/>plt.ylabel('Y-Axis Values')<br/><br/># Display the plot<br/>plt.show()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/eeacfb97-2443-49b0-b672-981e3fb70076.png"/></div>
+<p class="mce-root"/>
+<p><span>In the preceding code example, </span>we imported the <kbd>KMeans</kbd> class and created its object or model. This model will fit it on the dataset (without labels). After training, the model is ready to make predictions using the <kbd>predict()</kbd> method. After predicting the results, we plotted the cluster results using a scatter plot. In this section, we have seen how k-means works and its implementation using the scikit-learn library. In the next section, we will look at hierarchical clustering. </p>
+<h1 id="uuid-fd1f1113-b2bb-4fc3-8cd7-58a55cf9620c">Hierarchical clustering</h1>
+<p>Hierarchical clustering groups data items based on different levels of a hierarchy. It combines the items in groups based on different levels of a hierarchy using top-down or bottom-up strategies. Based on the strategy used, hierarchical clustering can be of two types – agglomerative or divisive:</p>
+<ul>
+<li>The agglomerative type is the most widely used hierarchical clustering technique. It groups similar data items in the form of a hierarchy based on similarity. This method is also called <strong>Agglomerative Nesting</strong> (<strong>AGNES</strong>). This algorithm starts by considering every data item as an individual cluster and combines clusters based on similarity. It iteratively collects small clusters and combines them into a single large cluster. This algorithm gives its result in the form of a tree structure. It works in a bottom-up manner; that is, every item is initially considered as a single element cluster and in each iteration of the algorithm, the two most similar clusters are combined and form a bigger cluster.</li>
+<li>Divisive hierarchical clustering is a top-down strategy algorithm. It is also known as <strong>Divisive Analysis</strong> (<strong>DIANA</strong>). <span>It starts with all the data items as a single big cluster and partitions recursively. In each iteration, clusters are divided into two non-similar or heterogeneous sub-clusters:</span></li>
+</ul>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/c6980eaf-08c4-40b2-9672-2637b8d1df93.png" style=""/></div>
+<p>In order to decide which clusters should be grouped or split, we use various distances and linkage criteria such as single, complete, average, and centroid linkage. These criteria decide the shape of the cluster. Both types of hierarchical clustering (agglomerative and divisive hierarchical clustering) require a predefined number of clusters or a distance threshold as input to terminate the recursive process. It is difficult to decide the distance threshold, so the easiest option is to check the number of clusters using a dendrogram. Dendrograms help us to understand the process of hierarchical clustering. Let's see how to create a dendrogram using the <kbd>scipy</kbd> library:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># import matplotlib for data visualization<br/>import matplotlib.pyplot as plt<br/><br/># Import dendrogram<br/>from scipy.cluster.hierarchy import dendrogram<br/>from scipy.cluster.hierarchy import linkage<br/><br/># Create a DataFrame<br/>data=pd.DataFrame({"X":[12,15,18,10,8,9,12,20],<br/>"Y":[6,16,17,8,7,6,9,18]})<br/><br/># create dendrogram using ward linkage<br/>dendrogram_plot = dendrogram(linkage(data, method = 'ward'))<br/><br/># Set title of the plot<br/>plt.title('Hierarchical Clustering: Dendrogram')<br/><br/># Set x-axis label<br/>plt.xlabel('Data Items')<br/><br/># Set y-axis label<br/>plt.ylabel('Distance')<br/><br/># Display the plot<br/>plt.show()</pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/277c91a5-02e5-40c7-a414-c1bbadd82e82.png"/></div>
+<p>In the preceding code example, we created the dataset and generated the dendrogram using ward linkage. For the dendrograms, we used the <kbd>scipy.cluster.hierarchy</kbd> module. To set the plot title and axis labels, we used <kbd>matplotlib</kbd>. In order to select the number of clusters, we need to draw a horizontal line without intersecting the clusters and count the number of vertical lines to find the number of clusters. Let's create a clustering model using agglomerative clustering:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># import matplotlib for data visualization<br/>import matplotlib.pyplot as plt<br/><br/># Import Agglomerative Clustering<br/>from sklearn.cluster import AgglomerativeClustering<br/><br/># Create a DataFrame<br/>data=pd.DataFrame({"X":[12,15,18,10,8,9,12,20],<br/>"Y":[6,16,17,8,7,6,9,18]})<br/><br/># Specify number of clusters<br/>num_clusters = 2<br/><br/># Create agglomerative clustering model<br/>ac = AgglomerativeClustering(n_clusters = num_clusters, linkage='ward')<br/><br/># Fit the Agglomerative Clustering model<br/>ac.fit(data)<br/><br/># Predict the target variable<br/>pred=ac.labels_<br/><br/># Plot the Clusters<br/>plt.scatter(data.X,data.Y,c=pred, marker="o")<br/><br/># Set title of the plot<br/>plt.title('Agglomerative Clustering')<br/><br/># Set x-axis label<br/>plt.xlabel('X-Axis Values')<br/><br/># Set y-axis label<br/>plt.ylabel('Y-Axis Values')<br/><br/># Display the plot<br/>plt.show()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/67093ca4-b8e3-4534-a276-57edc0e0d8f2.png"/></div>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p><span>In the preceding code example, </span>we imported the <kbd>AgglomerativeClustering</kbd> class and created its object or model. This model will fit on the dataset without labels. After training, the model is ready to make predictions using the <kbd>predict()</kbd> method. After predicting the results, we plotted the cluster results using a scatter plot. <span>In this section, we have seen how hierarchical clustering works and its implementation using the <kbd>scipy</kbd> and scikit-learn libraries. In the next section, we will look at density-based clustering. </span></p>
+<h1 id="uuid-17bbad15-4690-410e-845b-c5dbc82b186e">DBSCAN clustering</h1>
+<p>Partitioning clustering methods, such as k-means, and hierarchical clustering methods, such as agglomerative clustering, are good for discovering spherical or convex clusters. These algorithms are more sensitive to noise or outliers and work for well-separated clusters:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/cd625968-9075-4b20-b1b4-cfcb06357e31.png" style=""/></div>
+<p>Intuitively, we can say that a density-based clustering approach is most similar t how we as humans might instinctively group items. In all the <span>preceding </span>figures, we can quickly see the number of different groups or clusters due to the density of the items.</p>
+<p><strong>Density-Based Spatial Clustering of Applications with Noise</strong> (<strong>DBSCAN</strong>) is based on the idea of groups and noise. The main idea behind it is that each data item of a group or cluster has a minimum number of data items in a given radius.</p>
+<p>The main goal of DBSCAN is to discover the dense region that can be computed using minimum number of objects (<kbd>minPoints</kbd>) and given radius (<kbd>eps</kbd>). DBSCAN has the capability to generate random shapes of clusters and deal with noise in a dataset. Also, there is no requirement to feed in the number of clusters. DBSCAN automatically identifies the number of clusters in the data.</p>
+<p>Let's create a clustering model using DBSCAN clustering in Python:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># import matplotlib for data visualization<br/>import matplotlib.pyplot as plt<br/><br/># Import DBSCAN clustering model<br/>from sklearn.cluster import DBSCAN<br/><br/># import make_moons dataset<br/>from sklearn.datasets import make_moons<br/><br/># Generate some random moon data<br/>features, label = make_moons(n_samples = 2000)<br/><br/># Create DBSCAN clustering model<br/>db = DBSCAN()<br/><br/># Fit the Spectral Clustering model<br/>db.fit(features)<br/><br/># Predict the target variable<br/>pred_label=db.labels_<br/><br/># Plot the Clusters<br/>plt.scatter(features[:, 0], features[:, 1], c=pred_label, <br/>marker="o",cmap="bwr_r")<br/><br/># Set title of the plot<br/>plt.title('DBSCAN Clustering')<br/><br/># Set x-axis label<br/>plt.xlabel('X-Axis Values')<br/><br/># Set y-axis label<br/>plt.ylabel('Y-Axis Values')<br/><br/># Display the plot<br/>plt.show()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/923fc029-3684-4ddd-9200-7d7f71d401ad.png" style=""/></div>
+<p>First, we import the <kbd>DBSCAN</kbd> class and create the moon dataset. After this, we create the DBSCAN model and fit it on the dataset. DBSCAN does not need the number of clusters. After training, the model is ready to make predictions using the <kbd>predict()</kbd> method. After predicting the results, we plotted the cluster results using a scatter plot. <span>In this section, we have seen how DBSCAN clustering works and its implementation using the scikit-learn library. In the next section, we will see the spectral clustering technique.</span></p>
+<h1 id="uuid-601a5a58-c057-44e1-8e5c-d78c50d2be4e">Spectral clustering</h1>
+<p>Spectral clustering is a method that employs the spectrum of a similarity matrix. The spectrum of a matrix represents the set of its eigenvalues, and a similarity matrix consists of similarity scores between each data point. It reduces the dimensionality of data before clustering. In other words, we can say that spectral clustering creates a graph of data points, and these points are mapped to a lower dimension and separated into clusters.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p>A similarity matrix converts data to conquer the lack of convexity in the distribution. For any dataset, the data points could be <em>n</em>-dimensional, and here could be <em>m</em> data points. From these <em>m</em> points, we can create a graph where the points are nodes and the edges are weighted with the similarity between points. A common way to define similarity is with a Gaussian kernel, which is a nonlinear function of Euclidean distance:</p>
+<div class="CDPAlignLeft CDPAlign">                                                    <img src="assets/7ee0c840-cc47-4d40-8587-a0d37813e6d8.png" style=""/></div>
+<p>The distance of this function ranges from 0 to 1. The fact that it's bounded between zero and one is a nice property. The absolute distance (it can be anything) in Euclidean distance can cause instability and difficulty in modeling. You can think of the Gaussian kernel as a normalization function for Euclidean distance.</p>
+<p><span>After getting the graph, create an adjacency matrix and put in each cell of the matrix the weight of the edge <img class="fm-editor-equation" src="assets/5464e4e3-4ae8-4e0f-89ce-171574d90d18.png" style="width:1.75em;height:1.50em;"/>. This is a symmetric matrix. Let's call the adjacency matrix A. We can also create a "degree" diagonal matrix D, which will have in each <img class="fm-editor-equation" src="assets/443cf00c-34b5-4f31-8109-7954d92bbda6.png" style="width:1.17em;height:1.00em;"/> element the sum of the weights of all edges linked to node <em>i</em>. Let's call this matrix D. For a given graph G with <em>n</em> vertices, its <em>n</em>*<em>n</em> Laplacian matrix can be defined as follows:</span></p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/215d43f8-0e28-42b0-8933-f5c90615cf90.png" style="width:7.50em;height:1.50em;"/></div>
+<p>Here <em>D</em> is the degree matrix and <em>A</em> is the adjacency matrix of the graph.</p>
+<p>Now we have the Laplacian matrix of the graph (G). We can compute the spectrum of a matrix of eigenvectors. If we take <em>k</em> least-significant eigenvectors, we get a representation in <em>k</em> dimensions. The least-significant eigenvectors are the ones associated with the smallest eigenvalues. Each eigenvector provides information about the connectivity of the graph.</p>
+<p>The idea of spectral clustering is to cluster the points using these <em>k</em> eigenvectors as features. So, you take the <em>k</em> least-significant eigenvectors and you have your <em>m</em> points in <em>k</em> dimensions. You run a clustering algorithm, such as k-means, and then you have your result. This <em>k</em> in spectral clustering is deeply related to the Gaussian kernel k-means. You can also think about it as a clustering method where your points are projected into a space of infinite dimensions, clustered there, and then you use those results as the results of clustering your points.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p>Spectral clustering is used when k-means works badly because the clusters are not linearly distinguishable in their original space. We can also try other clustering methods, such as hierarchical clustering or density-based clustering, to solve this problem. Let's create a clustering model using spectral clustering in Python:</p>
+<pre># import pandas<br/>import pandas as pd<br/><br/># import matplotlib for data visualization<br/>import matplotlib.pyplot as plt<br/><br/># Import Spectral Clustering<br/>from sklearn.cluster import SpectralClustering<br/><br/># Create a DataFrame<br/>data=pd.DataFrame({"X":[12,15,18,10,8,9,12,20],<br/>"Y":[6,16,17,8,7,6,9,18]})<br/><br/># Specify number of clusters<br/>num_clusters = 2<br/><br/># Create Spectral Clustering model<br/>sc=SpectralClustering(num_clusters, affinity='rbf', n_init=100, assign_labels='discretize')<br/><br/># Fit the Spectral Clustering model<br/>sc.fit(data)<br/><br/># Predict the target variable<br/>pred=sc.labels_<br/><br/># Plot the Clusters<br/>plt.scatter(data.X,data.Y,c=pred, marker="o")<br/><br/># Set title of the plot<br/>plt.title('Spectral Clustering')<br/><br/># Set x-axis label<br/>plt.xlabel('X-Axis Values')<br/><br/># Set y-axis label<br/>plt.ylabel('Y-Axis Values')<br/><br/># Display the plot<br/>plt.show()</pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/46feaaeb-2ee3-4038-b110-87ccb5642f3f.png"/></div>
+<p class="mce-root"/>
+<p> </p>
+<p>In the preceding code example, we imported the <kbd>SpectralClustering</kbd> class and created a dummy dataset using pandas. After this, we created the model and fit it on the dataset. After training, the model is ready to make predictions using the <kbd>predict()</kbd> method. <span>In this section, we have seen how spectral clustering works and its implementation using the scikit-learn library. In the next section, we will see how to evaluate a clustering algorithm's performance.</span></p>
+<h1 id="uuid-d7bacb54-f3d1-4282-9d56-922c4ab77176">Evaluating clustering performance</h1>
+<p>Evaluating clustering performance is an essential step to assess the strength of a clustering algorithm for a given dataset. Assessing performance in an unsupervised environment is not an easy task, but in the literature, many methods are available. We can categorize these methods into two broad categories: internal and external performance evaluation. Let's learn about both of these categories in detail.</p>
+<h2 id="uuid-abf5c804-e8b8-4684-a523-7c4325f4475a">Internal performance evaluation</h2>
+<p class="mce-root">In internal performance evaluation, clustering is evaluated based on feature data only. This method does not use any target label information. These evaluation measures assign better scores to clustering methods that generate well-separated clusters. Here, a high score does not guarantee effective clustering results.</p>
+<p>Internal performance evaluation helps us to compare multiple clustering algorithms but it does not mean that a better-scoring algorithm will generate better results than other algorithms. The following internal performance evaluation measures can be utilized to estimate the quality of generated clusters:</p>
+<h3 id="uuid-8b8a25dd-e836-4138-8e03-0aabd5dccb69">The Davies-Bouldin index</h3>
+<p>The <strong>Davies-Bouldin index</strong> (<strong>BDI</strong>) is the ratio of intra-cluster distance to inter-cluster distance. A lower DBI value means better clustering results. This can be calculated as follows:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/e75f87e1-1f2d-4dbd-aa1a-fb92b1212df6.png" style="width:12.42em;height:3.67em;"/></div>
+<p>Here, the following applies:</p>
+<ul>
+<li>n: The number of clusters</li>
+<li>c<sub>i</sub>: The centroid of cluster <em>i</em></li>
+<li>σ<sub>i</sub>: The intra-cluster distance or average distance of all cluster items from the centroid c<sub>i</sub></li>
+<li>d(c<sub>i</sub>, c<sub>j</sub>): The inter-cluster distance between two cluster centroids c<sub>i</sub> and c<sub>j</sub></li>
+</ul>
+<h3 id="uuid-fbbaddca-59e0-4d2d-a5ab-376600af6034">The silhouette coefficient</h3>
+<p>The silhouette coefficient finds the similarity of an item in a cluster to its own cluster items and other nearest clusters. It is also used to find the number of clusters, as we have seen elsewhere in this chapter. A high silhouette coefficient means better clustering results. This can be calculated as follows:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/ebc76612-2f75-4eff-8f4b-2a212a2d9e76.png" style="width:11.50em;height:3.42em;"/></div>
+<p>a<sub>i</sub> is the average distance of the <em>i</em><sup>th</sup> data point to other points within the cluster.</p>
+<p>b<sub>i</sub> is the average distance of the <em>i</em><sup>th</sup> data point to other cluster points.</p>
+<p>So, we can say that <em>S(i)</em> would be between [-1, 1]. So, for <em>S(i)</em> to be near to 1, a<sub>i</sub> must be very small compared to b<sub>i</sub>, that is, a<sub>i</sub> &lt;&lt; b<sub>i</sub>.</p>
+<h2 id="uuid-fd31a94e-aed4-4939-a270-cac74e2e4221">External performance evaluation</h2>
+<p class="mce-root">In external performance evaluation, generated clustering is evaluated using the actual labels of clusters that are not used in the clustering process. It is similar to a supervised learning evaluation process; that is, we can use the same confusion matrix here to assess performance. The following external evaluation measures are used to evaluate the quality of generated clusters.</p>
+<h3 id="uuid-1978b148-0027-4d55-993b-29cdfb7d430d">The Rand score</h3>
+<p>The Rand score shows how similar a cluster <span>is </span>to the benchmark classification and computes the percentage of correctly made decisions. A lower value is preferable because this represents distinct clusters. This can be calculated as follows:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/266b80ed-0d3b-4721-9b47-893f2c7ac724.png" style="width:19.00em;height:2.67em;"/></div>
+<p>Here, the following applies:</p>
+<ul>
+<li>TP: Total number of true positives</li>
+<li>TN: Total number of true negatives</li>
+<li>FP: Total number of false positives</li>
+<li>FN: Total number of false negatives</li>
+</ul>
+<h3 id="uuid-d4f028e6-2fb7-4e6e-a81e-42428360a8f6">The Jaccard score</h3>
+<p>The Jaccard score computes the similarity between two datasets. It ranges from 0 to 1. 1 means the datasets are identical and 0 means the datasets have no common elements. A low value is preferable because it indicates distinct clusters. This can be calculated as follows:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/106dca43-e3b1-49b8-a4c4-e16f9ae9c12e.png" style="width:19.08em;height:2.75em;"/></div>
+<p>Here A and B are two datasets.</p>
+<h3 id="uuid-6a404a01-fe3a-45a9-845b-3b77251a98ac">F-Measure or F1-score</h3>
+<p>The F-measure is a harmonic mean of precision and recall values. It measures both the precision and robustness of clustering algorithms. It also tries to equalize the participation of false negatives using the value of β. This can be calculated as follows:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/d4fbdaf9-f90c-4b2d-a3ab-7d501bf65460.png" style="width:12.17em;height:2.75em;"/></div>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/03632ba5-602f-432c-804f-a460bd853f5e.png" style="width:10.67em;height:2.83em;"/></div>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/d4493844-d68e-46f5-a5fb-f1feee93d11d.png" style="width:17.75em;height:3.25em;"/></div>
+<p>Here β is the non-negative value. β=1 gives equal weight to precision and recall, β = 0.5 gives twice the weight to precision than to recall, and β = 0 gives no importance to recall.</p>
+<h3 id="uuid-e6527bac-4e3c-4078-b45b-b17a7a3fd62a">The Fowlkes-Mallows score</h3>
+<p>The Fowlkes-Mallows score is a geometric mean of precision and recall. A high value represents similar clusters. This can be calculated as follows:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/49c6cf32-9e06-4e2f-910c-2059f933e711.png" style="width:28.67em;height:1.67em;"/></div>
+<p>Let's create a cluster model using k-means clustering and evaluate the performance using the internal and external evaluation measures in Python using the Pima Indian <span>Diabetes dataset </span><a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter11/diabetes.csv"><span>(</span>https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/blob/master/Chapter11/diabetes.csv</a><span>)</span>:</p>
+<pre># Import libraries<br/>import pandas as pd<br/><br/># read the dataset <br/>diabetes = pd.read_csv("diabetes.csv")<br/><br/># Show top 5-records<br/>diabetes.head()</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/d7489eec-d909-4472-bd07-a50b30a765ef.png" style=""/></div>
+<p>First, we need to import pandas and read the dataset. In the preceding example, we are reading the Pima Indian Diabetes dataset:</p>
+<pre># split dataset in two parts: feature set and target label<br/>feature_set = ['pregnant', 'insulin', 'bmi', 'age','glucose','bp','pedigree']<br/><br/>features = diabetes[feature_set]<br/>target = diabetes.label</pre>
+<p><span>After loading the dataset, we need to divide the dataset into dependent/label columns (target) and independent/feature columns (<kbd>feature_set</kbd>). After this, the dataset will be broken into train and test sets. Now both dependent and independent columns are broken into train and test sets (<kbd>feature_train</kbd>, <kbd>feature_test</kbd>, <kbd>target_train</kbd>, and <kbd>target_test</kbd>) using <kbd>train_test_split()</kbd>. Let's split the dataset into train and test parts:</span></p>
+<pre># partition data into training and testing set<br/>from sklearn.model_selection import train_test_split<br/><br/>feature_train, feature_test, target_train, target_test = train_test_split(features, target, test_size=0.3, random_state=1)</pre>
+<p>Here, <kbd>train_test_split()</kbd> takes the dependent and independent DataFrames, <kbd>test_size</kbd> and <kbd>random_state</kbd>. Here, <kbd>test_size</kbd> will decide the ratio for the train-test split (having a <kbd>test_size</kbd> value of <kbd>0.3</kbd> means 30% of the data will go to the testing set and the remaining 70% will be for the training set), and <kbd>random_state</kbd> is used as a seed value for reproducing the same data split each time. If <kbd>random_state</kbd> is <kbd>None</kbd>, then it will split the records in a random fashion each time, which will give different performance measures:</p>
+<pre># Import K-means Clustering<br/>from sklearn.cluster import KMeans<br/><br/># Import metrics module for performance evaluation<br/>from sklearn.metrics import davies_bouldin_score<br/>from sklearn.metrics import silhouette_score<br/>from sklearn.metrics import adjusted_rand_score<br/>from sklearn.metrics import jaccard_score<br/>from sklearn.metrics import f1_score<br/>from sklearn.metrics import fowlkes_mallows_score<br/><br/># Specify the number of clusters<br/>num_clusters = 2<br/><br/># Create and fit the KMeans model<br/>km = KMeans(n_clusters=num_clusters)<br/>km.fit(feature_train)<br/><br/># Predict the target variable<br/>predictions = km.predict(feature_test)<br/><br/># Calculate internal performance evaluation measures<br/>print("Davies-Bouldin Index:", davies_bouldin_score(feature_test, predictions))<br/>print("Silhouette Coefficient:", silhouette_score(feature_test, predictions))<br/><br/># Calculate External performance evaluation measures<br/>print("Adjusted Rand Score:", adjusted_rand_score(target_test, predictions))<br/>print("Jaccard Score:", jaccard_score(target_test, predictions))<br/>print("F-Measure(F1-Score):", f1_score(target_test, predictions))<br/>print("Fowlkes Mallows Score:", fowlkes_mallows_score(target_test, predictions))<br/><br/></pre>
+<p class="mce-root"><span>This results in the following output:</span></p>
+<pre>Davies-Bouldin Index: 0.7916877512521091<br/>Silhouette Coefficient: 0.5365443098840619<br/>Adjusted Rand Score: 0.03789319261940484<br/>Jaccard Score: 0.22321428571428573<br/>F-Measure(F1-Score): 0.36496350364963503<br/>Fowlkes Mallows Score: 0.6041244457314743</pre>
+<p class="mce-root"><span>First, we imported the <kbd>KMeans</kbd> and <kbd>metrics</kbd> modules. We created a k-means object or model and fit it on the training dataset (without labels). After training, the model makes predictions and these predictions are assessed using internal measures, such as the DBI and the silhouette coefficient, and external evaluation measures, such as the Rand score, the Jaccard score, the F-Measure, and the Fowlkes-Mallows score.</span></p>
+<h1 id="uuid-8707a7bc-aa7e-4ef8-9170-6c617acc2467">Summary</h1>
+<p>In this chapter, we have discovered unsupervised learning and its techniques, such as dimensionality reduction and clustering. The main focus was on PCA for dimensionality reduction and several clustering methods, such as k-means <span>clustering</span>, hierarchical clustering, DBSCAN, and spectral clustering. The chapter started with dimensionality reduction and PCA. After PCA, our main focus was on clustering techniques and how to identify the number of clusters. In later sections, we moved on to cluster performance evaluation measures such as the DBI and the silhouette coefficient, which are internal measures. After looking at internal clustering measures, we looked at external measures such as the Rand score, the Jaccard score, the F-measure, and the Fowlkes-Mallows index.</p>
+<p>The next chapter, <a href="e04e479d-3b11-4f6a-a2bb-946009c4a70a.xhtml">Chapter 12</a>, <em>Analyzing Textual Data</em>, will focus on text analytics, covering the text preprocessing and text classification using NLTK, SpaCy, and scikit-learn. The chapter starts by exploring basic operations on textual data such as text normalization using tokenization, stopwords removal, stemming and lemmatization, parts-of-speech tagging, entity recognition, dependency parsing, and word clouds. In later sections, the focus will be on feature engineering approaches such as Bag of Words, term presence, TF-IDF, sentiment analysis, text classification, and text similarity.</p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

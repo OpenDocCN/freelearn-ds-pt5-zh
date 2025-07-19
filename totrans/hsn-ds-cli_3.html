@@ -1,0 +1,352 @@
+<html><head></head><body>
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Shell Workflows, and Data Acquisition and Massaging</h1>
+                </header>
+            
+            <article>
+                
+<p>In this chapter, we're going to work on an actual dataset and do some basic analysis. We'll learn how to download files straight from the command line, determine what type of file it is, and parse the data using a number of commands.<span> We'll also cover how to perform non-interactive detached processing and review some common terminal multiplexers that enable us to prettify the command line as well as organize detached processing. </span></p>
+<p>In this chapter, we'll cover the following topics:</p>
+<ul>
+<li style="font-weight: 400">How to download a dataset using the command line</li>
+<li style="font-weight: 400">Using built-in tools to inspect the data and its type</li>
+<li style="font-weight: 400">How to perform a word count in bash</li>
+<li style="font-weight: 400">Analyzing a dataset with some simple commands</li>
+<li style="font-weight: 400">Detached processing</li>
+<li style="font-weight: 400">Terminal multiplexers</li>
+</ul>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Download the data</h1>
+                </header>
+            
+            <article>
+                
+<p>Now that we have an understanding of the command line, let's do something cool with it! Say we had a couple datasets full of book reviews from Amazon, and we wanted to only view the reviews about Packt Publishing. First, let's go ahead and grab the data (if you are using the Docker container, the data is located in <kbd>/data</kbd>):</p>
+<pre><strong>curl -O https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_Digital_Ebook_Purchase_v1_00.tsv.gz &amp;&amp; curl -O https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_Digital_Ebook_Purchase_v1_01.tsv.gz</strong></pre>
+<p>You should see the following:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-339 image-border" src="assets/f2aac57a-082c-4cb7-ba6a-9c13f894ce67.png" style="width:133.33em;height:16.17em;"/></p>
+<p>We are introducing a couple of new commands and features here to download the files. First, we call the <kbd>curl</kbd> command to download the file. You can run<span> </span><kbd>curl --help</kbd> to view all of the options available, or<span> </span><kbd>man curl</kbd>, but we wanted to download a remote file and save it as the original filename, so we used the <kbd>-O</kbd> option. Second, notice the double ampersands (<kbd>&amp;&amp;</kbd>)? Since we want to download both files at the same time (with no errors), the double ampersand allows us to combine two commands together. If the first command fails, the second command won't run.</p>
+<p>Now you might be asking yourself, "What if I want to run multiple commands and I don’t care whether the first command fails, I want to it to run anyway!" Well, you're in luck! If you replace the double ampersands with a semicolon,<span> </span><kbd>ecoh "this isn't a command" ; echo "but this is"</kbd>, you should see the following:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-340 image-border" src="assets/178e9c6d-cb55-4576-9177-79b9a81a46b6.png" style="width:44.83em;height:7.75em;"/></p>
+<p class="mce-root"/>
+<p>Ubuntu comes with a nice little helper if you mistype a command and recommends what command you probably should have typed. If you're running this on another system, you might not see it, but you will see <span class="packt_screen">ecoh: command not foun</span><span class="packt_screen">d</span>.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Using the file command</h1>
+                </header>
+            
+            <article>
+                
+<p>Once the data is done downloading, let's take a look and see what we've got. Go ahead and run<span> </span><kbd>ls -al amazon*</kbd><span> </span>to make sure the files actually downloaded:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-341 image-border" src="assets/8da6abca-a1c2-4a65-a2d5-a72c05f82cb5.png" style="width:133.33em;height:25.25em;"/></p>
+<p class="mce-root">If you have anything else in this directory named <kbd>amazon</kbd>, that will show up as well. Now that the files are downloaded, let's introduce a new command, called <kbd>file</kbd>. Go ahead and run the following<span> </span><kbd>file amazon*</kbd> command:</p>
+<p class="mce-root CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-342 image-border" src="assets/d1768b27-0145-4e30-a424-deb99b199182.png" style="width:133.33em;height:19.83em;"/></p>
+<p>Wow, without any parameters set, the <kbd>file</kbd> command was able to figure out that this is a compressed archive. You'll use the <kbd>file</kbd> command a lot to determine the type of files you're working with. Let's decompress the files so we can work with them. This might take a little bit, depending on the speed of your system.</p>
+<p>To do so, run the following:</p>
+<pre><strong>zcat amazon_reviews_us_Digital_Ebook_Purchase_v1_00.tsv.gz &gt;&gt; amazon_reviews_us_Digital_Ebook_Purchase_v1_00.tsv &amp;&amp; zcat amazon_reviews_us_Digital_Ebook_Purchase_v1_01.tsv.gz &gt;&gt; amazon_reviews_us_Digital_Ebook_Purchase_v1_01.tsv</strong></pre>
+<p class="mce-root"/>
+<p>Go ahead and run the <kbd>file</kbd> command again against the new datasets. Notice anything different? Check out the following:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-343 image-border" src="assets/59ae892f-d678-4bc0-bc81-c8981092b201.png" style="width:56.50em;height:5.42em;"/></p>
+<p class="mce-root"/>
+<p>Very cool! The <kbd>file</kbd> command was able to verify that we are working with text files, and it seems like a lot of text <span class="packt_screen">with very long lines</span>. Let's take a look and sample one of the datasets to see what we're working with. To do so, we can use the <kbd>more</kbd> command:</p>
+<pre><strong>more amazon_reviews_us_Digital_Ebook_Purchase_v1_01.tsv</strong></pre>
+<p> We'll just sample the first file we downloaded:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-344 image-border" src="assets/92bf324d-0b42-4afd-9d1e-af2d62b1ab62.png" style="width:44.58em;height:26.67em;"/></p>
+<p>Very long lines indeed! You can keep hitting the spacebar to view the file (it might take you a while to read the entire thing) and if you want to exit, just hit the <em>Q</em> key. Don't forget to<span> </span><kbd>man more</kbd><span> </span>for more information on more.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Performing a word count</h1>
+                </header>
+            
+            <article>
+                
+<p>Now that we have some data to work with, let's combine the two files together into a single file. To do so, perform the following:</p>
+<pre><strong>cat *.tsv &gt; reviews.tsv</strong></pre>
+<p>This is what you should see once you run the preceding command:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-345 image-border" src="assets/7241018d-c54e-44cf-a83b-42d2aa0548bc.png" style="width:32.67em;height:3.50em;"/></p>
+<p>Excellent. Let's say we wanted to count how many words or lines are in this file. Let's introduce the <kbd>wc</kbd> command. <kbd>wc</kbd> is short for (you guessed it) word count. Let's quickly<span> </span><kbd>man wc</kbd><span> </span>to see the options available:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-346 image-border" src="assets/ccaeedfb-24a9-4743-bf3e-6882e82f1dd3.png"/></p>
+<p class="mce-root"/>
+<p>Looks like <kbd>wc</kbd> can count the lines and also the words of a file. Let's see how many lines our file actually has:</p>
+<pre><strong>wc -l reviews.tsv</strong></pre>
+<p><span>The following is what you should see once you run the preceding command:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-347 image-border" src="assets/590cf303-43ef-4450-8c3e-b9a74e1b171a.png" style="width:29.08em;height:4.92em;"/></p>
+<p>That's a lot of lines! What about words? Run the following:</p>
+<pre><strong>wc -w reviews.tsv</strong></pre>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-348 image-border" src="assets/3102dce5-0d23-4a24-874b-bd1bb0baa943.png" style="width:29.33em;height:5.17em;"/></p>
+<p>This looks like a great dataset to use. It's not big data by any means, but there's a lot of cool stuff we can do with it. For example, did you notice the header in the file from earlier? It's kind of hard to see since there's a lot of data being displayed on the screen. Let's strip just the headers out and see what we have:</p>
+<pre><strong>head -n1 reviews.tsv</strong></pre>
+<p><span>The following is what you should see once you run the preceding command:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-349 image-border" src="assets/2be15f92-0612-418c-aa9e-c2cdf4ac61fd.png" style="width:133.33em;height:6.50em;"/></p>
+<p>Great, now we have a list of the headers we can use. Let's clean this up a bit. Imagine we're only interested in the <kbd>produce_title</kbd>, <kbd>star_rating</kbd>, <kbd>review_headline</kbd>, and <kbd>review_body</kbd> columns. Copying and pasting throughout the file would take hours, so let's introduce a new command called <kbd>cut</kbd>.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Introduction to cut</h1>
+                </header>
+            
+            <article>
+                
+<p><span>Let's break the command down before you run it. The <kbd>cut</kbd> command removes sections from each line of a file. The <kbd>-d</kbd> parameter tells <kbd>cut</kbd> we are working with a <strong>tsv</strong> (<strong>tab separated values</strong>), and the <kbd>-f</kbd> parameter tells <kbd>cut</kbd> what fields we are interested in. Since <kbd>product_title</kbd> is the sixth field in our file, we started with that:</span></p>
+<pre><strong>cut -d$'\t' -f 6,8,13,14 reviews.tsv | more</strong></pre>
+<div class="packt_infobox">Unlike most programs, cut starts at 1 instead of 0.</div>
+<p><span>Let’s see the results:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-350 image-border" src="assets/3e5b9e97-0f2a-4fbb-9c21-2b7957964837.png" style="width:133.33em;height:78.58em;"/></p>
+<p class="mce-root"/>
+<p>Much better! Let's go ahead and save this as a new file:</p>
+<pre><strong>cut -d$'\t' -f 6,8,13,14 reviews.tsv &gt; stripped_reviews.tsv</strong></pre>
+<p><span>The following is what you should see once you run the preceding command:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-351 image-border" src="assets/77975be4-837b-4a39-8e4f-46160cdcc79b.png" style="width:58.42em;height:3.50em;"/></p>
+<p>Let's see how many times the word <kbd>Packt</kbd> shows up in this dataset:</p>
+<pre><strong>grep -i Packt stripped_reviews.tsv | wc -w</strong></pre>
+<p><span>The following is what you should see once you run the preceding command:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-352 image-border" src="assets/90e2c665-7957-43fa-8979-1218f20e686c.png" style="width:39.83em;height:4.33em;"/></p>
+<p>Let's convert this from <kbd>.tsv</kbd> to <kbd>.csv</kbd> so we have a little more structure to work with:</p>
+<pre><strong>cat stripped_reviews.tsv | tr "\\t" "," &gt; all_reviews.csv</strong></pre>
+<p><span>The following is what you should see once you run the preceding command:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-354 image-border" src="assets/1225f008-e7ca-4da8-8622-78cac6a5fb68.png" style="width:55.08em;height:2.92em;"/></p>
+<p>Now let's go ahead and filter out all of the reviews that have the word <kbd>Packt</kbd> in them:</p>
+<pre><strong>cat all_reviews.csv | awk -F ","  '{print $4}' | grep -i Packt</strong></pre>
+<p class="mce-root"/>
+<p><span>The following is what you should see once you run the preceding command:</span></p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-355 image-border" src="assets/e81a3ebe-053f-4949-ab4b-aa82d86d1bc0.png" style="width:133.33em;height:81.25em;"/></p>
+<p>Interesting! Using the commands you just learned, go ahead and play with this dataset for a bit.</p>
+<p class="mce-root">We will talk more about the <kbd>tr</kbd> command in <a href="df05c890-510b-4e7e-8cc2-200f68f2febf.xhtml" target="_blank">Chapter 5</a>, <em>Loops, Functions, and String Processing</em>; for now, don't worry about it.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Detached processing</h1>
+                </header>
+            
+            <article>
+                
+<p>Detached processing runs a command in the background. This means that terminal control is immediately returned to the shell process while the detached process runs in the background. With job control, these back grounded processes can be resumed in the foreground or killed directly.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">How to background a process</h1>
+                </header>
+            
+            <article>
+                
+<p>Remember when we used the double ampersand to conditionally execute two commands that run one after another? By using a single ampersand, you can fork a process in the background and let it run. Let's use the command to save to a new file and run in the background:</p>
+<pre><strong>cat all_reviews.csv | awk -F ","  '{print $4}' | grep -i Packt &gt; background_words.txt &amp;</strong></pre>
+<p>This will take the example from earlier but run it in the background, like so:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-368 image-border" src="assets/30558519-96e7-416c-b387-e890277b52bf.png" style="width:133.33em;height:24.92em;"/></p>
+<p>Notice to <kbd>&lt;output&gt; [1] 1504&lt;/output&gt;</kbd> that was printed (avoiding all the output!) this shows you that the job was run successfully in the background. You can run <kbd>tail -F background_words.txt</kbd> to view the data in real time as it runs in the background:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-369 image-border" src="assets/195ad611-7a1f-4fce-aeeb-afb903f2507e.png" style="width:133.33em;height:39.83em;"/></p>
+<p>To bring the job back from the <strong>bg</strong> (<strong>background</strong>), type <kbd>fg</kbd> and you brought the process back to the foreground like so:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-370 image-border" src="assets/0a4a5258-a18d-4b27-bd0f-00f72371b60b.png" style="width:55.17em;height:4.83em;"/></p>
+<p class="mce-root"/>
+<p>Go ahead and run a couple of commands in the background. You can use the<span> </span><kbd>jobs</kbd><span> </span>command to view them all. Feel free to check the manual page for the <kbd>jobs</kbd> command by entering <kbd>man jobs</kbd> for more options.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Disregarding SIGHUP</h1>
+                </header>
+            
+            <article>
+                
+<p>Commands are attached to their controlling command-line terminal by default. When the command line terminates, child processes (backgrounded or not) are sent a SIGHUP and should terminate. Let's say you wanted to run a command and keep it running if you log out.<span> </span><kbd>nohup</kbd><span> </span>comes in handy, especially if you're working on remote systems and have a need to log out, or you're worried about your connection to the server that keeps disconnecting (I'm looking at you, Amtrak WiFi).</p>
+<p>Go ahead and run the command we ran earlier, but add <kbd>nohup</kbd> to the beginning, like so:</p>
+<pre><strong>nohup cat all_reviews.csv | awk -F ","  '{print $4}' | grep -i Packt &gt; background_words.txt &amp;</strong></pre>
+<p>Now, log out of your shell by typing<span> </span><kbd>logout</kbd><span> </span>or by using<span> </span><kbd>control-d</kbd><span>, </span>and then bring the shell back up and run <kbd>tail</kbd><span> </span><kbd>-f background_words.txt</kbd><span>. Y</span>ou’ll notice that the command is still running in the background and the file is being updated. You might have tried to bring the command back by issuing <kbd>fg</kbd><span> </span>and noticed it didn't work. Keep that in mind as<span> </span><kbd>nohup</kbd><span> </span>the command will run until completion or failure or until you<span> </span><kbd>kill</kbd><span> </span>the process. Feel free to check out the manual page for <kbd>kill</kbd> by doing a <kbd>man kill</kbd>, as there's a lot of options to choose from.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Terminal multiplexers</h1>
+                </header>
+            
+            <article>
+                
+<p>Let's now take a look at the <kbd>screen</kbd> command, it will give you the ability to do many different things, as we will see in the following section.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Introduction to screen</h1>
+                </header>
+            
+            <article>
+                
+<p>So far, you've learned how to run a command in the background and you've mastered<span> </span><kbd>nohup</kbd>. Now it's time to talk about the<span> </span><kbd>screen</kbd><span> </span>command.<span> </span><kbd>screen</kbd><span> </span>gives you the ability to attach and detach sessions on the fly, keep a shell active even with network disruptions, disconnect and reconnect to a shell from multiple locations, share a shell with a remote user, and keep a long-running process running without maintaining an active session.</p>
+<p>First, let's make sure you have<span> </span><kbd>screen</kbd><span> </span>and<span> </span><kbd>tmux</kbd><span> </span>(we will use<span> </span><kbd>tmux</kbd><span> </span>later) installed. In Ubuntu, run the following:</p>
+<pre><strong> sudo apt install -y screen tmux</strong></pre>
+<p>You might already have it installed (depending on which version of Ubuntu you are running), but better safe than sorry. Now, let's go ahead and fire up<span> </span><kbd>screen</kbd>:</p>
+<pre><strong>screen</strong></pre>
+<p>You should see the following:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-371 image-border" src="assets/b957ab2c-0c8b-4874-a95b-f51200776821.png" style="width:133.33em;height:39.25em;"/></p>
+<p>Go ahead and send the team some pizza and beer (really, these folks are great!) and hit the spacebar to continue. You'll notice... well, nothing really changed. The command prompt is still the same, just some information about copyrights and where to send beer money appeared. Let's go ahead and run a new command, called <kbd>top</kbd>. The top command (table of processes) shows you all of the processes that are currently running. Go ahead and give it a try!</p>
+<p class="mce-root">Your output will look slightly different.</p>
+<p>Execute the <kbd>top</kbd>:</p>
+<pre><strong>top</strong></pre>
+<p>With <kbd>top</kbd> running:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-372 image-border" src="assets/5af8c382-7786-4d5c-ac7a-01744ce80e75.png" style="width:37.42em;height:43.17em;"/></p>
+<p>Admire the awesomeness of<span> </span><kbd>top</kbd>. This is a great command to use if you ever what to know what’s taking up a lot of the system's resources.</p>
+<p>While<span> </span><kbd>top</kbd><span> </span>is running, let's go ahead and detach from<span> </span><kbd>screen</kbd>. Type the following:</p>
+<pre>&lt;key&gt;Ctrl+a&lt;/key&gt; d</pre>
+<p>Notice that the screen went back to a clean shell:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-373 image-border" src="assets/b32fa950-cfaa-4680-9f4d-c295bd9d4f2e.png" style="width:22.00em;height:3.33em;"/></p>
+<p>To check whether the<span> </span><kbd>screen</kbd><span> </span>session is still active, let's go ahead and run<span> </span><kbd>screen -r</kbd>. Notice that the<span> </span><kbd>top</kbd><span> </span>command didn't die—<span>it</span> ran in a screen session. What's great is that you can log out of this session, reconnect, and attach the<span> </span><kbd>screen</kbd><span> </span>session like nothing happened. It's very useful for running long processes from a laptop or any place where you'll need to disconnect for a bit.</p>
+<p>Go ahead and run multiple<span> </span><kbd>screen</kbd><span> </span>sessions. You can view them by running <kbd>screen -list</kbd>.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Sharing a screen session between multiple users</h1>
+                </header>
+            
+            <article>
+                
+<p>We've all been there: trying to troubleshoot someone's code remotely when you’re unable to see what’s going on is a very painful process. A user can create a shared session by doing the following:</p>
+<pre><strong>screen -d -m -S shared_screen</strong></pre>
+<p>And while you're logged into the same machine, go ahead and type the following:</p>
+<pre><strong>screen -x shared_screen</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Introduction to tmux</h1>
+                </header>
+            
+            <article>
+                
+<p><kbd>tmux</kbd><span> </span>is the newest terminal multiplexer on the block, with a lot of great features to enhance your command line skills and provides a lot of features over just the standard shell. Let's fire it up and check it out:</p>
+<pre><strong>tmux</strong></pre>
+<p>You should see something like this when you run<span> </span><kbd>tmux</kbd>:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-869 image-border" src="assets/51786fc8-18b1-432b-9ff5-269c8b6ea57d.png" style="width:13.33em;height:3.33em;"/></p>
+<div class="CDPAlignCenter CDPAlign packt_figref">Output for tmux command</div>
+<p>One thing to keep in mind is that, by default, all<span> </span><kbd>tmux</kbd> commands require the prefix<span> </span><em>Ctrl</em> +<em> B</em> before you can run<span> </span><kbd>tmux</kbd> commands. For example, let's try a couple out. Having one shell window is great, but how about two?</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-375 image-border" src="assets/0e3240d0-30a9-4e40-9f9c-0bef63e3bf16.png" style="width:31.42em;height:5.08em;"/></p>
+<div class="packt_figref CDPAlignCenter CDPAlign">Output for tmux command with two shells</div>
+<p>How about two more but on the bottom?</p>
+<pre>&lt;key&gt;Ctrl+b&lt;/key&gt; “<br/>&lt;key&gt;Ctrl+b&lt;/key&gt; &lt;key&gt;&lt;/key&gt;<br/>&lt;key&gt;Ctrl+b&lt;/key&gt; “</pre>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-870 image-border" src="assets/9e72c8f3-2699-496e-9b27-9837ea9f0f57.png" style="width:47.83em;height:33.75em;"/></p>
+<p>Pretty awesome, right? Go ahead and customize your<span> </span><kbd>tmux</kbd> session to your liking. There's a bunch of options located in the<span> </span><kbd>man</kbd> page,<span> </span><kbd>man tmux</kbd>, to choose from. Our personal favorites are <kbd>&lt;key&gt;Ctrl+b&lt;/key&gt; : setw</kbd> <kbd>synchronize-panes</kbd> on <kbd>&lt;key&gt;enter&lt;/key&gt;</kbd>. Now, go ahead and type <kbd>top</kbd>. Did you notice that all of the panes are the same? This comes in handy when you're logged into multiple servers and need to run a command across them all manually.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article>
+                
+<p>In this chapter, we only scratched the surface on what we can do with the command line. We were able to download a dataset, save it, inspect the file type, and perform some simple analytics. The word count example is considered the "Hello, World" of data science and we saw just how easy it is to perform in bash.</p>
+<p>We then took your shell customization to the next level by using terminal multiplexers and background processes. Think of it like using an IDE, but for the command line. It will make working with bash a lot easier.</p>
+<p>Being able to control processes and workflows will improve productivity. Detached processing ensures programs can complete without interruption. The terminal multiplexer provides a means of maximizing the use of screen real-estate, while also providing a detached processing environment, which is a double win for all.</p>
+<p>In the next chapter, we'll explore reusable shell bash scripts and functions.</p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

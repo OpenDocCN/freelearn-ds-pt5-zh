@@ -1,0 +1,176 @@
+<html><head></head><body><div class="chapter" title="Chapter&#xA0;12.&#xA0;Exporting and Presenting"><div class="titlepage"><div><div><h1 class="title"><a id="ch12"/>Chapter 12. Exporting and Presenting</h1></div></div></div><p>In this chapter, will cover how to export results and nicely present them through the following recipes:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem" style="list-style-type: disc">Exporting data to a CSV file</li><li class="listitem" style="list-style-type: disc">Exporting data as JSON</li><li class="listitem" style="list-style-type: disc">Using SQLite to store data</li><li class="listitem" style="list-style-type: disc">Saving data to a MongoDB database</li><li class="listitem" style="list-style-type: disc">Presenting results in an HTML web page</li><li class="listitem" style="list-style-type: disc">Creating a LaTeX table to display results</li><li class="listitem" style="list-style-type: disc">Personalizing messages using a text template</li><li class="listitem" style="list-style-type: disc">Exporting matrix values to a file</li></ul></div><div class="section" title="Introduction"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec146"/>Introduction</h1></div></div></div><div class="mediaobject"><img src="graphics/ch12.jpg" alt="Introduction"/></div><p>After gathering, cleaning, representing, and analyzing, the last important step in data analysis is to export and present the data in a usable format. The recipes in this chapter will cover how to save a data structure on disk for later use by other programs. Moreover, we will show how to present the data elegantly with Haskell.</p></div></div>
+<div class="section" title="Exporting data to a CSV file"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec147"/>Exporting data to a CSV file</h1></div></div></div><p>Sometimes, it's<a id="id705" class="indexterm"/> more convenient to view data using a spreadsheet program such as LibreOffice, Microsoft Office Excel, or Apple Numbers. A standard way to export and import simple spreadsheet tables is through <span class="strong"><strong>Comma Separated Values</strong></span> (<span class="strong"><strong>CSVs</strong></span>).</p><p>In this recipe, we <a id="id706" class="indexterm"/>will use the <code class="literal">cassava</code> package to easily encode a CSV file out of a data structure.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec417"/>Getting ready</h2></div></div></div><p>Install the Cassava CSV package from cabal, using the following command line:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install cassava</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec418"/>How to do it…</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the <a id="id707" class="indexterm"/>relevant packages using the following code:<div class="informalexample"><pre class="programlisting">import Data.Csv
+import qualified Data.ByteString.Lazy as BSL</pre></div></li><li class="listitem">Define an <a id="id708" class="indexterm"/>association list of data that will be exported as CSV. For this recipe, we will pair letters and numbers together, as shown in the following code:<div class="informalexample"><pre class="programlisting">myData :: [(Char, Int)]
+myData = zip ['A'..'Z'] [1..]</pre></div></li><li class="listitem">Run the <code class="literal">encode</code> function to convert the data structure into a lazy ByteString CSV representation, as shown in the following code:<div class="informalexample"><pre class="programlisting">main = BSL.writeFile "letters.csv" $ encode myData</pre></div></li></ol></div></div><div class="section" title="How it works…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec419"/>How it works…</h2></div></div></div><p>A CSV file is simply a list of records. The <code class="literal">encode</code> function in the Cassava library takes a list of items that implement the <code class="literal">ToRecord</code> typeclass.</p><p>In this recipe, we can see that tuples of size 2 such as <code class="literal">('A', 1)</code> are valid arguments to the <code class="literal">encode</code> function. By default, tuples of size 2 to 7 are supported along with lists of arbitrary sizes. Each element of the tuple or list must implement the <code class="literal">ToField</code> typeclass, which most built-in primitive data types support by default. More details on the package can be found at <a class="ulink" href="https://hackage.haskell.org/package/cassava">https://hackage.haskell.org/package/cassava</a>.</p></div><div class="section" title="There's more…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec420"/>There's more…</h2></div></div></div><p>In order to easily convert a data type into CSV, we can implement the <code class="literal">ToRecord</code> typeclass.</p><p>For example, the Cassava documentation shows the following example of converting a <code class="literal">Person</code> data type into a CSV record:</p><div class="informalexample"><pre class="programlisting">data Person = Person { name :: Text, age :: Int }
+
+instance ToRecord Person where
+     toRecord (Person name age) = record [
+        toField name, toField age]</pre></div></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec421"/>See also</h2></div></div></div><p>For JSON instead, refer to the following <span class="emphasis"><em>Exporting data as JSON</em></span> recipe.</p></div></div>
+<div class="section" title="Exporting data as JSON"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec148"/>Exporting data as JSON</h1></div></div></div><p>A convenient way<a id="id709" class="indexterm"/> to store data that may not adhere to a strict schema is<a id="id710" class="indexterm"/> through JSON. To accomplish this, we will use a painless JSON library called <a id="id711" class="indexterm"/>
+<span class="strong"><strong>Yocto</strong></span>. It sacrifices performance for readability and small size.</p><p>In this recipe, we will export a list of points as JSON.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec422"/>Getting ready</h2></div></div></div><p>Install the Yocto JSON encoder<a id="id712" class="indexterm"/> and decoder from cabal <a id="id713" class="indexterm"/>using the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install yocto</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec423"/>How to do it…</h2></div></div></div><p>Start by creating a new file, which we call <code class="literal">Main.hs</code> and perform the following steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the relevant data structures, as shown in the following code:<div class="informalexample"><pre class="programlisting">import Text.JSON.Yocto
+import qualified Data.Map as M</pre></div></li><li class="listitem">Define a data structure for 2D points:<div class="informalexample"><pre class="programlisting">data Point = Point Rational Rational</pre></div></li><li class="listitem">Convert a <code class="literal">Point</code> data type into a JSON object, as shown in the following code:<div class="informalexample"><pre class="programlisting">pointObject (Point x y) = 
+  Object $ M.fromList [ ("x", Number x)
+                      , ("y", Number y)]</pre></div></li><li class="listitem">Create the points and construct a JSON array out of them:<div class="informalexample"><pre class="programlisting">main = do
+  let points = [ Point 1 1
+               , Point 3 5
+               , Point (-3) 2]
+  let pointsArray = Array $ map pointObject points</pre></div></li><li class="listitem">Write the JSON array to a file, as shown in the following code:<div class="informalexample"><pre class="programlisting">  writeFile "points.json" $ encode pointsArray</pre></div></li><li class="listitem">When running the code, we will find the <code class="literal">points.json</code> file created, as seen in the following code:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+<span class="strong"><strong>$ cat points.json</strong></span>
+<span class="strong"><strong>[{"x":1,"y":1}, {"x":3,"y":5}, {"x":-3,"y":2}]</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="There's more…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec424"/>There's more…</h2></div></div></div><p>For a more <a id="id714" class="indexterm"/>efficient JSON encoder, see the Aeson package located at <a class="ulink" href="http://hackage.haskell.org/package/aeson">http://hackage.haskell.org/package/aeson</a>.</p></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec425"/>See also</h2></div></div></div><p>To export data to CSV, refer to the previous recipe titled <span class="emphasis"><em>Exporting data to a CSV file</em></span>.</p></div></div>
+<div class="section" title="Using SQLite to store data"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec149"/>Using SQLite to store data</h1></div></div></div><p>SQLite<a id="id715" class="indexterm"/> is one of the most <a id="id716" class="indexterm"/>popular databases for <a id="id717" class="indexterm"/>compactly storing structured data. We will use the SQL binding for Haskell to store a list of strings.</p><div class="section" title="Getting Ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec426"/>Getting Ready</h2></div></div></div><p>We must first<a id="id718" class="indexterm"/> install the SQLite3 database on our system. On Debian-based systems, we can issue the following installation command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ sudo apt-get install sqlite3</strong></span>
+</pre></div><p>Install the SQLite package from cabal, as shown in the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install sqlite-simple</strong></span>
+</pre></div><p>Create an initial database called <code class="literal">test.db</code> that sets up the schema. In this recipe, we will only be storing integers with strings as follows:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ sqlite3 test.db "CREATE TABLE test (id INTEGER PRIMARY KEY, str text);"</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec427"/>How to do it…</h2></div></div></div><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the relevant libraries, as shown in the following code:<div class="informalexample"><pre class="programlisting">{-# LANGUAGE OverloadedStrings #-}
+import Control.Applicative
+import Database.SQLite.Simple
+import Database.SQLite.Simple.FromRow</pre></div></li><li class="listitem">Create a <code class="literal">FromRow</code> typeclass implementation for <code class="literal">TestField</code>, the data type we will be storing, as shown in the following code:<div class="informalexample"><pre class="programlisting">data TestField = TestField Int String deriving (Show)
+instance FromRow TestField where
+  fromRow = TestField &lt;$&gt; field &lt;*&gt; field</pre></div></li><li class="listitem">Create a <a id="id719" class="indexterm"/>helper function to retrieve everything form the database just for debugging purposes, as shown in the following code:<div class="informalexample"><pre class="programlisting">getDB :: Connection -&gt; IO [TestField]
+
+getDB conn = query_ conn "SELECT * from test"</pre></div></li><li class="listitem">Create a helper <a id="id720" class="indexterm"/>function to insert a string into the database, as shown in the following code:<div class="informalexample"><pre class="programlisting">insertToDB :: Connection -&gt; String -&gt; IO ()  
+insertToDB conn item = 
+  execute conn 
+  "INSERT INTO test (str) VALUES (?)" 
+  (Only item)</pre></div></li><li class="listitem">Connect to the database, as shown in the following code:<div class="informalexample"><pre class="programlisting">main :: IO ()
+
+main = withConnection "test.db" dbActions</pre></div></li><li class="listitem">Set up the string data we want to insert, as shown in the following code:<div class="informalexample"><pre class="programlisting">dbActions :: Connection -&gt; IO ()
+
+dbActions conn = do
+  let dataItems = ["A", "B", "C"]</pre></div></li><li class="listitem">Insert each of the elements to the database, as shown in the following code:<div class="informalexample"><pre class="programlisting">  mapM_ (insertToDB conn) dataItems</pre></div></li><li class="listitem">Print out the database, using the following code:<div class="informalexample"><pre class="programlisting">  r &lt;- getDB conn
+  mapM_ print r </pre></div></li><li class="listitem">We can verify that the database contains the newly inserted data by evoking the following command:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ sqlite3 test.db "SELECT * FROM test"</strong></span>
+
+<span class="strong"><strong>1|A</strong></span>
+<span class="strong"><strong>2|C</strong></span>
+<span class="strong"><strong>3|D</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec428"/>See also</h2></div></div></div><p>For another type of database, refer to the following <span class="emphasis"><em>Saving data to a MongoDB database</em></span> recipe.</p></div></div>
+<div class="section" title="Saving data to a MongoDB database"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec150"/>Saving data to a MongoDB database</h1></div></div></div><p>MongoDB <a id="id721" class="indexterm"/>can<a id="id722" class="indexterm"/> very naturally store unstructured data using the JSON syntax. In this recipe, we will store a list of people to MongoDB.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec429"/>Getting ready</h2></div></div></div><p>We must <a id="id723" class="indexterm"/>first install <a id="id724" class="indexterm"/>MongoDB on our machine. The installation files can be downloaded <a id="id725" class="indexterm"/>from <a class="ulink" href="http://www.mongodb.org">http://www.mongodb.org</a>.</p><p>We need to make a directory for the database using the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ mkdir ~/db</strong></span>
+</pre></div><p>Finally, start the MongoDB daemon on that directory using the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ mongod –dbpath ~/db</strong></span>
+</pre></div><p>Install the MongoDB package from cabal using the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install mongoDB</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec430"/>How to do it…</h2></div></div></div><p>Create a new file called <code class="literal">Main.hs</code> and perform the following steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the libraries as follows:<div class="informalexample"><pre class="programlisting">{-# LANGUAGE OverloadedStrings, ExtendedDefaultRules #-}
+import Database.MongoDB
+import Control.Monad.Trans (liftIO)</pre></div></li><li class="listitem">Define a data type for the names of people as follows:<div class="informalexample"><pre class="programlisting">data Person = Person { first :: String 
+                     , last :: String }</pre></div></li><li class="listitem">Set up a couple of data items we wish to store as follows:<div class="informalexample"><pre class="programlisting">myData :: [Person]
+myData = [ Person "Mercury" "Merci"
+         , Person "Sylvester" "Smith"]</pre></div></li><li class="listitem">Connect to the MongoDB instance and store all the data as follows:<div class="informalexample"><pre class="programlisting">main = do
+    pipe &lt;- runIOE $ connect (host "127.0.0.1")
+    e &lt;- access pipe master "test" (store myData)
+    close pipe
+    print e</pre></div></li><li class="listitem">Convert the <code class="literal">Person</code> data type into the proper MongoDB type as follows:<div class="informalexample"><pre class="programlisting">store vals = insertMany "people" mongoList 
+  where mongoList = map 
+                    (\(Person f l) -&gt; 
+                      ["first" =: f, "last" =: l]) 
+                    vals</pre></div></li><li class="listitem">We <a id="id726" class="indexterm"/>must <a id="id727" class="indexterm"/>ensure that a MongoDB daemon is running. If not, we can create a process that listens to the directory of our choice using the following command:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ mongod --dbpath ~/db</strong></span>
+</pre></div></li><li class="listitem">After running the code, we can double-check if the operation was successful by navigating to MongoDB using the following commands:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+<span class="strong"><strong>$ mongo</strong></span>
+<span class="strong"><strong>&gt;  db.people.find()</strong></span>
+<span class="strong"><strong>{ "_id" : ObjectId("536d2b13f8712126e6000000"), "first" : "Mercury", "last" : "Merci" }</strong></span>
+<span class="strong"><strong>{ "_id" : ObjectId("536d2b13f8712126e6000001"), "first" : "Sylvester", "last" : "Smith" }</strong></span>
+</pre></div></li></ol></div></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec431"/>See also</h2></div></div></div><p>For SQL usage, refer to the previous <span class="emphasis"><em>Using SQLite to store data</em></span> recipe.</p></div></div>
+<div class="section" title="Presenting results in an HTML web page"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec151"/>Presenting results in an HTML web page</h1></div></div></div><p>Sharing data<a id="id728" class="indexterm"/> online is one of the quickest ways to reach a <a id="id729" class="indexterm"/>broad audience. However, typing data into HTML directly can be time consuming. This recipe will generate a web page using the Blaze Haskell library to present data results. For more documentation and tutorials, visit the project webpage at <a class="ulink" href="http://jaspervdj.be/blaze/">http://jaspervdj.be/blaze/</a>.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec432"/>Getting ready</h2></div></div></div><p>Install the <a id="id730" class="indexterm"/>Blaze package from cabal using the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install blaze-html</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec433"/>How to do it…</h2></div></div></div><p>In a new file <a id="id731" class="indexterm"/>called <code class="literal">Main.hs</code>, perform the following steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import all the necessary libraries as follows:<div class="informalexample"><pre class="programlisting">{-# LANGUAGE OverloadedStrings #-}
+
+import Control.Monad (forM_)
+import Text.Blaze.Html5
+import qualified Text.Blaze.Html5 as H
+import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
+import qualified Data.ByteString.Lazy as BSL</pre></div></li><li class="listitem">Convert the <a id="id732" class="indexterm"/>list of string into an HTML unordered list as shown in the following code snippet:<div class="informalexample"><pre class="programlisting">dataInList :: Html -&gt; [String] -&gt; Html
+dataInList label items = docTypeHtml $ do    
+  H.head $ do
+    H.title "Generating HTML from data"
+  body $ do
+    p label
+    ul $ mapM_ (li . toHtml) items</pre></div></li><li class="listitem">Create a list of strings to render as an HTML web page as follows:<div class="informalexample"><pre class="programlisting">main = do    
+  let movies = [ "2001: A Space Odyssey"
+               , "Watchmen"
+               , "GoldenEye" ]
+  let html = renderHtml $ dataInList "list of movies" movies
+  BSL.writeFile "index.html" $ html</pre></div></li><li class="listitem">Run the code to generate the HTML file to open using a browser as follows:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+</pre></div><p>The output will be as follows:</p><div class="mediaobject"><img src="graphics/6331OS_12_01.jpg" alt="How to do it…"/></div></li></ol></div></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec434"/>See also</h2></div></div></div><p>To present data as a LaTeX document and consequently as a PDF, refer to the following <span class="emphasis"><em>Creating a LaTeX table to display results</em></span> recipe.</p></div></div>
+<div class="section" title="Creating a LaTeX table to display results"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec152"/>Creating a LaTeX table to display results</h1></div></div></div><p>This recipe will <a id="id733" class="indexterm"/>create a table in LaTeX programmatically to facilitate document creation. We can create a PDF out of the LaTeX code and share it as we please.</p><div class="section" title="Getting Ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec435"/>Getting Ready</h2></div></div></div><p>Install <code class="literal">HaTeX</code>, the <a id="id734" class="indexterm"/>Haskell LaTeX library, from cabal:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install LaTeX</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec436"/>How to do it…</h2></div></div></div><p>Create a file named <code class="literal">Main.hs</code> and follow these steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the libraries as follows:<div class="informalexample"><pre class="programlisting">{-# LANGUAGE OverloadedStrings #-}
+import Text.LaTeX
+import Text.LaTeX.Base.Class
+import Text.LaTeX.Base.Syntax
+import qualified Data.Map as M</pre></div></li><li class="listitem">Save a LaTeX file with our specifications as follows:<div class="informalexample"><pre class="programlisting">main :: IO ()
+main = execLaTeXT myDoc &gt;&gt;= renderFile "output.tex"</pre></div></li><li class="listitem">Define the document, which is split up into a preamble and a body, as follows:<div class="informalexample"><pre class="programlisting">myDoc :: Monad m =&gt; LaTeXT_ m
+
+myDoc = do
+  thePreamble
+  document theBody</pre></div></li><li class="listitem">The preamble contains author data, title, and formatting options, among other things, as presented in the following code:<div class="informalexample"><pre class="programlisting">thePreamble :: Monad m =&gt; LaTeXT_ m
+
+thePreamble = do
+  documentclass [] article
+  author "Dr. Databender"
+  title "Data Analyst"</pre></div></li><li class="listitem">Define the<a id="id735" class="indexterm"/> list of data we would like to convert into a LaTeX table as follows:<div class="informalexample"><pre class="programlisting">myData :: [(Int,Int)]
+
+myData = [ (1, 50)
+         , (2, 100)
+         , (3, 150)]</pre></div></li><li class="listitem">Define the body as follows:<div class="informalexample"><pre class="programlisting">theBody :: Monad m =&gt; LaTeXT_ m
+
+theBody = do</pre></div></li><li class="listitem">Set up the title and section, and construct the table as shown in the following code snippet:<div class="informalexample"><pre class="programlisting">  maketitle
+  section "Fancy Data Table"
+  bigskip
+  center $ underline $ textbf "Table of Points"
+  center $ tabular Nothing [RightColumn, VerticalLine, LeftColumn] $ do
+    textbf "Time" &amp; textbf "Cost"
+    lnbk
+    hline
+    mapM_ (\(t, c) -&gt; do texy t &amp; texy c; lnbk) myData </pre></div></li><li class="listitem">After running the code using the following commands, we can obtain the PDF and view it:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+<span class="strong"><strong>$ pdflatex output.tex</strong></span>
+</pre></div><p>The output will be as follows:</p><div class="mediaobject"><img src="graphics/6331OS_12_02.jpg" alt="How to do it…"/></div></li></ol></div></div><div class="section" title="See also"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec437"/>See also</h2></div></div></div><p>To construct a web page instead, refer to the previous recipe titled <span class="emphasis"><em>Presenting results in an HTML web page</em></span>.</p></div></div>
+<div class="section" title="Personalizing messages using a text template"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec153"/>Personalizing messages using a text template</h1></div></div></div><p>Sometimes <a id="id736" class="indexterm"/>we have a large list of usernames <a id="id737" class="indexterm"/>and relating data and we wish to individually send each person a message. This recipe will create a text template that will be filled out from the data.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec438"/>Getting ready</h2></div></div></div><p>Install the <code class="literal">template</code> library using cabal:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install template</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec439"/>How to do it…</h2></div></div></div><p>Perform the following steps in a new file called <code class="literal">Main.hs</code>:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the libraries as follows:<div class="informalexample"><pre class="programlisting">{-# LANGUAGE OverloadedStrings #-}
+
+
+
+import qualified Data.ByteString.Lazy as S
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+import qualified Data.Text.Lazy.Encoding as E
+import qualified Data.ByteString as BS
+import Data.Text.Lazy (toStrict)
+import Data.Text.Template</pre></div></li><li class="listitem">Define <a id="id738" class="indexterm"/>the data we are dealing with as follows:<div class="informalexample"><pre class="programlisting">myData = [ [ ("name", "Databender"), ("title", "Dr.") ],
+           [ ("name", "Paragon"), ("title", "Master") ],
+           [ ("name", "Marisa"), ("title", "Madam") ] ]</pre></div></li><li class="listitem">Define <a id="id739" class="indexterm"/>the template for the data as follows:<div class="informalexample"><pre class="programlisting">myTemplate = template "Hello $title $name!"</pre></div></li><li class="listitem">Create a helper function to convert data items to a template as follows:<div class="informalexample"><pre class="programlisting">context :: [(T.Text, T.Text)] -&gt; Context
+context assocs x = maybe err id . lookup x $ assocs
+  where err = error $ "Could not find key: " ++ T.unpack x</pre></div></li><li class="listitem">Match each data item to the template and print everything out to a text file, as shown in the following code snippet:<div class="informalexample"><pre class="programlisting">main :: IO ()
+main = do
+  let res = map (\d -&gt; toStrict ( 
+                  render myTemplate (context d) )) myData
+  TIO.writeFile "messages.txt" $ T.unlines res</pre></div></li><li class="listitem">Run the code to see the resulting file:<div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ runhaskell Main.hs</strong></span>
+
+<span class="strong"><strong>$ cat messages.txt</strong></span>
+
+<span class="strong"><strong>Hello Dr. Databender!</strong></span>
+<span class="strong"><strong>Hello Master Paragon!</strong></span>
+<span class="strong"><strong>Hello Madam Marisa!</strong></span>
+</pre></div></li></ol></div></div></div>
+<div class="section" title="Exporting matrix values to a file"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec154"/>Exporting matrix values to a file</h1></div></div></div><p>In data analysis<a id="id740" class="indexterm"/> and machine learning, matrices are a popular data structure that often need to be exported and imported into the program. In this recipe, we will export a sample matrix using the Repa I/O library.</p><div class="section" title="Getting ready"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec440"/>Getting ready</h2></div></div></div><p>Install the<a id="id741" class="indexterm"/> <code class="literal">repa-io</code> library using cabal as follows:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ cabal install repa-io</strong></span>
+</pre></div></div><div class="section" title="How to do it…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec441"/>How to do it…</h2></div></div></div><p>Create a new file, which we name <code class="literal">Main.hs</code>, and insert the code explained in the following steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Import the relevant libraries as follows:<div class="informalexample"><pre class="programlisting">import Data.Array.Repa.IO.Matrix
+import Data.Array.Repa</pre></div></li><li class="listitem">Define a 4 x 3 matrix as follows:<div class="informalexample"><pre class="programlisting">x :: Array U DIM2 Int 
+x = fromListUnboxed (Z :. (4::Int) :. (3::Int)) 
+  [ 1, 2, 9, 10
+  , 4, 3, 8, 11
+  , 5, 6, 7, 12 ]</pre></div></li><li class="listitem">Write the matrix to a file as follows:<div class="informalexample"><pre class="programlisting">main = writeMatrixToTextFile "output.dat" x</pre></div></li></ol></div></div><div class="section" title="How it works…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec442"/>How it works…</h2></div></div></div><p>The matrix is represented simply as a list of its elements in row-major order. The first two lines of the file define the type of data and the dimensions.</p></div><div class="section" title="There's more…"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec443"/>There's more…</h2></div></div></div><p>To read a matrix back from this file, we can use the<a id="id742" class="indexterm"/> <code class="literal">readMatrixFromTextFile</code> function to retrieve the two-dimensional matrix. More documentation about this package is available at <a class="ulink" href="https://hackage.haskell.org/package/repa-io">https://hackage.haskell.org/package/repa-io</a>.</p></div></div></body></html>

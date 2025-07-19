@@ -1,0 +1,865 @@
+<html><head></head><body>
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Computing Foundations – Databases</h1>
+                </header>
+            
+            <article>
+                
+<p>This chapter will introduce you to databases and the <strong>Structured Query Language</strong> (<strong>SQL</strong>). It is mainly for healthcare professionals and beginner data scientists and programmers who are interested in working with healthcare databases. By the end of the chapter, you will know what a database is and how to use basic SQL to extract and manipulate information in clinical databases. We will present an example task and SQL statements useful for manipulating data in a sample mini-database of five patients.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Introduction to databases</h1>
+                </header>
+            
+            <article>
+                
+<p>A <strong>database</strong> can be defined as a collection of related data (Elmasri and Navathe, 2010). Databases are often subcategorized as <strong>SQL databases</strong> or <strong>NoSQL databases</strong>. In SQL databases, data is recorded in tables and consists of rows and columns. The related data may be distributed across several tables in a trade-off between efficient storage and convenience. The <strong>database management system</strong> (<strong>DBMS</strong>) is a piece of software that enables the database to serve several functions. For one thing, it allows for the <em>retrieval</em> of data using the SQL language (for SQL databases). Another function is to update the data when needed, also using SQL. Additional functions of a DBMS include protecting and securing the data.</p>
+<p>Database management is a complex field of its own. In this book, we will place an emphasis on <em>using SQL to retrieve and update clinical data that is usually distributed across multiple related tables</em>. For additional comprehensive resources on databases, see the <em>References</em> section at the end of this chapter.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Data engineering with SQL – an example case</h1>
+                </header>
+            
+            <article>
+                
+<p>For this chapter, let's pretend you secured a predictive analytics assignment with a cardiology practice located in the United States. The practice wants you to predict which patients are at risk of dying within 6 months of their visit to the clinic. They make their data available to you in the form of a database that includes six tables. For simplicity, we truncate the database to include the information for five patients only. Our task is to manipulate the data using the SQL language to consolidate it into a single table so that it can be used for machine learning. We will first go over the patients in the database and the database structure. Then, we will introduce basic SQL concepts for engineering and manipulate the data into a form amenable to machine learning.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Case details – predicting mortality for a cardiology practice</h1>
+                </header>
+            
+            <article>
+                
+<p>The cardiology practice you are working with has two physicians on staff: Dr. Johnson and Dr. Wu. While the practice has many patients, they are interested in identifying which patients who visit are at high risk of all-cause mortality within the next 6 months. Having an outpatient visit sometime in 2016 makes up the inclusion criteria for the analytics. The target variable is whether the patient passed away within 6 months of their visit.</p>
+<p>Now that we've reviewed the details of the modeling assignment, let's take a look at the five patients in the database. The preliminary data sent to you by the cardiology practice includes information on five patients, distributed across six tables. The following are case vignettes for each of the patients. Note that this section is heavy on clinical terminology related to cardiovascular diseases. We encourage you to use available online resources to answer your questions about this terminology. A comprehensive clinical reference is <em>Harrison's Principles of Internal Medicine</em> (Kasper et al., 2005), the information for which is given at the end of the chapter.</p>
+<p class="mce-root"/>
+<p>The following is the information about the patients:</p>
+<ul>
+<li><strong>Patient ID-1</strong>: Patient #1 in the database is a 65-year-old male who has <strong>congestive heart failure</strong> (<strong>CHF</strong>), a chronic condition in which the heart is unable to pump blood properly to the rest of the body. He also has hypertension (high blood pressure), which is a risk factor for CHF. He visited his cardiologist, Dr. Johnson, on 9/1/2016 and 17/1/2016. On his January 9th visit, he was found to have an elevated BP (154/94) and an elevated B-natriuretic peptide (BNP) lab value of 350. BNP is a marker of CHF severity. He was subsequently placed on lisinopril and furosemide, which are first-line treatments for CHF and hypertension. Unfortunately, he passed away on May 15th, 2016.</li>
+<li><strong>Patient ID-2</strong>: Patient #2 is a 39-year-old female with a history of angina pectoris (cardiovascular-related chest pain upon exercising) and diabetes mellitus. Diabetes mellitus is a risk factor for myocardial infarction (heart attack; a late, often fatal manifestation of atherosclerotic heart disease), and angina pectoris can be seen as an early manifestation of atherosclerotic heart disease. She visited her cardiologist, Dr. Wu, on January 15th, 2016, at which time she was found to have an elevated blood glucose level of 225, a sign of uncontrolled diabetes. She was started on metformin for her diabetes, as well as nitroglycerin, aspirin, and metoprolol for her angina.</li>
+<li><strong>Patient ID-3</strong>: Patient #3 is a 32-year-old female who sees Dr. Johnson for management of her hypertension. During her visit on February 1st, 2016 her blood pressure was elevated at 161/100. She was started on valsartan/hydrochlorothiazide, an anti-hypertensive combination.</li>
+<li><strong>Patient ID: 4</strong>: Patient #4 is a 51-year-old male who has severe CHF with pulmonary hypertension. He saw Dr. Wu on February 27th, 2016. During that visit, his weight was 211 lbs and his blood pressure was slightly elevated at 143/84. His BNP level was highly elevated at 1,000. He was given lisinopril and furosemide for his CHF as well as diltiazem for his pulmonary hypertension. Unfortunately, he passed away on June 8th, 2016.</li>
+<li><strong>Patient ID-5</strong>: The last patient in our database, patient #5, is a 58-year-old male who presented to Dr. Wu on March 1st, 2016 with a history of CHF and diabetes mellitus Type 2. During the visit, his glucose was elevated at 318 and BNP was moderately elevated at 400. He was started on lisinopril and furosemide for his CHF and metformin for his diabetes.</li>
+</ul>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The clinical database</h1>
+                </header>
+            
+            <article>
+                
+<p>Now that we've gotten to know the five patients whose information is contained in our database, we can describe the table structure and fields contained in the database, for six mock tables: <kbd>PATIENT</kbd>, <kbd>VISIT</kbd>, <kbd>MEDICATIONS</kbd>, <kbd>LABS</kbd>, <kbd>VITALS</kbd>, and <kbd>MORT</kbd>. Although every clinical database is different, I've tried to use a structure that is commonly seen in healthcare. Typically, tables are presented by clinical domains (for an example of a research study that received tables in such a distributed format, see Basole et al., 2015). For example, there is often one table that contains demographic and personal information, one table for lab results, one for medications, and so on, so that is how we constructed the database in this example. They tend to be tied together by a common identifier, which in our case is the <kbd>Pid</kbd> field.</p>
+<p>As we describe the tables, we must keep our end-goal of the data engineering phase in mind<span>–</span>to combine the relevant information from the six tables into a single table, whose columns include the target variable (mortality in this case) in addition to predictor variables, which should be useful for predicting the target variable. This will enable us to make a machine learning model with popular packages such as Python's <kbd>scikit-learn</kbd>. With this in mind, we will highlight selected fields that will be useful for our assignment.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The PATIENT table</h1>
+                </header>
+            
+            <article>
+                
+<p>In our example, the <kbd>PATIENT</kbd> table, which we can see in the following screenshot, contains the demographic and identifying information of our patients<span>–</span>their names, contact information, birthdays, and <span>biological sex</span>. In this example, there are only five observations and 11 columns; in real practice, this table would contain all of the patients affiliated with the healthcare organization. The number of rows in this table might range from hundreds to hundreds of thousands, while the table could potentially include dozens of columns containing detailed demographic information:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/46661fa9-00b7-42a5-8c7b-ad93ecf6056c.png"/></div>
+<p><span>In the database, every unique patient is assigned to an identifier (the field labeled as <kbd>Pid</kbd>), which in our case is simply numbered 1 - 5. The <kbd>Pid</kbd> column allows us to keep track of the patients across different tables. Also, notice that there is one and only one entry for each distinct patient ID.</span></p>
+<p class="mce-root"/>
+<p><span>After identifying the indispensable identifer column, the focus should be on which variables to keep and which to discard. Certainly,</span> age and sex a<span>re important demographic predictors of mortality. If race were in this table, that would be another important demographic variable.</span></p>
+<p>Another notable variable in this table is the zip code. Increasingly, socioeconomic data is being used in machine learning analyses. The zip code can potentially be tied to publicly available census data; that data can then be joined to the data in thi<span>s table on the zip code and could potentially provide information on the average education level, income, and healthcare coverage for each patient's zip code. There are even organizations who sell household-level information; however, with that data comes a great responsibility for privacy protection and data security. For this example, we will omit the zip code to keep our final table simple.</span></p>
+<p><span>Information we'll leave out from our final table includes names, street addresses, and phone numbers. As long as we have the patient ID, these fields shouldn't have much of a predictive impact on our target variable.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The VISIT table</h1>
+                </header>
+            
+            <article>
+                
+<p>While the <kbd>PATIENT</kbd> table contains basic administrative information about each patient, our assignment is to predict the mortality risk on the basis of each <em>visit</em>. The <kbd>VISIT</kbd> table contains one observation for each patient visit, along with some clinical information about each visit:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/4ba30aec-3223-4a93-af82-f720bd647816.png"/></div>
+<p>Notice that the patient ID is no longer the primary identifier of this table, since Patient #1 had two visits; instead, there is a <kbd>Visit_id</kbd> field that is numbered from <kbd>10001</kbd> to <kbd>10006</kbd> in this example, with one distinct ID per visit.</p>
+<p>This table also contains <kbd>Visit_date</kbd>. Since the cardiology practice indicated they want to know the mortality risk within 6 months of the patient visit, we will have to use this field later when we compute the target variable.</p>
+<p class="mce-root"/>
+<p>Two of the fields in this table contain ICD (diagnosis) codes. Actual tables may contain dozens of codes for each visit. For each coded field, there is a corresponding name field that contains the name of the condition that the code represents. A popular approach in healthcare is to make, in the final table, a column for every clinical code we are interested in tracking (Futoma et al., 2015; Rajkomar et al., 2018). We will adopt this approach later in the chapter.</p>
+<p>Finally, we note that the name of the attending physician is included, which can be used to measure physician performance.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The MEDICATIONS table</h1>
+                </header>
+            
+            <article>
+                
+<p>The <kbd>MEDICATIONS</kbd> table contains one entry for every medication being taken by our five patients. In this example, there is no single column that serves as a primary key for this table. As we can see in the following screenshot, this table includes information about the medication name, dose, frequency, route, prescribing physician, and prescription date. The NDC code of each medication is also included; we covered NDC codes in <a href="71c31b0a-fa9e-4b31-8b58-f563a815e338.xhtml" target="_blank">Chapter 2</a>, <em>Healthcare Foundations</em>:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/07e90df1-dec5-4169-988a-82198225d7ea.png" style="width:48.00em;height:17.50em;"/></div>
+<p class="mce-root"><span>Including medications in our final table will not be straightforward. For example, the information in the tables does not indicate the class of each medication. The NDC code is present, but the NDC code is even more granular than the medication name since it includes the route of administration and dosage in making each unique code; therefore, multiple forms of lisinopril could have different NDC codes. In order to make a column for each medication, we could potentially separately make a table for each medication, which contains all of the medications that compose it, and then merge that information into our table.</span></p>
+<p class="mce-root"/>
+<p>If we choose to include dosage information, that field will require some cleaning. Notice that Patient #3 is receiving an anti-hypertensive combination drug<span>–</span>the valsartan component has a dosage of 160 mg, while the hydrochlorothiazide component has a dosage of 12.5 mg. This could possibly be coded as two separate drugs, but creating a script that splits combination drugs into two rows is not trivial.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The LABS table</h1>
+                </header>
+            
+            <article>
+                
+<p>Laboratory information is an important part of clinical diagnostics, and many laboratory test results make for good predictor variables (Donze et al., 2013; Sahni et al., 2018). The <kbd>LABS</kbd> table includes fields that describe the laboratory test name, abbreviation, LOINC code, and result:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/70660895-ce3a-4f59-a96c-3a7720579f59.png" style="width:48.25em;height:11.67em;"/></div>
+<p class="mce-root"><span>There are some different approaches to including lab information in the final table. One way would be to include the raw lab result as a continuous variable. However, this leads to a problem because the result would be NULL for most labs. We could potentially navigate around this issue by imputing a value in the normal range when it is missing. Another approach would be to have a binary variable for a lab test result that is in the abnormal range. This solves the missing data problem, since if the result is missing it would be zero. However, a BNP value of 1,000 (which indicates severe CHF) would be no different than a BNP value of 350 (which indicates mild CHF) with this method. We will demonstrate both approaches in this chapter.</span></p>
+<p>Also note that the <kbd>Lab_value</kbd> field sometimes contains special characters, for example in the troponin result. These will need to be removed and the lab values interpreted accordingly. Culture results (not included in this example) are completely textual, of<span>ten naming specific bacterial strains instead of numbers.</span></p>
+<p>Again, we repeat that this is a simplified example and that many of the common labs that would be drawn for these patients (for example, WBC count, hemoglobin, sodium, potassium, and so on) are excluded here.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The VITALS table</h1>
+                </header>
+            
+            <article>
+                
+<p>Vital signs are important indicators of a patient's health status and can be good predictors in healthcare machine learning models (Sahni et al., 2018). Vital signs are typically taken at every patient visit, so they can easily be included in their raw (numerical) form to preserve granularity.</p>
+<p>In the following screenshot of the table, we notice that while height and weight are present, the <strong>body mass index</strong> (<strong>BMI</strong>) is missing. We will demonstrate the calculation of the BMI in <a href="12ee77f2-0655-4dc5-abb1-2868d6fcc386.xhtml" target="_blank">Chapter 5</a>, <em>Computing Foundations <span>–</span> Introduction to Python</em>. Second, Visit #10004 is missing a temperature reading. This is common in healthcare and may be caused by an oversight in care:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/d0320c9d-5191-414e-b101-76ba65cc2243.png" style="width:57.25em;height:10.33em;"/></div>
+<div class="packt_figref CDPAlignCenter CDPAlign">The VITALS table</div>
+<p><span>Later in the chapter, we will impute the normal temperature for this visit.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The MORT table</h1>
+                </header>
+            
+            <article>
+                
+<p>Finally, we come to the table that contains the target variable. The <kbd>MORT</kbd> table contains just two fields, the patient identifier, and the date the patient passed away. Patients not listed in this table can be assumed to be living:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/55885bd2-47e9-4317-992a-4dc302a4aee6.png" style="width:13.67em;height:5.83em;"/></div>
+<p class="mce-root"><span>Later, we will learn how to transfer the information from this table into a binary target variable.</span></p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Starting an SQLite session</h1>
+                </header>
+            
+            <article>
+                
+<p>The database engine we will use to transform our database is <strong>SQLite</strong>. In <a href="b15b2b73-d2bb-410f-ab55-5f0f1e91730e.xhtml" target="_blank">Chapter 1</a>, <em>Introduction to Healthcare Analytics</em>, we went over installation instructions as well as basic SQLite commands. It should be mentioned that SQL comes in many variants, and the SQL specific to SQLite has minor differences to that specific to MySQL or SQL Server databases. However, the underlying principles remain constant across all SQL dialects.</p>
+<p>At this time, do the following:</p>
+<ol>
+<li>Navigate to the directory containing the <kbd>sqlite3.exe</kbd> program in your shell or command prompt (using the <kbd>cd</kbd> command).</li>
+<li>Type <kbd>sqlite3 mortality.db</kbd> and press <em>Enter</em>. You should see a prompt that looks like the following: <kbd>sqlite&gt;</kbd>. This prompt indicates that you are in the SQLite program.</li>
+<li>Throughout the remainder of this chapter, we are going to create some tables and execute some SQLite commands on them in the SQLite program.</li>
+<li>To exit the session at any time, type <kbd>.exit</kbd> and press <em>Enter</em>.</li>
+</ol>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Data engineering, one table at a time with SQL</h1>
+                </header>
+            
+            <article>
+                
+<p>Let's now look at how to perform data engineering with SQLite. First, we have to create our tables in the database. Then, we will manipulate them, one by one, to get the desired final table.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0 – creating the six tables</h1>
+                </header>
+            
+            <article>
+                
+<p>In this mock assignment, let's pretend that the portal at which the data can be downloaded from the cardiology practice is not working. Instead, one of the technicians sends you SQLite commands that you can use to create the six tables. You can follow along with the book and type each command manually. Alternatively, you can go to the book's official code repository and download the commands from there.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0a – creating the PATIENT table</h1>
+                </header>
+            
+            <article>
+                
+<p>One way to create a table in our database is to specify its schema manually. Let's do that here with our first table, the <kbd>PATIENT</kbd> table:</p>
+<pre><strong>sqlite&gt; CREATE TABLE PATIENT(</strong><br/><strong>  Pid VARCHAR(30) NOT NULL,</strong><br/><strong>  Fname VARCHAR(30) NOT NULL,</strong><br/><strong>  Minit CHAR,</strong><br/><strong>  Lname VARCHAR(30) NOT NULL,</strong><br/><strong>  Bdate TEXT NOT NULL,</strong><br/><strong>  Street VARCHAR(50),</strong><br/><strong>  City VARCHAR(30),</strong><br/><strong>  State VARCHAR(2),</strong><br/><strong>  Zip VARCHAR(5),</strong><br/><strong>  Phone VARCHAR(10) NOT NULL,</strong><br/><strong>  Sex CHAR,</strong><br/><strong>  PRIMARY KEY (Pid)</strong><br/><strong>);</strong></pre>
+<p>In the preceding example, notice that the name of the table appears after the <kbd>CREATE TABLE</kbd> phrase. Following that, there is an open parenthesis, and on each line a new column is named (for example, <kbd>Pid</kbd> and <kbd>Fname</kbd>). On each line, following the column names, are the types of each column. We use <kbd>VARCHAR(<img src="assets/132125d6-1eb7-42e6-9fb1-55b899cf2b65.png" style="width:1.00em;height:1.08em;"/>)</kbd> for most columns in this example, where <img class="fm-editor-equation" src="assets/719756ac-ad5e-4df0-b962-c416cf4860ff.png" style="width:0.92em;height:1.00em;"/> is the maximum number of characters that the column contains. A <kbd>CHAR</kbd> column contains just one character. Finally, some of the important fields (such as names and identifiers) we will not allow to be blank, and we specify that for those columns by using the <kbd>NOT NULL</kbd> phrase.</p>
+<p>Now that we created the schema of our table, the next step is to populate the table with data. As we said, in the database we just have five patients, therefore the <kbd>PATIENT</kbd> table will have five rows. We use an <kbd>INSERT</kbd> command to insert each row into the table as shown here:</p>
+<pre><strong>sqlite&gt; INSERT INTO PATIENT (Pid, Fname, Minit, Lname, Bdate, Street, City, State, Zip, Phone, Sex)</strong><br/><strong>VALUES ('1','John','A','Smith','1952-01-01','1206 Fox Hollow Rd.','Pittsburgh','PA','15213','6789871234','M');</strong><br/><br/><strong>sqlite&gt; INSERT INTO PATIENT (Pid, Fname, Minit, Lname, Bdate, Street, City, State, Zip, Phone, Sex)</strong><br/><strong>VALUES ('2','Candice','P','Jones','1978-02-03','1429 Orlyn Dr.','Los Angeles','CA','90024','3107381419','F');</strong><br/><br/><strong>sqlite&gt; INSERT INTO PATIENT (Pid, Fname, Minit, Lname, Bdate, Street, City, State, Zip, Phone, Sex)</strong><br/><strong>VALUES ('3','Regina','H','Wilson','1985-04-23','765 Chestnut Ln.','Albany','NY','12065','5184590206','F');</strong><br/><br/><strong>sqlite&gt; INSERT INTO PATIENT (Pid, Fname, Minit, Lname, Bdate, Street, City, State, Zip, Phone, Sex)</strong><br/><strong>VALUES ('4','Harold','','Lee','1966-11-15','2928 Policy St.','Providence','RI','02912','6593482691','M');</strong><br/><br/><strong>sqlite&gt; INSERT INTO PATIENT (Pid, Fname, Minit, Lname, Bdate, Street, City, State, Zip, Phone, Sex)</strong><br/><strong>VALUES ('5','Stan','P','Davis','1958-12-30','4271 12th St.','Atlanta','GA','30339','4049814933','M');</strong></pre>
+<p>Notice that the <kbd>INSERT</kbd> statements first specify that fields that will be inserted, before using the <kbd>VALUES</kbd> keyword, after which the actual data elements are listed. If <kbd>VARCHAR</kbd> or <kbd>CHAR</kbd> is used, the data elements should be surrounded by single quotes.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0b – creating the VISIT table</h1>
+                </header>
+            
+            <article>
+                
+<p>Let's now make the <kbd>VISIT</kbd> table. Again, first we use a <kbd>CREATE TABLE</kbd> statement, followed by six <kbd>INSERT</kbd> statements:</p>
+<pre><strong>sqlite&gt; CREATE TABLE VISIT(</strong><br/><strong>  Pid VARCHAR(30) NOT NULL,</strong><br/><strong>  Visit_id VARCHAR(30) NOT NULL,</strong><br/><strong>  Visit_date DATE NOT NULL,</strong><br/><strong>  Attending_md VARCHAR(30) NOT NULL,</strong><br/><strong>  Pri_dx_icd VARCHAR(20) NOT NULL,</strong><br/><strong>  Pri_dx_name VARCHAR(100) NOT NULL,</strong><br/><strong>  Sec_dx_icd VARCHAR(20),</strong><br/><strong>  Sec_dx_name VARCHAR(100),</strong><br/><strong>  PRIMARY KEY (Visit_id)</strong><br/><strong>);</strong><br/><br/><strong>sqlite&gt; INSERT INTO VISIT (Pid, Visit_id, Visit_date, Attending_md, Pri_dx_icd, Pri_dx_name, Sec_dx_icd, Sec_dx_name)</strong><br/><strong>VALUES ('1','10001','2016-01-09','JOHNSON','I50.9','Heart failure, unspecified','I10','Essential (primary) hypertension');</strong><br/><br/><strong>sqlite&gt; INSERT INTO VISIT (Pid, Visit_id, Visit_date, Attending_md, Pri_dx_icd, Pri_dx_name, Sec_dx_icd, Sec_dx_name)</strong><br/><strong>VALUES ('1','10002','2016-01-17','JOHNSON','I50.9','Heart failure, unspecified','I10','Essential (primary) hypertension');</strong><br/><br/><strong>sqlite&gt; INSERT INTO VISIT (Pid, Visit_id, Visit_date, Attending_md, Pri_dx_icd, Pri_dx_name, Sec_dx_icd, Sec_dx_name)</strong><br/><strong>VALUES ('2','10003','2016-01-15','WU','I20.9','Angina pectoris, unspecified','E11.9','Type 2 diabetes mellitus without complications');</strong><br/><br/><strong>sqlite&gt; INSERT INTO VISIT (Pid, Visit_id, Visit_date, Attending_md, Pri_dx_icd, Pri_dx_name, Sec_dx_icd, Sec_dx_name)</strong><br/><strong>VALUES ('3','10004','2016-02-01','JOHNSON','I10','Essential (primary) hypertension','','');</strong><br/><br/><strong>sqlite&gt; INSERT INTO VISIT (Pid, Visit_id, Visit_date, Attending_md, Pri_dx_icd, Pri_dx_name, Sec_dx_icd, Sec_dx_name)</strong><br/><strong>VALUES ('4','10005','2016-02-27','WU','I27.0','Primary pulmonary hypertension','I50.9','Heart failure, unspecified');</strong><br/><br/><strong>sqlite&gt; INSERT INTO VISIT (Pid, Visit_id, Visit_date, Attending_md, Pri_dx_icd, Pri_dx_name, Sec_dx_icd, Sec_dx_name)</strong><br/><strong>VALUES ('5','10006','2016-03-01','WU','I50.9','Heart failure, unspecified','E11.9','Type 2 diabetes mellitus without complications');</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0c – creating the MEDICATIONS table</h1>
+                </header>
+            
+            <article>
+                
+<p>To create the <kbd>MEDICATIONS</kbd> table, use the following code:</p>
+<pre><strong>sqlite&gt; CREATE TABLE MEDICATIONS(</strong><br/><strong>  Pid VARCHAR(30) NOT NULL,</strong><br/><strong>  Rx_name VARCHAR(50) NOT NULL,</strong><br/><strong>  Rx_dose VARCHAR(20),</strong><br/><strong>  Rx_freq VARCHAR(10),</strong><br/><strong>  Rx_route VARCHAR(10),</strong><br/><strong>  Prescribing_md VARCHAR(30) NOT NULL,</strong><br/><strong>  Rx_date DATE NOT NULL,</strong><br/><strong>  Rx_ndc VARCHAR(30)</strong><br/><strong>);</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('1', 'LISINOPRIL','5 mg','bid','po','JOHNSON','01/09/2016','68180-513-01');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('1', 'FUROSEMIDE','20 mg','bid','po','JOHNSON','01/09/2016','50742-104-01');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('2', 'NITROGLYCERIN','0.4 mg','tid','sl','WU','01/15/2016','59762-3304-1');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('2', 'METFORMIN','500 mg','bid','po','WU','01/15/2016','65162-175-10');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('2', 'ASPIRIN','81 mg','qdaily','po','WU','01/15/2016','63981-563-51');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('2', 'METOPROLOL TARTRATE','25 mg','bid','po','WU','01/15/2016','62332-112-31');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('3', 'VALSARTAN HCTZ','160/12.5 mg','qdaily','po','JOHNSON','02/01/2016','51655-950-52');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('4', 'DILTIAZEM HYDROCHOLORIDE','300 mg','qdaily','po','WU','02/27/2016','52544-693-19');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('4', 'LISINOPRIL','10 mg','bid','po','WU','02/27/2016','68180-514-01');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('4', 'FUROSEMIDE','40 mg','bid','po','WU','02/27/2016','68788-1966-1');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('5', 'LISINOPRIL','5 mg','bid','po','WU','03/01/2016','68180-513-01');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('5', 'FUROSEMIDE','20 mg','bid','po','WU','03/01/2016','50742-104-01');</strong><br/><br/></pre>
+<pre><strong>sqlite&gt; INSERT INTO MEDICATIONS (Pid, Rx_name, Rx_dose, Rx_freq, Rx_route, Prescribing_md, Rx_date, Rx_ndc)</strong><br/><strong>VALUES ('5', 'METFORMIN','500 mg','bid','po','WU','03/01/2016','65162-175-10');</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0d – creating the LABS table</h1>
+                </header>
+            
+            <article>
+                
+<p>To create the <kbd>LABS</kbd> table, use the following code:</p>
+<pre><strong>sqlite&gt; CREATE TABLE LABS(</strong><br/><strong>  Pid VARCHAR(30) NOT NULL,</strong><br/><strong>  Lab_name VARCHAR(50),</strong><br/><strong>  Lab_abbrev VARCHAR(20), </strong><br/><strong>  Lab_loinc VARCHAR(10) NOT NULL,</strong><br/><strong>  Lab_value VARCHAR(20) NOT NULL,</strong><br/><strong>  Ordering_md VARCHAR(30),</strong><br/><strong>  Lab_date DATE NOT NULL</strong><br/><strong>);</strong><br/><br/><strong>sqlite&gt; INSERT INTO LABS (Pid, Lab_name, Lab_abbrev, Lab_loinc, Lab_value, Ordering_md, Lab_date)</strong><br/><strong>VALUES ('1','Natriuretic peptide B','BNP','42637-9','350','JOHNSON','2016-01-09');</strong><br/><br/><strong>sqlite&gt; INSERT INTO LABS (Pid, Lab_name, Lab_abbrev, Lab_loinc, Lab_value, Ordering_md, Lab_date)</strong><br/><strong>VALUES ('2','Natriuretic peptide B','BNP','42637-9','100','WU','2016-01-15');</strong><br/><br/><strong>sqlite&gt; INSERT INTO LABS (Pid, Lab_name, Lab_abbrev, Lab_loinc, Lab_value, Ordering_md, Lab_date)</strong><br/><strong>VALUES ('2','Glucose','GLU','2345-7','225','WU','2016-01-15');</strong><br/><br/><strong>sqlite&gt; INSERT INTO LABS (Pid, Lab_name, Lab_abbrev, Lab_loinc, Lab_value, Ordering_md, Lab_date)</strong><br/><strong>VALUES ('2','Troponin I','TROP','10839-9','&lt;0.004','WU','2016-01-15');</strong><br/><br/><strong>sqlite&gt; INSERT INTO LABS (Pid, Lab_name, Lab_abbrev, Lab_loinc, Lab_value, Ordering_md, Lab_date)</strong><br/><strong>VALUES ('4','Natriuretic peptide B','BNP','42637-9','1000','WU','2016-02-27');</strong><br/><br/><strong>sqlite&gt; INSERT INTO LABS (Pid, Lab_name, Lab_abbrev, Lab_loinc, Lab_value, Ordering_md, Lab_date)</strong><br/><strong>VALUES ('5','Natriuretic peptide B','BNP','42637-9','400','WU','2016-03-01');</strong><br/><br/></pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+<pre><strong>sqlite&gt; INSERT INTO LABS (Pid, Lab_name, Lab_abbrev, Lab_loinc, Lab_value, Ordering_md, Lab_date)</strong><br/><strong>VALUES ('5','Glucose','GLU','2345-7','318','WU','2016-03-01');</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0e – creating the VITALS table</h1>
+                </header>
+            
+            <article>
+                
+<p>Notice that the <kbd>VITALS</kbd> table uses numeric types such as <kbd>FLOAT</kbd> and <kbd>INT</kbd>. To create the <kbd>VITALS</kbd> table, use the following code:</p>
+<pre><strong>sqlite&gt; CREATE TABLE VITALS(</strong><br/><strong>  Pid VARCHAR(30) NOT NULL,</strong><br/><strong>  Visit_id VARCHAR(30) NOT NULL,</strong><br/><strong>  Height_in INT,</strong><br/><strong>  Weight_lb FLOAT,</strong><br/><strong>  Temp_f FLOAT,</strong><br/><strong>  Pulse INT,</strong><br/><strong>  Resp_rate INT,</strong><br/><strong>  Bp_syst INT,</strong><br/><strong>  Bp_diast INT,</strong><br/><strong>  SpO2 INT</strong><br/><strong>);</strong><br/><br/><strong>sqlite&gt; INSERT INTO VITALS (Pid, Visit_id, Height_in, Weight_lb, Temp_f, Pulse, Resp_rate, Bp_syst, Bp_diast, SpO2)</strong><br/><strong>VALUES ('1','10001',70,188.4,98.6,95,18,154,94,97);</strong><br/><br/><strong>sqlite&gt; INSERT INTO VITALS (Pid, Visit_id, Height_in, Weight_lb, Temp_f, Pulse, Resp_rate, Bp_syst, Bp_diast, SpO2)</strong><br/><strong>VALUES ('1','10002',70,188.4,99.1,85,17,157,96,100);</strong><br/><br/><strong>sqlite&gt; INSERT INTO VITALS (Pid, Visit_id, Height_in, Weight_lb, Temp_f, Pulse, Resp_rate, Bp_syst, Bp_diast, SpO2)</strong><br/><strong>VALUES ('2','10003',63,130.2,98.7,82,16,120,81,100);</strong><br/><br/><strong>sqlite&gt; INSERT INTO VITALS (Pid, Visit_id, Height_in, Weight_lb, Temp_f, Pulse, Resp_rate, Bp_syst, Bp_diast, SpO2)</strong><br/><strong>VALUES ('3','10004',65,120.0,NULL,100,19,161,100,98);</strong><br/><br/><strong>sqlite&gt; INSERT INTO VITALS (Pid, Visit_id, Height_in, Weight_lb, Temp_f, Pulse, Resp_rate, Bp_syst, Bp_diast, SpO2)</strong><br/><strong>VALUES ('4','10005',66,211.4,98.2,95,19,143,84,93);</strong><br/><br/><strong>sqlite&gt; INSERT INTO VITALS (Pid, Visit_id, Height_in, Weight_lb, Temp_f, Pulse, Resp_rate, Bp_syst, Bp_diast, SpO2)</strong><br/><strong>VALUES ('5','10006',69,150.0,97.6,77,18,130,86,99);</strong></pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0f – creating the MORT table</h1>
+                </header>
+            
+            <article>
+                
+<p>To create the <kbd>MORT</kbd> table, use the following code:</p>
+<pre><strong>sqlite&gt; CREATE TABLE MORT(</strong><br/><strong>  Pid VARCHAR(30) NOT NULL,</strong><br/><strong>  Mortality_date DATE NOT NULL,</strong><br/><strong>  PRIMARY KEY (Pid)</strong><br/><strong>);</strong><br/><br/><strong>sqlite&gt; INSERT INTO MORT (Pid, Mortality_date)</strong><br/><strong>VALUES ('1', '2016-05-15');</strong><br/><br/><strong>sqlite&gt; INSERT INTO MORT (Pid, Mortality_date)</strong><br/><strong>VALUES ('4', '2016-06-08');</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #0g – displaying our tables</h1>
+                </header>
+            
+            <article>
+                
+<p>To confirm that a table (for example, <kbd>PATIENT</kbd>) was made correctly, we can use the <kbd>SELECT * FROM PATIENT;</kbd> query (we will explain this syntax further in Query Set #2):</p>
+<pre><strong>sqlite&gt; SELECT * FROM PATIENT;</strong><br/><strong>1 John A Smith 1952-01-01 1206 Fox Hollow Rd. Pittsburgh PA 15213 6789871234 M</strong><br/><strong>2 Candice P Jones 1978-02-03 1429 Orlyn Dr. Los Angele CA 90024 3107381419 F</strong><br/><strong>3 Regina H Wilson 1985-04-23 765 Chestnut Ln. Albany NY 12065 5184590206 F</strong><br/><strong>4 Harold Lee 1966-11-15 2928 Policy St. Providence RI 02912 6593482691 M</strong><br/><strong>5 Stan P Davis 1958-12-30 4271 12th St. Atlanta GA 30339 4049814933 M</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #1 – creating the MORT_FINAL table</h1>
+                </header>
+            
+            <article>
+                
+<p>The first query we write will create the table using a <kbd>CREATE TABLE</kbd> statement. In one version of a <kbd>CREATE TABLE</kbd> statement, each variable is spelled out with its corresponding datatype. We used this version to create our six tables from scratch in the previous examples. Alternatively, one can create a table by copying from an existing table. We will opt for the second option here.</p>
+<p class="mce-root"/>
+<p>Now that we've answered that question, a second one remains<span>–</span>which table should we copy from? It might be tempting to copy the patient information from the <kbd>PATIENT</kbd> table to our final table, since it contains one row for each patient, and it contains basic demographic information. However, we must remember that the use case is based on each <em>visit</em>, not patient. Therefore, if a patient has two visits (such as Patient #1), technically that patient will receive two risk scores: one for each visit. Therefore, we should start by copying information from the <kbd>VISIT</kbd> table. This will create a table with six rows, one for each visit.</p>
+<p>So we start our query using a <kbd>CREATE TABLE</kbd> clause, with <kbd>MORT_FINAL</kbd> being the name of our new table. Then we use the <kbd>AS</kbd> keyword. The next two lines of the query specify which information to copy using a <kbd>SELECT-FROM-WHERE</kbd> construct:</p>
+<pre><strong>sqlite&gt; CREATE TABLE MORT_FINAL AS</strong><br/><strong>SELECT Visit_id, Pid, Attending_md, Visit_date, Pri_dx_icd, Sec_dx_icd</strong><br/><strong>FROM VISIT;</strong></pre>
+<p>A <kbd>SELECT-FROM-WHERE</kbd> statement is a systematic way of selecting the information we want from a table. The <kbd>SELECT</kbd> part acts as a <em>column</em> selector<span>–</span>following the <kbd>SELECT</kbd> keyword are the columns that we want to copy into the new table. Note that we left out the names of the diagnoses (<kbd>Pri_dx_name</kbd>, <kbd>Sec_dx_name</kbd>) since those technically aren't predictor variables, as long we have each code and we can refer to their meanings. The <kbd>FROM</kbd> keyword specifies the table name from which we wish to copy (<kbd>VISIT</kbd>, in this case). The <kbd>WHERE</kbd> keyword is an optional clause that allows us to select only those <em>rows</em> that meet certain conditions. For example, if we were interested in restricting our model to those visits in which the patient had heart failure, we could say <kbd>WHERE Pri_dx_code == 'I50.9'</kbd>. Because we are interested in including all visits in this example, we do not need a WHERE clause for this query. We will see the WHERE clause in action in the next query set.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #2 – adding columns to MORT_FINAL</h1>
+                </header>
+            
+            <article>
+                
+<p>In this section, we will demonstrate two ways to add additional columns. One method uses an <kbd>ALTER TABLE</kbd> statement, while the second method uses a <kbd>JOIN</kbd> operation.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #2a – adding columns using ALTER TABLE</h1>
+                </header>
+            
+            <article>
+                
+<p>Now that we've populated information from the <kbd>VISIT</kbd> table into the <kbd>MORT_FINAL</kbd> table, it's time to start integrating the other tables as well. We'll start with the <kbd>PATIENT</kbd> table; specifically, we would like to add in the birthdate and sex from this table. We start with the birthdate.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+<p>In Query Set #2, we demonstrate the basic query pattern for adding a new column (the birthdate) to our table. We start with an <kbd>ALTER TABLE</kbd> statement, followed by the name of the table, the operation (<kbd>ADD COLUMN</kbd>, in this case), the name of our new column, and the variable type. Although standard SQL supports a <kbd>DATE</kbd> variable type for dates, in SQLite, we use the <kbd>TEXT</kbd> type. Dates are always specified in <kbd>YYYY-MM-DD</kbd> format.</p>
+<p>After we've initialized the new column with our <kbd>ALTER TABLE</kbd> statement, the next step is to populate the actual birthdates from the <kbd>PATIENT</kbd> table. For this, we use an <kbd>UPDATE</kbd> statement. We specify the table we are updating, followed by a <kbd>SET</kbd> statement and the name of the column we are modifying, with an equals sign.</p>
+<p>The <kbd>SELECT-FROM-WHERE</kbd> block is the basic <em>retrieval</em> query of the SQL language. We are trying to <em>retrieve</em> information from the <kbd>PATIENT</kbd> table and populate into our new <kbd>Bdate</kbd> column, so we use a <kbd>SELECT-FROM-WHERE</kbd> statement, enclosed in parentheses, after the equals sign. Think of the SQL statement as issuing the following order to the database with its <kbd>SELECT</kbd> statement: "For every row in the <kbd>MORT_FINAL</kbd> table, find me the birthdate from the <kbd>PATIENT</kbd> table where the <kbd>Pid</kbd> in the <kbd>PATIENT</kbd> table equals the <kbd>Pid</kbd> in the <kbd>MORT_FINAL</kbd> table."</p>
+<p>Following the <kbd>UPDATE</kbd> statement for the <kbd>Bdate</kbd> column, we use the same sequence of queries (<kbd>ALTER TABLE</kbd> and <kbd>UPDATE</kbd>) to retrieve the <kbd>Sex</kbd> column from the <kbd>PATIENT</kbd> table:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL ADD COLUMN Bdate TEXT;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL SET Bdate = </strong><br/><strong>(SELECT P.Bdate</strong><br/><strong>FROM PATIENT AS P</strong><br/><strong>WHERE P.Pid = MORT_FINAL.Pid);</strong><br/><br/><strong>sqlite&gt; ALTER TABLE MORT_FINAL ADD COLUMN Sex CHAR;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL SET Sex = </strong><br/><strong>(SELECT P.Sex</strong><br/><strong>FROM PATIENT AS P</strong><br/><strong>WHERE P.Pid = MORT_FINAL.Pid);</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #2b – adding columns using JOIN</h1>
+                </header>
+            
+            <article>
+                
+<p>While the <kbd>ALTER TABLE</kbd> and <kbd>UPDATE</kbd> sequence is a good way to add columns to a table one at a time, it can be tedious when you want to copy many columns from the same table. A <kbd>JOIN</kbd> operation gives us a second option for copying many columns from the same table.</p>
+<p class="mce-root"/>
+<p>In a <kbd>JOIN</kbd> operation, two tables are combined to produce a single table. In the following example query, the selected columns of the <kbd>VITALS</kbd> table are appended on the end of the <kbd>MORT_FINAL</kbd> table.</p>
+<p>However, the <kbd>MORT_FINAL</kbd> table and <kbd>VITALS</kbd> table both contain several rows. How does the query know which rows of each table correspond to each other? This is specified using an <kbd>ON</kbd> clause (at the end of the query). The <kbd>ON</kbd> clause says, "When joining the tables, combine those rows where the visit IDs are equal." So for each row of the <kbd>MORT_FINAL</kbd> table, there will be one and only one row of the <kbd>VISITS</kbd> table to which it corresponds: the row that has the same visit ID. This makes sense because we are interested in collecting the information from individual visits in their own separate rows.</p>
+<p>Another thing to know about JOINs is that there are four different JOIN types in standard SQL: LEFT JOINs, RIGHT JOINs, INNER JOINs, and OUTER JOINs. A LEFT JOIN (referred to as a LEFT OUTER JOIN in SQLite) is the type we use here; it says, "For every row of the first table (<kbd>MORT_FINAL</kbd>, in this case), add the corresponding VISIT columns where the visit IDs are equal, and add NULL values if there is no corresponding visit ID in the VISIT table." In other words, all of the rows of the first table are preserved, whether or not there is a corresponding row in the right table. Visits that have a row in the second table but are missing from the first table are discarded.</p>
+<p>In a RIGHT JOIN, the opposite is true: unique visit IDs of the second table are preserved, and they are aligned to the corresponding visit IDs of the first table. Visit IDs present in the first table but missing in the second table are discarded. INNER JOINs include in the final result: only visit IDs that are present in both tables. OUTER JOINs include all rows of both tables and replace all missing entries with NULL values. As a note, we should add that RIGHT JOINs and OUTER JOINs are not supported in SQLite.</p>
+<p>So why did we choose a LEFT JOIN? Fundamentally, our job is to specify a prediction for every single visit, whether or not vital signs were recorded at that visit. Therefore, every visit ID present in the <kbd>MORT_FINAL</kbd> table should be in the final result, and the LEFT JOIN ensures that will be true.</p>
+<p>In the following code, we see that by using a JOIN, only one total query is needed to add eight columns of the <kbd>VITALS</kbd> table. What are the downsides of this method? For one thing, notice that a new table is created: <kbd>MORT_FINAL_2</kbd>. We cannot append to the old <kbd>MORT_FINAL</kbd> table; a new table must be created. Also, notice that we have to type out each column that we wish to preserve in the final result. In SQL, the asterisk (*) indicates to add <em>all</em> columns from both tables; we could have written <kbd>SELECT * FROM MORT_FINAL ...</kbd>. However, if we used an asterisk, there would be duplicate columns (for example, the <kbd>Visit_id</kbd> column would be present twice, since it is in both tables).</p>
+<p class="mce-root"/>
+<p>Then we would have to exclude the duplicate columns with a <kbd>SELECT</kbd> statement. Nevertheless, JOINs are useful when there are many columns in a second table that you would like to merge into a first table:</p>
+<pre><strong>sqlite&gt; CREATE TABLE MORT_FINAL_2 AS</strong><br/><strong>SELECT M.Visit_id, M.Pid, M.Attending_md, M.Visit_date, M.Pri_dx_icd, M.Sec_dx_icd, M.Bdate, M.Sex, V.Height_in, V.Weight_lb, V.Temp_f, V.Pulse, V.Resp_rate, V.Bp_syst, V.Bp_Diast, V.SpO2</strong><br/><strong>FROM MORT_FINAL AS M LEFT OUTER JOIN VITALS AS V ON M.Visit_id = V.Visit_id;</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #3 – date manipulation – calculating age</h1>
+                </header>
+            
+            <article>
+                
+<p>So far, our <kbd>MORT_FINAL_2</kbd> table contains 16 columns: 6 from the <kbd>VISIT</kbd> table, 2 from the <kbd>PATIENT</kbd> table, and 8 from the <kbd>VITALS</kbd> table (you can verify this by using the <kbd>SELECT * FROM MORT_FINAL_2;</kbd> command). In this query set, we transform one of these variables, the birthdate variable, into a usable form using date manipulation: we calculate the patients' age.</p>
+<p>As we said earlier in Query Set #2a, dates are stored in SQLite as <kbd>TEXT</kbd> variable types and are in the <kbd>YYYY-MM-DD</kbd> format. Calculating the age takes two calls to the <kbd>julianday()</kbd> function. In SQLite, the <kbd>julianday()</kbd> function takes a date in <kbd>YYYY-MM-DD</kbd> as input and returns the number of days since November 24th, 4714 BC 12:00 PM as a float. By itself, it may not seem very useful, but when used in combination with another <kbd>julianday()</kbd> call and a subtraction sign, it allows you to find the number of days that have elapsed between two dates. Following that, we calculate the Julian day difference between the visit date and the birthdate and divide the result by 365.25 to give us the patient ages in years. We also apply the <kbd>ROUND()</kbd> function to this result and round to two places after the decimal point (which is what the <kbd>2</kbd> indicates before the final parentheses are closed):</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Age_years REAL;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Age_years = </strong><br/><strong>ROUND((julianday(Visit_date) - julianday(Bdate)) / 365.25,2);</strong></pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+<p class="mceNonEditable"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #4 – binning and aggregating diagnoses</h1>
+                </header>
+            
+            <article>
+                
+<p>In our example database, the <kbd>VISIT</kbd> table contains the diagnostic codes for the visit. Although they didn't get their own table in our example, the diagnostic codes are among the most important pieces of information for many analytics problems. For one thing, they allow us to select the observations that are relevant to our model. For example, if we were building a model to predict malignant cancers, we would need the diagnosis codes to tell us which patients have cancer and to filter out the other patients. Second, they often serve as good predictor variables (Futoma et al., 2015). For example, as we will see in <a href="d029d858-9c6e-4bf0-b793-87cdc4395e86.xhtml" target="_blank">Chapter 7</a>, <em>Making Predictive Models in Healthcare</em>, many chronic diseases increase the likelihood of poor healthcare outcomes by a large amount. Clearly, we must leverage the information given to us in the diagnostic codes to optimize our predictive models.</p>
+<p>We will introduce two transformations for coded variables here. The first transformation, <strong>binning</strong>, converts the categorical variable to a series of binary variables for specific diagnoses. The second transformation, <strong>aggregating</strong>, groups many of the binary binned variables into a single binary or numerical variable. These transformations apply not only to diagnostic codes, but to the procedure, medication, and laboratory codes as well. The following are examples of both of these transformations.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #4a – binning diagnoses for CHF</h1>
+                </header>
+            
+            <article>
+                
+<p>Here, we see the binning transformation for congestive heart failure diagnoses. First, we initialize the new column, <kbd>Chf_dx</kbd>, as an integer using an <kbd>ALTER TABLE</kbd> statement. The <kbd>DEFAULT 0</kbd> statement means that all rows are initialized to be zero. Next, we set the column equal to 1 if and only if there is a code corresponding to CHF in the <kbd>Pri_dx_icd</kbd> column or the <kbd>Sec_dx_icd</kbd> column:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Chf_dx INTEGER DEFAULT 0;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Chf_dx = 1 </strong><br/><strong>WHERE Pri_dx_icd = 'I50.9' OR Sec_dx_icd = 'I50.9';</strong></pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+<p class="mceNonEditable"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #4b – binning diagnoses for other diseases</h1>
+                </header>
+            
+            <article>
+                
+<p>Here, we see the same type of transformation for every single diagnosis code in our five-patient dataset. The queries for binning hypertension, angina, diabetes, and pulmonary hypertension are as follows:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Htn_dx INTEGER DEFAULT 0;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Htn_dx = 1 </strong><br/><strong>WHERE Pri_dx_icd = 'I10' OR Sec_dx_icd = 'I10';</strong><br/><br/><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Angina_dx INTEGER DEFAULT 0;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Angina_dx = 1 </strong><br/><strong>WHERE Pri_dx_icd = 'I20.9' OR Sec_dx_icd = 'I20.9';</strong><br/><br/><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Diab_dx INTEGER DEFAULT 0;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Diab_dx = 1 </strong><br/><strong>WHERE Pri_dx_icd = 'E11.9' OR Sec_dx_icd = 'E11.9';</strong><br/><br/><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Pulm_htn_dx INTEGER DEFAULT 0;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Pulm_htn_dx = 1 </strong><br/><strong>WHERE Pri_dx_icd = 'I27.0' OR Sec_dx_icd = 'I27.0';</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #4c – aggregating cardiac diagnoses using SUM</h1>
+                </header>
+            
+            <article>
+                
+<p>While binning is important for separating out individual diagnoses, in practice, we often want to group similar or near-identical diagnostic codes together as a single variable. Aggregating combines two or more binary variables into a single binary/numeric variable. Here, we aggregate all cardiac diagnostic codes in our dataset (CHF, hypertension, and angina are cardiac diseases) using the <kbd>+</kbd> operator. The result is a count of the number of total cardiac diagnoses for each of the five patients:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Num_cardiac_dx INTEGER;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Num_cardiac_dx = Chf_dx + Htn_dx + Angina_dx;</strong></pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p class="mceNonEditable"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #4d – aggregating cardiac diagnoses using COUNT</h1>
+                </header>
+            
+            <article>
+                
+<p>In Query Sets #4b and #4c, we binned and then aggregated three diagnostic codes using the <kbd>+</kbd> operator on the column names individually. However, we may be interested in binning and aggregating dozens, hundreds, or even thousands of diagnostic codes. The method of Query Sets #4b and #4c quickly becomes impractical for large aggregations.</p>
+<p>Here, we use the <kbd>COUNT</kbd> function and a supplemental table to aggregate the diagnostic codes listed in the table. We first use a <kbd>CREATE TABLE</kbd> statement to create a <kbd>CARDIAC_DX</kbd> table. The format of this <kbd>CREATE TABLE</kbd> statement is a bit different than that of Query Set #1. In that example, we simply created a table by copying columns from an existing table. Here, we create the table from scratch by including parentheses and the column name, variable type, and <kbd>NOT NULL</kbd> statement enclosed in parentheses. If there were more than one column, they would be separated by commas within the parentheses.</p>
+<p>After creating the table, we insert our three diagnostic codes into it using an <kbd>INSERT</kbd> statement: <kbd>I50.9</kbd>, <kbd>I10</kbd>, and <kbd>I20.9</kbd>. Then we add a column to our <kbd>MORT_FINAL_2</kbd> table called <kbd>Num_cardiac_dx_v2</kbd>.</p>
+<p>The final query updates the <kbd>Num_cardiac_dx_v2</kbd> column by adding the number of codes from the table that are present in the <kbd>Pri_dx_icd</kbd> or <kbd>Sec_dx_icd</kbd> column. It accomplishes that by using a <kbd>SELECT-FROM-WHERE</kbd> block for each column, inside the original <kbd>UPDATE</kbd> statement. Therefore, this type of query is called a <em>nested</em> query. Within each <kbd>SELECT</kbd> block, the <kbd>COUNT(*)</kbd> statement simply returns the number of rows of the resulting query as an integer. So for example, in Visit #10001, there is a cardiac code in the <kbd>Pri_dx_icd</kbd> column and there is also one match in the <kbd>Sec_dx_icd</kbd> column. The first <kbd>SELECT</kbd> block would return a value of <kbd>1</kbd>, since the query without <kbd>COUNT</kbd> would have returned a table with 1 row. By wrapping <kbd>COUNT</kbd> around <kbd>*</kbd>, <kbd>1</kbd> is returned as an integer. The second <kbd>SELECT</kbd> block also detects a match and returns a value of <kbd>1</kbd>. The <kbd>+</kbd> operator makes <kbd>2</kbd> the final result. By comparing the <kbd>Num_cardiac_dx</kbd> and <kbd>Num_cardiac_dx_2</kbd> columns, we see the result is exactly the same. So, which method is better? For small, simple aggregations, the first method is easier, because one simply has to make a column for each code and then aggregate them in a single statement with the + operator. However, in practice, you may wish to edit which codes are aggregated together to create features quite frequently. In this case, the second method is easier:</p>
+<pre><strong>sqlite&gt; CREATE TABLE CARDIAC_DX(</strong><br/><strong> Dx_icd TEXT NOT NULL);</strong><br/><br/><strong>sqlite&gt; INSERT INTO CARDIAC_DX (Dx_icd)</strong><br/><strong>VALUES ('I50.9'),('I10'),('I20.9');</strong><br/><br/><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Num_cardiac_dx_v2 INTEGER;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Num_cardiac_dx_v2 = </strong><br/><strong>(SELECT COUNT(*) </strong><br/><strong>FROM CARDIAC_DX AS C</strong><br/><strong>WHERE MORT_FINAL_2.Pri_dx_icd = C.Dx_icd) +</strong><br/><strong>(SELECT COUNT(*) </strong><br/><strong>FROM CARDIAC_DX AS C</strong><br/><strong>WHERE MORT_FINAL_2.Sec_dx_icd = C.Dx_icd);</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #5 – counting medications</h1>
+                </header>
+            
+            <article>
+                
+<p>Now we'll move on to the medications. Let's add a feature that simply tallies the number of medications each patient is taking. In Query Set #5 (as follows) we first add the <kbd>Num_meds</kbd> column using an <kbd>ALTER TABLE</kbd> statement. Then, we use a <kbd>SELECT-FROM-WHERE</kbd> block inside of an <kbd>UPDATE</kbd> statement to find the number of medications for each patient. The query works by tallying, for each patient ID in the <kbd>MORT_FINAL_2</kbd> table, the number of rows in the <kbd>MEDICATIONS</kbd> table where the corresponding patient ID is equal. Again, we use the <kbd>COUNT</kbd> function to get the number of rows. We introduce a new function in this query, <kbd>DISTINCT</kbd>. <kbd>DISTINCT</kbd> removes any rows containing duplicate values for the column in parentheses. So for example, if <kbd>LISINOPRIL</kbd> was listed twice for a patient, the <kbd>DISTINCT(Rx_name)</kbd> function call would ensure it is only counted once:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Num_meds INTEGER;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Num_meds = </strong><br/><strong>(SELECT COUNT(DISTINCT(Rx_name)) </strong><br/><strong>FROM MEDICATIONS AS M</strong><br/><strong>WHERE MORT_FINAL_2.Pid = M.Pid);</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #6 – binning abnormal lab results</h1>
+                </header>
+            
+            <article>
+                
+<p>Several research articles have found lab values to be important predictors for clinical outcomes such as readmission (Donze et al., 2013). Lab results are problematic, however, because they are missing in most patients. No lab result type will be present for every patient; for example, in our example, not every patient got blood drawn for lab tests during their visit. Indeed, of the three different types of lab tests present in our data, the most common test was the BNP, drawn in four out of six patients. What do we do with the other two patients?</p>
+<p class="mce-root"/>
+<p>One way around this is to set up a "flag" for the presence of an abnormal result. This is accomplished in Query Set #6 for the glucose lab test. After the first query adds the <kbd>Abnml_glucose</kbd> column with an <kbd>ALTER TABLE</kbd> statement, the next query sets the result equal to the number of times that specific lab test exceeds a value of 200 for each patient visit. Notice the multiple <kbd>AND</kbd> clauses; they are necessary for selecting the right patient, date, and lab test of interest. So, only visits with an excessive result will have a value greater than zero for this feature. Notice we use the <kbd>CAST()</kbd> function to convert the values from <kbd>TEXT</kbd> to <kbd>FLOAT</kbd> before testing the value:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Abnml_glucose INTEGER;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Abnml_glucose = </strong><br/><strong>(SELECT COUNT(*) FROM LABS AS L</strong><br/><strong>WHERE MORT_FINAL_2.Pid = L.Pid</strong><br/><strong>AND MORT_FINAL_2.Visit_date = L.Lab_date</strong><br/><strong>AND L.Lab_name = 'Glucose'</strong><br/><strong>AND CAST(L.Lab_value AS FLOAT) &gt;= 200);</strong></pre>
+<p>While this solves the missing lab data problem, a limitation of this method is that it treats missing results and normal results as being the same. In Query Set #7, we will study basic methods for filling in missing values.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #7 – imputing missing variables</h1>
+                </header>
+            
+            <article>
+                
+<p>While the method presented in Query Set #6 solves the missing data problems for labs, all of the information contained in the actual lab values is discarded. For BNP, for example, only two of the patients don't have a value, and for the temperature vital sign, only one patient is missing. </p>
+<p>Some previous studies have experimented with this principle and have obtained good results with predictive models while using it. In (Donze et al., 2013), some of the patient discharges (around 1%) had missing data. This data was filled in by assuming it was in the normal range.</p>
+<p>In SQL, <strong>single imputation</strong> can easily be done. We demonstrate this here.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #7a – imputing missing temperature values using normal-range imputation</h1>
+                </header>
+            
+            <article>
+                
+<p>Here, we use an <kbd>UPDATE</kbd> statement to set the temperature variable to <kbd>98.6</kbd> where it is missing:</p>
+<pre><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Temp_f = 98.6</strong><br/><strong>WHERE Temp_f IS NULL;</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #7b – imputing missing temperature values using mean imputation</h1>
+                </header>
+            
+            <article>
+                
+<p>Here, we use <strong>mean imputation</strong> instead of normal-value imputation to fill in the missing temperature value. As such, the <kbd>98.6</kbd> value from Query Set #7a is replaced with a <kbd>SELECT-FROM-WHERE</kbd> block that finds the mean of the temperature variable (<kbd>98.4</kbd>, in this case) where it is not missing. The <kbd>AVG()</kbd> function returns the mean of a collection of values. The <kbd>AVG()</kbd> function and similar functions (<kbd>MIN()</kbd>, <kbd>MAX()</kbd>, <kbd>COUNT()</kbd>, <kbd>SUM()</kbd>, and so on) are termed <strong>aggregate functions</strong> because they describe an aggregation of values using a single value:</p>
+<pre><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Temp_f = </strong><br/><strong>(SELECT AVG(Temp_f) </strong><br/><strong>FROM MORT_FINAL_2</strong><br/><strong>WHERE Temp_f IS NOT NULL)</strong><br/><strong>WHERE Temp_f IS NULL;</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #7c – imputing missing BNP values using a uniform distribution</h1>
+                </header>
+            
+            <article>
+                
+<p>While imputing the single missing temperature value was not difficult in our example, imputing the two missing BNP values is more problematic for a number of reasons:</p>
+<ul>
+<li>There is a higher proportion of visits that have a missing BNP value.</li>
+<li>While the normal temperature range is simply 98.6, BNP has a huge normal range of 100 - 400 pg/mL. How do we select which value to impute when doing normal-value imputation?</li>
+<li>The mean of the BNP values in our dataset is 462.5, which is, in fact, abnormal. This means that if we tried mean imputation with this variable, we would be imputing an abnormal value for all patients who didn't have blood drawn, a highly unlikely scenario.</li>
+</ul>
+<p>While there is no perfect answer for this problem, if we do try to salvage the raw BNP values (which means imputing the missing values), in this query set, we impute from a uniform distribution of values in the normal range:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Raw_BNP INTEGER;</strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Raw_BNP =</strong><br/><strong>(SELECT CAST(Lab_value as INTEGER)</strong><br/><strong>FROM LABS AS L </strong><br/><strong>WHERE MORT_FINAL_2.Pid = L.Pid </strong><br/><strong>AND MORT_FINAL_2.Visit_date = L.Lab_date </strong><br/><strong>AND L.Lab_name = 'Natriuretic peptide B'); </strong><br/><br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Raw_BNP =<br/>ROUND(ABS(RANDOM()) % (300 - 250) + 250)<br/>WHERE Raw_BNP IS NULL;</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #8 – adding the target variable</h1>
+                </header>
+            
+            <article>
+                
+<p>We are almost done with our table. We've gone through all of the data. The only thing left to add is the target variable. See the following:</p>
+<pre><strong>sqlite&gt; ALTER TABLE MORT_FINAL_2 ADD COLUMN Mortality INTEGER DEFAULT 0;</strong><br/> <br/><strong>sqlite&gt; UPDATE MORT_FINAL_2 SET Mortality =</strong><br/><strong>(SELECT COUNT(*)</strong><br/><strong>FROM MORT AS M</strong><br/><strong>WHERE M.Pid = MORT_FINAL_2.Pid</strong><br/><strong>AND julianday(M.Mortality_date) -</strong><br/><strong>julianday(MORT_FINAL_2.Visit_date) &lt; 180);</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Query Set #9 – visualizing the MORT_FINAL_2 table</h1>
+                </header>
+            
+            <article>
+                
+<p>To visualize our end result, we can do the following:</p>
+<pre class="mce-root">sqlite&gt; .headers on<br/>sqlite&gt; SELECT * FROM MORT_FINAL_2;<br/>Visit_id|Pid|Attending_md|Visit_date|Pri_dx_icd|Sec_dx_icd|Bdate|Sex|Height_in|Weight_lb|Temp_f|Pulse|Resp_rate|Bp_syst|Bp_diast|SpO2|Age_years|Chf_dx|Htn_dx|Angina_dx|Diab_dx|Pulm_htn_dx|Num_cardiac_dx|Num_cardiac_dx_v2|Num_meds|Abnml_glucose|Raw_BNP|Mortality<br/>10001|1|JOHNSON|2016-01-09|I50.9|I10|1952-01-01|M|70|188.4|98.6|95|18|154|94|97|64.02|1|1|0|0|0|2|2|2|0|350|1<br/>10002|1|JOHNSON|2016-01-17|I50.9|I10|1952-01-01|M|70|188.4|99.1|85|17|157|96|100|64.04|1|1|0|0|0|2|2|2|0|266|1<br/>10003|2|WU|2016-01-15|I20.9|E11.9|1978-02-03|F|63|130.2|98.7|82|16|120|81|100|37.95|0|0|1|1|0|1|1|4|1|100|0<br/>10004|3|JOHNSON|2016-02-01|I10||1985-04-23|F|65|120.0|98.44|100|19|161|100|98|30.78|0|1|0|0|0|1|1|1|0|291|0<br/>10005|4|WU|2016-02-27|I27.0|I50.9|1966-11-15|M|66|211.4|98.2|95|19|143|84|93|49.28|1|0|0|0|1|1|1|3|0|1000|1<br/>10006|5|WU|2016-03-01|I50.9|E11.9|1958-12-30|M|69|150.0|97.6|77|18|130|86|99|57.17|1|0|0|1|0|1|1|3|1|400|0</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article>
+                
+<p>In this chapter, we learned how to engineer healthcare data in a database format using SQL. We downloaded and installed SQLite, and wrote some SQL queries to get the data in a format that we want for modeling.</p>
+<p>Next, in <a href="12ee77f2-0655-4dc5-abb1-2868d6fcc386.xhtml" target="_blank">Chapter 5</a>, <em>Computing Foundations – Introduction to Python</em>, we will continue our discussion of computing foundations with an exploration of the Python programming language.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">References and further reading</h1>
+                </header>
+            
+            <article>
+                
+<p><span>Basole RC, Braunstein ML, Kumar V, Park H, Kahng M, Chau DH, Tamersoy A, Hirsh DA, Serban N, BostJ, Lesnick B, Schissel BL, Thompson M (2015). Understanding variations in pediatric asthma care processes in the emergency department using visual analytics. </span><em>Journal of the American Medical Informatics Association </em><span>22(2): 318–323, </span><a href="https://doi.org/10.1093/jamia/ocu016">https://doi.org/10.1093/jamia/ocu016.</a></p>
+<p>Donze J, Aujesky D, Williams D, Schnipper JL (2013). Potentially avoidable 30-day hospital readmissions in medical patients: derivation and validation of a prediction model. <em>JAMA Intern Med </em>173(8): 632-638.</p>
+<p>Elmasri R, Navathe S (2010). Fundamentals of Database Systems, 6th Edition. Boston, MA: Addison Wesley.</p>
+<p><span>Futoma J, Morris J, Lucas J (2015). A comparison of models for predicting early hospital readmissions. </span><em>Journal of Biomedical Informatics </em><span>56: 229-238.</span></p>
+<p>Kasper DL, Braunwald E, Fauci AS, Hauser SL, Longo DL, Jameson JL (2005), eds. <em>Harrison's Principles of Internal Medicine, </em>16e. New York, NY: McGraw-Hill.</p>
+<p>Rajkomar A, Oren E, Chen K, Dai AM, Hajaj N, Hardt M, et al. (2018). Scalable and accurate deep learning with electronic health records. <em>npj Digital Medicine </em>1:18; doi:10.1038/s41746-018-0029-1.</p>
+<p><span>Sahni N, Simon G, Arora R (2018). <em>J Gen Intern Med</em> 33: 921. <a href="https://doi.org/10.1007/s11606-018-4316-y">https://doi.org/10.1007/s11606-018-4316-y</a></span></p>
+<p>SQLite Home Page. <a href="http://www.sqlite.org/" target="_blank">http://www.sqlite.org/</a>. Accessed 04/03/2017.</p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

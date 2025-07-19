@@ -1,0 +1,918 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Boosting your Database</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">In this chapter, we will explain what statistical boosting is, how it works, and introduce the notion of using statistical boosting to better understand data in a database.</p>
+<p class="calibre4">We have again broken the subjects in this chapter down into the following important areas <span class="calibre14">for clarity</span>:</p>
+<ul class="calibre18">
+<li class="calibre19">Definition and purpose of statistical boosting</li>
+<li class="calibre19">What you can learn from boosting (to help) your database</li>
+<li class="calibre19">Using R to illustrate boosting methods</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Definition and purpose</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">First, we can consider a common definition you may find online:</p>
+<div class="packt_quote">Boosting is a machine learning ensemble meta-algorithm for primarily reducing bias, and also variance in supervised learning, and a family of machine learning algorithms which convert weak learners to strong ones.<br class="calibre2"/>
+                                                                                                                   -Wikipedia <br class="calibre2"/>
+                       <a href="https://en.wikipedia.org/wiki/Boosting_(machine_learning)" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Boosting_(machine_learning)</a></div>
+<div class="packt_infobox">Reminder: In statistics, ensemble methods use multiple learning algorithms to obtain better predictive performance than could be obtained from any of the fundamental or basic learning algorithms (although results vary by data and data model).</div>
+<p class="calibre4">Before we head into the details behind statistical boosting, it is imperative that we take some time here to first understand bias, variance, noise, and what is meant by a weak learner, and a strong learner.</p>
+<p class="calibre4">The following sections will cover these terms and related concepts.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Bias</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Let's start out with a discussion on the statistical bias.</p>
+<p class="calibre4">A statistic is biased if it is calculated in such a way that it is analytically dissimilar to the population parameter being estimated.</p>
+<p class="calibre4">One of the best explanations for bias that I've come across is the concept of a scale that is off zero by a small amount. In this scenario, the scale will give slightly over-estimated results. In other words, when someone steps on the scale, the total weight may be over or understated (which might make that person conclude that the diet they are on is working better than it really is).</p>
+<p class="calibre4">In statistics, data scientists need to recognize that there are actually several categories that are routinely used to define statistical bias. The next section lists these categories of bias along with examples.</p>
+<div class="packt_infobox">Categorizing bias is somewhat subjective since some of the categories will seem to overlap.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Categorizing bias</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">There are many categories of bias, including the following specific examples:</p>
+<ul class="calibre18">
+<li class="calibre19"><strong class="calibre3">Selection bias</strong>: This is when individual observations are more likely to be selected for study than others.</li>
+<li class="calibre19"><strong class="calibre3">Spectrum bias</strong>: This occurs when data scientists evaluate results on biased samples, leading to an overestimate of the sensitivity and specificity of the test(s).</li>
+<li class="calibre19"><strong class="calibre3">Estimator bias</strong>: This is the difference between an estimator's expected value and the true value of the parameter being estimated.</li>
+<li class="calibre19"><strong class="calibre3">Omitted-variable bias</strong>: This bias will occur in estimating the parameters in a regression analysis when the assumed specification neglects an independent variable.</li>
+<li class="calibre19"><strong class="calibre3">Detection bias</strong>: This occurs when a character or event is more likely to be observed for a particular set of study subjects.</li>
+<li class="calibre19"><strong class="calibre3">Sampling bias</strong>: This bias occurs when a statistical error is imposed due to an error in the sampling data.</li>
+<li class="calibre19"><strong class="calibre3">Measurement bias</strong>: This occurs then there is a systematic problem with test content, testing administration, and/or scoring procedures.</li>
+<li class="calibre19"><strong class="calibre3">Funding bias</strong>: This type of bias can lead to a selection of specific outcomes, observations, test samples, or test procedures that favor a study's financial sponsor.</li>
+<li class="calibre19"><strong class="calibre3">Reporting bias</strong>: Bias of this type involves askew in the availability of data, which causes observations of a certain type or collection to be more likely to be reported as a result or to affect performance.</li>
+<li class="calibre19"><strong class="calibre3">Analytical bias</strong>: This occurs based on the method or process used to evaluate the results of certain observations or the performance of a statistical model as a whole.</li>
+<li class="calibre19"><strong class="calibre3">Exclusion bias</strong>: This category of bias may arise based upon a process or procedure that has the potential to systematically exclude certain samples or observations from a statistical study.</li>
+<li class="calibre19"><strong class="calibre3">Attrition bias</strong>: When participants in a study or statistical project leave the program or process. In other words, a group or category of a project may leave or be removed and will no longer be considered by data scientists.</li>
+<li class="calibre19"><strong class="calibre3">Recall bias</strong>: When the accuracy or completeness of a study's participants does not align due to misrecollections of past events or characteristics of what is being studied. This results in an over-estimation or under-estimation of the results.</li>
+<li class="calibre19"><strong class="calibre3">Observer bias</strong>: This type of bias occurs when the researcher subconsciously influences the data due to cognitive bias, where judgment may alter how an observation or study is carried out/how results are recorded.</li>
+<li class="calibre19"><strong class="calibre3">Confounding bias</strong>: This type of bias occurs when factors affecting the same information in a study are misleading or otherwise confusing to the researcher or data scientist.</li>
+<li class="calibre19"><strong class="calibre3">Negativity bias</strong>: This occurs when a data scientist is inclined to give more weight or value to negative characteristics, events, or outcomes, just because they are negative.</li>
+<li class="calibre19"><strong class="calibre3">Representative bias</strong>: This occurs when data scientists take something for granted based upon certain observed characteristics identified within a group or certain observations.</li>
+<li class="calibre19"><strong class="calibre3">Recency bias</strong>: This category of bias occurs when the recent experiences and observations of a data scientist are used (or are given more value) to predict future outcomes.</li>
+</ul>
+<p class="calibre4">And one of my favorite types:</p>
+<ul class="calibre18">
+<li class="calibre19"><strong class="calibre3">Data-snooping bias</strong>: This happens when the data scientist forms an incorrect opinion or makes a hypothesis, then proceeds to mine data that is especially in defense of that notion.</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Causes of bias</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4"><em class="calibre21">Bias</em> is a term that you will find is commonly thrown around in the field of statistics and, almost always, bias is equivalent to (or with) a negative or bad incident. In fact, even beyond the realm of statistics, bias almost always results in trouble or some form of distress.</p>
+<p class="calibre4">Consider bias as favoritism. Favoritism that is present in the data collection process, for example, will typically result in misleading results or incorrect assumptions.</p>
+<p class="calibre4">Bias can arise in various ways and, as a data scientist, one must be familiar with these occasions. Actually, bias can be introduced to a statistical project at any time or phase.</p>
+<p class="calibre4">One of the most common times that bias is introduced is at the very start or beginning of a project when data is collected or selected. This is the worst, as almost every effort and all work completed afterwards will be suspect or, most likely, incorrect.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Bias data collection</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">A major source of bias is the way data is collected. Frankly, researchers who are inexperienced, or hoping for a certain result, may use inferior data collection methods or practices or actually collect data in ways that expose a particular emphasis or lead to an anticipated or expected result.</p>
+<p class="calibre4">Some things to look for in data collection methods:</p>
+<ul class="calibre18">
+<li class="calibre19">Surveys that are constructed with a particular slant or emphasis</li>
+<li class="calibre19">Choosing a known group with a particular background to respond to a survey</li>
+<li class="calibre19">The reporting of data in misleading categorical groupings</li>
+<li class="calibre19">A non-randomness sample selection</li>
+<li class="calibre19">Systematic measurement errors</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Bias sample selection</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">The process of sample selection or sampling is also subject to the introduction of bias. Sample bias occurs when the sample does not accurately represent a population. The bias that results from an unrepresentative sample is called <strong class="calibre7">selection bias</strong>.</p>
+<p class="calibre4">Issues that can result in introducing bias to a statistical sample include:</p>
+<ul class="calibre18">
+<li class="calibre19">The timing of taking the sample</li>
+<li class="calibre19">The length or size of the sample</li>
+<li class="calibre19">The level of difficulty of the question </li>
+<li class="calibre19">Undercoverage (of the population)</li>
+<li class="calibre19">Nonresponses incorrectly used in a sample</li>
+<li class="calibre19">Voluntary responses incorrectly used within a sample</li>
+<li class="calibre19">The manner (in which the subjects in the sample were contacted (phone, mail, door-to-door, and so on), or how the observation data was split)</li>
+</ul>
+<p class="calibre4">Enough about bias. Let's move on to the next section, where we will cover statistical variance.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Variance</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">In statistical theory (<a href="https://en.wikipedia.org/wiki/Statistics" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Statistics</a>), the concept of variance is defined as follows:</p>
+<p class="calibre4">The expectation (<a href="https://en.wikipedia.org/wiki/Expected_value" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Expected_value</a>) of the squared deviation of a random variable from its mean or, in other words, it is a measurement of just how far a set of random numbers are spread out from their average value.</p>
+<p class="calibre4">The practice of the analysis of variance (or simply variance analysis) involves a data scientist evaluating the difference between two figures. Typically, this process applies financial or operational data in an attempt to identify and determine the cause of the variance. In applied statistics, there are different forms of variance analysis.</p>
+<p class="calibre4">Variance and the analysis of variance is a big topic within the field and study of statistics, where it plays a key role in the following statistical practices:</p>
+<ul class="calibre18">
+<li class="calibre19">Descriptive statistics (<a href="https://en.wikipedia.org/wiki/Descriptive_statistics" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Descriptive_statistics</a>)</li>
+<li class="calibre19">Goodness of fit (<a href="https://en.wikipedia.org/wiki/Goodness_of_fit" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Goodness_of_fit</a>)</li>
+<li class="calibre19">Hypothesis testing (<a href="https://en.wikipedia.org/wiki/Statistical_hypothesis_testing" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Statistical_hypothesis_testing</a>) </li>
+<li class="calibre19">Monte Carlo sampling (<a href="https://en.wikipedia.org/wiki/Monte_Carlo_method" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Monte_Carlo_method</a>)</li>
+<li class="calibre19">Statistical inference (<a href="https://en.wikipedia.org/wiki/Statistical_inference" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://en.wikipedia.org/wiki/Statistical_inference</a>)</li>
+</ul>
+<p class="calibre4">You'll find the following to be true with variance:</p>
+<ul class="calibre18">
+<li class="calibre19">Whenever there is a need for the statistical analysis of data, a data scientist will more than likely start with the process of variance analysis</li>
+<li class="calibre19">Statistical variance provides data scientists with a measuring stick to gauge how the data distributes itself (about the mean or an expected value)</li>
+<li class="calibre19">Unlike range (which only looks at extreme values), variance looks at all the data points and concludes their distribution</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">ANOVA</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">As a data scientist, when you are speaking about the process or practice of <strong class="calibre7">analysis of variance</strong>, you are speaking of <strong class="calibre7">ANOVA. </strong>ANOVA can be understood as an assortment of methods that are used in the investigation of found or potential differences (variances) amongst group means and their accompanying procedures.</p>
+<p class="calibre4">ANOVA is studied and used in the field of statistics in three distinct styles. These styles are determined and defined by the number of independent variables a data scientist is working with or interested in:</p>
+<ul class="calibre18">
+<li class="calibre19">One-way ANOVA (deals with just one independent variable)</li>
+<li class="calibre19">Two-way ANOVA (uses or focuses on two independent variables) </li>
+<li class="calibre19">N-way ANOVA (when the data scientist is interested in more than two independent variables)</li>
+</ul>
+<p class="calibre4">When a data scientist or researcher conducts an ANOVA, they are endeavoring to conclude whether there is a statistically significant difference between groups within their population. If they find that there is a difference, they will then go on to determine where the group differences are.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Noise</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Noise or, to the data scientist, statistical noise, is the popular expression for acknowledged amounts of unexplained variation or variability in a sample, population, or data source.</p>
+<div class="packt_infobox">The actual use of the term <em class="calibre20">noise</em> can be traced to early signal processing, where it was coined as a way of referring to undesirable (electromagnetic) energy that was found to be degrading the quality of signals and data.</div>
+<p class="calibre4">To the data or database developer, consider the example of running a simple database query to determine the performance of a particular sales region of an organization. If your SQL query returns sales for every sales region, one might consider the additional sales regions—in the context of this exercise—noise that perhaps renders the sales information useless (again, in the context of trying to focus on a particular sales region). To resolve this condition, of course, one could restructure the query so that it filters out unwanted regions or manipulate the results of the query to remove the noise of unwanted regions. Keep in mind, in statistics, it may be unrealistic to recreate the data source.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Noisy data</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Outside of statistics, people often use the term statistical noise to dismiss any data that they aren't interested in. An example of this is a professional football team's stadium, where fans cheering interferes with the ability of the visiting team to communicate. The noise is an inconvenience.</p>
+<p class="calibre4">Within statistics though, when a data scientist acknowledges the presence of noise within a sample, it means that any results from statistical sampling might not be duplicated if the process were repeated. In this case, the sample may become noisy data and rendered meaningless because of the existence of too much variation.</p>
+<div class="packt_infobox">The effort of unraveling the noise from the true signal has pretty much always been a major emphasis in statistics (so that the meaningful data could be used by researchers), however, the percentage of noisy data that is meaningful is often too insignificant to be of much use.</div>
+<p class="calibre4">Over time, the term <em class="calibre21">noisy data</em> has grown to also refer to <em class="calibre21">any data that is not machine-readable</em>, such as unstructured text and even any data altered in some way that is no longer compatible with the program used to create it. Happily, advances in analytical tools are steadily overcoming these types of statistical obstacles (think IBM Watson analytics, but there are many others).</p>
+<p class="calibre4">Some of the most commonly accepted examples of statistical noise include Gaussian noise, shot noise, and white noise. Enough of this noise about (statistical) noise!</p>
+<p class="calibre4">Let's move on to learners.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Weak and strong learners</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">A nice segue (back) into the topic of boosting is a statistical algorithm or model's ability to improve its ability to predict overtime, that is, its performance.</p>
+<p class="calibre4">If you are reading this book and have reached this section of this chapter, the assumption is that you understand the concept of machine learning, as it is related to statistical prediction-making. Learning is a computer or model's ability to learn (how to make predictions based upon data) without being explicitly programmed.</p>
+<div class="packt_tip">We use the term <em class="calibre20">explicitly</em> to mean <em class="calibre20">hardcoded</em> selections based upon data values.</div>
+<p class="calibre4">If you build upon this concept, you can come to understand that a computer or model whose intention or objective is to make good predictions (to guess an outcome correctly) based upon data will perform or produce results that are somewhere between incorrect (bad) and correct (or good).</p>
+<p class="calibre4">One can also then say that the computer or model could perhaps improve its performance with more experience (more data) and could improve learning at some rate.</p>
+<p class="calibre4">Thus, a data scientist will label a computer or model (the learner) as a weak or strong learner, based on its performance (or its ability to predict or guess outcomes).</p>
+<div class="packt_tip">In the field of statistics and data science, one can also refer to a <em class="calibre20">learner</em> as a classifier or predictor.</div>
+<p class="calibre4">So, what qualifies a learner as weak or strong?</p>
+<p class="calibre4">A weak learner is one that, no matter what the data looks like (meaning the distribution of values within the data the model is being trained on), will always perform better than chance when it tries to label the data.</p>
+<div class="packt_infobox">We qualify doing better than chance as always having an error rate which is less than half.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Weak to strong</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4"><em class="calibre21">Better than random</em> <em class="calibre21">guessing</em> is fundamentally the one and only prerequisite for a weak learner. So, as long as an algorithm or model can consistently beat random guessing, applying a boosting algorithm will be able to increase the accuracy of the model's predictions (its performance) and consequently convert the model from being a weak learner to a strong learner.</p>
+<p class="calibre4">Take note, data scientists agree that increasing a model's predictive ability or performance even to ever so slightly better than random guessing results means success.</p>
+<p class="calibre4">When a data scientist considers the options for improving the performance of a model (or converting a weak learner to a strong learner), numerous factors need to be considered.</p>
+<p class="calibre4">These factors include model bias, processing time, and complexity. Let's explain each a little.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Model bias</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">We talked about <em class="calibre21">statistical bias</em> in an earlier section of this chapter. The level of bias identified within a statistical model needs to be considered. Typically, the lower the amount of bias, the better, since some methods for improving on a weak learner—<span class="calibre14">such as boosting—</span>can overfit, resulting in misleading results.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Training and prediction time</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Whether or not, the approach for improving a weak learner's performance adds significantly to the amount of time a model takes to learn, train, or predict on a data subset. Usually, the more you train a model, the better the results, so if you are anticipating requiring hundreds of training iterations, you need to consider how much longer that effort or process will take if your improvements increase the training iteration by 100%.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Complexity</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Often, there is an assumption that a weak learner is computationally simple in design (it's a weak learner, right?), but that is not always the case. Understanding the level of complexity of an algorithm or model before choosing an approach for improving performance is critical in the decision-making process.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Which way?</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Which way (which approach) a data scientist will go or take to improve a model's performance and convert it from a weak learner into a strong learner will ultimately depend on many factors, but in the end, the approach taken depends on the individual problem.</p>
+<p class="calibre4">AdaBoost (also known as <strong class="calibre7">Adaptive Boosting</strong>) is an iterative algorithm using a designated number of iterations or rounds to improve on a weak learner. This algorithm starts by training/testing a weak learner on data, weighting each example equally. The examples which are misclassified get their weights increased for the next round(s), while those that are correctly classified get their weights decreased.</p>
+<p class="calibre4">We will know about AdaBoost later in this chapter.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Back to boosting</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">At this point, we have covered all of the topics most pertinent to boosting, so let's now get back to the main event, statistical boosting.</p>
+<p class="calibre4">We have already offered a description of what statistical boosting is and what it is used for (a learning algorithm intended to reduce bias and variance and convert weak learners into strong ones).</p>
+<p class="calibre4">Key to this concept is the idea of how learners inherently behave, with a weak learner defined as one which is only slightly correlated with the true classification (it can label examples better than random guessing). In contrast, a strong learner is one that is well-correlated with the true classification.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">How it started</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Boosting an algorithm in an attempt to improve performance is, in reality, hypothetical. That is, it is a question every data scientist should ask for their statistical algorithm or model.</p>
+<p class="calibre4">This is known in statistics as the hypothesis-boosting question and is all about the data scientist finding a way to even slightly improve a learning process (turning a weak learner into a strong(er) learner).</p>
+<div class="packt_infobox">The idea of a strong learner only implies a slightly improved learner--actually, only slightly better than random guessing.</div>
+<p class="calibre4">In the data science or statistics world, the hypothesis-boosting question also implies the actual existence of an efficient algorithm that outputs a hypothesis of arbitrary accuracy for the problem being solved. These algorithms (that improve learners) have quickly become known simply as <strong class="calibre7">boosting</strong>.</p>
+<div class="packt_infobox">As usual, data scientists interchangeably use terms to identify the same thing, and boosting is no different, as some data scientists will refer to boosting as <em class="calibre20">resampling</em> or <em class="calibre20">combining</em>.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">AdaBoost</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Back to our previous mention of a package named <strong class="calibre7">AdaBoost</strong>, which is short for <strong class="calibre7">adaptive boosting</strong>. AdaBoost is a boosting approach referred to as an <em class="calibre21">ensemble learning algorithm</em>. Ensemble learning is when multiple learners are used in conjunction with each other to build a stronger learning algorithm.</p>
+<p class="calibre4">AdaBoost works by selecting a base algorithm and then iteratively improving it by accounting for the incorrectly classified examples in the training dataset.</p>
+<div class="packt_infobox">A wonderful explanation of boosting and AdaBoost can be found online: <em class="calibre20">Better living through AdaBoost</em> <a href="http://bbacon.org/Better-Living-Through-AdaBoost" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">http://bbacon.org/Better-Living-Through-AdaBoost</a>.</div>
+<p class="calibre4">The aforementioned article describes how AdaBoost works:</p>
+<ul class="calibre18">
+<li class="calibre19">AdaBoost trains a model on a data subset</li>
+<li class="calibre19">Weak learners (based upon performance) are weighted</li>
+<li class="calibre19">The process is repeated</li>
+</ul>
+<p class="calibre4">In narrative form, the AdaBoost boosting logic can be explained in the following way:</p>
+<ul class="calibre18">
+<li class="calibre19">The process works by building a model on training data and then measuring the results' accuracy on that training data, then:
+<ul class="calibre18">
+<li class="calibre19">The individual results that were erroneous in the model are assigned a larger weight (or weighted more) than those that were correct, and then the model is <em class="calibre20">retrained</em> again using these new weights. This logic is then repeated multiple times, adjusting the weights of individual observations each time based on whether they were correctly classified or not in the last iteration!</li>
+</ul>
+</li>
+</ul>
+<div class="packt_infobox">The AdaBoost algorithm was originally offered by <em class="calibre20">Freund</em> and <em class="calibre20">Schapire</em> in the Journal of <em class="calibre20">Computer and System Sciences</em> in a 1997 paper titled <em class="calibre20">A Decision-Theoretic Generalization of On-Line Learning and an Application to Boosting</em>.</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">What you can learn from boosting (to help) your database</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Thinking<span class="calibre14"> from the perspective or point of view of a </span>database<span class="calibre14"> developer, you may be trying to conceptualize the process of boosting. As we've done throughout this book, here, we'll try to use</span> a database-oriented example<span class="calibre14"> to help our understanding of boosting:</span></p>
+<div class="packt_figure"><img class="alignnone31" src="Images/afc226d4-457b-4aeb-a77b-10357eac5485.png"/></div>
+<p class="calibre4">Our example starts with a relational database. There, effective indexes are one of the best ways to improve the performance of a database application. Without an effective (strong?) index, the database engine is like a reader trying to find a phrase within a reference book by having to take the time to examine each and every page. But if the reader uses the reference book's index, the reader can then complete the task in a much shorter time (better performance = better results).</p>
+<p class="calibre4">In database terms, a table scan occurs when there is no available index identified to boost the performance of a database query. In a table scan, the database engine examines each and every row in the table to satisfy the query results.</p>
+<p class="calibre4">One of the most important jobs for a database developer is finding the best index to use when generating an execution plan (for a query). Most major databases offer tools to show you execution plans for a query and help in optimizing and tuning query indexes.</p>
+<p class="calibre4">The preceding situation might be compared to repetitively testing queries in a database, scoring individual performances (in returning the query results) until an efficient (or strong) index is determined.</p>
+<p class="calibre4">This then has the effect of improving the performance of the database query so that it becomes a strong responder (or, if you will, a strong learner).</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Using R to illustrate boosting methods</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">In order to further illustrate the use of boosting, we should have an example.</p>
+<p class="calibre4">In this section, we'll take a high-level look at a thought-provoking prediction problem drawn from <em class="calibre21">Mastering Predictive Analytics with R, Second Edition,</em> James D. Miller and Rui Miguel Forte, August 2017 (<a href="https://www.packtpub.com/big-data-and-business-intelligence/mastering-predictive-analytics-r-second-edition" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">https://www.packtpub.com/big-data-and-business-intelligence/mastering-predictive-analytics-r-second-edition</a>).</p>
+<p class="calibre4">In this original example, patterns made by radiation on a telescope camera are analyzed in an attempt to predict whether a certain pattern came from gamma rays leaking into the atmosphere or from regular background radiation.</p>
+<p class="calibre4">Gamma rays leave distinctive elliptical patterns and so we can create a set of features to describe these. The dataset used is the <em class="calibre21">MAGIC Gamma Telescope Data Set</em>, hosted by the <em class="calibre21">UCI Machine Learning</em> <em class="calibre21">Repository</em> at <a href="http://archive.ics.uci.edu/ml/datasets/MAGIC+Gamma+Telescope" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2"><span class="calibre5">http://archive.ics.uci.edu/ml/datasets/MAGIC+Gamma+Telescope</span></a>.</p>
+<p class="calibre4">This data consists of 19,020 observations, holding the following list of attributes:</p>
+<table class="calibre9">
+<tbody class="calibre10">
+<tr class="calibre11">
+<td class="calibre12">
+<p class="calibre13"><strong class="calibre7">Column name</strong></p>
+</td>
+<td class="calibre12">
+<p class="calibre13"><strong class="calibre7">Type</strong></p>
+</td>
+<td class="calibre12">
+<p class="calibre13"><strong class="calibre7">Definition</strong></p>
+</td>
+</tr>
+<tr class="calibre15">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FLENGTH</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">The major axis of the ellipse (mm)</p>
+</td>
+</tr>
+<tr class="calibre11">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FWIDTH</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">The minor axis of the ellipse (mm)</p>
+</td>
+</tr>
+<tr class="calibre15">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FSIZE</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Logarithm to the base ten of the sum of the content of all pixels in the camera photo</p>
+</td>
+</tr>
+<tr class="calibre11">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FCONC</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Ratio of the sum of the two highest pixels over <kbd class="calibre22">FSIZE</kbd></p>
+</td>
+</tr>
+<tr class="calibre15">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FCONC1</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Ratio of the highest pixel over <kbd class="calibre22">FSIZE</kbd></p>
+</td>
+</tr>
+<tr class="calibre11">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FASYM</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Distance from the highest pixel to the centre, projected onto the major axis (mm)</p>
+</td>
+</tr>
+<tr class="calibre15">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FM3LONG</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Third root of the third moment along the major axis (mm)</p>
+</td>
+</tr>
+<tr class="calibre11">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FM3TRANS</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Third root of the third moment along the minor axis (mm)</p>
+</td>
+</tr>
+<tr class="calibre15">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FALPHA</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Angle of the major axis with the vector to the<br class="calibre17"/>
+origin (degrees)</p>
+</td>
+</tr>
+<tr class="calibre11">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">FDIST</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Numerical</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Distance from the origin to the centre of the ellipse (mm)</p>
+</td>
+</tr>
+<tr class="calibre16">
+<td class="calibre12">
+<p class="calibre13"><kbd class="calibre22">CLASS</kbd></p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Binary</p>
+</td>
+<td class="calibre12">
+<p class="calibre13">Gamma rays (g) or Background Hadron Radiation (b)</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Prepping the data</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">First, various steps need to be performed on our example data.</p>
+<p class="calibre4">The data is first loaded into an R data frame object named <kbd class="calibre22">magic</kbd>, recoding the <kbd class="calibre22">CLASS</kbd> output variable to use classes <kbd class="calibre22">1</kbd> and <kbd class="calibre22">-1</kbd> for gamma rays and background radiation respectively:</p>
+<pre class="calibre29">&gt; magic &lt;- read.csv("magic04.data", header = FALSE) 
+&gt; names(magic) &lt;- c("FLENGTH", "FWIDTH", "FSIZE", "FCONC", "FCONC1", 
+  "FASYM", "FM3LONG", "FM3TRANS", "FALPHA", "FDIST", "CLASS") 
+&gt; magic$CLASS &lt;- as.factor(ifelse(magic$CLASS =='g', 1, -1)) </pre>
+<p class="calibre4">Next, the data is split into two files: a training data and a test data frame using an 80-20 split:</p>
+<pre class="calibre29">&gt; library(caret) 
+&gt; set.seed(33711209) 
+&gt; magic_sampling_vector &lt;- createDataPartition(magic$CLASS,  
+                             p = 0.80, list = FALSE) 
+&gt; magic_train &lt;- magic[magic_sampling_vector, 1:10] 
+&gt; magic_train_output &lt;- magic[magic_sampling_vector, 11] 
+&gt; magic_test &lt;- magic[-magic_sampling_vector, 1:10] 
+&gt; magic_test_output &lt;- magic[-magic_sampling_vector, 11] </pre>
+<p class="calibre4">The model used for boosting is a simple multilayer perceptron with a single hidden layer leveraging R's <kbd class="calibre22">nnet</kbd> package.</p>
+<p class="calibre4">Neural networks, (covered in <a href="224b964c-c313-4435-b36a-96f77fbabd9b.xhtml" target="_blank" class="pcalibre pcalibre3 pcalibre1 calibre8 pcalibre2">Chapter 9</a>, <em class="calibre21">Databases and Neural Networks</em>) often produce higher accuracy when inputs are normalized, so, in this example, before training any models, this preprocessing is performed:</p>
+<pre class="calibre29">&gt; magic_pp &lt;- preProcess(magic_train, method = c("center",  
+                                                 "scale")) 
+&gt; magic_train_pp &lt;- predict(magic_pp, magic_train) 
+&gt; magic_train_df_pp &lt;- cbind(magic_train_pp,  
+                             CLASS = magic_train_output) 
+&gt; magic_test_pp &lt;- predict(magic_pp, magic_test) </pre>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Training</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">Boosting is designed to work best with weak learners, so a very small number of hidden neurons in the model's hidden layer are used.</p>
+<p class="calibre4">Concretely, we will begin with the simplest possible multilayer perceptron that uses a single hidden neuron. To understand the effect of using boosting, a baseline performance is established by training a single neural network (and measuring its performance).</p>
+<p class="calibre4">This is to accomplish the following:</p>
+<pre class="calibre29">&gt; library(nnet) 
+&gt; n_model &lt;- nnet(CLASS ~ ., data = magic_train_df_pp, size = 1) 
+&gt; n_test_predictions &lt;- predict(n_model, magic_test_pp, 
+                                type = "class") 
+&gt; (n_test_accuracy &lt;- mean(n_test_predictions ==   
+                           magic_test_output)) 
+[1] 0.7948988 </pre>
+<p class="calibre4">This establishes that we have a baseline accuracy of around 79.5 percent. Not too bad, but can boost to improve upon this score?</p>
+<p class="calibre4">To that end, the function <kbd class="calibre22">AdaBoostNN()</kbd>, which is shown as follows, is used. This function will take input from a data frame, the name of the output variable, the number of single hidden layer neural network models to be built, and finally, the number of hidden units these neural networks will have.</p>
+<p class="calibre4">The function will then implement the AdaBoost algorithm and return a list of models with their corresponding weights.</p>
+<p class="calibre4">Here is the function:</p>
+<pre class="calibre29">AdaBoostNN &lt;- function(training_data, output_column, M,   
+                       hidden_units) { 
+  require("nnet") 
+  models &lt;- list() 
+  alphas &lt;- list() 
+  n &lt;- nrow(training_data) 
+  model_formula &lt;- as.formula(paste(output_column, '~ .', sep = '')) 
+  w &lt;- rep((1/n), n) 
+  for (m in 1:M) { 
+    model &lt;- nnet(model_formula, data = training_data,  
+                size = hidden_units, weights = w) 
+    models[[m]] &lt;- model 
+    predictions &lt;- as.numeric(predict(model,  
+                    training_data[, -which(names(training_data) == 
+                    output_column)], type = "class")) 
+    errors &lt;- predictions != training_data[, output_column] 
+    error_rate &lt;- sum(w * as.numeric(errors)) / sum(w) 
+    alpha &lt;- 0.5 * log((1 - error_rate) / error_rate) 
+    alphas[[m]] &lt;- alpha 
+    temp_w &lt;- mapply(function(x, y) if (y) { x * exp(alpha) }  
+                    else { x * exp(-alpha)}, w, errors) 
+    w &lt;- temp_w / sum(temp_w) 
+  } 
+  return(list(models = models, alphas = unlist(alphas))) 
+} </pre>
+<p class="calibre4">The preceding function uses the following logic:</p>
+<ol class="calibre25">
+<li class="calibre27">First, initialize empty lists of models and model weights (<kbd class="calibre22">alphas</kbd>). Compute the number of observations in the training data, storing this in the variable <kbd class="calibre22">n</kbd>. The name of the output column provided is then used to create a formula that describes the neural network that will be built.</li>
+<li class="calibre27">In the dataset used, this formula will be <kbd class="calibre22">CLASS ~ .</kbd>, meaning that the neural network will compute <kbd class="calibre22">CLASS</kbd> as a function of all the other columns as input features.</li>
+<li class="calibre27">Next, initialize the weights vector and define a loop that will run for <kbd class="calibre22">M</kbd> iterations in order to build <kbd class="calibre22">M</kbd> models.</li>
+<li class="calibre27">In every iteration, the first step is to use the current setting of the weights vector to train a neural network using as many hidden units as specified in the input, <kbd class="calibre22">hidden_units</kbd><span class="calibre5">.</span></li>
+<li class="calibre27"><span class="calibre5">Then, compute a vector of predictions that the model generates </span>on the training data using the <kbd class="calibre22">predict()</kbd> <span class="calibre5">function. By comparing these predictions to the output column of the training data, calculate the errors that the current model makes on the training data. This then allows the computation of the error rate.</span></li>
+<li class="calibre27">This error rate is set as the weight of the current model and, finally, the observation weights to be used in the next iteration of the loop are updated according to whether each observation was correctly classified.</li>
+</ol>
+<p class="calibre4"> </p>
+<ol start="7" class="calibre25">
+<li class="calibre27">The weight vector is then normalized and we are ready to begin the next iteration!</li>
+<li class="calibre27">After completing <kbd class="calibre22">M</kbd> <span class="calibre5">iterations, output a list of models and their corresponding model weights.</span></li>
+</ol>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Ready for boosting</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">There is now a function able to train our ensemble classifier using AdaBoost, but we also need a function to make the actual predictions. This function will take in the output list produced by our training function, <kbd class="calibre22">AdaBoostNN()</kbd>, along with a test dataset.</p>
+<p class="calibre4">This function is <kbd class="calibre22">AdaBoostNN.predict()</kbd> and it is shown as follows:</p>
+<pre class="calibre29">AdaBoostNN.predict &lt;- function(ada_model, test_data) { 
+  models &lt;- ada_model$models 
+  alphas &lt;- ada_model$alphas 
+  prediction_matrix &lt;- sapply(models, function (x)  
+             as.numeric(predict(x, test_data, type = "class"))) 
+  weighted_predictions &lt;- t(apply(prediction_matrix, 1,  
+             function(x) mapply(function(y, z) y * z, x, alphas))) 
+  final_predictions &lt;- apply(weighted_predictions, 1, <br class="calibre2"/>              function(x) sign(sum(x))) 
+  return(final_predictions) 
+} </pre>
+<p class="calibre4">This function first extracts the models and the model weights (from the list produced by the previous function). A matrix of predictions is created, where each column corresponds to the vector of predictions made by a particular model. Thus, there will be as many columns in this matrix as the models that we used for boosting.</p>
+<p class="calibre4">We then multiply the predictions produced by each model with their corresponding model weight. For example, every prediction from the first model is in the first column of the prediction matrix and will have its value multiplied by the first model weight <em class="calibre21">α<sub class="calibre32">1</sub><sup class="calibre31"> </sup></em>.</p>
+<p class="calibre4">Lastly, the matrix of weighted observations is reduced into a single vector of observations by summing the weighted predictions for each observation and taking the sign of the result. This vector of predictions is then returned by the function.</p>
+<p class="calibre4">As an experiment, we will train ten neural network models with a single hidden unit and see if boosting improves accuracy:</p>
+<pre class="calibre29">&gt; ada_model &lt;- AdaBoostNN(magic_train_df_pp, 'CLASS', 10, 1) 
+&gt; predictions &lt;- AdaBoostNN.predict(ada_model, magic_test_pp,  
+                                    'CLASS') 
+&gt; mean(predictions == magic_test_output) 
+ [1] 0.804365 </pre>
+<p class="calibre4">In this example, boosting ten models shows a marginal improvement in accuracy, but perhaps training more models might make more of a difference.</p>
+<div class="packt_infobox">As we have stated several times in this chapter, even a marginal improvement in performance qualifies as converting a weak learner into a strong one!</div>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Example results</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">From the preceding example, you may conclude that, for the neural networks with one hidden unit, as the number of boosting models increases, we see an improvement in accuracy, but after 100 models, this tapers off and is actually slightly less for 200 models. The improvement over the baseline of a single model is substantial for these networks. When we increase the complexity of our learner by having a hidden layer with three hidden neurons, we get a much smaller improvement in performance. At 200 models, both ensembles perform at a similar level, indicating that, at this point, our accuracy is being limited by the type of model trained.</p>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><section class="calibre2">
+
+                            <header class="calibre2">
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article class="calibre2">
+                
+<p class="calibre4">In this chapter, we discovered <em class="calibre21">s</em>tatistical boosting, first providing an explanation of the key concepts used in statistics relevant to the topic of boosting, thus helping to define boosting itself.</p>
+<p class="calibre4">We also contemplated the notion of using statistical boosting to better understand data in just about every database.</p>
+<p class="calibre4">In the next chapter, will again strive to use developer terminologies, this time in an effort to define a support vector machine, identify various applications for its use, and walk through an example of using a simple SVM to classify the data in a database.</p>
+<p class="calibre4"> </p>
+<p class="calibre4"> </p>
+<p class="calibre4"/>
+<p class="calibre4"/>
+
+
+            </article>
+
+            
+        </section>
+    </div>
+
+
+
+  </body></html>

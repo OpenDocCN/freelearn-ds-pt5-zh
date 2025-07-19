@@ -1,0 +1,377 @@
+<html><head></head><body>
+        <section>
+
+                            <header class="header-title chapter-title">
+                    Supervised Learning - Regression Analysis
+                </header>
+            
+            <article>
+                
+<p>Regression is the most popular algorithm in statistics and machine learning. In the machine learning and data science field, regression analysis is a member of the supervised machine learning domain that helps us to predict continuous variables such as stock prices, house prices, sales, rainfall, and temperature. As a sales manager at an electronic store, for example, say you need to predict the sales of upcoming weeks for all types of products, such as televisions, air conditioners, laptops, refrigerators, and many more. Lots of factors can affect your sales, such as weather conditions, festivals, promotion strategy, competitor offers, and so on. Regression analysis is one of the tools that can help you to identify the importance of such factors that are important to make decisions at the store.</p>
+<p>Regression analysis identifies how the dependent variable depends upon independent variables. For example, say as an education officer you want to identify the impact of sports activities, smart classes, teacher-student ratio, extra classes, and teachers' training on students' results. <span><strong>Ordinary Least Square</strong> </span>(<strong><span>OLS</span></strong>) minimizes the sum of squares error (or error variance) to find out the best fit function. It predicts the most probable outcome under the given conditions. The main objective of this chapter is to learn the fundamentals of <strong>Multiple Linear Regression</strong><span> (</span><strong>MLR</strong><span>)</span>, multicollinearity, dummy variables, regression, and model evaluation measures such as R-squared, <strong>Mean Squared Error</strong> (<strong>MSE</strong>), <strong>Mean Absolute Error</strong> (<strong>MAE</strong>), and <strong>Root Mean Square Error</strong> (<strong>RMSE</strong>). Another objective is creating a logistic regression classification model.</p>
+<p>The topics covered in this chapter are listed as follows:</p>
+<ul>
+<li>Linear regression</li>
+<li>Understanding multicollinearity</li>
+<li>Dummy variables</li>
+<li>Developing a linear regression model</li>
+<li>Evaluating regression model performance </li>
+</ul>
+<ul>
+<li>Fitting polynomial regression</li>
+<li>Regression models for classification</li>
+<li>Logistic regression</li>
+<li>Implementing logistic regression using scikit-learn</li>
+</ul>
+<h1 id="uuid-0310c110-d60d-425d-a695-1ab99f507273">Technical requirements</h1>
+<p>This chapter has the following technical requirements:</p>
+<ul>
+<li><span>You can find the code and the datasets at the following GitHub link:</span> <a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter09">https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter09</a><a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter09">.</a></li>
+<li>All the code blocks are available in the<span> </span><kbd>ch9.ipynb</kbd> file. </li>
+<li>This chapter uses three CSV files (<kbd>Advertising.csv</kbd>, <kbd>bloodpress.txt</kbd>, and <kbd>diabetes.csv</kbd>) for practice purposes.</li>
+<li>In this chapter, we will use the Matplotlib, <kbd>pandas</kbd>, Seaborn,<span> and scikit-learn Python libraries.</span></li>
+</ul>
+<div style="margin-left: 2em"/>
+<h1 id="uuid-13e3ef6c-aa02-4c23-a019-7387139a0545">Linear regression</h1>
+<p>Linear regression is a kind of curve-fitting and prediction algorithm. It is used to discover the linear association between a dependent (or target) column and one or more independent columns (or predictor variables). This relationship is deterministic, which means it predicts the dependent variable with some amount of error. In regression analysis, the dependent variable is continuous and independent variables of any type <span>are</span><span> </span><span>continuous or discrete. Linear regression has been applied to various kinds of business and scientific problems, for example, stock price, crude oil price, sales, property price, and GDP growth rate predictions. In the following graph, we can see how linear regression can fit data in two-dimensional space:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/95977f0e-4614-4e71-828e-8884f82c697d.png" style=""/></div>
+<p>The main objective is to find the best-fit line to understand the relationship between variables with minimum error. Error in regression is the difference between the forecasted and actual values. Coefficients of regression are estimated using the OLS method. OLS tries to minimize the sum of squares residuals. Let's see the equation for the regression model:</p>
+<div class="CDPAlignLeft CDPAlign">                                                           <img src="assets/2b803453-31a3-48d7-80db-daf0360d947e.png"/></div>
+<p>Here, <em>x</em> <span>is the independent variable and </span><em><span>y</span></em><span> </span><span>is a dependent variable.</span> <span> </span><img style="font-size: 1em;width:0.83em;height:1.17em;" src="assets/10a567ab-2ffc-4cad-a44d-4f55a7de63ce.png"/> <span>intercepts </span><span>are the coefficient of <em>x</em>, and <img src="assets/31dddf97-8805-43a1-9041-8ba8eefe5a4c.png" style="width:0.75em;height:0.75em;"/> </span><span>(the Greek letter pronounced as epsilon) is an error term that will act as a random variable.</span></p>
+<p>The parameters of linear regression are estimated using OLS. <span>OLS is a method that is widely used to estimate the regression intercept and coefficients</span>. It reduces the sum of squares of residuals (or error), which is the difference between the predicted and actual.</p>
+<p>After getting an idea about linear regression, it's now time to learn about MLR. </p>
+<h2 id="uuid-17c6b4d5-7936-430a-bf40-2d2aeff92397">Multiple linear regression</h2>
+<p>MLR is a generalized form of simple linear regression. It is a statistical method used to predict the continuous target variable based on multiple features or explanatory variables. The main objective of MLR is to estimate the linear relationship between the multiple features and the target variable. MLR has a wide variety of applications in real-life scenarios. The MLR model can be represented as a mathematical equation:</p>
+<div class="CDPAlignLeft CDPAlign">                                        <img src="assets/9c36b729-f849-4365-aace-147be7590523.png"/></div>
+<p>Here,<span> <sub><img src="assets/7f873b49-b78d-4bdf-b9c0-53bb40257a87.jpg" style="width:5.08em;height:0.92em;"/></sub> a</span><span>re the independent variables and</span><span> </span><img style="font-size: 1em;width:0.50em;height:1.08em;" src="assets/e3c23ddd-8528-4d2e-b4dd-6f2a6bd07539.png"/><span>is a dependent variable.</span> <span> </span><img style="font-size: 1em;width:0.92em;height:1.25em;" src="assets/2842199b-fd9f-4687-8dba-118ffaa33717.png"/> <span>i</span><span>nte</span><span>rcepts </span><span>a</span><span>re coefficients of <em>x</em> and</span> <span> <img src="assets/31dddf97-8805-43a1-9041-8ba8eefe5a4c.png" style="width:0.75em;height:0.75em;"/> (the Greek letter pronounced as epsilon) is an error term that will act as a random variable.</span></p>
+<p>Now that we know what linear regression is, let's move on to multicollinearity.</p>
+<h1 id="uuid-dd01de6b-31c6-4712-9feb-b281174d40c1">Understanding multicollinearity</h1>
+<p>Multicollinearity represents the very high intercorrelations or inter-association among the independent (or predictor) variables.</p>
+<p>Multicollinearity takes place when independent variables of multiple regression analysis are highly associated with each other. This association is caused by a high correlation among independent variables. This high correlation will trigger a problem in the linear regression model prediction results. It's the basic assumption of linear regression analysis to avoid multicollinearity for better results:</p>
+<ul>
+<li>It occurs due to the inappropriate use of dummy variables.</li>
+<li>It also occurs due to the repetition of similar <span>variables.</span></li>
+<li>It is also caused due to synthesized <span>variables from other variables in the data.</span></li>
+<li>It can occur due to high correlation among variables.</li>
+</ul>
+<p>Multicollinearity causes the following problems:</p>
+<ul>
+<li>It causes difficulty in estimating the regression coefficients precisely and coefficients become more <span>susceptible to minor variations in the model.</span></li>
+<li>It can also cause a change in the <span>signs and magnitudes of the coefficient.</span></li>
+<li>It causes <span>difficulty in assessing the relative importance of independent variables.</span></li>
+</ul>
+<h2 id="uuid-92b98b25-3975-4e9c-8c3e-60d86b5f1704">Removing multicollinearity</h2>
+<p>Multicollinearity can be detected using the following:</p>
+<ul>
+<li><span>The correlation coefficient (or correlation matrix) between independent variables</span></li>
+<li><strong>Variance Inflation Factor</strong> (<strong>VIF</strong>)</li>
+<li>Eigenvalues</li>
+</ul>
+<p>Correlation coefficients or correlation matrices will help us to identify a high correlation between independent variables. Using the correlation coefficient, we can easily detect the multicollinearity by checking the correlation coefficient magnitude:</p>
+<pre># Import pandas
+import pandas as pd<br/><br/># Read the blood pressure dataset
+data = pd.read_csv("bloodpress.txt",sep='\t')
+<br/># See the top records in the data
+data.head()</pre>
+<p>This results in the following output:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/d8b82130-814f-4543-8efc-62d31d07cf02.png"/></div>
+<p>In the preceding code block, we read the <kbd>bloodpress.txt</kbd> data using the <kbd>read_csv()</kbd> function. We also checked the initial records of the dataset. This dataset has <kbd>BP</kbd>, <kbd>Age</kbd>, <kbd>Weight</kbd>, <kbd>BSA</kbd>, <kbd>Dur</kbd>, <kbd>Pulse</kbd>, and <kbd>Stress</kbd> fields. Let's check the multicollinearity in the dataset using the correlation matrix:</p>
+<pre># Import seaborn and matplotlib<br/>import seaborn as sns<br/>import matplotlib.pyplot as plt<br/> <br/># Correlation matrix<br/>corr=data.corr()<br/><br/># Plot Heatmap on correlation matrix <br/>sns.heatmap(corr, annot=True, cmap='YlGnBu')<br/><br/># display the plot<br/>plt.show()</pre>
+<p>This results in the following output:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/3a140469-91e5-4f42-8f4e-ea89d8e9ddae.png" style=""/></div>
+<p>In the preceding example, we are finding the correlation between multiple variables using the correlation matrix. We loaded the <kbd>bloodpress.txt</kbd> file and found the correlation using the <kbd>corr()</kbd> function. Finally, we visualized the correlation matrix using the <kbd>heatmap()</kbd> function.</p>
+<p>Here, <strong>BP</strong> (<strong>Blood</strong> <strong>Pressure</strong>) is the dependent or target variable, and the rest of the columns are independent variables or features. We can see that <strong>Weight</strong> and <strong>BSA</strong> (<strong>Body</strong> <strong>Surface</strong> <strong>Area</strong>) have a high correlation. We need to remove one variable (either <strong>Weight</strong> or <strong>BSA</strong>) to remove the multicollinearity. In our case, weight is easier to measure compared to BSA, so experts will choose the weight and remove the BSA.</p>
+<h1 id="uuid-d0f9ee2b-0582-4a11-8329-1dc2b690ad6a">Dummy variables</h1>
+<p>Dummy variables are categorical independent variables used in regression analysis. It is also known as a Boolean, indicator, qualitative, categorical, and binary variable. Dummy variables convert a categorical variable with <em>N</em> distinct values into <em>N</em>–1 dummy variables. It only takes the 1 and 0 <span>binary values, which</span><span> are equivalent to existence and nonexistence.</span></p>
+<p><kbd>pandas</kbd> offers the <kbd>get_dummies()</kbd> function to generate the dummy values. Let's understand the <kbd>get_dummies()</kbd> function through an example:</p>
+<pre># Import pandas module
+import pandas as pd<br/><br/># Create pandas DataFrame
+data=pd.DataFrame({'Gender':['F','M','M','F','M']})
+<br/># Check the top-5 records
+data.head()</pre>
+<p>This results in the following output:</p>
+<table style="border-collapse: collapse;width: 100%" class="a" border="1">
+<tbody>
+<tr>
+<td>
+<p> </p>
+</td>
+<td>
+<p><strong>Gender</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>F</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>M</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>M</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>3</p>
+</td>
+<td>
+<p>F</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>4</p>
+</td>
+<td>
+<p>M</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>In the preceding code block, we have created<span> the DataFrame with the <kbd>Gender</kbd> column and generated the dummy variable using the <kbd>get_dummies()</kbd> function. Let's see an example in the following code:</span></p>
+<pre># Dummy encoding
+encoded_data = pd.get_dummies(data['Gender'])<br/><br/># Check the top-5 records of the dataframe
+encoded_data.head()</pre>
+<p class="mce-root"/>
+<p>This results in the following output:</p>
+<pre><strong>  F M
+0 1 0
+1 0 1
+2 0 1
+3 1 0
+4 0 1</strong></pre>
+<p>Here, in the preceding example, the <kbd>get_dummies()</kbd> function is generating two columns, which means a separate column for each value.</p>
+<p>We can remove one column to avoid collinearity using the <kbd>drop_first=True</kbd> argument and drop first the <em>N</em>–1 dummies out of <em>N</em> categorical levels by removing the first level:</p>
+<pre># Dummy encoding
+encoded_data = pd.get_dummies(data['Gender'], drop_first=True)<br/><br/># Check the top-5 records of the dataframe
+encoded_data.head()</pre>
+<p>This results in the following output:</p>
+<pre>  M
+0 0
+1 1
+2 1
+3 0
+4 1</pre>
+<p>In the <span>preceding</span> code block, we have created the dummy variables for the <kbd>Gender</kbd> column using the <span><kbd>get_dummies()</kbd> function </span>with the <kbd>drop_first=True</kbd> parameter. This has removed the first column and leaves <em>N–</em>1 columns. Let's now learn how to implement the linear regression model using the <kbd>scikit-learn</kbd> library.</p>
+<h1 id="uuid-f00a21ab-4622-406e-a91d-0e1897403531">Developing a linear regression model</h1>
+<p>After understanding the concepts of regression analysis, multicollinearity, and dummy variables, it's time to get some hands-on experience with regression analysis. Let's learn how to build the regression model using the scientific toolkit for machine learning (scikit-learn):</p>
+<ol>
+<li><span>We will first load the dataset using the <kbd>read_csv()</kbd> function:</span></li>
+</ol>
+<pre style="padding-left: 60px"># Import pandas
+import pandas as pd<br/><br/># Read the dataset using read_csv method
+df = pd.read_csv("Advertising.csv")
+<br/># See the top-5 records in the data
+df.head()<br/><br/></pre>
+<p style="padding-left: 60px">This results in the following output:</p>
+<p class="CDPAlignCenter CDPAlign"><span><img src="assets/38b6e58b-5433-427c-9cf8-b4e8aa015617.png"/></span></p>
+<p style="padding-left: 60px">Now that we have loaded the <kbd>Advertising.csv</kbd> dataset using <kbd>read_csv()</kbd> and checked the initial records using the <kbd>head()</kbd> function, we will split the data into two parts: dependent or target variable and independent variables or features.</p>
+<ol start="2">
+<li><span>In this step, we will split the data two times:</span></li>
+</ol>
+<ul>
+<li style="padding-left: 60px">Split into two parts: dependent or target variable and independent variables or features.</li>
+<li style="padding-left: 60px">Split data into training and test sets. This can be done using the following code:</li>
+</ul>
+<pre style="padding-left: 60px"># Independent variables or Features
+X = df[['TV', 'Radio', 'Newspaper']]<br/><br/># Dependent or Target variable
+y = df.Sales</pre>
+<p style="padding-left: 60px">After splitting the columns into dependent and independent variable <span>parts</span><span>, we will split the data into train and test sets in a 75:25 ratio using</span> <kbd>train_test_split()</kbd><span>. The ratio can be specified using the</span> <kbd>test_size</kbd> <span>parameter and</span> <kbd>random_state</kbd> <span>is used as a seed value for reproducing the same data split each time. If</span> <kbd>random_state</kbd> <span>is <kbd>None</kbd>, then it will randomly split the records each time, which will give different performance measures:</span></p>
+<pre style="padding-left: 60px"># Lets import the train_test_split method
+from sklearn.model_selection import train_test_split<br/><br/># Distribute the features(X) and labels(y) into two parts training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)</pre>
+<p style="padding-left: 60px">In the <span>preceding</span> code block, we have divided the data into two parts – train and test sets – in a 75:25 or 3:1 ratio.</p>
+<ol start="3">
+<li>Let's import the <kbd>LinearRegression</kbd> model, create its object, and fit it to the training dataset (<kbd>X_train</kbd>, <kbd>y_train</kbd>). After fitting the model, we can predict the values for testing data (<kbd>X_test</kbd>). We can see the intercept and coefficient of the regression equation using the <kbd>intercept_</kbd> and <kbd>coef_</kbd> attributes:</li>
+</ol>
+<pre style="padding-left: 60px"># Import linear regression model
+from sklearn.linear_model import LinearRegression<br/># Create linear regression model
+lin_reg = LinearRegression()
+<br/># Fit the linear regression model
+lin_reg.fit(X_train, y_train)
+<br/># Predict the values given test set
+predictions = lin_reg.predict(X_test)
+<br/># Print the intercept and coefficients
+print("Intercept:",lin_reg.intercept_)
+print("Coefficients:",lin_reg.coef_)</pre>
+<p class="mce-root"/>
+<p style="padding-left: 60px">This results in the following output:</p>
+<pre style="padding-left: 60px">Intercept: 2.8925700511511483
+Coefficients: [0.04416235 0.19900368 0.00116268]</pre>
+<p>In the <span>preceding</span> code, we have prepared the linear regression model, performed the predictions on test sets, and displayed the intercepts and coefficients. In the upcoming section, we will assess the regression model's performance using model evaluation measures such as R-squared and error functions.</p>
+<h1 id="uuid-f3f89611-2c0b-463d-ac98-d647d87c8f58">Evaluating regression model performance</h1>
+<p>In this section, we will review the regression evaluation measures for understanding the performance level of a regression model. Model evaluation is one of the key aspects of any machine learning model building process. It helps us to assess how our model will perform when we put it into production. We will use the following metrics for model evaluation:</p>
+<ul>
+<li><strong>R-squared</strong></li>
+<li><strong>MSE</strong></li>
+<li><strong>MAE</strong></li>
+<li><strong>RMSE</strong></li>
+</ul>
+<h2 id="uuid-8dac55f8-b84e-4cfb-aad2-4b019b47e464">R-squared</h2>
+<p>R-squared (or coefficient of determination) is a statistical model evaluation measure that assesses the goodness of a regression model. It helps data analysts to explain model performance compared to the base model. Its value lies between 0 and 1. A value near 0 represents a poor model while a value near 1 represents a perfect fit. Sometimes, R-squared results in a negative value. This means your model is worse than the average base model. We can explain R-squared using the following formula:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/e171c969-0da0-46c7-ab1b-33ce7bafd90e.png" style="width:22.17em;height:3.50em;"/></div>
+<p class="mce-root">Let's understand all the components one by one:</p>
+<ul>
+<li><strong>Sum of Squares Regression</strong> (<strong>SSR</strong>): This estimates the difference between the <span>forecasted value and the mean of the data.</span></li>
+<li><strong>Sum of Squared</strong> <span><strong>Errors</strong> (<strong>SSE</strong>): This estimates the change between the original or genuine value and the forecasted value.</span></li>
+<li><strong>Total Sum of Squares</strong> (<strong>SST</strong>): This is the <span>change between the original or genuine value and the mean of the data.</span></li>
+</ul>
+<h2 id="uuid-34283377-2c0f-41a7-9be8-2a481b1a7664">MSE</h2>
+<p>MSE is an abbreviation of mean squared error. It is explained as the square of change between the original and forecasted values and the average between them for all the values:</p>
+<div class="CDPAlignLeft CDPAlign">                                                           <img src="assets/87b88053-52bb-470b-bc8a-79aea12bcc15.png"/></div>
+<p>Here,  <span><img class="fm-editor-equation" src="assets/9e6905e4-62fa-4828-a207-b87404efc49d.png" style="width:0.58em;height:0.92em;"/></span> is the original value and<span> <img class="fm-editor-equation" src="assets/fe8a8b54-b9f3-4efc-a833-c3d640a21db2.png" style="width:0.67em;height:1.00em;"/> </span>is the forecasted value. </p>
+<h2 id="uuid-c557278c-a75d-452b-8f73-2ef384cada6e">MAE</h2>
+<p>MAE is an abbreviation of mean absolute error. It is explained as the absolute change between the original and forecasted values and the average between them for all the values:</p>
+<div class="CDPAlignLeft CDPAlign">                                                            <img src="assets/5459d946-f2a9-4dd7-8e2a-d092deee0b12.png"/></div>
+<p><span>Here, </span> <span><img class="fm-editor-equation" src="assets/da944b30-ee27-4bef-9cf2-3dc08dac979b.png" style="width:0.58em;height:1.00em;"/></span><span> is the original value, and</span><span> <img class="fm-editor-equation" src="assets/13e98d6f-6465-4fd5-a4c1-190fa165ad54.png" style="width:0.75em;height:1.17em;"/> </span><span>is the forecasted value. </span></p>
+<p class="mce-root"/>
+<h2 id="uuid-c36051da-12a5-4f46-bc47-995ee0e141cb">RMSE</h2>
+<p>RMSE is an abbreviation of root mean squared error. It is explained as the square root of MSE:</p>
+<div class="CDPAlignLeft CDPAlign">                                                                <img src="assets/ab6ed537-f2b1-4d2a-b07d-9804a8d06828.png"/></div>
+<p class="mce-root">Let's evaluate the model performance on a testing dataset. In the previous section, we predicted the values for the test set. Now, we will compare the predicted values with the actual values of the test set (<kbd>y_test</kbd>). scikit-learn offers the <kbd>metrics</kbd> class for evaluating the models. For regression model evaluation, we have methods for R-squared, MSE, MAE, and RMSE. Each of the methods takes two inputs: the actual values of the test set and the predicted values (<kbd>y_test</kbd> and <kbd>y_pred</kbd>). Let's assess the performance of the linear regression model: </p>
+<pre># Import the required libraries
+import numpy as np
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score<br/><br/># Evaluate mean absolute error
+print('Mean Absolute Error(MAE):', mean_absolute_error(y_test,predictions))
+<br/># Evaluate mean squared error
+print("Mean Squared Error(MSE):", mean_squared_error(y_test, predictions))
+<br/># Evaluate root mean squared error
+print("Root Mean Squared Error(RMSE):", np.sqrt(mean_squared_error(y_test, predictions)))
+<br/># Evaluate R-square
+print("R-Square:",r2_score(y_test, predictions))</pre>
+<p><span>This results in the following output:</span></p>
+<pre>Mean Absolute Error(MAE): 1.300032091923545
+Mean Squared Error(MSE): 4.0124975229171
+Root Mean Squared Error(RMSE): 2.003121944095541
+R-Square: 0.8576396745320893</pre>
+<p>In the example, we have evaluated the linear regression model using MAE, MSE, RMSE, and R-squared. Here, R-squared is 0.85, which indicates that the model explains the 85% variability of the data.  </p>
+<h1 id="uuid-1806c600-83a6-4b89-b13a-50fadc1b7af1">Fitting polynomial regression</h1>
+<p>Polynomial regression is a type of regression analysis that is used to adapt the nonlinear relationships between dependent and independent variables. In this type of regression, variables are modeled as the <em>n</em>th polynomial degree. It is used to understand the growth rate of various phenomena, such as epidemic outbreaks and growth in sales. Let's understand the equation of polynomial regression: </p>
+<div class="CDPAlignLeft CDPAlign">                             <img src="assets/36c4aef7-f852-4525-b590-229645ada4ee.png"/></div>
+<p>Here, <img src="assets/cb087be6-8131-4041-b20a-5e1039fef70b.png" style="width:0.75em;height:1.33em;"/> is the independent variable and <img src="assets/280499c8-5605-4576-9ddf-a5735ed52c18.png" style="width:0.58em;height:1.33em;"/> <span>is a dependent variable. The</span> <img src="assets/df2c782f-57c3-4404-8788-ef97f52c6ecc.png" style="width:1.08em;height:1.50em;"/> intercepts, <img src="assets/761a1c0b-b2d7-488a-981a-1f69e3c7b7b3.png" style="width:2.67em;height:1.58em;"/>...<img src="assets/ab186eaf-109d-42ef-b318-77731682d08c.png" style="width:1.17em;height:1.50em;"/>, are a coefficient of <em>x</em> and <img src="assets/31dddf97-8805-43a1-9041-8ba8eefe5a4c.png" style="width:0.75em;height:0.75em;"/> (the Greek letter pronounced as epsilon) is an error term that will act as a random variable.</p>
+<p>Let's see an example to understand the polynomial concept in detail:</p>
+<pre># import libraries
+import matplotlib.pyplot as plt
+import numpy as np
+<br/># Create X and Y lists
+X=[1,2,3,4,5,6,7,8,9,10]
+y=[9,10,12,16,22,28,40,58,102,200]
+<br/># Plot scatter diagram
+plt.scatter(X,y, color = 'red')
+plt.title('Polynomial Regression')
+plt.xlabel('X-Axis')
+plt.ylabel('y-Axis')</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/eae9d6ca-ec61-44ce-b87f-4652b0bff8cd.png"/></div>
+<p>In the <span>preceding</span> code, we have displayed a dataset that has a polynomial relationship. Let's see how we can map this relationship in regression analysis:</p>
+<pre># import libraries
+import pandas as pd<br/>from sklearn.preprocessing import PolynomialFeatures<br/>from sklearn.linear_model import LinearRegression<br/><br/># Prepare dataset <br/>data = pd.DataFrame({"X":[1,2,3,4,5,6,7,8,9,10], <br/>"y":[9,10,12,16,22,28,40,58,102,200]}) <br/><br/>X = data[['X']] y = data[['y']]<br/><br/># Apply Polynomial Features <br/>polynomial_reg = PolynomialFeatures(degree = 6) <br/>X_polynomial = polynomial_reg.fit_transform(X) <br/><br/># Apply Linear Regression Model <br/>linear_reg = LinearRegression() <br/>linear_reg.fit(X_polynomial, y) predictions=linear_reg.predict(X_polynomial) <br/><br/># Plot the results <br/>plt.scatter(X,y, color = 'red') <br/>plt.plot(X, predictions, color = 'red') <br/>plt.title('Polynomial Regression') <br/>plt.xlabel('X-Axis') <br/>plt.ylabel('y-Axis')</pre>
+<p><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/a159cce1-d335-4ef7-8326-bf8697e80e27.png"/></div>
+<p>In the preceding code, we have read the polynomial relationship dataset, converted the <em>X</em> column into a polynomial <em>n</em>th degree column using <kbd>PolynomialFeatures()</kbd>, and then applied linear regression on <span><kbd>X_polynomial</kbd> </span>and <kbd>label</kbd>. The preceding output plot shows that the resultant model captures the performance. Now, it's time to jump to another type of regression model, which can be used for classification purposes.</p>
+<h1 id="uuid-2fa95f3d-08ae-4c30-a1a4-88f7f7de69a9">Regression models for classification</h1>
+<p>Classification is the most utilized technique in the area of machine and statistical learning. Most machine learning problems are classification problems, such as detecting spam emails, analyzing financial risk, churn analysis, and discovering potential customers. </p>
+<p>Classification can be of two types: binary and multi-class classification. Binary classification target variables have only two values: either 0 and 1 or yes or no. Examples of binary classification are whether a customer will buy an item or not, whether the customer will switch or churn to another brand or not, spam detection, disease prediction, and whether a loan applicant will default or not. Multi-class classification has more than two classes, for example, for categories of news articles, the classes could be sports, politics, business, and many more.</p>
+<p>Logistic regression is one of the classification methods, although its name ends with regression. It is a commonly used binary class classification method. It is a basic machine learning algorithm for all kinds of classification problems. It finds the association between dependent (or target) variables and sets of independent variables (or features). In the next section, we will look at logistic regression in detail.</p>
+<h1 id="uuid-df0e525a-78da-4bc8-8731-491cca195678">Logistic regression</h1>
+<p><span>Logistic regression is a kind of supervised machine learning algorithm that is utilized to forecast a binary outcome and classify observations. Its dependent variable is a binary variable with two classes: 0 or 1. For example, it can be used to detect whether a loan applicant will default or not. It is a unique type of regression where the dependent or target variable is binary. It computes a log of the odds ratio of the target variable, which represents the probability of occurrence of an event, for example, the probability of a person suffering from diabetes.</span></p>
+<p>Logistic regression is a kind of simple linear regression where the dependent or target variable is categorical. It uses the sigmoid function on the prediction result of linear regression. We can also use the logistic regression algorithm for multiple target classes. For multiple-class problems, it is called multinomial logistic regression. Multinomial logistic regression is a modification of logistic regression; it uses the softmax function instead of the sigmoid activation function:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/1dd8a555-b048-4adc-8249-330fd32b39a6.png" style=""/></div>
+<p>The sigmoid function is also known as a logistic function or an S-shaped curve. It maps input values between the ranges 0 and 1, which represents the probability of occurrence of an event. If the curve moves toward positive infinity, then the outcome becomes 1 and if the curve moves toward negative infinity, then the outcome becomes 1. Let's see the formula for the sigmoid function and logistic regression equation:</p>
+<div class="CDPAlignLeft CDPAlign">                                                            <img src="assets/8786165a-b015-4d0d-bfb9-b2e9e7bd4717.png"/></div>
+<p>The following formula shows the logistic regression equation:</p>
+<div class="CDPAlignLeft CDPAlign">                                             <img src="assets/681655c1-e4f0-470b-9df2-0bd7f8bece73.png"/></div>
+<p>The term in the <kbd>log()</kbd> function is known as an odds ratio or "odds." The odds ratio is the ratio of the probability of the occurrence of an event to the probability of not occurrence of an event. In the following graph, you can see how logistic regression output behaves:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/55c4ce11-4880-4a18-9cef-47f075533ddc.png" style=""/></div>
+<p>We can see the ratio lands roughly around 0.5 here. Let's explore logistic regression a bit more in the upcoming subsections. </p>
+<h2 id="uuid-939a972b-1993-426e-8d9d-0844bb82dd11">Characteristics of the logistic regression model</h2>
+<p>In this subsection, we will focus on the basic characteristics and assumptions of logistic regression. Let's understand the following characteristics:</p>
+<ul>
+<li>The dependent or target variable should be binary in nature.</li>
+<li>There should be no multicollinearity among independent <span>variables.</span></li>
+<li>Coefficients are estimated using maximum likelihood.</li>
+<li>Logistic regression follows Bernoulli distribution.</li>
+<li>There is no R-squared for model evaluation. <span>The model was evaluated using concordance, KS statistics.</span></li>
+</ul>
+<h2 id="uuid-55aea730-f493-4074-be88-b51ffccefe2f">Types of logistic regression algorithms</h2>
+<p>There are various types of logistic regression algorithms available for different use cases and scenarios. In this section, we will focus on binary, multinomial, and ordinal logistic regression. Let's see each of them and understand where we can utilize them:</p>
+<ul>
+<li><strong>Binary logistic regression m</strong><span><strong>odel</strong>:</span></li>
+</ul>
+<p style="padding-left: 90px"><span>In the binary logistic regression model, the dependent or target column has only two values, such as whether a loan will default or not default, an email is spam or not spam, or a patient is diabetic or non-diabetic.</span></p>
+<ul>
+<li> <strong>Multinomial logistic regression model</strong>:</li>
+</ul>
+<p style="padding-left: 90px"><span>In a multinomial logistic regression model, a dependent or target column has three or more than three values, such as predicting the species of the iris flower and predicting the category of news articles, such as politics, business, and sports.</span></p>
+<ul>
+<li> <strong>Ordinal logistic regression</strong>:</li>
+</ul>
+<p style="padding-left: 90px"><span>In the ordinal logistic regression model, a dependent variable will have ordinal or sequence classes, such as movie and hotel ratings.</span></p>
+<h2 id="uuid-d32515fe-517f-43d9-9b8a-05444612dfb7">Advantages and disadvantages of logistic regression</h2>
+<p>The logistic regression model not only provides prediction (0 or 1) but also gives the probabilities of outcomes, which helps us to understand the confidence of a prediction. It is easy to implement and understand and is interpretable.</p>
+<p>A large number of independent variables will increase the amount of variance explained, which results in model overfitting. Logistic regression cannot work with non-linear relationships. It will also not perform well with highly correlated feature variables (or independent variables).</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<h1 id="uuid-65436717-f8e2-46cc-969d-a86e8b575ddb">Implementing logistic regression using scikit-learn</h1>
+<p>Now that you know all about logistic regression, let's implement it in Python using the <kbd>scikit-learn</kbd> library. Let's create a model using naive Bayes classification. We will do so using the following steps:</p>
+<ol>
+<li>We will first import the dataset and the required libraries using the following code:</li>
+</ol>
+<pre style="padding-left: 60px"># Import libraries
+import pandas as pd<br/># read the dataset
+diabetes = pd.read_csv("diabetes.csv")
+<br/># Show top 5-records
+diabetes.head()</pre>
+<p style="padding-left: 60px">This results in the following output:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/becd7d75-8005-43aa-9a97-1458940b7744.png"/></div>
+<p style="padding-left: 60px">In our <span>preceding</span> example, we are reading the Pima Indians Diabetes dataset. This dataset does not give the column names, so we have to do so.</p>
+<ol start="2">
+<li>In the <kbd>read_csv()</kbd> function, we will pass the header to <kbd>None</kbd> and names to the column list that was created before reading the CSV file:</li>
+</ol>
+<pre style="padding-left: 60px"># Split dataset in two parts: feature set and target label
+feature_set = ['pregnant', 'insulin', 'bmi', 'age','glucose','bp','pedigree']
+<br/>features = diabetes[feature_set]
+<br/>target = diabetes.label
+<br/># Partition data into training and testing set
+from sklearn.model_selection import train_test_split<br/>feature_train, feature_test, target_train, target_test = train_test_split(features, target, test_size=0.3, random_state=1)</pre>
+<p style="padding-left: 60px">After loading the dataset, we need to divide the dataset into independent (feature set) column features and dependent (or label) column targets. After this, the dataset will be partitioned into training and testing sets. Now, both the dependent and independent columns are divided into train and test sets (<kbd>feature_train</kbd>, <kbd>feature_test</kbd>, <kbd>target_train</kbd>, and <kbd>target_test</kbd>) using <kbd>train_test_split()</kbd>. <kbd>train_test_split()</kbd> takes dependent and independent DataFrames, <kbd>test_size</kbd> and <kbd>random_state</kbd>. Here, <kbd>test_size</kbd> will decide the ratio of the train-test split (that is, a <kbd>test_size</kbd> value of <kbd>0.3</kbd> means 30% testing set and the remaining 70% will be the training set), and <kbd>random_state</kbd> is used as a seed value for reproducing the same data split each time. If <kbd>random_state</kbd> is <kbd>None</kbd>, then it will randomly split the records each time, which will give different performance measures:</p>
+<pre style="padding-left: 60px"># import logistic regression scikit-learn model
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score <br/><br/># instantiate the model
+logreg = LogisticRegression(solver='lbfgs')
+<br/># fit the model with data
+logreg.fit(feature_train,target_train)
+<br/># Forecast the target variable for given test dataset
+predictions = logreg.predict(feature_test)
+<br/># Assess model performance using accuracy measure
+print("Logistic Regression Model Accuracy:",accuracy_score(target_test, predictions))</pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Logistic Regression Model Accuracy: 0.7835497835497836</pre>
+<p>Now, we are ready to create a logistic regression model. First, we will import the <kbd>LogisticRegression</kbd> class and create its object or model. This model will fit on the training dataset (<kbd>X_train</kbd> and <kbd>y_train</kbd>). After training, the model is ready to make predictions using the <kbd>predict()</kbd> method. scikit-learn's <kbd>metrics</kbd> class offers various methods for performance evaluation, such as accuracy. The <kbd>accuracy_score()</kbd> methods will take actual labels (<kbd>y_test</kbd>) and predicted labels (<kbd>y_pred</kbd>).</p>
+<h1 id="uuid-bc582fd9-8151-4539-b0da-c09e2631ab59">Summary</h1>
+<p>In this chapter, we discovered regression analysis algorithms. This will benefit you in gaining an important skill for predictive data analysis. You have gained an understanding of concepts such as regression analysis, multicollinearity, dummy variables, regression evaluation measures, and logistic regression. The chapter started with simple linear and multiple regressions. After simple linear and multiple regressions, our main focus was on multicollinearity, model development, and model evaluation measures. In later sections, we focused on logistic regression, characteristics, types of regression, and its implementation. </p>
+<p><span>The next chapter, <a href="ed220fe6-db8c-4167-8442-27233d957d09.xhtml">Chapter 10</a>, <em>Supervised Learning – Classification Techniques</em>, will focus on classification, its techniques, the train-test split strategy, and performance evaluation measures. In later sections, the focus will be on data splitting, the confusion matrix, and performance evaluation measures such as accuracy, precision, recall, F1-score, ROC, and AUC.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

@@ -1,0 +1,630 @@
+<html><head></head><body>
+        <section>
+
+                            <header class="header-title chapter-title">
+                    Analyzing Textual Data
+                </header>
+            
+            <article>
+                
+<p>In the age of information, data is produced at incredible speeds and volumes. The data produced is not only structured or tabular types, it can also be in a variety of unstructured types such as textual data, image or graphic data, speech data, and video. Text is a very common and rich type of data. Articles, blogs, tutorials, social media posts, and website content all produce unstructured textual data. Thousands of emails, messages, comments, and tweets are sent by people every minute. Such a large amount of text data needs to be mined. Text analytics offers lots of opportunities for business people; for instance, Amazon can interpret customer feedback on a particular product, news analysts can analyze news trends and the latest issues on Twitter, and Netflix can also interpret reviews of each movie and web series. Business analysts can interpret customer activities, reviews, feedback, and sentiments to <span><span>drive </span></span>their business effectively using NLP and text analysis.</p>
+<p>In this chapter, we will start with basic text analytics operations such as tokenization, removing stopwords, stemming, lemmatization, PoS tagging, and entity recognition. After this, we will see how to visualize your text analysis using WordCloud. We will see how to find out the opinions of customers about a product based on reviews, using sentiment analysis. Here, we will perform sentiment analysis using text classification and assess model performance using accuracy, precision, recall, and f1-score. Finally, we will focus on text similarity between two sentences using Jaccard and cosine similarity.   </p>
+<p>The topics of this chapter are listed as follows:</p>
+<ul>
+<li>Installing NLTK and SpaCy</li>
+<li>Text normalization</li>
+<li>Tokenization</li>
+<li>Removing stopwords</li>
+<li>Stemming and lemmatization</li>
+<li>POS tagging</li>
+</ul>
+<ul>
+<li>Recognizing entities</li>
+<li>Dependency parsing</li>
+<li>Creating a word cloud</li>
+<li>Bag of words</li>
+<li>TF-IDF</li>
+<li>Sentiment analysis using text classification</li>
+<li>Text similarity</li>
+</ul>
+<h1 id="uuid-56ccdd6d-a69f-4ba2-8877-69f371ab816c">Technical requirements</h1>
+<p>This chapter has the following technical requirements:</p>
+<ul>
+<li>You can find the code and the datasets at the following GitHub link:<span> <a href="https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter12">https://github.com/PacktPublishing/Python-Data-Analysis-Third-Edition/tree/master/Chapter12.  </a></span></li>
+<li>All the code blocks are available in the<span> </span><kbd>ch12.ipynb</kbd> file.  </li>
+<li>This chapter uses only one TSV file (<kbd>amazon_alexa<span>.tsv</span></kbd>) for practice purposes.</li>
+<li>In this chapter, we will use the NLTK, SpaCy, WordCloud, matplotlib,<span> seaborn, and scikit-learn Python libraries.</span></li>
+</ul>
+<h1 id="uuid-1dc282a6-8bb8-468d-9224-e9b62aa14d7f">Installing NLTK and SpaCy</h1>
+<p>NLTK is one of the popular and essential Python packages for natural language processing. It offers all the basic, as well as advanced, NLP operations. It comprises common algorithms such as tokenization, stemming, lemmatization, part-of-speech, and named entity recognition. The main features of the NLTK library are that it's open-source, easy to learn, easy to use, has a prominent community, and has well-organized documentation. The NLTK library can be installed using the <kbd>pip install</kbd> command running on the command line as follows:</p>
+<pre>pip install nltk</pre>
+<p>NLTK is not a pre-installed library in Anaconda. We can directly install <kbd>nltk</kbd> in the Jupyter Notebook. We can use an <span>exclamation point (!) </span>before the command in the cell:</p>
+<pre>!pip install nltk</pre>
+<p>SpaCy is another essential and powerful Python package for NLP. It offers a common NLP algorithm as well as advanced functionalities. It is designed for production purposes and develops applications for a large volume of data. The SpaCy library can be installed using the <kbd>pip install</kbd> command running on the command line as follows:</p>
+<pre>pip install spacy</pre>
+<p>After installing spaCy, we need to install a <kbd>spacy</kbd> English-language model. We can install it using the following command:</p>
+<pre>python -m spacy download en</pre>
+<p>Spacy and its English model are not pre-installed in Anaconda. We can directly install <kbd>spacy</kbd> using the following code. We can use the exclamation point (!) before the command in the cell:</p>
+<pre>!pip install spacy<br/>!python -m spacy download en</pre>
+<p>Using the preceding syntax, we can install <kbd>spacy</kbd> and its English model in Jupyter Notebooks.</p>
+<h1 id="uuid-11c56de2-0d7b-465b-9040-5b6c74ecbd66">Text normalization</h1>
+<p>Text normalization converts text into standard or canonical form. It ensures consistency and helps in processing and analysis. There is no single approach to the normalization process. The first step in normalization is the lower case all the text. It is the simplest, most applicable, and effective method for text pre-processing. Another approach could be handling wrongly spelled words, acronyms, short forms, and the use of out-of-vocabulary words; for example, "super," "superb," and "superrrr" can be converted into "super". Text normalization handles the noise and disturbance in test data and prepares noise-free data. We also apply stemming and lemmatization to normalize the words present in the text. </p>
+<p>Let's perform a basic normalization operation by converting the text into lowercase:</p>
+<pre># Input text<br/>paragraph="""Taj Mahal is one of the beautiful monuments. It is one of the wonders of the world. It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal."""<br/><br/># Converting paragraph in lowercase <br/>print(paragraph.lower()) </pre>
+<p><span>This results in the following output: </span></p>
+<pre>taj mahal is one of the beautiful monuments. it is one of the wonders of the world. it was built by shah jahan in 1631 in memory of his third beloved wife mumtaj mahal.</pre>
+<p>In the preceding code block, we have converted the given input paragraph into lowercase by using the <kbd>lower()</kbd> method.</p>
+<p>In NLP, text normalization deals with the randomness and converts text into a standard form that improves the overall performance of NLP solutions. It also reduces the size of the document term matrix by converting the words into their root word. <span>In the upcoming sections, we will focus on basic text preprocessing</span> operations<span>.</span></p>
+<h1 id="uuid-745067f6-7ce4-4a77-8fa1-ddc407f74b7b">Tokenization</h1>
+<p>Tokenization is the initial step in text analysis. Tokenization is defined as breaking down text paragraphs into smaller parts or tokens such as sentences or words and ignoring punctuation marks. Tokenization can be of two types: sentence tokenization and word tokenization. A sentence tokenizer splits a paragraph into sentences and word tokenization splits a text into words or tokens.</p>
+<p>Let's tokenize a paragraph using NLTK and spaCy:</p>
+<ol>
+<li>Before tokenization, import NLTK and download the required files:</li>
+</ol>
+<pre style="padding-left: 60px"># Loading NLTK module<br/>import nltk<br/><br/># downloading punkt<br/>nltk.download('punkt')<br/><br/># downloading stopwords<br/>nltk.download('stopwords')<br/><br/># downloading wordnet<br/>nltk.download('wordnet')<br/><br/># downloading average_perception_tagger<br/>nltk.download('averaged_perceptron_tagger')</pre>
+<ol start="2">
+<li>Now, we will tokenize paragraphs into sentences using the <kbd>sent_tokenize()</kbd> method of NLTK:</li>
+</ol>
+<pre style="padding-left: 60px"># Sentence Tokenization<br/>from nltk.tokenize import sent_tokenize<br/><br/>paragraph="""Taj Mahal is one of the beautiful monuments. It is one of the wonders of the world. It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal."""<br/><br/>tokenized_sentences=sent_tokenize(paragraph)<br/>print(tokenized_sentences)</pre>
+<p style="padding-left: 60px">This results in the following output: </p>
+<pre style="padding-left: 60px">['Taj Mahal is one of the beautiful monument.', 'It is one of the wonders of the world.', 'It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal.']</pre>
+<p>In the <span>preceding</span> example, we have taken a paragraph and passed it as a parameter to the <kbd>sent_tokenize()</kbd> method. The output of this method will be a list of sentences.</p>
+<p>Let's tokenize the paragraph into sentences using spaCy:</p>
+<pre># Import spacy<br/>import spacy<br/><br/># Loading english language model <br/>nlp = spacy.load("en")<br/><br/># Build the nlp pipe using 'sentencizer'<br/>sent_pipe = nlp.create_pipe('sentencizer')<br/><br/># Append the sentencizer pipe to the nlp pipeline<br/>nlp.add_pipe(sent_pipe)<br/>paragraph = """Taj Mahal is one of the beautiful monuments. It is one of the wonders of the world. It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal."""<br/><br/># Create nlp Object to handle linguistic annotations in a documents.<br/>nlp_doc = nlp(paragraph)<br/><br/># Generate list of tokenized sentence<br/>tokenized_sentences = []<br/>for sentence in nlp_doc.sents:<br/>    tokenized_sentences.append(sentence.text)<br/>print(tokenized_sentences)</pre>
+<p>This results in the following output:</p>
+<pre>['Taj Mahal is one of the beautiful monument.', 'It is one of the wonders of the world.', 'It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal.']</pre>
+<p>In the <span>preceding</span> example, first, we have imported the English language model and instantiated it. After this, we created the NLP pipe using <kbd>sentencizer</kbd> and added it to the pipeline. Finally, we created the NLP object and iterated through the <kbd>sents</kbd> attribute of the NLP object to create a list of tokenized sentences.</p>
+<p>Let's tokenize paragraphs into words using the <kbd>word_tokenize()</kbd> function of NLTK:</p>
+<pre># Import nltk word_tokenize method<br/>from nltk.tokenize import word_tokenize<br/><br/># Split paragraph into words<br/>tokenized_words=word_tokenize(paragraph)<br/>print(tokenized_words)</pre>
+<p>This results in the following output:</p>
+<pre>['Taj', 'Mahal', 'is', 'one', 'of', 'the', 'beautiful', 'monument', '.', 'It', 'is', 'one', 'of', 'the', 'wonders', 'of', 'the', 'world', '.', 'It', 'was', 'built', 'by', 'Shah', 'Jahan', 'in', '1631', 'in', 'memory', 'of', 'his', 'third', 'beloved', 'wife', 'Mumtaj', 'Mahal', '.']</pre>
+<p>In the <span>preceding</span> example, we have taken a paragraph and passed it as a parameter to the <kbd>word_tokenize()</kbd> method. The output of this method will be a list of words.</p>
+<p>Let's tokenize the paragraph into words using spaCy:</p>
+<pre># Import spacy<br/>import spacy<br/><br/># Loading english language model <br/>nlp = spacy.load("en")<br/><br/>paragraph = """Taj Mahal is one of the beautiful monuments. It is one of the wonders of the world. It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal."""<br/><br/># Create nlp Object to handle linguistic annotations in a documents.<br/>my_doc = nlp(paragraph)<br/><br/># tokenize paragraph into words<br/>tokenized_words = []<br/>for token in my_doc:<br/>    tokenized_words.append(token.text)<br/><br/>print(tokenized_words)</pre>
+<p>This results in the following output:</p>
+<pre>['Taj', 'Mahal', 'is', 'one', 'of', 'the', 'beautiful', 'monument', '.', 'It', 'is', 'one', 'of', 'the', 'wonders', 'of', 'the', 'world', '.', 'It', 'was', 'built', 'by', 'Shah', 'Jahan', 'in', '1631', 'in', 'memory', 'of', 'his', 'third', 'beloved', 'wife', 'Mumtaj', 'Mahal', '.']</pre>
+<p>In the <span>preceding</span> example, first, we imported the English language model and instantiated it. After this, we created a text paragraph. Finally, we created the NLP object using text paragraphs and iterated it to create a list of tokenized words.</p>
+<p>Let's create the frequency distribution of tokenized words:</p>
+<pre># Import frequency distribution<br/>from nltk.probability import FreqDist<br/><br/># Find frequency distribution of paragraph<br/>fdist = FreqDist(tokenized_words)<br/><br/># Check top 5 common words<br/>fdist.most_common(5)</pre>
+<p>This results in the following output:</p>
+<pre>[('of', 4), ('the', 3), ('.', 3), ('Mahal', 2), ('is', 2)]</pre>
+<p>Let's create a frequency distribution plot using matplotlib:</p>
+<pre># Import matplotlib<br/>import matplotlib.pyplot as plt<br/><br/># Plot Frequency Distribution<br/>fdist.plot(20, cumulative=False)<br/>plt.show()<br/><br/></pre>
+<p class="mce-root">This results in the following output:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/97dbcf7d-d87a-44b7-9c08-6ca9aa665183.png"/></div>
+<p>In the <span>preceding</span> example, we have generated the frequency distribution of tokens using the <kbd>FreqDist</kbd> class. After sentence and word tokenization, we will learn how to remove stopwords from the given text.</p>
+<h1 id="uuid-3e2ca050-a17f-4207-9a0b-8b267c7e7eb5">Removing stopwords</h1>
+<p>Stopwords are counted as noise in text analysis. Any text paragraph has to have verbs, articles, and propositions. These are all considered stop words. Stop words are necessary for human conversation but they don't make many contributions in text analysis. Removing stopwords from text is called noise elimination.</p>
+<p>Let's see how to remove stopwords using NLTK:</p>
+<pre># import the nltk stopwords<br/>from nltk.corpus import stopwords<br/><br/># Load english stopwords list<br/>stopwords_set=set(stopwords.words("english"))<br/><br/># Removing stopwords from text<br/>filtered_word_list=[]<br/>for word in tokenized_words:<br/>    # filter stopwords<br/>    if word not in stopwords_set:<br/>        filtered_word_list.append(word)<br/><br/># print tokenized words<br/>print("Tokenized Word List:", tokenized_words)<br/><br/># print filtered words<br/>print("Filtered Word List:", filtered_word_list)</pre>
+<p>This results in the following output:</p>
+<pre>Tokenized Word List: ['Taj', 'Mahal', 'is', 'one', 'of', 'the', 'beautiful', 'monuments', '.', 'It', 'is', 'one', 'of', 'the', 'wonders', 'of', 'the', 'world', '.', 'It', 'was', 'built', 'by', 'Shah', 'Jahan', 'in', '1631', 'in', 'memory', 'of', 'his', 'third', 'beloved', 'wife', 'Mumtaj', 'Mahal', '.']<br/><br/>Filtered Word List: ['Taj', 'Mahal', 'one', 'beautiful', 'monuments', '.', 'It', 'one', 'wonders', 'world', '.', 'It', 'built', 'Shah', 'Jahan', '1631', 'memory', 'third', 'beloved', 'wife', 'Mumtaj', 'Mahal', '.']</pre>
+<p>In the <span>preceding</span> example, first, we imported the stopwords and loaded the English word list. After this, we iterated the tokenized word list that we generated in the previous section using a <kbd>for</kbd> loop and filtered the tokenized words from the stop word list using the <kbd>if</kbd> condition. We saved the filtered words in the <kbd>fltered_word_list</kbd> list object.</p>
+<p>Let's see how to remove stopwords using spaCy:</p>
+<pre># Import spacy<br/>import spacy<br/><br/># Loading english language model <br/>nlp = spacy.load("en")<br/><br/># text paragraph<br/>paragraph = """Taj Mahal is one of the beautiful monuments. It is one of the wonders of the world. It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal."""<br/><br/># Create nlp Object to handle linguistic annotations in a documents.<br/>my_doc = nlp(paragraph)<br/><br/># Removing stopwords from text<br/>filtered_token_list = []<br/>for token in my_doc:<br/>     # filter stopwords<br/>     if token.is_stop==False:<br/>         filtered_token_list.append(token)<br/><br/>print("Filtered Word List:",filtered_token_list)</pre>
+<p class="mce-root">This results in the following output:</p>
+<pre>Filtered Sentence: [Taj, Mahal, beautiful, monument, ., wonders, world, ., built, Shah, Jahan, 1631, memory, beloved, wife, Mumtaj, Mahal, .]</pre>
+<p>In the <span>preceding</span> example, first, we imported the stopwords and loaded the English word list into the stopwords variable. After this, we iterated the NLP object using a <kbd>for</kbd> loop and filtered each word with the property <kbd>"is_stop"</kbd> from the stop word list using the <kbd>if</kbd> condition. We appended the filtered words in the <kbd>fltered_token_list</kbd><span><span> l</span></span>ist object. In this section, we have looked at removing stopwords. Now, it's time to learn about stemming and lemmatization to find the root word. </p>
+<h1 id="uuid-5e973abc-2679-4f7c-acd2-47cba9fb293a">Stemming and lemmatization</h1>
+<p>Stemming is another step in text analysis for normalization at the language level. The stemming process replaces a word with its root word. It chops off the prefixes and suffixes. For example, the word connect is the root word for connecting, connected, and connection. All the mentioned words have a common root: <strong>connect</strong>. Such differences between word spellings make it difficult to analyze text data.</p>
+<p>Lemmatization is another type of lexicon normalization, which converts a word into its root word. It is closely related to stemming. The main difference is that lemmatization considers the context of the word while normalization is performed, but stemmer doesn't consider the contextual knowledge of the word. Lemmatization is more sophisticated than a stemmer. For example, the word "geese" lemmatizes as "goose." Lemmatization reduces words to their valid lemma using a dictionary. Lemmatization considers the part of speech near the words for normalization; that is why it is difficult to implement and slower, while stemmers are easier to implement and faster but with less accuracy.</p>
+<p>Let's see how to get stemmed and lemmatized using NLTK:</p>
+<pre># Import Lemmatizer<br/>from nltk.stem.wordnet import WordNetLemmatizer<br/><br/># Import Porter Stemmer<br/>from nltk.stem.porter import PorterStemmer<br/><br/># Create lemmatizer object<br/>lemmatizer = WordNetLemmatizer()<br/><br/># Create stemmer object<br/>stemmer = PorterStemmer()<br/><br/># take a sample word<br/>sample_word = "crying"<br/>print("Lemmatized Sample Word:", lemmatizer.lemmatize(sample_word, "v"))<br/><br/>print("Stemmed Sample Word:", stemmer.stem(sample_word))</pre>
+<p class="mce-root">This results in the following output:</p>
+<pre>Lemmatized Sample Word: cry<br/>Stemmed Sample Word: cri</pre>
+<p>In the <span>preceding</span> example, first, we imported <kbd>WordNetLemmatizer</kbd> for lemmatization and instantiated its object. Similarly, we imported <kbd>PorterStemmer</kbd> to stem an instantiate of its object. After this, we got the lemma using the <kbd>lemmatize()</kbd> function and the stemmed word using the <kbd>stem()</kbd> function.</p>
+<p>Let's see how to get lemmatized words using spaCy:</p>
+<pre># Import english language model<br/>import spacy<br/> <br/># Loading english language model <br/>nlp = spacy.load("en")<br/> <br/># Create nlp Object to handle linguistic annotations in documents.<br/>words = nlp("cry cries crying")<br/> <br/># Find lemmatized word<br/>for w in words:<br/>    print('Original Word: ', w.text)<br/>    print('Lemmatized Word: ',w.lemma_)</pre>
+<p class="mce-root">This results in the following output:</p>
+<pre>Original Word:  cry
+Lemmatized Word:  cry
+Original Word:  cries
+Lemmatized Word:  cry
+Original Word:  crying
+Lemmatized Word:  cry</pre>
+<p class="mce-root"><span>In the preceding example, first, we imported the English language model and instantiated it. After this, we created the NLP object and iterated it using a <kbd>for</kbd> loop. In the loop, we got the text value and its lemma value using the <kbd>text</kbd> and <kbd>lemma_</kbd> properties. In this section, we have looked at stemming and lemmatization. Now, we will learn PoS tagging in the given document. </span></p>
+<h1 id="uuid-b8b27af4-b152-4685-9fd2-a5f34dd5d45c">POS tagging</h1>
+<p>PoS stands for part of speech. The main objective of POS tagging is to discover the syntactic type of words, such as nouns, pronouns, adjectives, verbs, adverbs, and prepositions. PoS tagging finds the relationship among words within a sentence.</p>
+<p>Let's see how to get POS tags for words using NLTK:</p>
+<pre># import Word Tokenizer and PoS Tagger<br/>from nltk.tokenize import word_tokenize<br/>from nltk import pos_tag<br/><br/># Sample sentence<br/>sentence = "Taj Mahal is one of the beautiful monument."<br/><br/># Tokenize the sentence<br/>sent_tokens = word_tokenize(sentence)<br/><br/># Create PoS tags<br/>sent_pos = pos_tag(sent_tokens)<br/><br/># Print tokens with PoS<br/>print(sent_pos)</pre>
+<p>This results in the following output:</p>
+<pre>[('Taj', 'NNP'), ('Mahal', 'NNP'), ('is', 'VBZ'), ('one', 'CD'), ('of', 'IN'), ('the', 'DT'), ('beautiful', 'JJ'), ('monument', 'NN'), ('.', '.')]</pre>
+<p>In the <span>preceding</span> example, first, we imported <kbd>word_tokenize</kbd> and <kbd>pos_tag</kbd>. After this, we took a text paragraph and passed it as a parameter to the <kbd>word_tokenize()</kbd> method. The output of this method will be a list of words. After this, generate PoS tags for each token using the <kbd>pos_tag()</kbd> function.</p>
+<p>Let's see how to get POS tags for words using spaCy:</p>
+<pre># Import spacy<br/>import spacy<br/> <br/># Loading small english language model <br/>nlp = spacy.load("en_core_web_sm")<br/><br/># Create nlp Object to handle linguistic annotations in a documents.<br/>sentence = nlp(u"Taj Mahal is one of the beautiful monument.")<br/> <br/>for token in sentence:<br/>  print(token.text, token.pos_)</pre>
+<p class="mce-root">This results in the following output:</p>
+<pre>Taj PROPN <br/>Mahal PROPN <br/>is VERB <br/>one NUM <br/>of ADP <br/>the DET <br/>beautiful ADJ <br/>monument NOUN<br/>. PUNCT</pre>
+<p>In the <span>preceding</span> example, first, we imported the English language model and instantiated it. After this, we created the NLP object and iterated it using a <kbd>for</kbd> loop. In the loop, we got the text value and its lemma value using the <kbd>text</kbd> and <kbd><span><span>pos</span></span>_</kbd> properties. In this section, we have looked at PoS tags. Now, it's time to jump to recognizing named entities in the text.</p>
+<h1 id="uuid-0690a18d-cb34-4775-a8d4-51ba190913de">Recognizing entities</h1>
+<p>Entity recognition means extracting or detecting entities in the given text. It is also known as <strong>Named Entity Recognition</strong> (<strong>NER</strong>). An entity can be defined as an object, such as a location, people, an organization, or a date. Entity recognition is one of the advanced topics of NLP. It is used to extract important information from text.</p>
+<p>Let's see how to get entities from text using spaCy:</p>
+<pre># Import spacy<br/>import spacy<br/><br/># Load English model for tokenizer, tagger, parser, and NER<br/>nlp = spacy.load('en')<br/><br/># Sample paragraph<br/>paragraph = """Taj Mahal is one of the beautiful monuments. It is one of the wonders of the world. It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal."""<br/><br/># Create nlp Object to handle linguistic annotations in documents.<br/>docs=nlp(paragraph)<br/>entities=[(i.text, i.label_) for i in docs.ents]<br/>print(entities)</pre>
+<p>This results in the following output:</p>
+<pre>[('Taj Mahal', 'PERSON'), ('Shah Jahan', 'PERSON'), ('1631', 'DATE'), ('third', 'ORDINAL'), ('Mumtaj Mahal', 'PERSON')]</pre>
+<p>In the <span>preceding</span> example, first, we imported spaCy and loaded the English language model. After this, we created the NLP object and iterated it using a <kbd>for</kbd> loop. In the loop, we got the text value and its entity type value using the <kbd>text</kbd> and <kbd>label_</kbd> properties. Let's visualize the entities in the text using a spaCy display class:</p>
+<pre># Import display for visualizing the Entities<br/>from spacy import displacy<br/><br/># Visualize the entities using render function<br/>displacy.render(docs, style = "ent",jupyter = True)<br/><br/></pre>
+<p class="mce-root">This results in the following output:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/225347f8-1378-43ca-88aa-1f1d9a183188.png"/></div>
+<p>In the <span>preceding</span> example, we imported the display class and called its <kbd>render()</kbd> method with a NLP text object, <kbd>style</kbd> as <kbd>ent</kbd>, and <kbd>jupyter</kbd> as <kbd>True</kbd>.</p>
+<h1 id="uuid-85a78ad2-a009-4ba0-b138-696e600b9cc8">Dependency parsing</h1>
+<p>Dependency parsing finds the relationship among words – how words are related to each other. It helps computers to understand sentences for analysis; for example, "Taj Mahal is one of the most beautiful monuments." We can't understand this sentence just by analyzing words. We need to dig down and understand the word order, sentence structure, and parts of speech:</p>
+<pre># Import spacy<br/>import spacy<br/><br/># Load English model for tokenizer, tagger, parser, and NER<br/>nlp = spacy.load('en')<br/><br/># Create nlp Object to handle linguistic annotations in a documents.<br/>docs=nlp(sentence)<br/><br/># Visualize the using render function<br/>displacy.render(docs, style="dep", jupyter= True, options={'distance': 150})</pre>
+<p>This results in the following output:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img style="font-family: Merriweather, serif;font-size: 1em;background-color: #ffffff;" src="assets/7c45d0f8-b69f-49ed-97ca-ad30f7862e69.png"/></div>
+<p>In the <span>preceding</span> example, we have imported the display class and called its <kbd>render()</kbd> method with a NLP text object, <kbd>style</kbd> as '<kbd>dep</kbd>', <kbd>jupyter</kbd> as <kbd>True</kbd>, and <kbd>options</kbd> as a dictionary with a distance key and a value of 150. Now, we will see how to visualize text data using a word cloud, based on the word's frequency in the text. </p>
+<h1 id="uuid-4d8e3240-3bc9-4fb9-a557-c0630c09c342">Creating a word cloud</h1>
+<p>As a data analyst, you need to identify the most frequent words and represent them in graphical form to the top management. A word cloud is used to represent a word-frequency plot. It represents the frequency by the size of the word, that is, the more frequent word looks larger in size and <span><span>less frequent </span></span>words looks smaller in size. It is also known as a tag cloud. We can create a word cloud using the <kbd>wordcloud</kbd> library in Python. We can install it using the following commands:</p>
+<pre>pip install wordcloud</pre>
+<p style="padding-left: 60px">Or, alternatively, this one:</p>
+<pre>conda install -c conda-forge wordcloud</pre>
+<p style="padding-left: 60px" class="mce-root">Let's learn how to create a word cloud:</p>
+<ol>
+<li>Import libraries and load a stopwords list:</li>
+</ol>
+<pre style="padding-left: 60px"># importing all necessary modules<br/>from wordcloud import WordCloud<br/>from wordcloud import STOPWORDS<br/>import matplotlib.pyplot as plt<br/><br/>stopword_list = set(STOPWORDS)<br/><br/>paragraph="""Taj Mahal is one of the beautiful monuments. It is one of the wonders of the world. It was built by Shah Jahan in 1631 in memory of his third beloved wife Mumtaj Mahal."""</pre>
+<p style="padding-left: 60px">In<span> the preceding example, we imported <kbd>WordCloud</kbd>, <kbd>STOPWORDS</kbd>, and <kbd>matplotlib.pyplot</kbd> classes. We also created the stopword set and defined the paragraph text.</span></p>
+<ol start="2">
+<li>Create and generate a word cloud: </li>
+</ol>
+<pre style="padding-left: 60px">word_cloud = WordCloud(width = 550, height = 550,<br/>background_color ='white',<br/>stopwords = stopword_list,<br/>min_font_size = 10).generate(paragraph)</pre>
+<p style="padding-left: 60px"><span>After this, the <kbd>WordCloud</kbd> object with the parameters <kbd>width</kbd>, <kbd>height</kbd>, <kbd>background_color</kbd>, <kbd>stopwords</kbd>, and <kbd>min_font_size</kbd> are created and generated the cloud on the paragraph text string.</span></p>
+<ol start="3">
+<li>Visualize the w<span>ord cloud:</span></li>
+</ol>
+<pre style="padding-left: 60px">0.# Visualize the WordCloud Plot<br/># Set wordcloud figure size<br/>plt.figure(figsize = (8, 6))<br/><br/># Show image<br/>plt.imshow(word_cloud)<br/><br/># Remove Axis<br/>plt.axis("off")<br/><br/># show plot<br/>plt.show()</pre>
+<p style="padding-left: 60px">This results in the following output:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/b0aa3f4f-1b10-49fd-b0ec-1843c67bacb9.png" style=""/></div>
+<p class="mce-root"/>
+<p>In the <span>preceding</span> example,  we visualized the word cloud using <kbd>matplotlib.pyplot</kbd>. Let's learn how to convert text documents into a numeric vector using Bag of Words. </p>
+<h1 id="uuid-e1ba5756-b8a6-478b-9894-5d2dfcdaf93c">Bag of Words</h1>
+<p><strong>Bag of Words</strong> (<strong>BoW</strong>) is one of the most basic, simplest, and popular feature engineering techniques for converting text into a numeric vector. It works in two steps: collecting vocabulary words and counting their presence or frequency in the text. It does not consider the document structure and contextual information. Let's take the following three documents and understand BoW:</p>
+<p>Document 1: I like pizza.</p>
+<p>Document 2: I do not like burgers.</p>
+<p>Document 3: Pizza and burgers both are junk food.</p>
+<p>Now, we will create the <strong>Document Term Matrix</strong> (<strong>DTM</strong>). This matrix consists of the document at rows, words at the column, and the frequency at cell values.</p>
+<table style="border-collapse: collapse;width: 100%" class="a" border="1">
+<tbody>
+<tr>
+<td style="width: 80px">
+<p> </p>
+</td>
+<td style="width: 23px">
+<p>I</p>
+</td>
+<td style="width: 67px">
+<p>like</p>
+</td>
+<td style="width: 68px">
+<p>pizza</p>
+</td>
+<td style="width: 30px">
+<p>do</p>
+</td>
+<td style="width: 42px">
+<p>not</p>
+</td>
+<td style="width: 85px">
+<p>burgers</p>
+</td>
+<td style="width: 48px">
+<p>and</p>
+</td>
+<td style="width: 59px">
+<p>both</p>
+</td>
+<td style="width: 41px">
+<p>are</p>
+</td>
+<td style="width: 58px">
+<p>junk</p>
+</td>
+<td style="width: 59px">
+<p>food</p>
+</td>
+</tr>
+<tr>
+<td style="width: 80px">
+<p>Doc-1</p>
+</td>
+<td style="width: 23px">
+<p>1</p>
+</td>
+<td style="width: 67px">
+<p>1</p>
+</td>
+<td style="width: 68px">
+<p>1</p>
+</td>
+<td style="width: 30px">
+<p>0</p>
+</td>
+<td style="width: 42px">
+<p>0</p>
+</td>
+<td style="width: 85px">
+<p>0</p>
+</td>
+<td style="width: 48px">
+<p>0</p>
+</td>
+<td style="width: 59px">
+<p>0</p>
+</td>
+<td style="width: 41px">
+<p>0</p>
+</td>
+<td style="width: 58px">
+<p>0</p>
+</td>
+<td style="width: 59px">
+<p>0</p>
+</td>
+</tr>
+<tr>
+<td style="width: 80px">
+<p>Doc-2</p>
+</td>
+<td style="width: 23px">
+<p>1</p>
+</td>
+<td style="width: 67px">
+<p>1</p>
+</td>
+<td style="width: 68px">
+<p>0</p>
+</td>
+<td style="width: 30px">
+<p>1</p>
+</td>
+<td style="width: 42px">
+<p>1</p>
+</td>
+<td style="width: 85px">
+<p>1</p>
+</td>
+<td style="width: 48px">
+<p>0</p>
+</td>
+<td style="width: 59px">
+<p>0</p>
+</td>
+<td style="width: 41px">
+<p>0</p>
+</td>
+<td style="width: 58px">
+<p>0</p>
+</td>
+<td style="width: 59px">
+<p>0</p>
+</td>
+</tr>
+<tr>
+<td style="width: 80px">
+<p>Doc-3</p>
+</td>
+<td style="width: 23px">
+<p>0</p>
+</td>
+<td style="width: 67px">
+<p>0</p>
+</td>
+<td style="width: 68px">
+<p>1</p>
+</td>
+<td style="width: 30px">
+<p>0</p>
+</td>
+<td style="width: 42px">
+<p>0</p>
+</td>
+<td style="width: 85px">
+<p>1</p>
+</td>
+<td style="width: 48px">
+<p>1</p>
+</td>
+<td style="width: 59px">
+<p>1</p>
+</td>
+<td style="width: 41px">
+<p>1</p>
+</td>
+<td style="width: 58px">
+<p>1</p>
+</td>
+<td style="width: 59px">
+<p>1</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>In the <span>preceding</span> example, we generated the DTM using a single keyword known as a unigram. We can also use a combination of continuous two keywords, known as the bigram model, and three keywords, known as the trigram model. The generalized form is known as the n-gram model.</p>
+<p>In Python, scikit-learn offers <kbd>CountVectorizer</kbd> for generating the BoW DTM. We'll see in the <em>Sentiment analysis using text classification</em> section how to generate it using scikit-learn.</p>
+<h1 id="uuid-6c50f21c-e21d-44bb-a43f-a88db80f436f">TF-IDF</h1>
+<p><strong>TF-IDF</strong> stands for <strong>Term Frequency-Inverse Document Frequency.</strong> It has two segments: <strong>Term Frequency</strong> (<strong>TF</strong>) and <strong>Inverse Document Frequency</strong> (<strong>IDF</strong>). TF only counts the occurrence of words in each document. It is equivalent to BoW. TF does not consider the context of words and is biased toward longer documents. <strong>IDF</strong> computes values that correspond to the amount of information kept by a word.</p>
+<div class="CDPAlignLeft CDPAlign">                     <img src="assets/d912905e-f510-41bd-a460-b50456eaa376.png" style=""/></div>
+<p>TF-IDF is the dot product of both segments – TF and IDF. TF-IDF normalizes the document weights. A higher value of TF-IDF for a word represents a higher occurrence in that document. Let's take the following three documents:</p>
+<p>Document 1: I like pizza.</p>
+<p>Document 2: I do not like burgers.</p>
+<p>Document 3: Pizza and burgers both are junk food.</p>
+<p>Now, we will create the DTM. This matrix consists of the document name in the row headers, the words in the column headers, and the TF-IDF values in the cells:</p>
+<table style="border-collapse: collapse;width: 100%" class="table" border="1">
+<tbody>
+<tr>
+<td/>
+<td>
+<p>I</p>
+</td>
+<td>
+<p>like</p>
+</td>
+<td>
+<p>pizza</p>
+</td>
+<td>
+<p>do</p>
+</td>
+<td>
+<p>not</p>
+</td>
+<td>
+<p>burgers</p>
+</td>
+<td>
+<p>and</p>
+</td>
+<td>
+<p>both</p>
+</td>
+<td>
+<p>are</p>
+</td>
+<td>
+<p>junk</p>
+</td>
+<td>
+<p>food</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Doc-1</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Doc-2</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>1.58</p>
+</td>
+<td>
+<p>1.58</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Doc-3</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0.58</p>
+</td>
+<td>
+<p>1.58</p>
+</td>
+<td>
+<p>1.58</p>
+</td>
+<td>
+<p>1.58</p>
+</td>
+<td>
+<p>1.58</p>
+</td>
+<td>
+<p>1.58</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p>In Python, scikit-learn offers <kbd>TfidfVectorizer</kbd> for generating the TF-IDF DTM. Let's see in the upcoming section how to generate it using scikit-learn.</p>
+<h1 id="uuid-ed0d3884-acff-4793-b092-e9c696a91ee3">Sentiment analysis using text classification</h1>
+<p>A business or data analyst needs to understand customer feedback and reviews about a specific product. What did customers like or dislike? And how are sales going? As a business analyst, you need to analyze these things with reasonable accuracy and quantify customer reviews, feedback, opinions, and tweets to understand the target audience. Sentiment analysis extracts the core information from the text and provides people's perception of products, services, brands, and political and social topics. Sentiment analysis is used to understand customers' and people's mindset. It is not only used in marketing, we can also use it in politics, public administration, policy-making, information security, and research. It helps us to understand the polarity of people's feedback. Sentiment analysis also covers words, tone, and writing style.</p>
+<p>Text classification can be one of the approaches used for sentiment analysis. It is a supervised method used to detect a class of web content, news articles, blogs, tweets, and sentiments. The classification has a huge number of applications, from marketing, finance, e-commerce, and security. First, we preprocess the text, then we find the features of the preprocessed text, and then we feed features and the labels to the machine learning algorithm to do the classification. <span>The following diagram explains the full idea of sentiment analysis using text classification: </span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/b96ae002-40f6-434b-87d2-747be7d03ea9.png"/></div>
+<p><span>Let's classify the sentiments for Amazon Alexa product reviews. We can get data from the Kaggle website (<a href="https://www.kaggle.com/sid321axn/amazon-alexa-reviews">https://www.kaggle.com/sid321axn/amazon-alexa-reviews</a>).</span></p>
+<p>The Alexa product reviews data is a tab-separated values file (TSV file). This data has five columns or attributes – <strong>rating</strong>, <strong>date</strong>, <strong>variation</strong>, <strong>verified_reviews</strong>, and <strong>feedback</strong>.</p>
+<p class="mce-root"/>
+<p>The <kbd>rating</kbd> column indicates the user ratings for Alexa products. The date column is the date on which the review was given by the user. The <kbd>variation</kbd> column represents the product model name. <kbd>verified_reviews</kbd> has the actual user review about the product. </p>
+<p>The rating denotes the rating given by each user to the product. The date is the date of the review, and variation describes the model name. <kbd>verified_reviews</kbd> contains the text review written by the user, and the feedback column represents the sentiment score, where 1 denotes positive and 0 denotes negative sentiment.</p>
+<h2 id="uuid-91df0dfb-e949-405e-99d9-99d5e6949160">Classification using BoW</h2>
+<p>In this subsection, we will perform sentiment analysis and text classification based on BoW. Here, a bag of words is generated using the <kbd>scikit-learn</kbd> library.  Let's see how we perform sentiment analysis using BoW features in the following steps:</p>
+<ol>
+<li>Load the dataset:</li>
+</ol>
+<p style="padding-left: 60px">The first step to build a machine learning model is to load the dataset. Let's first read the data using the pandas <kbd>read_csv()</kbd> function:</p>
+<pre style="padding-left: 60px"># Import libraries<br/>import pandas as pd<br/><br/># read the dataset<br/>df=pd.read_csv('amazon_alexa.tsv', sep='\t')<br/><br/># Show top 5-records<br/>df.head()</pre>
+<p style="padding-left: 60px">This results in the following output:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img style="" src="assets/702b332e-734c-4789-be1e-23ba6ffcc4d9.png"/></div>
+<p style="padding-left: 60px">In the <span>preceding</span> output dataframe, we have seen that the Alexa review dataset has five columns: <strong>rating</strong>, <strong>date</strong>, <strong>variation</strong>, <strong>verified_reviews</strong>, and <strong>feedback</strong>.</p>
+<ol start="2">
+<li>Explore the dataset.</li>
+</ol>
+<p style="padding-left: 60px">Let's plot the <strong>feedback</strong> column count to see how many positive and negative reviews the dataset has:</p>
+<pre style="padding-left: 60px"># Import seaborn<br/>import seaborn as sns<br/>import matplotlib.pyplot as plt<br/><br/># Count plot<br/>sns.countplot(x='feedback', data=df)<br/><br/># Set X-axis and Y-axis labels<br/>plt.xlabel('Sentiment Score')<br/>plt.ylabel('Number of Records')<br/><br/># Show the plot using show() function<br/>plt.show()</pre>
+<p style="padding-left: 60px">This results in the following output:</p>
+<div class="mce-root CDPAlignCenter CDPAlign"><img style="font-family: Merriweather, serif;font-size: 1em;background-color: #ffffff;" src="assets/f17a8862-f0c7-4b8f-ae9e-ffe9c85ee309.png"/></div>
+<p style="padding-left: 60px">In the <span>preceding</span> code, we drew the bar chart for the feedback column using the seaborn <kbd>countplot()</kbd> function. This function counts and plots the values of the <strong>feedback</strong> column. In this plot, we can observe that 2,900 reviews are positive and 250 reviews are negative feedback.</p>
+<ol start="3">
+<li>Generating features using <kbd>CountVectorizer</kbd>:</li>
+</ol>
+<p style="padding-left: 60px">Let's generate a BoW matrix for the customer reviews using scikit-learn's <kbd>CountVectorizer</kbd>:</p>
+<pre style="padding-left: 60px"># Import CountVectorizer and RegexTokenizer<br/>from nltk.tokenize import RegexpTokenizer<br/>from sklearn.feature_extraction.text import CountVectorizer<br/><br/># Create Regex tokenizer for removing special symbols and numeric values<br/>regex_tokenizer = RegexpTokenizer(r'[a-zA-Z]+')<br/><br/># Initialize CountVectorizer object<br/>count_vectorizer = CountVectorizer(lowercase=True,<br/>stop_words='english',<br/>ngram_range = (1,1),<br/>tokenizer = regex_tokenizer.tokenize)<br/><br/># Fit and transform the dataset<br/>count_vectors = count_vectorizer.fit_transform( df['verified_reviews'])</pre>
+<p style="padding-left: 60px">In the <span>preceding</span> code, we created a <kbd>RegexTokenizer</kbd> object with an input regular expression that removes the special characters and symbols. After this, the <kbd>CountVectorizer</kbd> object was created and performed the fit and transform operation on verified reviews. Here, <kbd>CountVectorizer</kbd> takes parameters such as <kbd>lowercase</kbd> for converting keywords into lowercase, <kbd>stop_words</kbd> for specifying a language-specific stopwords list, <kbd>ngram_range</kbd> for specifying the unigram, bigram, or trigram, and <kbd>tokenizer</kbd> is used to pass the <kbd>tokenizer</kbd> object. The <kbd>RegexTokenizer</kbd> object is passed to the <kbd>tokenizer</kbd> parameter. Finally, we called the <kbd>fit_transform()</kbd> function that converts text reviews into a DTM as per specified parameters.</p>
+<ol start="4">
+<li>Split train and test set:</li>
+</ol>
+<p style="padding-left: 60px">Let's split the feature set and target column into <kbd>feature_train</kbd>, <kbd>feature_test</kbd>, <kbd>target_train</kbd>, and <kbd>target_test</kbd> using <kbd>train_test_split()</kbd>. <kbd>train_test_split()</kbd> takes dependent, independent dataframes, <kbd>test_size</kbd> and <kbd>random_state</kbd>. Here, <kbd>test_size</kbd> will decide the ratio of the train-test split (that is, <kbd>test_size 0.3</kbd> means 30% for the testing set and the remaining 70% will be the training set), and <kbd>random_state</kbd> is used as a seed value for reproducing the same data split each time. If <kbd>random_state</kbd> is <kbd>None</kbd>, then it will randomly split the records each time, which will give different performance measures:</p>
+<pre style="padding-left: 60px"># Import train_test_split<br/>from sklearn.model_selection import train_test_split<br/><br/># Partition data into training and testing set<br/>feature_train, feature_test, target_train, target_test = train_test_split(count_vectors, df['feedback'], test_size=0.3, random_state=1)</pre>
+<p style="padding-left: 60px">In the <span>preceding</span> code, we are partitioning the feature set and target column into <kbd>feature_train</kbd>, <kbd>feature_test</kbd>, <kbd>target_train</kbd>, and <kbd>target_test</kbd> using the <kbd>train_test_split()</kbd> method.</p>
+<ol start="5">
+<li>Classification Model Building using Logistic Regression:</li>
+</ol>
+<p style="padding-left: 60px">In this section, we will build the logistic regression model to classify the review sentiments using BoW (or <kbd>CountVectorizer</kbd>). Let's create the logistic regression model:</p>
+<pre style="padding-left: 60px"># import logistic regression scikit-learn model<br/>from sklearn.linear_model import LogisticRegression<br/><br/># Create logistic regression model object<br/>logreg = LogisticRegression(solver='lbfgs')<br/><br/># fit the model with data<br/>logreg.fit(feature_train,target_train)<br/><br/># Forecast the target variable for given test dataset<br/>predictions = logreg.predict(feature_test)</pre>
+<p style="padding-left: 60px" class="mce-root"><span>In the preceding code, we imported <kbd>LogisticRegression</kbd> and created the <kbd>LogisticRegression</kbd> object. After creating the model object, we performed the <kbd>fit()</kbd> operation on the training data and <kbd>predict()</kbd> to forecast the sentiment for the test dataset.</span></p>
+<ol start="6">
+<li>Evaluate the Classification Model:</li>
+</ol>
+<p style="padding-left: 60px">Let's evaluate the classification model using the <kbd>metrics</kbd> class and its methods – <kbd>accuracy_score</kbd>, <kbd>precision_score</kbd>, and <kbd>recall_score</kbd>:</p>
+<pre style="padding-left: 60px"># Import metrics module for performance evaluation<br/>from sklearn.metrics import accuracy_score<br/>from sklearn.metrics import precision_score<br/>from sklearn.metrics import recall_score<br/>from sklearn.metrics import f1_score<br/><br/># Assess model performance using accuracy measure<br/>print("Logistic Regression Model Accuracy:",accuracy_score(target_test, predictions))<br/><br/># Calculate model precision<br/>print("Logistic Regression Model Precision:",precision_score(target_test, predictions))<br/><br/># Calculate model recall<br/>print("Logistic Regression Model Recall:",recall_score(target_test, predictions))<br/><br/># Calculate model f1 score<br/>print("Logistic Regression Model F1-Score:",f1_score(target_test, predictions))</pre>
+<p style="padding-left: 60px">This results in the following output:</p>
+<pre style="padding-left: 60px">Logistic Regression Model Accuracy: 0.9428571428571428<br/>Logistic Regression Model Precision: 0.952433628318584<br/>Logistic Regression Model Recall: 0.9873853211009175<br/>Logistic Regression Model F1-Score: 0.9695945945945945</pre>
+<p class="mce-root"><span>In the preceding code, we have evaluated the model performance using accuracy, precision, recall, and f1-score using the <kbd>scikit-learn metrics</kbd> function. All the measures are greater than 94%, so we can say that our model is performing well and classifying both the sentiment levels with a good amount of precision and recall.</span></p>
+<h2 id="uuid-5c21aab4-f792-4448-8613-77477ed091ac">Classification using TF-IDF</h2>
+<p><span>In this subsection, we will perform sentiment analysis and text classification based on TF-IDF.  Here, TF-IDF is generated using the <kbd>scikit-learn</kbd> library.  Let's see how we perform sentiment analysis using TF-IDF features using the following steps:</span></p>
+<ol>
+<li>Load the dataset:</li>
+</ol>
+<p style="padding-left: 60px">The first step for building a machine learning model is to load the dataset.</p>
+<p style="padding-left: 60px">Let's first read the data using the pandas <kbd>read_csv()</kbd> function:</p>
+<pre style="padding-left: 60px"># Import libraries<br/>import pandas as pd<br/><br/># read the dataset<br/>df=pd.read_csv('amazon_alexa.tsv', sep='\t')<br/><br/># Show top 5-records<br/>df.head()</pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/1812f01f-3a8c-499f-850d-1379a72097e0.png"/></div>
+<p style="padding-left: 60px">In the <span>preceding</span> output dataframe, we have seen that the Alexa review dataset has five columns: <strong>rating</strong>, <strong>date</strong>, <strong>variation</strong>, <strong>verified_reviews</strong>, and <strong>feedback</strong>.</p>
+<ol start="2">
+<li>Feature generation using <kbd>TfidfVectorizer</kbd>:</li>
+</ol>
+<p style="padding-left: 60px">Let's generate a TF-IDF matrix for the customer reviews using scikit-learn's <kbd>TfidfVectorizer</kbd>:</p>
+<pre style="padding-left: 60px"># Import TfidfVectorizer and RegexTokenizer<br/>from nltk.tokenize import RegexpTokenizer<br/>from sklearn.feature_extraction.text import TfidfVectorizer<br/><br/># Create Regex tokenizer for removing special symbols and numeric values<br/>regex_tokenizer = RegexpTokenizer(r'[a-zA-Z]+')<br/><br/># Initialize TfidfVectorizer object<br/>tfidf = TfidfVectorizer(lowercase=True, stop_words ='english',ngram_range = (1,1),tokenizer = regex_tokenizer.tokenize)<br/><br/># Fit and transform the dataset<br/>text_tfidf = tfidf.fit_transform(df['verified_reviews'])</pre>
+<p style="padding-left: 60px">In the <span>preceding</span> code, we created a <kbd>RegexTokenizer</kbd> object with an input regular expression that removes the special characters and symbols. After this, the <kbd>TfidfVectorizer</kbd> object was created and performed the fit and transform operation on verified reviews. Here, <kbd>TfidfVectorizer</kbd> takes parameters such as <kbd>lowercase</kbd> for converting keywords into lowercase, <kbd>stop_words</kbd> for a specified language-specific stopwords list, <kbd>ngram_range</kbd> for specifying the unigram, bigram, or trigram, and <kbd>tokenizer</kbd> is used to pass the <kbd>tokenizer</kbd> object. The <kbd>RegexTokenizer</kbd> object is passed to the <kbd>tokenizer</kbd> parameter. Finally, we called the <kbd>fit_transform()</kbd> function that converts text reviews into a DTM as per specified parameters.</p>
+<ol start="3">
+<li>Split the training and testing datasets:</li>
+</ol>
+<p style="padding-left: 60px">Let's split the feature set and target column into <kbd>feature_train</kbd>, <kbd>feature_test</kbd>, <kbd>target_train</kbd>, and <kbd>target_test</kbd> using <kbd>train_test_split()</kbd>. <kbd>train_test_split()</kbd> takes dependent, independent dataframes, <kbd>test_size</kbd> and <kbd>random_state</kbd>. Let's split the dataset into a training and testing set:</p>
+<pre style="padding-left: 60px"># Import train_test_split<br/>from sklearn.model_selection import train_test_split<br/><br/># Partition data into training and testing set<br/>from sklearn.model_selection import train_test_split<br/><br/>feature_train, feature_test, target_train, target_test = train_test_split(text_tfidf, df['feedback'], test_size=0.3, random_state=1)<br/><br/></pre>
+<p style="padding-left: 60px">In the <span>preceding </span>code, we partition the feature set and target column into <kbd>feature_train</kbd>, <kbd>feature_test</kbd>, <kbd>target_train</kbd>, and <kbd>target_test</kbd> using the <kbd>train_test_split()</kbd> method.</p>
+<ol start="4">
+<li>Classification model building using logistic regression:</li>
+</ol>
+<p style="padding-left: 60px">In this section, we will build the logistic regression model to classify the review sentiments using TF-IDF. Let's create the logistic regression model:</p>
+<pre style="padding-left: 60px"># import logistic regression scikit-learn model<br/>from sklearn.linear_model import LogisticRegression<br/><br/># instantiate the model<br/>logreg = LogisticRegression(solver='lbfgs')<br/><br/># fit the model with data<br/>logreg.fit(feature_train,target_train)<br/><br/># Forecast the target variable for given test dataset<br/>predictions = logreg.predict(feature_test)</pre>
+<p style="padding-left: 60px">In the <span>preceding</span> code, we imported <kbd>LogisticRegression</kbd> and created the <kbd>LogisticRegression</kbd> object. After creating the model object, we performed a <kbd>fit()</kbd> operation on the training data and <kbd>predict()</kbd> to forecast the sentiment for the test dataset.</p>
+<ol start="5">
+<li>Evaluate the classification model:</li>
+</ol>
+<p style="padding-left: 60px">Let's evaluate the classification model using the <kbd>metrics</kbd> class and its methods – <kbd>accuracy_score</kbd>, <kbd>precision_score</kbd>, and <kbd>recall_score</kbd>:</p>
+<pre style="padding-left: 60px"># Import metrics module for performance evaluation<br/>from sklearn.metrics import accuracy_score<br/>from sklearn.metrics import precision_score<br/>from sklearn.metrics import recall_score<br/>from sklearn.metrics import f1_score<br/><br/># Assess model performance using accuracy measure<br/>print("Logistic Regression Model Accuracy:",accuracy_score(target_test, predictions))<br/><br/># Calculate model precision<br/>print("Logistic Regression Model Precision:",precision_score(target_test, predictions))<br/><br/># Calculate model recall<br/>print("Logistic Regression Model Recall:",recall_score(target_test, predictions))<br/><br/># Calculate model f1 score<br/>print("Logistic Regression Model F1-Score:",f1_score(target_test, predictions))<br/><br/></pre>
+<p style="padding-left: 60px"><span>This results in the following output:</span></p>
+<pre style="padding-left: 60px">Logistic Regression Model Accuracy: 0.9238095238095239<br/>Logistic Regression Model Precision: 0.923728813559322<br/>Logistic Regression Model Recall: 1.0<br/>Logistic Regression Model F1-Score: 0.960352422907489<br/><br/></pre>
+<p class="mce-root"><span>In the preceding code, we evaluated the model performance using accuracy, precision, recall, and f1-score using the scikit-learn <kbd>metrics</kbd> function. All the measures are greater than 94%, so we can say that our model is performing well and classifying both sentiment levels with a good amount of precision and recall. In this section, we have looked at sentiment analysis using text classification. Text classification is performed using BoW and TF-IDF features. In the next section, we will learn how to find similarities between two pieces of text, such as sentences or paragraphs.</span></p>
+<h1 id="uuid-6f9ec470-f4e3-4c54-92f1-15a5296e0636">Text similarity</h1>
+<p>Text similarity is the process of determining the two closest texts. Text similarity is very helpful in finding similar documents, questions, and queries. For example, a search engine such as Google uses similarity to find document relevance, and Q&amp;A systems such as StackOverflow or a consumer service system use similar questions. There are two common metrics used for text similarity, namely Jaccard and cosine similarity.</p>
+<p>We can also use the similarity method available in spaCy. The <kbd>nlp</kbd> object's <kbd>similarity</kbd> method returns a score between two sentences. Let's look at the following example:</p>
+<pre># Import spacy<br/>import spacy<br/><br/># Load English model for tokenizer, tagger, parser, and NER<br/>nlp = spacy.load('en')<br/><br/># Create documents<br/>doc1 = nlp(u'I love pets.')<br/>doc2 = nlp(u'I hate pets')<br/><br/><br/># Find similarity<br/>print(doc1.similarity(doc2))</pre>
+<p><span>This results in the following output:</span></p>
+<pre>0.724494176985974<strong><br/></strong><br/>&lt;ipython-input-32-f157deaa344d&gt;:12: UserWarning: [W007] The model you're using has no word vectors loaded, so the result of the Doc.similarity method will be based on the tagger, parser and NER, which may not give useful similarity judgements. This may happen if you're using one of the small models, e.g. `en_core_web_sm`, which don't ship with word vectors and only use context-sensitive tensors. You can always add your own word vectors, or use one of the larger models instead if available.<strong><br/></strong></pre>
+<p>In the <span>preceding</span> code block, <span>we have found the similarity between two sentences using spaCy's <kbd>similarity()</kbd> function. Spacy's similarity function does not give better results with small models (such as the <kbd>en_core_web_sm</kbd> and <kbd>en</kbd> models); that's why you will get a warning: <strong>UserWarning: [W007]</strong><strong>.</strong> To remove this warning, use larger models such as </span><span><kbd>en_core_web_lg</kbd></span>.<span> </span></p>
+<h2 id="uuid-77849c90-894b-4ff3-bb8b-d0f2b7fe827a">Jaccard similarity</h2>
+<p>Jaccard similarity calculates the similarity between two sets by the ratio of common words (intersection) to totally unique words (union) in both sets. It takes a list of unique words in each sentence or document. It is useful where the repetition of words does not matter. Jaccard similarity ranges from 0-100%; the higher the percentage, the more similar the two populations:</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/ac41da11-47fd-4a9e-9a21-f0a2c3abbea0.png" style="width:9.83em;height:3.08em;"/></div>
+<p>Let's look at a Jaccard similarity example:</p>
+<pre>def jaccard_similarity(sent1, sent2):<br/>    """Find text similarity using jaccard similarity"""<br/>    # Tokenize sentences<br/>    token1 = set(sent1.split())<br/>    token2 = set(sent2.split())<br/>     <br/>    # intersection between tokens of two sentences    <br/>    intersection_tokens = token1.intersection(token2)<br/>    <br/>    # Union between tokens of two sentences<br/>    union_tokens=token1.union(token2)<br/>    <br/>    # Cosine Similarity<br/>    sim_= float(len(intersection_tokens) / len(union_tokens))<br/>    return sim_<br/><br/>jaccard_similarity('I love pets.','I hate pets.')</pre>
+<p><span>This results in the following output:</span></p>
+<pre>0.5</pre>
+<p>In the <span>preceding</span> example, we have created a function, <kbd>jaccard_similarity()</kbd>, which takes two arguments, <kbd>sent1</kbd> and <kbd>sent2</kbd>. It will find the ratio between the intersection of keywords and the union of keywords between two sentences.</p>
+<h2 id="uuid-26c4e252-e8fc-4bd6-969f-e01da3a844ff">Cosine similarity</h2>
+<p>Cosine similarity computes the cosine of the angle between two multidimensional projected vectors. It indicates how two documents are related to each other. Two vectors can be made of the bag of words or TF-IDF or any equivalent vector of the document. It is useful where the duplication of words matters. Cosine similarity can measure text similarity irrespective of the size of documents.</p>
+<div class="CenterAlign"><img class="fm-editor-equation" src="assets/d115797f-04b8-49eb-99bb-9b7800a97ef5.png" style="width:17.58em;height:2.83em;"/></div>
+<p>Let's look at a cosine similarity example:</p>
+<pre># Let's import text feature extraction TfidfVectorizer<br/>from sklearn.feature_extraction.text import TfidfVectorizer<br/>docs=['I love pets.','I hate pets.']<br/><br/># Initialize TfidfVectorizer object<br/>tfidf= TfidfVectorizer()<br/><br/># Fit and transform the given data<br/>tfidf_vector = tfidf.fit_transform(docs)<br/><br/># Import cosine_similarity metrics<br/>from sklearn.metrics.pairwise import cosine_similarity<br/><br/># compute similarity using cosine similarity<br/>cos_sim=cosine_similarity(tfidf_vector, tfidf_vector)<br/><br/>print(cos_sim)</pre>
+<p class="mce-root"><span>This results in the following output:</span></p>
+<pre>[[1. 0.33609693]<br/>[0.33609693 1. ]]</pre>
+<p>In the <span>preceding</span> example, first, we import <kbd>TfidfVectorizer</kbd> and generate the TF-IDF vector for given documents. After this, we apply the <kbd>cosine_similarity()</kbd> metric on the document list and get similarity metrics.</p>
+<h1 id="uuid-747838f5-b108-49d3-ad77-14ac9f42b8d1">Summary</h1>
+<p>In this chapter, we explored text analysis using NLTK and spaCy. The main focus was on text preprocessing, sentiment analysis, and text similarity. The chapter started with text preprocessing tasks such as text normalization, tokenization, removing stopwords, stemming, and lemmatization. We also focused on how to create a word cloud, recognize entities in a given text, and find dependencies among tokens. In later sections, we focused on BoW, TFIDF, sentiment analysis, and text classification.</p>
+<p><span>The next chapter, Chapter 13, <em>Analyzing Image Data</em>, focuses on image processing, basic image processing operations, and face detection using OpenCV. The chapter starts with image color models, and image operations such as drawing on an image, resizing an image, and flipping and blurring an image. In later sections, the focus will be on face detection in a given input image.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

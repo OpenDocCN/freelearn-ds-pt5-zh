@@ -1,0 +1,378 @@
+<html><head></head><body>
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Bash Functions and Data Visualization</h1>
+                </header>
+            
+            <article>
+                
+<p class="mce-root">So far, we've been working with bash interactively and had to rely on the bash<span> </span><kbd>history</kbd><span> </span>for what we've done. Wouldn't it be nice if you had a portable way to share and store the commands you want to run? Well, that functionality exists in the form of shell scripts composed of shell functions. </p>
+<p class="mce-root">We're going to extend the history we covered in <a href="d26c5d26-6302-4b9d-b6ce-62b1ab13db0d.xhtml" target="_blank">Chapter 1</a>, <em><span>Data Science at the Command Line and Setting It Up</span></em>. Terminals originated as text-only devices and evolved graphical support for simple drawing primitives, such as rendering enclosed cells in tabular data. The pinnacle of Terminal graphics was made by DEC with canvas and vector-graphic support in the form of SIXEL and REGIS graphics, respectively. As physical Terminals became a thing of the past, lightweight Terminal emulators regressed to being text-only. A renaissance in graphics support from Terminal emulators has been occurring with the alacritty, wsltty, xterm, mlterm, st, iTerm2, and hterm emulators.</p>
+<div class="mce-root packt_tip packt_infobox">We recommend wsltty with SIXEL support for Windows users, xterm or mlterm with SIXEL support for Linux users, and iTerm2 on macOS with PNG rendering (SIXEL support may be added in the future).</div>
+<p class="mce-root">With a recommended Terminal emulator, we will<span> show off canvas-style graphical rendering in the Terminal, and of course, include text mode support for DUMB Terminals. We'll only mention that ascii-art libraries exists, <kbd>aalib</kbd> (<strong>ascii art lib</strong>), <kbd>libcaca</kbd>, and braille fonts that attempt to render graphics to the Terminal using font characters only. Here, we'll work with SIXEL for Linux/Windows and PNG for macOS, and leave DUMB Terminal output for all advanced alternatives as an adventure for the reader. In this chapter, we'll cover the following topics:</span></p>
+<ul>
+<li style="font-weight: 400">How to execute a script</li>
+<li style="font-weight: 400">Function arguments/parameters</li>
+<li style="font-weight: 400">Advanced shell scripting</li>
+<li style="font-weight: 400">How to configure your Terminal for graphics mode</li>
+<li style="font-weight: 400">Data mining graphable data</li>
+<li style="font-weight: 400">Graphing data with gnuplot</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">My first shell script</h1>
+                </header>
+            
+            <article>
+                
+<p>Our first shell script will cover the basics of how to tell the computer to run the shell script.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">She bangs, she bangs!</h1>
+                </header>
+            
+            <article>
+                
+<p>We're not talking about that popular Ricky Martin song. We're talking about what every bash script needs in order to run. If you've worked with other programming languages, you may have noticed the first line always starts with a <kbd>#!</kbd>. This tells the system which interpreter to use. For example, if you've worked with Python before, you've probably seen <kbd>#!/usr/bin/env python2.7</kbd> in a script. With bash, it's no different. Let's go ahead and create a new file named <kbd>hello_world.sh</kbd> and enter the following:</p>
+<pre>#!/bin/bash<br/># A function to greet everyone<br/>greet_everyone() {<br/>  echo Hello, World!<br/>}<br/>greet_yourself() {<br/>  echo Hello, ${USER}<br/>}<br/>greet_everyone<br/>greet_yourself</pre>
+<div class="packt_infobox"><span>File editors are the new, hip thing to debate about on the Internet. For example, search for </span><kbd>vim</kbd><span> versus </span><kbd>emacs</kbd><span> or </span><kbd>nano</kbd><span> versus </span><kbd>pico</kbd><span>. If you don't have a favorite editor, we won't force your selection, but you should use a Very Immensely Method to find your one true editor. </span></div>
+<p>Go ahead and save this file as <kbd>hello_world.sh</kbd> and then let's make the script executable:</p>
+<pre><strong>chmod +x hello_world.sh</strong></pre>
+<p class="mce-root"/>
+<p>Now, you can run the script like so:</p>
+<pre><strong>./hello_world.sh</strong></pre>
+<p>Let's break this down. The first line is the shebang that we mentioned. Our functions are called<span> </span><kbd>greet_everyone</kbd> and<span> </span><kbd>greet_yourself</kbd>. Inside the curly brackets, <kbd>{ }</kbd>, we can run as many commands as we want. Finally, the functions are called below it. Also, notice the<span> </span><kbd>${USER}</kbd> variable inside the script. You might be wondering how bash was smart enough to print out your username without you defining it. Every bash environment has a set of preconfigured variables that you can view. Go ahead and run the<span> </span><kbd>printenv</kbd> command to see what's available.</p>
+<p>This is great if we want to greet the entire world and use your username. But, what if we want to take this further?</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Function arguments, positional parameters, and IFS</h1>
+                </header>
+            
+            <article>
+                
+<p>Functional arguments, positional parameters, and the <strong>IFS</strong> (<span><strong>internal field separator</strong></span>) are advanced list-processing mechanics in bash. We'll cover each of them in turn to ensure a base knowledge of how the shell interacts with them.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Prompt me baby one more time</h1>
+                </header>
+            
+            <article>
+                
+<p>We discussed how to invoke our function, but how do we prompt our users for input? The computer can't read your mind—it can only read your keyboard input! For bash to read input, you'll have to use the (you guessed it)<span> </span><kbd>read</kbd> command. Let's expand our function's capabilities. Go ahead and modify your<span> </span><kbd>hello_world.sh</kbd> script from the previous section with the following:</p>
+<pre>#!/bin/bash<br/># A function to greet everyone<br/>echo Who would you like to greet?<br/>read name<br/>greet_yourself() {<br/>  echo Hello, ${1:-$USER}!<br/>}<br/>greet_yourself $name</pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p>We've added the<span> </span><kbd>read name</kbd> code, replaced the <kbd>${USER}</kbd> variable with <kbd>${1:-$USER}</kbd> in the<span> </span><kbd>greet_yourself</kbd> function, and added our first argument to our<span> </span><kbd>greet_yourself $name</kbd> function call. When <kbd><span>$name</span></kbd> is passed into the <kbd>greet_yourself</kbd> function, it's assigned to the <kbd>$1</kbd> variable. That<span> </span><kbd>${1:-$USER}</kbd> magic variable is saying expand <kbd>$1</kbd>; if empty, replace with <kbd>$USER</kbd> retaining the same output behavior of our original function if no username is provided by just pressing the <kbd>enter</kbd> key. Run it again to see the following:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-818 image-border" src="assets/32e846b5-c3ab-410b-b248-70fe7b413b65.png" style="width:26.50em;height:6.50em;"/></p>
+<p>Let's focus on just our function. Paste the following code into your shell:</p>
+<pre>&lt;&lt;EOF cat &gt;greetlib.sh<br/>greet_yourself() {<br/>  echo Hello, \${1:-\$USER}!<br/>}<br/>EOF</pre>
+<p>This is a fancy means of creating the<span> </span><kbd>greetlib.sh</kbd> file. The<span> </span><kbd>&lt;&lt;EOF</kbd> here is doc redirection that indicates that we want to specify the standard input to <kbd>cat</kbd> and redirect its standard output to<span> </span><kbd>greetlib.sh</kbd>. Everything after that first line is shell-interpreted content that's to be concatenated to the end of our output file until<span> </span><kbd>EOF</kbd><span> </span>is read. Shell-interpreted content means that variables are replaced with values from your current shell environment, we've escaped our shell variables with <kbd>\$</kbd> so that they will be rendered into the <kbd>greetlib.sh</kbd> file as <kbd>$</kbd> and not interpreted into actual values. Finally, we can source our function into our current shell environment and invoke it. We'll practice that in the next section.</p>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Feed the function input!</h1>
+                </header>
+            
+            <article>
+                
+<p>Our shell function accepts arguments, known as positional parameters, which are the equivalent of ARGV from a POSIX C runtime. Function arguments are automatically assigned by their numeric position to variables in this form: <kbd>$1, $2, $3, .., $9</kbd>. The <kbd>$0</kbd> variable exists, but contains the name that was used to invoke the shell. Some inquiring minds might wonder what happens after the ninth argument. Well we need to use the full variable dereferencing syntax, for the tenth and eleventh variables, <kbd>${10}</kbd> and <kbd>${11}</kbd>, respectively. So what does that all look like? Check it out:</p>
+<pre>greet_yourself() {<br/>  echo Hello, ${1:-$USER}!<br/>}<br/>. ./greetlib.sh<br/>greet_yourself “Joey”</pre>
+<p>The <kbd>.</kbd> operator is used to read and evaluate a shell script in your current execution environment, as though you had typed all of <kbd>greetlib.sh</kbd> into the command line and pressed the <kbd>enter</kbd> key. This calls the<span> </span><kbd>greet_yourself</kbd> function with the first positional parameter, <kbd>"Joey"</kbd>, assigned to <kbd>$1</kbd>. To jump ahead, we have types of positional parameters: options (covered at the end of the chapter) and arguments. Options come in short and long forms and are identified by a single hyphen or double-hyphen, respectively. Short options are single characters and long options are full semantic words that describe values to set. If an argument needs a literal hyphen at the start of its value, it needs to be distinguished from options by proceeding with a double-hyphen. Hypothetically, this is gobbledygook looks like this:</p>
+<pre><strong>greet_yourself --capitalize --name="Joey"</strong><br/><strong>greet_yourself --lowercase -- -RoBoT1</strong></pre>
+<p>These examples showcase how options and arguments can be passed to a function, because the options are just positional parameters. In the first greeting call, we assign <kbd>--capitalize</kbd> to the first positional parameter, <kbd>$1</kbd>, and <kbd>--name=”Joey”</kbd> to the second positional parameter, <kbd>$2</kbd>. In the second greeting call, we assign <kbd>--lowercase</kbd> to <kbd>$1</kbd>, <kbd>--</kbd> to <kbd>$2</kbd>, and <kbd>-RoBoT1</kbd> to <kbd>$3</kbd>. Our function is basic and lacks the ability to process the <kbd>--capitalize</kbd> and <kbd>--lowercase</kbd> options as function features. We pretend the first greeting call should output <kbd>"JOEY"</kbd>, and the second greeting <kbd>-robot1</kbd>. Some may wonder how a command can distinguish options that begin with a hyphen from an argument, such as <kbd>-RoBoT1</kbd>. The bare double-hyphen <kbd>--</kbd> indicates that all following positional parameters are to be treated as arguments and not processed as options. Again, we'll dig into option processing at the end of the chapter, but it's easiest to show function invocations all at once.</p>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Down the rabbit hole of IFS and bash arrays</h1>
+                </header>
+            
+            <article>
+                
+<p>Positional parameters are created from the arguments to a shell script, function, or the <kbd>set</kbd> command. The assignment of words to positional variables is accomplished by splitting the unquoted string along any of the delimiters contained within the IFS variable. The IFS variable defaults to the string, which consists of a space, tab, and newline characters. Since the IFS is a variable, it's possible to modify this variable, which is useful when iterating over non-space-delimited text:</p>
+<pre>IFS=:<br/>for P in $PATH ; do<br/> echo $P<br/>done<br/>unset IFS</pre>
+<p>The preceding code exemplifies how the PATH variable, which consists minimally of <kbd>/bin:/usr/bin</kbd>, can be split with a colon delimiter so that each path segment can be manipulated. We expect the reader can extrapolate how this might be useful for iterating over comma-separated lists, or similar simply delimited datasets.</p>
+<p>Due to limitations in modifying positional parameters, bash 4 introduced arrays. In the event that your shell scripts become sufficiently complex to require arrays, we encourage you to consider upgrading to a full-fledged scripting language, such as Perl, Python, or Ruby, that's better-suited to handling various list iterations that bash doesn't natively support. Delving in, bash arrays are zero-indexed, and are accessed with the<span> </span><kbd>${ARRAY[#]}</kbd> special syntax, where the <kbd>#</kbd> sign should be replaced by the integer array index or the special values of <kbd>@</kbd> or <kbd>*</kbd>, which represent the quoted elements or unquoted elements converted into a string. Here's some code as an example of bash arrays:</p>
+<pre>TMP_PATH=/bin:/usr/bin:/sbin:/usr/sbin<br/>IFS=:<br/>PATH_ARRAY=($TMP_PATH)<br/>unset IFS<br/>echo First element - ${PATH_ARRAY}<br/>echo First element - ${PATH_ARRAY[0]}<br/>echo Second element - ${PATH_ARRAY[1]}<br/>echo All elements - ${PATH_ARRAY[*]}<br/>echo All elements - ${PATH_ARRAY[@]}</pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Advanced shell scripting magic</h1>
+                </header>
+            
+            <article>
+                
+<p>This is the dark magic section of the chapter. It will demonstrate advanced shell scripting by taking the preceding lessons and features, and converting them into what could be considered a small program.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Here be dragons, ye be warned</h1>
+                </header>
+            
+            <article>
+                
+<p>A simple piece of introductory code is great to get a feel for the flavor of a language, but we're going to introduce some dark magic in the form of some complex utility functions that can be helpful in everyday situations. We'll use a<span> </span><kbd>lineinfile</kbd> function to insert arbitrary text into a file—it's not a full-featured application, just enough to help ensure some simple text is injected into a file. The second function,<span> </span><kbd>ncz</kbd>, leverages bash IP networking (yes, bash4 can support IP networking YMMV with your distro) to perform a socket test equivalent to what<span> </span><kbd>netcat -z</kbd><span> </span>does. Additionally, it shows how to make a function behave like a command-line program by parsing simple argument flags.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Text injection of text files</h1>
+                </header>
+            
+            <article>
+                
+<p><span>We're going to create a function that can inject text into an existing file. Here's our function:</span></p>
+<pre>lineinfile() {<br/> FILE=$1 ; shift<br/> LINE=”^$1$” ; shift<br/> CONTEXT=”$1.*” ; shift<br/> MODE=${1:-add} ; shift<br/> case “${MODE}” in<br/>  add)<br/>   grep -s “${LINE}” “${FILE}” || sed -i -e “s/\(${CONTEXT}\)/\1\n${LINE}/” “${FILE}”<br/>   ;;<br/>  del)<br/>   grep -s “${LINE}” “${FILE}” || sed -i -e “/${LINE}/d” “${FILE}”<br/>   ;;<br/> esac<br/>}</pre>
+<p>The intended usage is as follows:</p>
+<pre>lineinfile &lt;filename&gt; &lt;string&gt; &lt;insert-after-context-string&gt; &lt;add | [del]&gt;</pre>
+<p class="mce-root"/>
+<p><kbd>lineinfile</kbd> starts off with the standard <kbd>function() {}</kbd> definition template. It reads the first positional parameter passed to the function,<span> </span><kbd>$1</kbd>, into the<span> </span><kbd>FILE</kbd> variable, and shifts the positional parameters so that each parameter's index is decremented by one, so <kbd>$2</kbd> becomes <kbd>$1</kbd>, <kbd>$3</kbd> becomes <kbd>$2</kbd>, and so on. The second parameter is assigned to the<span> </span><kbd>LINE</kbd> variable and we prefix it with the regular expression start of line <kbd>^</kbd> and end of line <kbd>$</kbd> delimiters to indicate that the string being injected must match an entire line (sorry, there's no advanced regex support in this simple function). The third parameter looks for context so that we can inject the line after the context. Again no ability to specify injecting before the context, just after the context if it exists. The fourth parameter is the operating mode of our<span> </span><kbd>lineinfile</kbd> function to either <kbd>add</kbd> (adding text is the default behavior) or to delete (use the <kbd>del</kbd> mode).</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Bash networks for fun and profit!</h1>
+                </header>
+            
+            <article>
+                
+<p>Sometimes, we need to interact with network services or APIs. Here, we'll introduce some complete code that tests TCP endpoints, which is useful for checking whether an API service is listening and available. This code can be pasted into your Terminal, or saved to a file and loaded into your shell environment with the <kbd>.</kbd> operator:</p>
+<pre>ncz() {<br/> OPTIND=1 ; while getopts ":hv" opt; do<br/>  case ${opt} in<br/>   v) VERBOSE=true<br/>    ;;<br/>   h|\?) printf "Usage: $0 [-v] &lt;host | host:port&gt;" ; return<br/>    ;;<br/>  esac<br/> done<br/> shift $(($OPTIND - 1))<br/> HOST=${1%:*}<br/> PORT=${1#*:}<br/> PORT=${2:-$PORT}<br/> (exec 6&lt;&gt;/dev/tcp/${HOST}/${PORT} 2&gt;&amp;1)<br/> RC=$?<br/> case "${VERBOSE}${RC}" in<br/>  true0) printf "open\n";;<br/>  true*) printf "closed\n";;<br/> esac<br/> return $RC<br/>}</pre>
+<p class="mce-root"/>
+<p>Now, this code has some minor magic.<span> </span><kbd>getopts</kbd><span> </span>is a function that parses positional parameters, according to POSIX processing into options, and assigns the next option to the variable specified, in this case opt. It supports short and long options, and options can have parameters; parameters would be stored in<span> </span><kbd>OPTARG</kbd>. This example uses a trivial option string of <kbd>:hv</kbd>. The colon character indicates that invalid option flags should be denoted with the question mark character, <kbd>?</kbd>. The <kbd>h</kbd> option is for our help flag and <kbd>v</kbd> is used so we can set a<span> </span><kbd>VERBOSE</kbd><span> </span>flag. The <kbd>while</kbd> loop calls the <kbd>getopts</kbd> function, which modifies the positional parameters. When the <kbd>getopts</kbd> function completes, it's necessary to shift the processed positional parameters out so that we can treat non-options as function arguments.<span> </span><kbd>OPTIND</kbd><span> </span>is the index of the last option parsed, so subtracting one from that and shifting the positional parameters by that amount ensures that we only proper arguments remain in our positional parameters.</p>
+<p>The code attempts to support accepting arguments in the form of <kbd>host:port</kbd> or <kbd>host port</kbd>. The support for single-parameter or two-parameter arguments is handled by always using the second argument as the port, and if there's no second argument, defaults to splitting the first parameter on the colon character using prefix and suffix removal. The<span> </span><kbd>HOST=${1%:*}</kbd> assignment attempts to extract a host component from a <kbd>host:port</kbd> argument by expanding the first positional argument, stripping all trailing characters (<kbd>%</kbd> is a reverse-substitution match) to the first colon character (the delimiter between <kbd>host:port</kbd>) so that we're left with just the host portion of the variable. If the reverse match fails, which indicates no port components, the unmodified expansion of <kbd>$1</kbd> will be assigned. To get the port, we look at the second argument. If it doesn't exist, we default to the port extracted from the first positional argument by stripping the <kbd>host:</kbd> portion of <kbd>$1</kbd>.</p>
+<p>The real dark magic involves file descriptors and bash's IP network support. We open file descriptor 6 inside a subshell. We attach the input/output of the socket created by<span> </span><kbd>/dev/tcp/$HOST/$PORT</kbd><span> </span>to this file descriptor. Anything written to the file descriptor will be sent via a TCP socket to<span> </span><kbd>tcp://$HOST:$PORT</kbd><span>, </span>and any responses can be read from the same file descriptor. As network connections can error, we capture the return code of the socket open to the<span> </span><kbd>RC</kbd><span> </span>(that’s short for return code) variable. We then evaluate whether output is desired from a verbose option flag and the status of the return code, printing success/failure according to the return code. In C programs, a return code of 0 indicates success, so<span> </span><kbd>true0</kbd><span> </span>indicates that the function has invoked to request the verbose mode and a successful socket connection was made. Finally, the return code is returned from the function so that the status of the remote socket can be evaluated via a shell pipeline.</p>
+<p class="mce-root"/>
+<p>Here's a self-explanatory invocation of the preceding explanation:</p>
+<pre><strong>ncz google.com:80 &amp;&amp; echo "yay!! Interwebz are up!" || echo "booh! No kitties for us!"</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">From dumb Terminal to glam Terminal</h1>
+                </header>
+            
+            <article>
+                
+<p><span>We're going to use gnuplot to render dumb text graphics and canvas-style plots inside our Terminal. To begin, we need some basic configuration for our gnuplot startup. Put the following in <kbd>~/.gnuplot</kbd>:</span></p>
+<pre><strong>set term dumb</strong></pre>
+<p>Next, we need a wrapper around gnuplot to get some fancy graphical output. This wrapper looks at the <kbd>GNUTERM</kbd> environment variable of your current shell and does some calculations on the Terminal's width and height so that gnuplot knows how big a window it has. The wrapper will update our <kbd>~/.gnuplot</kbd><span> </span>configuration with the graphics capabilities specified for our Terminal. We aren't going to delve into the wrapper, but just use it as another command. Here it is:</p>
+<pre>__gnuplot() {<br/> SIZE=$(stty size 2&gt;/dev/null)<br/> SIZE=${SIZE:-$(tput lines) $(tput cols)}<br/> COLS=${SIZE#* }<br/> ROWS=${SIZE% *}<br/> XPX=${XPX:-13}<br/> YPX=${YPX:-24}<br/> COLUMNS=${COLUMNS:-${COLS}}<br/> LINES=$((${LINES:-${ROWS}}-3))<br/> case "${GNUTERM%% *}" in<br/> dumb) X=${COLUMNS} ; Y=${LINES} ; DCS_GUARD="cat" ;;<br/> png) X=$((XPX*COLUMNS)) ; Y=$((YPX*LINES)) ;<br/>DCS_GUARD="imgcat";;<br/> sixelgd) X=$((XPX*COLUMNS)) ; Y=$((YPX*LINES));;<br/> esac<br/> sed -i "s/^set term[[:space:]][^[:space:]]*/set term ${GNUTERM%%<br/>*}/" ~/.gnuplot<br/> GNUTERM="${GNUTERM} size $X,$Y" \gnuplot "$@" | ${DCS_GUARD:-cat}<br/>}<br/>alias barchart="FUNCNAME=barchart __barchart"<br/>__barchart() {<br/> local STACKED<br/> local DATA<br/> OPTIND=1 ; while getopts ":hf:s" opt; do<br/> case ${opt} in<br/> f) [ -r "${OPTARG}" ] &amp;&amp; DATA=$(printf '$data &lt;&lt;EOD\n' ; cat "${OPTARG}" ; printf 'EOD\n')<br/> ;;<br/> s) STACKED="; set style histogram rowstacked ; set boxwidth 0.75"<br/> ;;<br/> h|\?) printf "Usage: ${FUNCNAME} [-s] [-f &lt;file&gt;] &lt;gnuplot commands\n"<br/> return<br/> ;;<br/> esac<br/> done<br/> shift $(($OPTIND - 1))<br/> {<br/> cat &lt;&lt;-EOF<br/> $DATA<br/> set key autotitle columnheader outside<br/> set style data histograms ${STACKED}<br/> set style fill solid border lt -1<br/> set xtics rotate by -45<br/> EOF<br/> printf "%s" "$@"<br/> } | gnuplot<br/>}</pre>
+<p><span>Depending on your OS and Terminal, you'll need to specify the correct graphics backend for your Terminal.</span></p>
+<p>Windows users with wsltty, and Linux users with mlterm or xterm, should set the following environment variable:</p>
+<pre>export GNUTERM=sixelgd</pre>
+<p>macOS users with iTerm2 should use this<span> environment variable</span>:</p>
+<pre>export GNUTERM=png</pre>
+<p>Let's verify that we're able to plot a graphical test pattern. If your dumb Terminal doesn't support graphical mode, we include a text mode test afterwards.</p>
+<p>For the graphical test, run the following:</p>
+<pre><strong>gnuplot -e "set terminal $GNUTERM background rgb 'white'; test"</strong></pre>
+<p class="mce-root"/>
+<p>This should result in a graphical Terminal output like this:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-819 image-border" src="assets/f360f088-ca0a-4844-b573-c8ca23660da6.png" style="width:70.75em;height:51.08em;"/></p>
+<p>Some quick callouts to the test output are important for styling your output graphs. The line type on the far right of the test graphic is abbreviated as <kbd>lt</kbd> and provides the visual marker for the plotted tics (or points) of the plot, for example, *, +, and x. The linewidth, abbreviated to <kbd>lw</kbd>, is on the bottom left and sets the line's thickness for the plotted line.</p>
+<p>If your Terminal doesn't support graphics mode, text plotting can be used. Invoke the text test:</p>
+<pre><strong>GNUTERM=dumb \gnuplot</strong><br/><strong>gnuplot&gt; test<br/>gnuplot&gt; exit</strong></pre>
+<p class="mce-root"/>
+<p>Which should result in a Terminal output like this:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-820 image-border" src="assets/82efbc34-3db3-4731-809c-4972c4515e58.png" style="width:88.42em;height:53.50em;"/></p>
+<p><span>Finally, we need an </span><kbd>alias</kbd><span> to invoke our function with the </span><kbd>GNUTERM</kbd><span> environment variable that's set to an acceptable graphics backend. Run the following alias with the <kbd>GNUTERM</kbd> variable set as determined to work with your Terminal:</span></p>
+<pre><strong>alias gnuplot="GNUTERM=$GNUTERM __gnuplot"</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Who, what, where, why, how?</h1>
+                </header>
+            
+            <article>
+                
+<p>Let's return to our book data and start to pare it down to the interesting bits. Let's look at just a little bit of our data:</p>
+<pre><strong>head amazon_reviews_us_Digital_Ebook_Purchase_v1_00.tsv</strong></pre>
+<p>That spat out a bunch of data with very long lines. Let's try again—maybe we really only care about the headers, so let's try this:</p>
+<pre><strong>head -n1 amazon_reviews_us_Digital_Ebook_Purchase_v1_00.tsv</strong></pre>
+<p class="mce-root"/>
+<p>Since there's a lot of text, let's remove the text fields and focus on numeric data by removing <kbd>product_title</kbd>, <kbd>review_headline</kbd>, and <kbd>review_body</kbd>, which correspond to fields 6,13, and 14. Since we're looking at pseudo big data, let's take all the numerical or Boolean flag fields and dump all the text reviews (we can leave that for the natural-language processing folks to analyze), try this:</p>
+<pre><strong>cat amazon_reviews_us_Digital_Ebook_Purchase_v1_00.tsv | cut -d $'\t' -f 4,8-12,15 &gt; test.tsv</strong></pre>
+<p>Just like that, we've reduced our data size from 6.3 GB to 383 MB of pruned <kbd>test.tsv</kbd> data, which is much more manageable. Now, let's import this into a SQL database to make aggregating tabular data as easy as a SQL query:</p>
+<pre><strong>sqlite3 aws-ebook-reviews.sq3 &lt;&lt;EOF</strong><br/><strong>.mode csv</strong><br/><strong>.separator "\t"</strong><br/><strong>.import test.tsv reviews</strong><br/><strong>EOF</strong></pre>
+<p>Let's find the products with the most reviews:</p>
+<pre><strong>sqlite3 -header -column aws-ebook-reviews.sq3 " select product_id as ID, strftime('%Y-%m', review_date) DATE, star_rating as STAR, count(product_id) as COUNT from reviews group by ID order by COUNT desc limit 10"</strong></pre>
+<p>The following output (counts may differ) should be displayed:</p>
+<pre><strong>ID     DATE STAR    COUNT</strong><br/><strong>---------- ---------- ---------- ----------</strong><br/><strong>B00L9B7IKE 2015-01 5      54534</strong><br/><strong>B005ZOBNOI 2013-09 5      50581</strong><br/><strong>B006LSZECO 2013-09 3      45467</strong><br/><strong>B00BAXFECK 2013-10 5      34253</strong><br/><strong>B003WUYPPG 2013-09 3      30890</strong><br/><strong>B00DPM7TIG 2014-05 4      28234</strong><br/><strong>B00JYWUHO4 2014-10 1      26722</strong><br/><strong>B0089LOG02 2013-09 5      26155</strong><br/><strong>B00CNQ7HAU 2013-10 5      24454</strong><br/><strong>B004CFA9RS 2013-09 5      23677</strong></pre>
+<p class="mce-root"/>
+<p>54,000 reviews seems like something we could plot some interesting data for, so let's focus on the product ID <kbd>B00L9B7IKE</kbd>. For plotting, we know which product ID we're looking at, so let's adjust our query to not report the product ID and just focus on the dates, star rating, and counts:</p>
+<pre><strong>sqlite3 -header -column aws-ebook-reviews.sq3 " select strftime('%Y-%m', review_date) DATE, star_rating as STAR, count(star_rating) as COUNT from reviews where product_id = 'B00L9B7IKE' group by DATE, STAR"</strong></pre>
+<p>The following output will be displayed:</p>
+<pre><strong>DATE    STAR COUNT</strong><br/><strong>---------- ---------- ----------</strong><br/><strong>2015-01   1 30</strong><br/><strong>2015-01   2 44</strong><br/><strong>2015-01   3 108</strong><br/><strong>2015-01   4 304</strong><br/><strong>2015-01   5 822</strong><br/><strong>2015-02   1 290</strong><br/><strong>2015-02   2 352</strong><br/><strong>2015-02   3 818</strong><br/><strong>2015-02   4 2040</strong><br/><strong>2015-02   5 3466</strong><br/><strong>2015-03   1 446</strong><br/><strong>2015-03   2 554</strong><br/><strong>2015-03   3 1294</strong><br/><strong>2015-03   4 3186</strong><br/><strong>2015-03   5 5092</strong><br/><strong>2015-04   1 466</strong><br/><strong>2015-04   2 508</strong><br/><strong>2015-04   3 1178</strong><br/><strong>2015-04   4 2550</strong><br/><strong>2015-04   5 3806</strong><br/><strong>2015-05   1 442</strong><br/><strong>2015-05   2 538</strong><br/><strong>2015-05   3 1152</strong><br/><strong>2015-05   4 2174</strong><br/><strong>2015-05   5 3058</strong><br/><strong>2015-06   1 382</strong><br/><strong>2015-06   2 428</strong><br/><strong>2015-06   3 952</strong><br/><strong>2015-06   4 1920</strong><br/><strong>2015-06   5 2898</strong><br/><strong>2015-07   1 388</strong><br/><strong>2015-07   2 484</strong><br/><strong>2015-07   3 972</strong><br/><strong>2015-07   4 2122</strong><br/><strong>2015-07   5 3004</strong><br/><strong>2015-08   1 374</strong><br/><strong>2015-08   2 458</strong><br/><strong>2015-08   3 884</strong><br/><strong>2015-08   4 1762</strong><br/><strong>2015-08   5 2788</strong></pre>
+<p>That's some plottable data if I've ever seen some. We can track how many reviews we're getting by day or month, and when we graph this, we can look for anomalies, such as an exceptional number of five-star reviews on a single day when prior days didn't stick out so much.</p>
+<p>Our data still isn't quite right; for plotting, we want to group the star ratings by date in a single row, so we'll need to perform another translation on the data. We also drop the <kbd>-</kbd> column option so we get condensed output, and we can pipe this through <kbd>tr</kbd> when we're ready to pass the data to gnuplot. We'll also save this output into <kbd>clusterchart.dat</kbd> so that our plotting commands are short and simple:</p>
+<pre><strong>sqlite3 -header aws-ebook-reviews.sq3 "select DATE, MAX(CASE WHEN STAR='1' THEN COUNT END) as '1STAR', MAX(CASE WHEN STAR='2' THEN COUNT END) as '2STAR', MAX(CASE WHEN STAR='3' THEN COUNT END) as '3STAR', MAX(CASE WHEN STAR='4' THEN COUNT END) as '4STAR', MAX(CASE WHEN STAR='5' THEN COUNT END) as '5STAR', SUM(COUNT) as TOTAL from ( select strftime('%Y-%m', review_date) DATE, star_rating as STAR, count(star_rating) as COUNT from reviews where product_id = 'B00L9B7IKE' group by DATE, STAR) results group by DATE" | tr '|' '\t' &gt; clusterchart.dat</strong><br/><strong>cat clusterchart.dat</strong></pre>
+<p>Finally, here's our condensed output for graphing with gnuplot:</p>
+<pre><strong>DATE  1STAR 2STAR  3STAR 4STAR 5STAR  TOTAL</strong><br/><strong>2015-01 30   44 108 304   822 1308</strong><br/><strong>2015-02 290   352 818 2040  3466 6966</strong><br/><strong>2015-03 446   554 1294 3186  5092 10572</strong><br/><strong>2015-04 466   508 1178 2550  3806 8508</strong><br/><strong>2015-05 442   538 1152 2174  3058 7364</strong><br/><strong>2015-06 382   428 952 1920  2898 6580</strong><br/><strong>2015-07 388   484 972 2122  3004 6970</strong><br/><strong>2015-08 374   458 884 1762  2788 6266</strong></pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Enter the mind's eye</h1>
+                </header>
+            
+            <article>
+                
+<p>Let's check out what this looks like. Run the following code:</p>
+<pre><strong>gnuplot -e "set style data histograms ; set style fill solid border lt -1 ; plot 'clusterchart.dat' using 2:xtic(1) ti col, '' u 3 ti col, '' u 4 ti col, '' u 5 ti col, '' u 6 ti col"</strong></pre>
+<p>This should produce the following in your Terminal:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-821 image-border" src="assets/bb22fb88-dc2a-4844-89f6-40bb2eb7f1b7.png" style="width:162.50em;height:82.75em;"/></p>
+<p>Let's do the exact same operation, but output the <kbd>dumb</kbd> output:</p>
+<pre><strong>GNUTERM=dumb gnuplot -e "set style data histograms ; set style fill solid border lt -1 ; plot 'clusterchart.dat' using 2:xtic(1) ti col, '' u 3 ti col, '' u 4 ti col, '' u 5 ti col, '' u 6 ti col"</strong></pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p>We get a text-based<span> </span>output:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-874 image-border" src="assets/e7cfea49-063b-4a16-bd4a-d70bc566458c.png" style="width:87.42em;height:53.33em;"/></p>
+<p>To break down what we did, check out the following code:</p>
+<pre><strong>GNUTERM=dumb gnuplot -e "set style data histograms ; set style fill solid border lt -1 ; plot 'clusterchart.dat' using 2:xtic(1) ti col, '' u 3 ti col, '' u 4 ti col, '' u 5 ti col, '' u 6 ti col"</strong></pre>
+<p>The first step is to set <kbd>GNUTERM</kbd>, which should default to what we set in <kbd>~/.bash_profile</kbd>. This tells our gnuplot wrapper which output backend to use. For <kbd>GNUTERM=dumb</kbd>, it will be a text backend. The next part is <kbd>gnuplot</kbd> with the <kbd>-e</kbd> expression argument. The expression is <kbd>gnuplot</kbd> syntax. We first set our plots to histograms instead of line graphs with <kbd>set style data histograms</kbd>. Next, we specify the bar color by setting it to a flood fill with a solid border and use linetype <kbd>-1</kbd> as the default linetype. After we've defined our plot style, we tell gnuplot to plot our data with <kbd>plot 'clusterchart.dat'</kbd>. Each comma-separated parameter to plot represents a column to plot for each row of data in <kbd>clusterchart.dat</kbd>. We specify that the first column in our plot should use the second column of data and use the first column of data as our x-label, as denoted by <kbd>2:xtic(1) ti col</kbd>.</p>
+<p>The second column in our plot uses the same <kbd>clusterchart.dat</kbd> as input by indicating the same with two concatenated single quotes and specifies the use of the third data column for tick data. The third, fourth, and fifth columns use the same notation as the second column, which is to indicate the reuse of <kbd>clusterchart.dat</kbd> and to specify the data column to extract the y-tick data.</p>
+<p>If we want to get a little fancier, we can use rowstacking instead of clustered bar graphs so we can visualize our data more compactly. Try this:</p>
+<pre><strong>barchart -s -f clusterchart.dat 'plot for [i=2:6] $data using i:xtic(1)'</strong></pre>
+<p>We get a stacked bar chart:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-875 image-border" src="assets/9e5dfc76-990e-4092-89cb-6656d7d648f2.png" style="width:88.33em;height:50.17em;"/></p>
+<p>Now, if we want to see percentages, we can use our <kbd>barchart</kbd> wrapper in stacked mode. It's nice to see the discrepancy between different data segments. Try invoking the following code:</p>
+<pre><strong>barchart -s -f clusterchart.dat 'plot for [i=2:6] $data using (100.*column(i)/column(7)):xtic(1) title column(i)'</strong></pre>
+<p class="mce-root"/>
+<p class="mce-root"/>
+<p>It produces the following output:</p>
+<p class="CDPAlignCenter CDPAlign"><img class="aligncenter size-full wp-image-876 image-border" src="assets/0a907dd3-adbb-4195-adba-75a14599e1b8.png" style="width:88.33em;height:49.67em;"/></p>
+<p>This is using our bar chart wrapper in stacked mode (<kbd>-s</kbd>), and specifying our <kbd>clusterchart.dat</kbd> input file, with the gnuplot script as the last parameter. For gnuplot, we're telling it to perform a single iterative plot for <kbd>i=2</kbd> to <kbd>6</kbd>. The <kbd>$data</kbd> variable is being set by the bar chart wrapper to the content of <kbd>clusterchart.dat</kbd>. The using parameter is multiplying our fraction by <kbd>100</kbd> to create the percentage of the bar chart for each element, <kbd>i</kbd>, of the total from column <kbd>7</kbd>. <kbd>xtic(1)</kbd> is setting the <kbd>xtic</kbd> mark titles to the contents of column 1 for each row of data graphed in a column. In this example, we need to add the <kbd>column(i)</kbd> title to get the key title set properly to the column headers, instead of using the last referenced <kbd>column(7)</kbd> header.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article>
+                
+<p>With the ability to reuse bash code, a collection of scripts can be cobbled together to enhance your command-line productivity. <span>And with the ability to visualize results, you can peer into datasets and perform data mining tasks more quickly.</span></p>
+<p><span>In the next chapter, we'll dig deeper into bash control flow to create richer functions.</span></p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

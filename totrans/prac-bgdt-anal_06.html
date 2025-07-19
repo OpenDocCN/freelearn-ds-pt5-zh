@@ -1,0 +1,563 @@
+<html><head></head><body>
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark for Big Data Analytics</h1>
+                </header>
+            
+            <article>
+                
+<p>As the use of Hadoop and related technologies in the respective ecosystem gained prominence, a few obvious and salient deficiencies of the Hadoop operational model became apparent. In particular, the ingrained reliance on the MapReduce paradigm, and other facets related to MapReduce, made a truly functional use of the Hadoop ecosystem possible only for major firms that were invested deeply in the respective technologies.</p>
+<p>At the <strong>UC Berkeley Electrical Engineering and Computer Sciences</strong> (<strong>EECS</strong>) Annual Research Symposium of 2011, a vision for a new research group at the university was announced during a presentation by Prof. Ian Stoica (<a href="https://amplab.cs.berkeley.edu/about/">https://amplab.cs.berkeley.edu/about/</a>). It laid out the foundation of what was to become a pivotal unit that would profoundly change the landscape of Big Data. The <strong>AMPLab</strong>, launched in February 2011, aimed to deliver a scalable and unified solution by integrating Algorithms, Machines, and People that could cater to future needs without requiring any major re-engineering efforts.</p>
+<p>The most well-known and most widely used project to evolve from the AMPLab initiative was Spark, arguably a superior alternative - or more precisely, <em>extension</em> - of the Hadoop ecosystem.</p>
+<p>In this chapter, we will visit some of the salient characteristics of Spark and end with a real-world tutorial on how to use Spark. The topics we will cover are:</p>
+<ul>
+<li>The advent of Spark</li>
+<li>Theoretical concepts in Spark</li>
+<li>Core components of Spark</li>
+<li>The Spark architecture</li>
+<li>Spark solutions</li>
+<li>Spark tutorial</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The advent of Spark</h1>
+                </header>
+            
+            <article>
+                
+<p>When the first release of Spark became available in 2014, Hadoop had already enjoyed several years of growth since 2009 onwards in the commercial space. Although Hadoop solved a major hurdle in analyzing large terabyte-scale datasets efficiently, using distributed computing methods that were broadly accessible, it still had shortfalls that hindered its wider acceptance.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Limitations of Hadoop</h1>
+                </header>
+            
+            <article>
+                
+<p>A few of the common limitations with Hadoop were as follows:</p>
+<ul>
+<li><strong>I/O Bound operations</strong>: Due to the reliance on local disk storage for saving and retrieving data, any operation performed in Hadoop incurred an I/O overhead. The problem became more acute in cases of larger datasets that involved thousands of blocks of data across hundreds of servers. To be fair, the ability to co-ordinate concurrent I/O operations (via HDFS) formed the foundation of distributed computing in Hadoop world. However, leveraging the capability and <em>tuning</em> the Hadoop cluster in an efficient manner across different use cases and datasets required an immense and perhaps disproportionate level of expertise. Consequently, the I/O bound nature of workloads became a deterrent factor for using Hadoop against extremely large datasets. As an example, machine learning use cases that required hundreds of iterative operations meant that the system would incur an I/O overhead for each pass of the iteration.</li>
+<li><strong>MapReduce programming (MR) Model</strong>: As discussed in the earlier parts of this book, all operations in Hadoop require expressing problems in terms of the MapReduce Programming Model - namely, the user would have to express the problem in terms of key-value pairs where each pair can be independently computed. In Hadoop, coding efficient MapReduce programs, mainly in Java, was non-trivial, especially for those new to Java or to Hadoop (or both).</li>
+<li><strong>Non-MR Use Cases</strong>: Due to the reliance on MapReduce, other more common and simpler concepts such as filters, joins, and so on would have to also be expressed in terms of a MapReduce program. Thus, a join across two files across a primary key would have to adopt a key-value pair approach. This meant that operations, both simple and complex, were hard to achieve without significant programming efforts.</li>
+<li><strong>Programming APIs</strong>: The use of Java as the central programming language across Hadoop meant that to be able to properly administer and use Hadoop, developers had to have a strong knowledge of Java and related topics such as JVM tuning, Garbage Collection, and others. This also meant that developers in other popular languages such as R, Python, and Scala had very little recourse for re-using or at least implementing their solution in the language they knew best.</li>
+<li>On the whole, even though the Hadoop world had championed the Big Data revolution, it fell short of being able to democratize the use of the technology for Big Data on a broad scale.</li>
+</ul>
+<p>The team at AMPLab recognized these shortcomings early on, and set about creating Spark to address these and, in the process, hopefully develop a new, superior alternative.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Overcoming the limitations of Hadoop</h1>
+                </header>
+            
+            <article>
+                
+<p>We'll now look at some of the limitations discussed in the earlier section and understand how Spark addresses these areas, by virtue of which it provides a superior alternative to the Hadoop ecosystem.</p>
+<p>A key difference to bear in mind at the onset is that Spark does NOT need Hadoop in order to operate. In fact, the underlying backend from which Spark accesses data can be technologies such as HBase, Hive and Cassandra in addition to HDFS.</p>
+<p>This means that organizations that wish to leverage a standalone Spark system can do so without building a separate Hadoop infrastructure if one does not already exist.</p>
+<p>The Spark solutions are as follows:</p>
+<ul>
+<li><strong>I/O Bound operations</strong>: Unlike Hadoop, Spark can store and access data stored in <em>memory</em>, namely RAM - which, as discussed earlier, is 1,000+ times faster than reading data from a disk. With the emergence of SSD drives, the standard in today's enterprise systems, the difference has gone down significantly. Recent NVMe drives can deliver up to 3-5 GB (Giga Bytes) of bandwidth per second. Nevertheless, RAM, which averages about 25-30 GB per second in read speed, is still 5-10x faster compared to reading from the newer storage technologies. As a result, being able to store data in RAM provides a 5x or more improvement to the time it takes to read data for Spark operations. This is a significant improvement over the Hadoop operating model which relies on disk read for all operations. In particular, tasks that involve iterative operations as in machine learning benefit immensely from the Spark's facility to store and read data from memory.</li>
+<li><strong>MapReduce programming (MR) Model</strong>: While MapReduce is the primary programming model through which users can benefit from a Hadoop platform, Spark does not have the same requirement. This is particularly helpful for more complex use cases such as quantitative analysis involving calculations that cannot be easily <em>parallelized,</em> such as machine learning algorithms. By decoupling the programming model from the platform, Spark allows users to write and execute code written in various languages without forcing any specific programming model as a pre-requisite.</li>
+<li><strong>Non-MR use cases</strong>: Spark SQL, Spark Streaming and other components of the Spark ecosystem provide a rich set of functionalities that allow users to perform common tasks such as SQL joins, aggregations, and related database-like operations without having to leverage other, external solutions. Spark SQL queries are generally executed against data stored in Hive (JSON is another option), and the functionality is also available in other Spark APIs such as R and Python.</li>
+<li><strong>Programming APIs</strong>: The most commonly used APIs in Spark are Python, Scala and Java. For R programmers, there is a separate package called <kbd>SparkR</kbd> that permits direct access to Spark data from R. This is a major differentiating factor between Hadoop and Spark, and by exposing APIs in these languages, Spark becomes immediately accessible to a much larger community of developers. In Data Science and Analytics, Python and R are the most prominent languages of choice, and hence, any Python or R programmer can leverage Spark with a much simpler learning curve relative to Hadoop. In addition, Spark also includes an interactive shell for ad-hoc analysis.</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Theoretical concepts in Spark</h1>
+                </header>
+            
+            <article>
+                
+<p>The following are the core concepts in Spark:</p>
+<ul>
+<li>Resilient distributed datasets</li>
+<li>Directed acyclic graphs</li>
+<li>SparkContext</li>
+<li class="mce-root">Spark DataFrames</li>
+<li class="mce-root">Actions and transformations</li>
+<li>Spark deployment options</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Resilient distributed datasets</h1>
+                </header>
+            
+            <article>
+                
+<p><strong>Resilient distributed datasets</strong>, more commonly known as <strong>RDD</strong>s, are the primary data structure used in Spark. RDDs are essentially a collection of records that are stored across a Spark cluster in a distributed manner. RDDs are <em>immutable</em>, which is to say, they cannot be altered once created. RDDs that are stored across nodes can be accessed in parallel, and hence support parallel operations natively.</p>
+<p>The user does not need to write separate code to get the benefits of parallelization but can get the benefits of <em>actions and transformations</em> of data simply by running specific commands that are native to the Spark platform. Because RDDs can be also stored in memory, as an additional benefit, the parallel operations can act on the data directly in memory without incurring expensive I/O access penalties.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Directed acyclic graphs</h1>
+                </header>
+            
+            <article>
+                
+<p>In computer science and mathematics parlance, a directed acyclic graph represents pairs of nodes (also known as <strong>vertices</strong>) connected with edges (or <strong>lines</strong>) that are unidirectional. Namely, given Node A and Node B, the edge can connect A à B or B à A but not both. In other words, there isn't a circular relationship between any pair of nodes.</p>
+<p>Spark leverages the concept of DAG to build an internal workflow that delineates the different stages of processing in a Spark job. Conceptually, this is akin to creating a virtual flowchart of the series of steps needed to obtain a certain output. For instance, if the required output involves producing a count of words in a document, the intermediary steps map-shuffle-reduce can be represented as a series of actions that lead to the final result. By maintaining such a <strong>map</strong>, Spark is able to keep track of the dependencies involved in the operation. More specifically, RDDs are the <strong>nodes</strong>, and transformations, which are discussed later in this section, are the <strong>edges</strong> of the DAG.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">SparkContext</h1>
+                </header>
+            
+            <article>
+                
+<p>A SparkContext is the entry point for all Spark operations and means by which the application connects to the resources of the Spark cluster. It initializes an instance of Spark and can thereafter be used to create RDDs, perform actions and transformations on the RDDs, and extract data and other Spark functionalities. A SparkContext also initializes various properties of the process, such as the application name, number of cores, memory usage parameters, and other characteristics. Collectively, these properties are contained in the object SparkConf, which is passed to SparkContext as a parameter.</p>
+<p><kbd>SparkSession</kbd> is the new abstraction through which users initiate their connection to Spark. It is a superset of the functionality provided in <kbd>SparkContext</kbd> prior to Spark 2.0.0. However, practitioners still use <kbd>SparkSession</kbd> and <kbd>SparkContext</kbd> interchangeably to mean one and the same entity; namely, the primary mode of interacting with <kbd>Spark.SparkSession</kbd> has essentially combined the functionalities of both SparkContext and <kbd>HiveContext</kbd>.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark DataFrames</h1>
+                </header>
+            
+            <article>
+                
+<p>A DataFrame in Spark is the raw data organized into rows and columns. This is conceptually similar to CSV files or SQL tables. Using R, Python and other Spark APIs, the user can interact with a DataFrame using common Spark commands used for filtering, aggregating, and more generally manipulating the data. The data contained in DataFrames are physically located across the multiple nodes of the Spark cluster. However, by representing them in a <strong>DataFrame</strong> they appear to be a cohesive unit of data without exposing the complexity of the underlying operations.</p>
+<p>Note that DataFrames are not the same as Datasets, another common term used in Spark. Datasets refer to the actual data that is held across the Spark cluster. A DataFrame is the tabular representation of the Dataset.</p>
+<p>Starting with Spark 2.0, the DataFrame and Dataset APIs were merged and a DataFrame in essence now represents a Dataset of Row. That said, DataFrame still remains the primary abstraction for users who want to leverage Python and R for interacting with Spark data.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Actions and transformations</h1>
+                </header>
+            
+            <article>
+                
+<p>There are 2 types of Spark operations:</p>
+<ul>
+<li>Transformations</li>
+<li>Actions</li>
+</ul>
+<p><strong>Transformations</strong> specify general data manipulation operations such as filtering data, joining data, performing aggregations, sampling data, and so on. Transformations do not return any result when the line containing the transformation operation in the code is executed. Instead, the command, upon execution, supplements Spark's internal DAG with the corresponding operation request. Examples of common transformations include: <kbd>map</kbd>, <kbd>filter</kbd>, <kbd>groupBy</kbd>, <kbd>union</kbd>, <kbd>coalesce</kbd>, and many others.</p>
+<p><strong>Actions</strong>, on the other hand, return results. Namely, they execute the series of transformations (if any) that the user may have specified on the corresponding RDD and produce an output. In other words, actions trigger the execution of the steps in the DAG. Common Actions include: <kbd>reduce</kbd>, <kbd>collect</kbd>, <kbd>take</kbd>, <kbd>aggregate</kbd>, <kbd>foreach</kbd>, and many others.</p>
+<div class="packt_infobox">Note that RDDs are immutable. They cannot be changed; transformations and actions will always produce new RDDs, but never modify existing ones.</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark deployment options</h1>
+                </header>
+            
+            <article>
+                
+<p>Spark can be deployed in various modes. The most important ones are:</p>
+<ul>
+<li><strong>Standalone mode</strong>: As an independent cluster not dependent upon any external cluster manager</li>
+<li><strong>Amazon EC2</strong>: On EC2 instances of Amazon Web Services where it can access data from S3</li>
+<li><strong>Apache YARN</strong>: The Hadoop ResourceManager</li>
+</ul>
+<p>Other options include <strong>Apache Mesos</strong> and <strong>Kubernetes.</strong></p>
+<div class="packt_tip">Further details can be found at the Spark documentation website, <a href="https://spark.apache.org/docs/latest/index.html"><span class="URLPACKT">https://spark.apache.org/docs/latest/index.html</span></a>.</div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark APIs</h1>
+                </header>
+            
+            <article>
+                
+<p>The Spark platform is easily accessible through Spark APIs available in Python, Scala, R, and Java. Together they make working with data in Spark simple and broadly accessible. During the inception of the Spark project, it only supported Scala/Java as the primary API. However, since one of the overarching objectives of Spark was to provide an easy interface to a diverse set of developers, the Scala API was followed by a Python and R API.</p>
+<p>In Python, the PySpark package has become a widely used standard for writing Spark applications by the Python developer community. In R, users interact with Spark via the SparkR package. This is useful for R developers who may also be interested in working with data stored in a Spark ecosystem. Both of these languages are very prevalent in the Data Science community, and hence, the introduction of the Python and R APIs set the groundwork for democratizing <strong>Big Data</strong> Analytics on Spark for analytical use cases.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Core components in Spark</h1>
+                </header>
+            
+            <article>
+                
+<p>The following components are quite important in Spark:</p>
+<ul>
+<li>Spark Core</li>
+<li>Spark SQL</li>
+<li>Spark Streaming</li>
+<li>GraphX</li>
+<li>MLlib</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark Core</h1>
+                </header>
+            
+            <article>
+                
+<p>Spark Core provides fundamental functionalities in Spark, such as working with RDDs, performing actions, and transformations, in addition to more administrative tasks such as storage, high availability, and other topics.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark SQL</h1>
+                </header>
+            
+            <article>
+                
+<p>Spark SQL provides the user with the ability to query data stored in Apache Hive using standard SQL commands. This adds an additional level of accessibility by providing developers with a means to interact with datasets via the Spark SQL interface using common SQL terminologies. The platform hosting the underlying data is not limited to Apache Hive, but can also include JSON, Parquet, and others.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark Streaming</h1>
+                </header>
+            
+            <article>
+                
+<p>The streaming component of Spark allows users to interact with streaming data such as web-related content and others. It also includes enterprise characteristics such as high availability. Spark can read data from various middleware and data streaming services such as Apache Kafka, Apache Flume, and Cloud based solutions from vendors such as Amazon Web Services.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">GraphX</h1>
+                </header>
+            
+            <article>
+                
+<p>The GraphX component of Spark supports graph-based operations, similar to technologies such as graph databases that support specialized data structures. These make it easy to use, access, and represent inter-connected points of data, such as social networks. Besides analytics, the Spark GraphX platform supports graph algorithms that are useful for business use cases that require relationships to be represented at scale. As an example, credit card companies use Graph based databases similar to the GraphX component of Spark to build recommendation engines that detect users with similar characteristics. These characteristics may include buying habits, location, demographics, and other qualitative and quantitative factors. Using Graph systems in these cases allows companies to build networks with nodes representing individuals and edges representing relationship metrics to find common features amongst them.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">MLlib</h1>
+                </header>
+            
+            <article>
+                
+<p>MLlib is one of the flagship components of the Spark ecosystem. It provides a scalable, high-performance interface to perform resource intensive machine learning tasks in Spark. Additionally, MLlib can natively connect to HDFS, HBase, and other underlying storage systems supported in Spark. Due to this versatility, users do not need to rely on a pre-existing Hadoop environment to start using the algorithms built into MLlib. Some of the supported algorithms in MLlib include:</p>
+<ul>
+<li><strong>Classification</strong>: logistic regression</li>
+<li><strong>Regression</strong>: generalized linear regression, survival regression and others</li>
+<li>Decision trees, random forests, and gradient-boosted trees</li>
+<li><strong>Recommendation</strong>: Alternating least squares</li>
+<li><strong>Clustering</strong>: K-means, Gaussian mixtures and others</li>
+<li><strong>Topic modeling</strong>: Latent Dirichlet allocation</li>
+<li><strong>Apriori</strong><span>: Frequent Itemsets, Association Rules</span></li>
+</ul>
+<p>ML workflow utilities include:</p>
+<ul>
+<li><strong>Feature transformations</strong>: Standardization, normalization and others</li>
+<li>ML Pipeline construction</li>
+<li>Model evaluation and hyper-parameter tuning</li>
+<li><strong>ML persistence</strong>: Saving and loading models and Pipelines</li>
+</ul>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">The architecture of Spark</h1>
+                </header>
+            
+            <article>
+                
+<p>Spark consists of 3 primary architectural components:</p>
+<ul>
+<li>The SparkSession / SparkContext</li>
+<li>The Cluster Manager</li>
+<li>The Worker Nodes (that hosts executor processes)</li>
+</ul>
+<p>The <strong>SparkSession/SparkContext</strong>, or more generally the Spark Driver, is the entry point for all Spark applications as discussed earlier. The SparkContext will be used to create RDDs and perform operations against RDDs. The SparkDriver sends instructions to the worker nodes to schedule tasks.</p>
+<p>The <strong>Cluster manager</strong> is conceptually similar to Resource Managers in Hadoop and indeed, one of the supported solutions is YARN. Other Cluster Managers include Mesos. Spark can also operate in a Standalone mode in which case YARN/Mesos are not required. Cluster Managers co-ordinate communications between the Worker Nodes, manage the nodes (such as starting, stopping, and so on), and perform other administration tasks.</p>
+<p><strong>Worker nodes</strong> are servers where Spark applications are hosted. Each application gets its own unique <strong>executor process</strong>, namely, processes that perform the actual action and transformation tasks. By assigning dedicated executor processes, Spark ensures that an issue in any particular application does not impact other applications. Worker Nodes consist of the Executor, the JVM, and the Python/R/other application process required by the Spark application. Note that in the case of Hadoop, the Worker Node and Data Nodes are one and the same:</p>
+<div class="CDPAlignCenter CDPAlign"><img height="302" width="503" src="assets/820c15f2-b785-4035-9227-69df5fcfba24.png"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark solutions</h1>
+                </header>
+            
+            <article>
+                
+<p>Spark is directly available from <a href="http://spark.apache.org/" target="_blank">spark.apache.org</a> as an open-source solution. <strong>Databricks</strong> is the leading provider of the commercial solution of Spark. For those who are familiar with programming in Python, R, Java, or Scala, the time required to start using Spark is minimal due to efficient interfaces, such as the PySpark API that allows users to work in Spark using just Python.</p>
+<p>Cloud-based Spark platforms, such as the Databricks Community Edition, provide an easy and simple means to work on Spark without the additional work of installing and configuring Spark. Hence, users who wish to use Spark for programming and related tasks can get started much more rapidly without spending time on administrative tasks.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark practicals</h1>
+                </header>
+            
+            <article>
+                
+<p>In this section, we will create an account on Databricks' Community Edition and complete a hands-on exercise that will walk the reader through the basics of actions, transformations, and RDD concepts in general.</p>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Signing up for Databricks Community Edition</h1>
+                </header>
+            
+            <article>
+                
+<p>The following steps outline the process of signing up for the <strong>Databricks Community Edition</strong>:</p>
+<ol>
+<li>Go to <a href="https://databricks.com/try-databricks">https://databricks.com/try-databricks</a>:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/b32b5600-60df-4eb1-8bc7-fbef99fc7302.png"/></div>
+<ol start="2">
+<li>Click on the <span class="packt_screen">START TODAY</span> button and enter your information:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/24ce51e3-d0a6-4572-a80c-226886b59f14.png"/></div>
+<ol start="3">
+<li>Confirm that you have read and agree to the terms in the popup menu (scroll down to the bottom for the <strong>Agree</strong> button):</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/08c99e13-c3ff-49b6-932a-8786ce3112d8.png"/></div>
+<ol start="4">
+<li>Check your email for a confirmation email from Databricks and click on the link to confirm your account:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="366" width="503" src="assets/fa9ccec1-86a7-4b4e-898b-ebcf8fe525a7.png"/></div>
+<ol start="5">
+<li>Once you click on the link to confirm your account, you'll be taken to a login screen where you can log on using the email address and password you used to sign up for the account:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="224" width="207" src="assets/b77a0d6c-f43a-4646-a1f2-6cac2abd0f82.png"/></div>
+<ol start="6">
+<li>After logging in, click on Cluster to set up a Spark cluster, as shown in the following figure:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/ec9a4931-343a-4856-8453-81359dc3cdc2.png"/></div>
+<ol start="7">
+<li>Enter <kbd>Packt_Exercise</kbd> as the Cluster Name and click on the Create Cluster button at the top of the page:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/4c630ae4-a0ae-42e5-8e38-9be37c9b24a5.png"/></div>
+<ol start="8">
+<li>This will initiate the process of starting up a Spark Cluster on which we will execute our Spark commands using an iPython notebook. An iPython Notebook is the name given to a commonly used IDE - a web-based development application used for writing and testing Python code. The notebook can also support other languages through the use of <span class="packt_screen">kernels</span>, but for the purpose of this exercise, we will focus on the Python kernel.</li>
+</ol>
+<p style="padding-left: 60px">After a while, the Status will change from <span class="packt_screen">Pending</span> to <span class="packt_screen">Running:</span></p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/c97289e0-9db2-4a45-849f-3062f7f69040.png"/></div>
+<p style="padding-left: 60px">Status changes to <span class="packt_screen">Running</span> after a few minutes:</p>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/c7149a7e-15b2-4c4f-99ce-332c20841de1.png"/></div>
+<ol start="9">
+<li>Click on <strong>Workspace</strong> (on the left hand bar) and select <strong>options</strong>, <strong>Users</strong> | (<kbd>Your userid</kbd>) and click on the drop-down arrow next to your email address. Select <span class="packt_screen">Create</span> | <span class="packt_screen">Notebook</span>:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/972a70c7-9846-48d0-83bf-c64f87eb3e3f.png"/></div>
+<ol start="10">
+<li>In the popup screen, enter <kbd>Packt_Exercise</kbd> as the name of the notebook and click on the <span class="packt_screen">Create</span> button:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/05754e5e-5029-4729-bff4-41b883ced6c8.png"/></div>
+<ol start="11">
+<li>Once you click on the <strong>Create</strong> button, you'll be taken directly to the Notebook as shown in the following screenshot. This is the Spark <span class="packt_screen">Notebook,</span> where you'll be able to execute the rest of the code given in the next few sections. The code should be typed in the <span class="packt_screen">cells</span> of the notebook as shown. After entering your code, press <em>Shift + Enter</em> to execute the corresponding cell:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/fa59787f-7c2f-4ed5-a0e6-62c84d6f76a9.png"/></div>
+<ol start="12">
+<li>For the next few exercises, you can copy-paste the text into the cells of the Notebook. Alternatively, you can also import the notebook and load it directly in your workspace. If you do so, you'll not need to type in the commands (although typing in the commands will provide more hands-on familiarity).</li>
+<li>An alternative approach to copy-pasting commands: You can import the notebook by clicking on Import as shown in the following screenshot:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img src="assets/8e1545cd-bf1c-43a7-9309-4eb40b781d71.png"/></div>
+<ol start="14">
+<li>Enter the following <strong>URL</strong> in the popup menu (select <strong>URL</strong> as the <strong>Import from</strong> option):</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="195" width="407" src="assets/db82dd15-c748-4433-bf0e-96f8a1d820d8.png"/></div>
+<ol start="15">
+<li>The notebook will then show up under your email ID. Click on the name of the notebook to load it:</li>
+</ol>
+<div class="CDPAlignCenter CDPAlign"><img height="68" width="563" src="assets/e3ab20dd-cf19-40cd-9e8e-e32c3faed7e5.png"/></div>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Spark exercise - hands-on with Spark (Databricks)</h1>
+                </header>
+            
+            <article>
+                
+<p>This notebook is based on tutorials conducted by Databricks (<a href="https://databricks.com/">https://databricks.com/</a>). The tutorial will be conducted using the Databricks' Community Edition of Spark, available to sign up to at <a href="https://databricks.com/try-databricks">https://databricks.com/try-databricks</a>. Databricks is a leading provider of the commercial and enterprise supported version of Spark.</p>
+<p>In this tutorial, we will introduce a few basic commands used in Spark. Users are encouraged to try out more extensive Spark tutorials and notebooks that are available on the web for more detailed examples.</p>
+<p>Documentation for Spark's Python API can be found at <a href="https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.sql">https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.sql</a>.</p>
+<p>The data for this book was imported into the Databricks' Spark Platform. For more information on importing data, go to <strong>Importing Data</strong> - <strong>Databricks</strong> (<a href="https://docs.databricks.com/user-guide/importing-data.html">https://docs.databricks.com/user-guide/importing-data.html</a>).</p>
+<pre># COMMAND ----------<br/><br/># The SparkContext/SparkSession is the entry point for all Spark operations<br/># sc = the SparkContext = the execution environment of Spark, only 1 per JVM<br/># Note that SparkSession is now the entry point (from Spark v2.0)<br/># This tutorial uses SparkContext (was used prior to Spark 2.0)<br/><br/>from pyspark import SparkContext<br/># sc = SparkContext(appName = "some_application_name") # You'd normally run this, but in this case, it has already been created in the Databricks' environment<br/><br/># COMMAND ----------<br/><br/>quote = "To be, or not to be, that is the question: Whether 'tis nobler in the mind to suffer The slings and arrows of outrageous fortune, Or to take Arms against a Sea of troubles, And by opposing end them: to die, to sleep No more; and by a sleep, to say we end the heart-ache, and the thousand natural shocks that Flesh is heir to? 'Tis a consummation devoutly to be wished. To die, to sleep, To sleep, perchance to Dream; aye, there's the rub, for in that sleep of death, what dreams may come, when we have shuffled off this mortal coil, must give us pause."<br/><br/># COMMAND ----------<br/>sparkdata = sc.parallelize(quote.split(' '))<br/><br/># COMMAND ----------<br/>print "sparkdata = ", sparkdata<br/>print "sparkdata.collect = ", sparkdata.collect<br/>print "sparkdata.collect() = ", sparkdata.collect()[1:10]<br/><br/># COMMAND ----------<br/># A simple transformation - map<br/>def mapword(word):<br/> return (word,1)<br/><br/>print sparkdata.map(mapword) # Nothing has happened here<br/>print sparkdata.map(mapword).collect()[1:10] # collect causes the DAG to execute<br/><br/># COMMAND ----------<br/># Another Transformation<br/><br/>def charsmorethan2(tuple1):<br/> if len(tuple1[0])&gt;2:<br/> return tuple1<br/> pass<br/><br/>rdd3 = sparkdata.map(mapword).filter(lambda x: charsmorethan2(x))<br/># Multiple Transformations in 1 statement, nothing is happening yet<br/>rdd3.collect()[1:10] <br/># The DAG gets executed. Note that since we didn't remove punctuation marks ... 'be,', etc are also included<br/><br/># COMMAND ----------<br/># With Tables, a general example<br/>cms = sc.parallelize([[1,"Dr. A",12.50,"Yale"],[2,"Dr. B",5.10,"Duke"],[3,"Dr. C",200.34,"Mt. Sinai"],[4,"Dr. D",5.67,"Duke"],[1,"Dr. E",52.50,"Yale"]])<br/><br/># COMMAND ----------<br/>def findPayment(data):<br/> return data[2]<br/><br/>print "Payments = ", cms.map(findPayment).collect()<br/>print "Mean = ", cms.map(findPayment).mean() # Mean is an action<br/><br/># COMMAND ----------<br/># Creating a DataFrame (familiar to Python programmers)<br/><br/>cms_df = sqlContext.createDataFrame(cms, ["ID","Name","Payment","Hosp"])<br/>print cms_df.show()<br/>print cms_df.groupby('Hosp').agg(func.avg('Payment'), func.max('Payment'),func.min('Payment'))<br/>print cms_df.groupby('Hosp').agg(func.avg('Payment'), func.max('Payment'),func.min('Payment')).collect()<br/>print<br/>print "Converting to a Pandas DataFrame"<br/>print "--------------------------------"<br/>pd_df = cms_df.groupby('Hosp').agg(func.avg('Payment'), func.max('Payment'),func.min('Payment')).toPandas()<br/>print type(pd_df)<br/>print<br/>print pd_df<br/><br/># COMMAND ----------<br/>wordsList = ['to','be','or','not','to','be']<br/>wordsRDD = sc.parallelize(wordsList, 3) # Splits into 2 groups<br/># Print out the type of wordsRDD<br/>print type(wordsRDD)<br/><br/># COMMAND ----------<br/># Glom coallesces all elements within each partition into a list<br/>print wordsRDD.glom().take(2) # Take is an action, here we are 'take'-ing the first 2 elements of the wordsRDD<br/>print wordsRDD.glom().collect() # Collect<br/><br/># COMMAND ----------<br/># An example with changing the case of words<br/># One way of completing the function<br/>def makeUpperCase(word):<br/> return word.upper()<br/><br/>print makeUpperCase('cat')<br/><br/># COMMAND ----------<br/>upperRDD = wordsRDD.map(makeUpperCase)<br/>print upperRDD.collect()<br/><br/># COMMAND ----------<br/>upperLambdaRDD = wordsRDD.map(lambda word: word.upper())<br/>print upperLambdaRDD.collect()<br/><br/><span># COMMAND ----------<br/><br/></span># Pair RDDs<br/>wordPairs = wordsRDD.map(lambda word: (word, 1))<br/>print wordPairs.collect()<br/><br/># COMMAND ----------<br/><br/># #### Part 2: Counting with pair RDDs <br/># There are multiple ways of performing group-by operations in Spark<br/># One such method is groupByKey()<br/># <br/># ** Using groupByKey() **<br/># <br/># This method creates a key-value pair whereby each key (in this case word) is assigned a value of 1 for our wordcount operation. It then combines all keys into a single list. This can be quite memory intensive, especially if the dataset is large.<br/><br/># COMMAND ----------<br/># Using groupByKey<br/>wordsGrouped = wordPairs.groupByKey()<br/>for key, value in wordsGrouped.collect():<br/> print '{0}: {1}'.format(key, list(value))<br/><br/># COMMAND ----------<br/># Summation of the key values (to get the word count)<br/>wordCountsGrouped = wordsGrouped.map(lambda (k,v): (k, sum(v)))<br/>print wordCountsGrouped.collect()<br/><br/># COMMAND ----------<br/><br/># ** (2c) Counting using reduceByKey **<br/># <br/># reduceByKey creates a new pair RDD. It then iteratively applies a function first to each key (i.e., within the key values) and then across all the keys, i.e., in other words it applies the given function iteratively.<br/><br/># COMMAND ----------<br/><br/>wordCounts = wordPairs.reduceByKey(lambda a,b: a+b)<br/>print wordCounts.collect()<br/><br/># COMMAND ----------<br/># %md<br/># ** Combining all of the above into a single statement **<br/><br/># COMMAND ----------<br/><br/>wordCountsCollected = (wordsRDD<br/> .map(lambda word: (word, 1))<br/> .reduceByKey(lambda a,b: a+b)<br/> .collect())<br/>print wordCountsCollected<br/><br/># COMMAND ----------<br/><br/># %md<br/># <br/># This tutorial has provided a basic overview of Spark and introduced the Databricks community edition where users can upload and execute their own Spark notebooks. There are various in-depth tutorials on the web and also at Databricks on Spark and users are encouraged to peruse them if interested in learning further about Spark.</pre>
+
+
+            </article>
+
+            
+        </section>
+    
+
+        <section>
+
+                            <header>
+                    <h1 class="header-title">Summary</h1>
+                </header>
+            
+            <article>
+                
+<p>In this chapter, we read about some of the core features of Spark, one of the most prominent technologies in the Big Data landscape today. Spark has matured rapidly since its inception in 2014, when it was released as a Big Data solution that alleviated many of the shortcomings of Hadoop, such as I/O contention and others.</p>
+<p>Today, Spark has several components, including dedicated ones for streaming analytics and machine learning, and is being actively developed. Databricks is the leading provider of the commercially supported version of Spark and also hosts a very convenient cloud-based Spark environment with limited resources that any user can access at no charge. This has dramatically lowered the barrier to entry as users do not need to install a complete Spark environment to learn and use the platform.</p>
+<p>In the next chapter, we will begin our discussion on machine learning. Most of the text, until this section, has focused on the management of large scale data. Making use of the data effectively and gaining <em>insights</em> from the data is always the final aim. In order to do so, we need to employ the advanced algorithmic techniques that have become commonplace today. The next chapter will discuss the basic tenets of machine learning, and thereafter we will delve deeper into the subject area in the subsequent chapter.</p>
+
+
+            </article>
+
+            
+        </section>
+    </body></html>

@@ -1,0 +1,147 @@
+<html><head></head><body>
+		<div class="Content" id="_idContainer103">
+			<h1 id="_idParaDest-124"><em class="italics"><a id="_idTextAnchor138"/>Chapter 5</em></h1>
+		</div>
+		<div class="Content" id="_idContainer104">
+			<h1 id="_idParaDest-125"><a id="_idTextAnchor139"/>Handling Missing Values and Correlation Analysis</h1>
+		</div>
+		<div class="Content" id="_idContainer105">
+			<h2>Learning Objectives</h2>
+			<p>By the end of this chapter, you will be able to:</p>
+			<ul>
+				<li class="bullets">Detect and handle missing values in data using PySpark</li>
+				<li class="bullets">Describe correlations between variables</li>
+				<li class="bullets">Compute correlations between two or more variables in PySpark</li>
+				<li class="bullets">Create a correlation matrix using PySpark</li>
+			</ul>
+			<p>In this chapter, we will be using the Iris dataset to handle missing data and find correlations between data values.</p>
+		</div>
+		<div class="Content" id="_idContainer118">
+			<h2 id="_idParaDest-126"><a id="_idTextAnchor140"/>Introduction</h2>
+			<p>In the previous chapter, we learned the basic concepts of Spark DataFrames and saw how to leverage them for big data analysis.</p>
+			<p>In this chapter, we will go a step further and learn about handling missing values in data and correlation analysis with Spark DataFrames—concepts that will help us with data preparation for machine learning and exploratory data analysis.</p>
+			<p>We will briefly cover these concepts to provide the reader with some context, but our focus is on their implementation with Spark DataFrames. We will use the same Iris dataset that we used in the previous chapter for the exercises in this chapter as well. But the Iris dataset has no missing values, so we have randomly removed two entries from the <strong class="inline">Sepallength</strong> column and one entry from the <strong class="inline">Petallength</strong> column from the original dataset. So, now we have a dataset with missing values, and we will learn how to handle these missing values using PySpark.</p>
+			<p>We will also look at the correlation between the variables in the Iris dataset by computing their correlation coefficients and correlation matrix.</p>
+			<h2 id="_idParaDest-127"><a id="_idTextAnchor141"/>Setting up the Jupyter Notebook</h2>
+			<p>The following steps are required before getting started with the exercises:</p>
+			<ol>
+				<li>Import all the required modules and packages in the Jupyter notebook:<p class="snippet">import findspark</p><p class="snippet">findspark.init()</p><p class="snippet">import pyspark</p><p class="snippet">import random</p></li>
+				<li>Now, use the following command to set up <strong class="inline">SparkContext</strong>:<p class="snippet">from pyspark import SparkContext</p><p class="snippet">sc = SparkContext()</p></li>
+				<li>Similarly, use the following command to set up <strong class="inline">SQLContext</strong> in the Jupyter notebook:<p class="snippet">from pyspark.sql import SQLContext</p><p class="snippet">sqlc = SQLContext(sc)</p><h4>Note</h4><p class="callout">Make sure you have the PySpark CSV reader package from the Databricks website (<a href="https://databricks.com/">https://databricks.com/</a>) installed and ready before executing the next command. If not, then download it using the following command:</p><p class="callout"><strong class="inline">pyspark –packages com.databricks:spark-csv_2.10:1.4.0</strong></p></li>
+				<li>Read the Iris dataset from the CSV file into a Spark DataFrame:<p class="snippet">df = sqlc.read.format('com.databricks.spark.csv').options(header = 'true', inferschema = 'true').load('/Users/iris.csv')</p><p>The output of the preceding command is as follows:</p><p class="snippet">df.show(5)</p><div class="IMG---Figure" id="_idContainer106"><img alt="Figure 5.1: Iris DataFrame" src="image/C12913_05_01.jpg"/></div></li>
+			</ol>
+			<h6>Figure 5.1: Iris DataFrame</h6>
+			<h2 id="_idParaDest-128"><a id="_idTextAnchor142"/>Missing Values</h2>
+			<p>The data entries with no value assigned to them are called <strong class="bold">missing values</strong>. In the real world, encountering missing values in data is common. Values may be missing for a wide variety of reasons, such as non-responsiveness of the system/responder, data corruption, and partial deletion.</p>
+			<p>Some fields are more likely than other fields to contain missing values. For example, income data collected from surveys is likely to contain missing values, because of people not wanting to disclose their income.</p>
+			<p>Nevertheless, it is one of the major problems plaguing the data analytics world. Depending on the percentage of missing data, missing values may prove to be a significant challenge in data preparation and exploratory analysis. So, it's important to calculate the missing data percentage before getting started with data analysis.</p>
+			<p>In the following exercise, we will learn how to detect and calculate the number of missing value entries in PySpark DataFrames.</p>
+			<h3 id="_idParaDest-129">E<a id="_idTextAnchor143"/>xercise 38: Counting Missing Values in a DataFrame</h3>
+			<p>In this exercise, we will learn how to count the missing values from the PySpark DataFrame column:</p>
+			<ol>
+				<li value="1">Use the following command to check whether the Spark DataFrame has missing values or not:<p class="snippet">from pyspark.sql.functions import isnan, when, count, col</p><p class="snippet">df.select([count(when(isnan(c) | col(c).isNull(),</p><p class="snippet">                c)).alias(c) for c in df.columns]).show()</p></li>
+				<li>Now, we will count the missing values in the <strong class="inline">Sepallength</strong> column of the Iris dataset loaded in the PySpark DataFrame <strong class="inline">df</strong> object:<p class="snippet">df.filter(col('Sepallength').isNull()).count()</p><p>The output is as follows:</p><p class="snippet">2</p></li>
+			</ol>
+			<h3 id="_idParaDest-130"><a id="_idTextAnchor144"/>Exercise 39: Counting Missing Values in All DataFrame Columns</h3>
+			<p>In this exercise, we will count the missing values present in all the columns of a PySpark DataFrame:</p>
+			<ol>
+				<li value="1">First, import all the required modules, as illustrated here:<p class="snippet">from pyspark.sql.functions import isnan, when, count, col</p></li>
+				<li>Now let's show the data using the following command:<p class="snippet">df.select([count(when(isnan(i) | col(i).isNull(), i)).alias(i) for i in df.columns]).show()</p><p>The output is as follows:</p><div class="IMG---Figure" id="_idContainer107"><img alt="" src="image/C12913_05_02.jpg"/></div><h6>Figure 5.2: Iris DataFrame, counting missing values</h6><p>The output shows we have <strong class="inline">2</strong> missing entries in the <strong class="inline">Seapllength</strong> column and <strong class="inline">1</strong> missing entry in the <strong class="inline">Petallength</strong> column in the PySpark DataFrame.</p></li>
+				<li>A simple way is to just use the <strong class="inline">describe()</strong> function, which gives the count of non-missing values for each column, along with a bunch of other summary statistics. Let's execute the following command in the notebook:<p class="snippet">df.describe().show(1)</p><div class="IMG---Figure" id="_idContainer108"><img alt="Figure 5.3: Iris DataFrame, counting the missing values using different approach" src="image/C12913_05_03.jpg"/></div></li>
+			</ol>
+			<h6>Figure 5.3: Iris DataFrame, counting the missing values using different approach</h6>
+			<p>As we can see, there are <strong class="inline">148</strong> non-missing values in the <strong class="inline">Sepallength</strong> column, indicating <strong class="inline">2</strong> missing entries and <strong class="inline">149</strong> non-missing values in the <strong class="inline">Petallength</strong> column, indicating <strong class="inline">1</strong> missing entry.</p>
+			<p>In the following section, we will explore how to find the missing values from the DataFrame.</p>
+			<h3 id="_idParaDest-131"><a id="_idTextAnchor145"/>Fetching Missing Value Records from the DataFrame</h3>
+			<p>We can also filter out the records containing the missing value entries from the PySpark DataFrame using the following code:</p>
+			<p class="snippet">df.where(col('Sepallength').isNull()).show()</p>
+			<div>
+				<div class="IMG---Figure" id="_idContainer109">
+					<img alt="" src="image/C12913_05_04.jpg"/>
+				</div>
+			</div>
+			<h6>Figure 5.4: Iris DataFrame, fetching the missing value</h6>
+			<p>The <strong class="inline">show</strong> function displays the first 20 records of a PySpark DataFrame. We only get two here as the <strong class="inline">Sepallength</strong> column only has two records with missing entries.</p>
+			<h2 id="_idParaDest-132"><a id="_idTextAnchor146"/>Handling Missing Values in Spark DataFrames</h2>
+			<p>Missing value handling is one of the complex areas of data science. There are a variety of techniques that are used to handle missing values depending on the type of missing data and the business use case at hand. </p>
+			<p>These methods range from simple logic-based methods to advanced statistical methods such as regression and KNN. However, irrespective of the method used to tackle the missing values, we will end up performing one of the following two operations on the missing value data:</p>
+			<ul>
+				<li>Removing the records with missing values from the data</li>
+				<li>Imputing the missing value entries with some constant value</li>
+			</ul>
+			<p>In this section, we will explore how to do both these operations with PySpark DataFrames.</p>
+			<h3 id="_idParaDest-133"><a id="_idTextAnchor147"/>Exercise 40: Removing Records with Missing Values from a DataFrame</h3>
+			<p>In this exercise, we will remove the records containing missing value entries for the PySpark DataFrame. Let's perform the following steps:</p>
+			<ol>
+				<li value="1">To remove the missing values from a particular column, use the following command:<p class="snippet">df.select('Sepallength').dropna().count()</p><p>The previous code will return <strong class="inline">148</strong> as the output as the two records containing missing entries for the <strong class="inline">Sepallength</strong> column have been removed from the PySpark DataFrame.</p></li>
+				<li>To remove all the records containing any missing value entry for any column from the PySpark DataFrame, use the following command:<p class="snippet">df.dropna().count()</p></li>
+			</ol>
+			<p>The DataFrame had <strong class="inline">3</strong> records with missing values, as we saw in <em class="italics">Exercise 2: Counting Missing Values in all DataFrame Columns</em>—two records with missing entries for the <strong class="inline">Sepallength</strong> column and one with a missing entry for the <strong class="inline">Petallength</strong> column.</p>
+			<p>The previous code removes all three records, thereby returning 147 complete records in the PySpark DataFrame.</p>
+			<h3 id="_idParaDest-134"><a id="_idTextAnchor148"/>Exercise 41: Filling Missing Values with a Constant in a DataFrame Column</h3>
+			<p>In this exercise, we will replace the missing value entries of the PySpark DataFrame column with a constant numeric value.</p>
+			<p>Our DataFrame has missing values in two columns—<strong class="inline">Sepallength</strong> and <strong class="inline">Petallength</strong>:</p>
+			<ol>
+				<li value="1">Now, let's replace the missing value entries in both these columns with a constant numeric value of <strong class="inline">1</strong>:<p class="snippet">y = df.select('Sepallength','Petallength').fillna(1)</p></li>
+				<li>Now, let's count the missing values in the new DataFrame, <strong class="inline">y</strong>, that we just created. The new DataFrame should have no missing values:<p class="snippet">y.select([count(when(isnan(i) | col(i).isNull(), i)).alias(i) for i in y.columns]).show()</p><p>The output is as follows:</p><div class="IMG---Figure" id="_idContainer110"><img alt="Figure 5.5: Iris DataFrame, finding the missing value" src="image/Image43351.jpg"/></div><h6>Figure 5.5: Iris DataFrame, finding the missing value</h6><p>Sometimes, we want to replace all the missing values in the DataFrame with a single constant value.</p></li>
+				<li>Use the following command to replace all the missing values in the PySpark DataFrame with a constant numeric value of 1:<p class="snippet">z = df.fillna(1)</p></li>
+				<li>Now, let's count the missing values in the new DataFrame <strong class="inline">z</strong> that we just created. The new DataFrame should have no missing values:<p class="snippet">z.select([count(when(isnan(k) | col(k).isNull(), k)).alias(k) for k in z.columns]).show()</p><p>The output is as follows:</p><div class="IMG---Figure" id="_idContainer111"><img alt="Figure 5.6: Iris DataFrame, printing the missing value" src="image/Image43362.jpg"/></div></li>
+			</ol>
+			<h6>Figure 5.6: Iris DataFrame, printing the missing value</h6>
+			<h2 id="_idParaDest-135"><a id="_idTextAnchor149"/>Correlation</h2>
+			<p>Correlation is a statistical measure of the level of association between two numerical variables. It gives us an idea of how closely two variables are related with each other. For example, age and income are quite closely related variables. It has been observed that the average income grows with age within a threshold. Thus, we can assume that age and income are positively correlated with each other.</p>
+			<h4>Note</h4>
+			<p class="callout">However, correlation does not establish a <strong class="bold">cause-effect relationship</strong>. A cause-effect relationship means that one variable is causing a change in another variable.</p>
+			<p>The most common metric used to compute this association is the <strong class="bold">Pearson Product-Moment Correlation</strong>, commonly known as <strong class="bold">Pearson correlation coefficient</strong> or simply as the <strong class="bold">correlation coefficient</strong>. It is named after its inventor, <em class="italics">Karl Pearson</em>.</p>
+			<p>The Pearson correlation coefficient is computed by dividing the covariance of the two variables by the product of their standard deviations. The correlation value lies between <em class="italics">-1</em> and <em class="italics">+1</em> with values close to <em class="italics">1</em> or <em class="italics">-1</em> signifying strong association and values close to <em class="italics">0</em>, signifying weak association. The sign (<strong class="inline">+</strong>, <strong class="inline">-</strong>) of the coefficient tells us whether the association is positive (both variables increase/decrease together) or negative (vice-versa).</p>
+			<h4>Note</h4>
+			<p class="callout">Correlation only captures the linear association between variables. So, if the association is non-linear, the correlation coefficient won't capture it. Two disassociated variables will have a low or zero correlation coefficient, but variables with zero/low correlation values are not necessarily disassociated.</p>
+			<p>Correlation is of great importance in statistical analysis, as it helps explain the data and sometimes highlights predictive relationships between variables. In this section, we will learn how to compute correlation between variables and compute a correlation matrix in PySpark.</p>
+			<h3 id="_idParaDest-136"><a id="_idTextAnchor150"/>Exercise 42: Computing Correlation</h3>
+			<p>In this exercise, we will compute the value of the Pearson correlation coefficient between two numerical variables and a correlation matrix for all the numerical columns of our PySpark DataFrame. The correlation matrix helps us visualize the correlation of all the numerical columns with each other:</p>
+			<ol>
+				<li value="1">Perform the following steps to calculate the correlation between two variables:<p class="snippet">df.corr('Sepallength', 'Sepalwidth')</p><p>The previous code outputs the Pearson correlation coefficient of <strong class="inline">-0.1122503554120474</strong> between the two variables mentioned.</p></li>
+				<li>Import the relevant modules, as illustrated here:<p class="snippet">from pyspark.mllib.stat import Statistics</p><p class="snippet">import pandas as pd</p></li>
+				<li>Remove any missing values from the data with the following command:<p class="snippet">z = df.fillna(1)</p></li>
+				<li>To remove any non-numerical columns before computing the correlation matrix, use the following command:<p class="snippet">a = z.drop('Species')</p></li>
+				<li>Now, let's compute the correlation matrix with the help of the following command:<p class="snippet">features = a.rdd.map(lambda row: row[0:])</p><p class="snippet">correlation_matrix = Statistics.corr(features, method="pearson")</p></li>
+				<li>To convert the matrix into a pandas DataFrame for easy visualization, execute the following command:<p class="snippet">correlation_df = pd.DataFrame(correlation_matrix)</p></li>
+				<li>Rename the indexes of the pandas DataFrame with the name of the columns from the original PySpark DataFrame:<p class="snippet">correlation_df.index, correlation_df.columns = a.columns, a.columns</p></li>
+				<li>Now, visualize the pandas DataFrame with the following command:<p class="snippet">correlation_df</p><div class="IMG---Figure" id="_idContainer112"><img alt="Figure 5.7: Iris DataFrame, computing correlation" src="image/C12913_05_07.jpg"/></div></li>
+			</ol>
+			<h6>Figure 5.7: Iris DataFrame, computing correlation</h6>
+			<h3 id="_idParaDest-137"><a id="_idTextAnchor151"/>Activity 12: Missing Value Handling and Correlation Analysis with PySpark DataFrames</h3>
+			<p>In this activity, we will detect and handle missing values in the Iris dataset. We will also compute the correlation matrix and verify the variables showing strong correlations by plotting them with each other and fitting a linear line on the plot:</p>
+			<ol>
+				<li value="1">Perform the initial procedure of importing packages and libraries in the Jupyter notebook.</li>
+				<li>Set up <strong class="inline">SparkContext</strong> and <strong class="inline">SQLContext</strong>.</li>
+				<li>Read the data from the CSV file into a Spark object:<div class="IMG---Figure" id="_idContainer113"><img alt="Figure 5.8: Iris DataFrame, reading data from the DataFrame" src="image/C12913_05_08.jpg"/></div><h6>Figure 5.8: Iris DataFrame, reading data from the DataFrame</h6></li>
+				<li>Fill in the missing values in the <strong class="inline">Sepallength</strong> column with its column mean.</li>
+				<li>Compute the correlation matrix for the dataset. Make sure to import the required modules.</li>
+				<li>Remove the <strong class="inline">String</strong> columns from the PySpark DataFrame and compute the correlation matrix in the Spark DataFrame.</li>
+				<li>Convert the correlation matrix into a pandas DataFrame:<div class="IMG---Figure" id="_idContainer114"><img alt="Figure 5.9: Iris DataFrame, converting the correlation matrix into a pandas DataFrame" src="image/C12913_05_09.jpg"/></div><h6>Figure 5.9: Iris DataFrame, converting the correlation matrix into a pandas DataFrame</h6></li>
+				<li>Load the required modules and plotting data to plot the variable pairs showing strong positive correlation and fit a linear line on them.<p>This is the graph for <strong class="inline">x = "Sepallength", y = "Petalwidth"</strong>:</p><div class="IMG---Figure" id="_idContainer115"><img alt="Figure 5.10: Iris DataFrame, plotting graph as x = “Sepallength”, y = “Petalwidth”" src="image/C12913_05_10.jpg"/></div></li>
+			</ol>
+			<h6>Figure 5.10: Iris DataFrame, plotting graph as x = "Sepallength", y = "Petalwidth"</h6>
+			<p>This is the graph for <strong class="inline">x = "Sepallength", y = "Petalwidth"</strong>:</p>
+			<div>
+				<div class="IMG---Figure" id="_idContainer116">
+					<img alt="Figure 5.11: Iris DataFrame, plotting graph as x = “Sepallength”, y = “Petalwidth”" src="image/C12913_05_11.jpg"/>
+				</div>
+			</div>
+			<h6>Figure 5.11: Iris DataFrame, plotting graph as x = "Sepallength", y = "Petalwidth"</h6>
+			<p>This is the graph for <strong class="inline">x = "Petallength", y = "Petalwidth"</strong>:</p>
+			<div>
+				<div class="IMG---Figure" id="_idContainer117">
+					<img alt="Figure 5.12: Iris DataFrame, plotting graph as x = “Petallength”, y = “Petalwidth”" src="image/C12913_05_12.jpg"/>
+				</div>
+			</div>
+			<h6>Figure 5.12: Iris DataFrame, plotting graph as x = "Petallength", y = "Petalwidth"</h6>
+			<h4>Note</h4>
+			<p class="callout">Alternatively, you can use any dataset for this activity.</p>
+			<p class="callout">The solution for this activity can be found on page 229.</p>
+			<h2 id="_idParaDest-138"><a id="_idTextAnchor152"/>Summary</h2>
+			<p>In this chapter, we learned how to detect and handle the missing values in PySpark DataFrames. We looked at how to perform correlation and a metric to quantify the Pearson correlation coefficient. Later, we computed Pearson correlation coefficients for different numerical variable pairs and learned how to compute the correlation matrix for all the variables in the PySpark DataFrame.</p>
+			<p>In the next chapter, we will learn what problem definition is, and understand how to perform KPI generation. We will also use the data aggregation and data merge operations (learned about in previous chapters) and analyze data using graphs.</p>
+		</div>
+	</body></html>

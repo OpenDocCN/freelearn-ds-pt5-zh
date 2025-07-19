@@ -1,0 +1,478 @@
+<html><head></head><body><div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Chapter 3.  Introduction to DataFrames"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title"><a id="ch03" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Chapter 3.  Introduction to DataFrames </h1></div></div></div><p class="calibre11">To solve any real-world big data analytics problem, access to an efficient and scalable computing system is definitely mandatory. However, if the computing power is not accessible to the target users in a way that's easy and familiar to them, it will barely make any sense. Interactive data analysis gets easier with datasets that can be represented as named columns, which was not the case with plain RDDs. So, the need for a schema-based approach to represent data in a standardized way was the inspiration behind DataFrames.</p><p class="calibre11">The previous chapter outlined some design aspects of Spark. We learnt how Spark enabled distributed data processing on distributed collections of data (RDDs) through in-memory computation. It covered most of the points that revealed Spark as a fast, efficient, and scalable computing platform. In this chapter, we will see how Spark introduced the DataFrame API to make data scientists feel at home to carry out their usual data analysis activities with ease.</p><p class="calibre11">This topic is going to serve as a foundation for many upcoming chapters and we strongly recommend you to understand the concepts covered in here very well. As a prerequisite for this chapter, a basic understanding of SQL and Spark is needed. The topics covered in this chapter are as follows:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Why DataFrames?</li><li class="listitem">Spark SQL<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Catalyst optimizer</li></ul></div><p class="calibre31">
+</p></li><li class="listitem">DataFrame API<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">DataFrame basics</li><li class="listitem">RDD versus DataFrame</li></ul></div><p class="calibre31">
+</p></li></ul></div><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Creating DataFrames<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">From RDDs</li><li class="listitem">From JSON</li><li class="listitem">From JDBC sources</li><li class="listitem">From other data sources</li></ul></div><p class="calibre31">
+</p></li><li class="listitem">Manipulating DataFrames</li></ul></div><div class="calibre2" title="Why DataFrames?"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch03lvl1sec20" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Why DataFrames?</h1></div></div></div><p class="calibre11">Apart from massive, scalable computing capability, big data applications also need a mix of a few more features, such as support for a relational system for interactive data analysis (simple SQL style), heterogeneous data sources, and different storage formats along with different processing techniques.</p><p class="calibre11">Though Spark provided a functional programming API to manipulate distributed collections of data, it ended up with tuples (_1, _2, ...). Coding to operate on tuples was a little complicated and messy, and was slow at times. So, a standardized layer was needed, with the following characteristics:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Named columns with a schema (higher-level abstraction than tuples) so that manipulating and tracking them would be easy</li><li class="listitem">Functionality to consolidate data from various data sources such as Hive, Parquet, SQL Server, PostgreSQL, JSON, and also Spark's native RDDs, and unify them to a common format</li><li class="listitem">Ability to take advantage of built-in schemas in special file formats such as Avro, CSV, JSON, and so on.</li><li class="listitem">Support for simple relational as well as complex logical operations</li><li class="listitem">Elimination of the need to define column objects based on domain-specific tasks for the ML algorithms to work on, and to serve as a common data layer for all algorithms in MLlib</li><li class="listitem">A language-independent entity that can be passed between functions of different languages</li></ul></div><p class="calibre11">To address the above requirements, the DataFrame API was built as one more level of abstraction on top of Spark SQL.</p></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Spark SQL"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch03lvl1sec21" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Spark SQL</h1></div></div></div><p class="calibre11">Executing SQL queries for basic business needs is very common and almost every business does it using some kind of database. So Spark SQL also supports the execution of SQL queries written using either a basic SQL syntax or HiveQL. Spark SQL can also be used to read data from an existing Hive installation. Apart from these plain SQL operations, Spark SQL also addresses some tough problems. Designing complex logic through relational queries was cumbersome and almost impossible at times. So, Spark SQL was designed to integrate the capabilities of relational processing and functional programming so that complex logics can be implemented, optimized, and scaled on a distributed computing setup. There are basically three ways to interact with Spark SQL, including SQL, the DataFrame API, and the Dataset API. The Dataset API is an experimental layer added in Spark 1.6 at the time of writing this book so we will limit our discussions to DataFrames only.</p><p class="calibre11">Spark SQL exposes DataFrames as a higher-level API and takes care of all the complexities involved and also performs all the background tasks. Through the declarative syntax, users can focus on what the program should accomplish and not bother about the control flow, which will be taken care of by the Catalyst optimizer, built inside Spark SQL.</p><div class="calibre2" title="The Catalyst optimizer"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec29" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>The Catalyst optimizer</h2></div></div></div><p class="calibre11">The Catalyst optimizer is the fulcrum of Spark SQL and DataFrame. It is built with the functional programming constructs of Scala and has the following features:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Schema inference from various data formats:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Spark has built-in support for JSON schema inference. Users can just create a table out of any JSON file by registering it as a table and simply query it with SQL syntaxes.</li><li class="listitem">RDDs that are Scala objects; the type information is extracted from Scala's type system, that is, <span class="strong"><strong class="calibre19">case classes</strong></span>, if they contain case classes.</li><li class="listitem">RDDs that are Python objects; the type information is extracted with a different approach. Since Python is not statically typed and follows a dynamic type system, the RDD can contain multiple types. So, Spark SQL samples the dataset and infers the schema using an algorithm similar to JSON schema inference.</li><li class="listitem">In future, built-in support for CSV, XML, and other formats will be provided.</li></ul></div><p class="calibre31">
+</p></li></ul></div><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Built-in support for a wide range of data sources and query federation for efficient data import:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Spark has a built-in mechanism to fetch data from some external data sources (for example, JSON, JDBC, Parquet, MySQL, Hive, PostgreSQL, HDFS, S3, and so on) through query federation. It can accurately model the sourced data by using out-of-the-box SQL data types and other complex data types such as Struct, Union, Array, and so on.</li><li class="listitem">It also allows users to source data using the <span class="strong"><strong class="calibre19">Data Source API</strong></span> from the data sources that are not supported out of the box (for example, CSV, Avro HBase, Cassandra, and so on).</li><li class="listitem">Spark uses predicate pushdown (pushes filtering or aggregation into external storage systems) to optimize data sourcing from external systems and combine them to form the data pipeline.</li></ul></div><p class="calibre31">
+</p></li><li class="listitem">Control and optimization of code generation:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Optimization actually happens very late in the entire execution pipeline.</li><li class="listitem">Catalyst is designed to optimize all phases of query execution: analysis, logical optimization, physical planning, and code generation to compile parts of queries to Java bytecode.</li></ul></div><p class="calibre31">
+</p></li></ul></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="The DataFrame API"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch03lvl1sec22" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>The DataFrame API</h1></div></div></div><p class="calibre11">Excel spreadsheets like data representation, or output from a database projection (select statement's output), the data representation closest to human being had always been a set of uniform columns with multiple rows. Such a two-dimensional data structure that usually has labelled rows and columns is called a DataFrame in some realms, such as R DataFrames and Python's Pandas DataFrames. In a DataFrame, typically, a single column has the same kind of data, and rows describe data points about that column that mean something together, be it data about a person, a purchase, or a baseball game outcome. You can think of it as a matrix, or a spreadsheet, or an RDBMS table.</p><p class="calibre11">DataFrames in R and Pandas are very handy in slicing, reshaping, and analyzing data -essential operations in any data wrangling and data analysis workflow. This inspired the development of a similar concept on Spark, called DataFrames.</p><div class="calibre2" title="DataFrame basics"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec30" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>DataFrame basics</h2></div></div></div><p class="calibre11">The DataFrame API was first introduced in Spark 1.3.0, released in March 2015. It is a programming abstraction of Spark SQL for structured and semi-structured data processing. It enables developers to harness the power of the DataFrames, data structure through Python, Java, Scala, and R. Like RDDs, a Spark DataFrame is a distributed collection of records organized into named columns, similar to an RDBMS table or the DataFrames of R or Pandas. Unlike RDDs, however, they keep track of schemas and facilitate relational operations as well as procedural operations such as <code class="literal">map</code>. Internally, DataFrames store data in columnar format, but construct row objects on the fly when required by the procedural functions.</p><p class="calibre11">The DataFrame API brings two features with it:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Built-in support for a variety of data formats such as Parquet, Hive, and JSON. Nonetheless, through Spark SQL's external data sources API, DataFrames can access a wide array of third-party data sources such as databases and NoSQL stores.</li><li class="listitem">A more robust and feature-rich DSL with functions designed for common tasks such as:<div class="calibre2"><ul class="itemizedlist1"><li class="listitem">Metadata</li><li class="listitem">Sampling</li><li class="listitem">Relational data processing - project, filter, aggregation, join</li><li class="listitem">UDFs</li></ul></div><p class="calibre31">
+</p></li></ul></div><p class="calibre11">The DataFrame API builds on the Spark SQL query optimizer to automatically execute code efficiently on a cluster of machines.</p></div><div class="calibre2" title="RDDs versus DataFrames"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec31" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>RDDs versus DataFrames</h2></div></div></div><p class="calibre11">RDDs and DataFrames are two different types of fault-tolerant and distributed data abstractions provided by Spark. They are similar to an extent but greatly differ when it comes to implementation. Developers need to have a clear understanding of their differences to be able to match their requirements to the right abstraction.</p><div class="calibre2" title="Similarities"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h3 class="title4"><a id="ch03lvl3sec22" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Similarities</h3></div></div></div><p class="calibre11">The following are the similarities between RDDs and DataFrames:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">Both are fault-tolerant, partitioned data abstractions in Spark</li><li class="listitem">Both can handle disparate data sources</li><li class="listitem">Both are lazily evaluated (execution happens when an output operation is performed on them), thereby having the ability to take the most optimized execution plan</li><li class="listitem">Both APIs are available in all four languages: Scala, Python, Java, and R</li></ul></div></div><div class="calibre2" title="Differences"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h3 class="title4"><a id="ch03lvl3sec23" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Differences</h3></div></div></div><p class="calibre11">The following are the differences between RDDs and DataFrames:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">DataFrames are a higher-level abstraction than RDDs.</li><li class="listitem">The definition of RDD implies defining a <span class="strong"><strong class="calibre19">Directed Acyclic Graph</strong></span> (<span class="strong"><strong class="calibre19">DAG</strong></span>) whereas defining a DataFrame leads to the creation of an <span class="strong"><strong class="calibre19">Abstract Syntax Tree</strong></span> (<span class="strong"><strong class="calibre19">AST</strong></span>). An AST will be utilized and optimized by the Spark SQL catalyst engine.</li><li class="listitem">RDD is a general data structure abstraction whereas a DataFrame is a specialized data structure to deal with two-dimensional, table-like data.</li></ul></div><p class="calibre11">The DataFrame API is actually SchemaRDD-renamed. The renaming was to signify that it is no longer inherited from RDD and to comfort data scientists with a familiar name and concept.</p></div></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Creating DataFrames"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch03lvl1sec23" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Creating DataFrames</h1></div></div></div><p class="calibre11">Spark DataFrame creation is similar to RDD creation. To get access to the DataFrame API, you need SQLContext or HiveContext as an entry point. In this section, we are going to demonstrate how to create DataFrames from various data sources, starting from basic code examples with in-memory collections:</p><p class="calibre11">
+</p><div class="mediaobject"><img src="Images/image_03_001.jpg" alt="Creating DataFrames" class="calibre35"/></div><p class="calibre11">
+</p><div class="calibre2" title="Creating DataFrames from RDDs"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec32" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Creating DataFrames from RDDs</h2></div></div></div><p class="calibre11">The following code creates an RDD from a list of colors followed by a collection of tuples containing the color name and its length. It creates a DataFrame using the <code class="literal">toDF</code> method to convert the RDD into a DataFrame. The <code class="literal">toDF</code> method takes a list of column labels as an optional argument:</p><p class="calibre11">
+<span class="strong"><strong class="calibre19">Python</strong></span>:</p><pre class="programlisting">   //Create a list of colours 
+&gt;&gt;&gt; colors = ['white','green','yellow','red','brown','pink'] 
+//Distribute a local collection to form an RDD 
+//Apply map function on that RDD to get another RDD containing colour, length tuples 
+&gt;&gt;&gt; color_df = sc.parallelize(colors) 
+        .map(lambda x:(x,len(x))).toDF(["color","length"]) 
+ 
+&gt;&gt;&gt; color_df 
+DataFrame[color: string, length: bigint] 
+ 
+&gt;&gt;&gt; color_df.dtypes        //Note the implicit type inference 
+[('color', 'string'), ('length', 'bigint')] 
+ 
+&gt;&gt;&gt; color_df.show()  //Final output as expected. Order need not be the same as shown 
++------+------+ 
+| color|length| 
++------+------+ 
+| white|     5| 
+| green|     5| 
+|yellow|     6| 
+|   red|     3| 
+| brown|     5| 
+|  pink|     4| 
++------+------+ 
+</pre><p class="calibre11">
+<span class="strong"><strong class="calibre19">Scala</strong></span>:</p><pre class="programlisting">//Create a list of colours 
+Scala&gt; val colors = List("white","green","yellow","red","brown","pink") 
+//Distribute a local collection to form an RDD 
+//Apply map function on that RDD to get another RDD containing colour, length tuples 
+Scala&gt; val color_df = sc.parallelize(colors) 
+         .map(x =&gt; (x,x.length)).toDF("color","length") 
+ 
+Scala&gt; color_df 
+res0: org.apache.spark.sql.DataFrame = [color: string, length: int] 
+ 
+Scala&gt; color_df.dtypes  //Note the implicit type inference   
+res1: Array[(String, String)] = Array((color,StringType), (length,IntegerType)) 
+ 
+Scala&gt; color_df.show()//Final output as expected. Order need not be the same as shown 
++------+------+ 
+| color|length| 
++------+------+ 
+| white|     5| 
+| green|     5| 
+|yellow|     6| 
+|   red|     3| 
+| brown|     5| 
+|  pink|     4| 
++------+------+ 
+</pre><p class="calibre11">As you can see from the preceding example, the creation of a DataFrame is similar to that of an RDD from a developer's perspective. We created an RDD here and then transformed that to tuples which are then sent to the <code class="literal">toDF</code> method. Note that <code class="literal">toDF</code> takes a list of tuples instead of scalar elements. You need to pass tuples even to create single-column DataFrames. Each tuple is akin to a row. You can optionally label the columns; otherwise, Spark creates obscure names such as <code class="literal">_1</code>, <code class="literal">_2</code>. Type inference of the columns happens implicitly.</p><p class="calibre11">If you already have the data as RDDs, Spark SQL supports two different methods for converting existing RDDs into DataFrames:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem">The first method uses reflection to infer the schema of an RDD that contains specific types of object, which means you are aware of the schema.</li><li class="listitem">The second method is through a programmatic interface that lets you construct a schema and then apply it to an existing RDD. While this method is more verbose, it allows you to construct DataFrames when the column types are not known until runtime.</li></ul></div></div><div class="calibre2" title="Creating DataFrames from JSON"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec33" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Creating DataFrames from JSON</h2></div></div></div><p class="calibre11">JavaScript Object Notation, or JSON, is a language-independent, self-describing, lightweight data-exchange format. JSON has become a popular data exchange format and has become ubiquitous. In addition to JavaScript and RESTful interfaces, databases such as MySQL have accepted JSON as a data type and MongoDB stores all data as JSON documents in binary form. Conversion of data to and from JSON is essential for any modern data analysis workflow. The Spark DataFrame API lets developers convert JSON objects into DataFrames and vice versa. Let's have a close look at the following examples for a better understanding:</p><p class="calibre11">
+<span class="strong"><strong class="calibre19">Python</strong></span>:</p><pre class="programlisting">//Pass the source json data file path 
+&gt;&gt;&gt; df = sqlContext.read.json("./authors.json") 
+&gt;&gt;&gt; df.show() //json parsed; Column names and data    types inferred implicitly 
++----------+---------+ 
+|first_name|last_name| 
++----------+---------+ 
+|      Mark|    Twain| 
+|   Charles|  Dickens| 
+|    Thomas|    Hardy| 
++----------+---------+ 
+</pre><p class="calibre11">
+<span class="strong"><strong class="calibre19">Scala</strong></span>:</p><pre class="programlisting">//Pass the source json data file path 
+Scala&gt; val df = sqlContext.read.json("./authors.json") 
+Scala&gt; df.show()  //json parsed; Column names and    data types inferred implicitly 
++----------+---------+ 
+|first_name|last_name| 
++----------+---------+ 
+|      Mark|    Twain| 
+|   Charles|  Dickens| 
+|    Thomas|    Hardy| 
++----------+---------+ 
+</pre><p class="calibre11">Spark infers schemas automatically from the keys and creates a DataFrame accordingly.</p></div><div class="calibre2" title="Creating DataFrames from databases using JDBC"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec34" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Creating DataFrames from databases using JDBC</h2></div></div></div><p class="calibre11">Spark allows developers to create DataFrames from other databases using JDBC, provided you ensure that the JDBC driver for the intended database is accessible. A JDBC driver is a software component that allows a Java application to interact with a database. Different databases require different drivers. Usually, database providers such as MySQL supply these driver components to access their databases. You have to ensure that you have the right driver for the database you want to work with.</p><p class="calibre11">The following example assumes that you already have a MySQL database running at the given URL, a table called <code class="literal">people</code> in the database called <code class="literal">test</code> with some data in it, and valid credentials to log in. There is an additional step of relaunching the REPL shell with the appropriate JAR file:</p><div class="note" title="Note"><div class="inner"><h3 class="title5"><a id="note7" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Note</h3><p class="calibre25">If you do not already have the JAR file in your system, download it from the MySQL site at the following link:
+<a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://dev.mysql.com/downloads/connector/j/">https://dev.mysql.com/downloads/connector/j/</a>.</p></div></div><p class="calibre11">
+<span class="strong"><strong class="calibre19">Python</strong></span>:</p><pre class="programlisting">//Launch shell with driver-class-path as a command line argument 
+pyspark --driver-class-path /usr/share/   java/mysql-connector-java.jar 
+   //Pass the connection parameters 
+&gt;&gt;&gt; peopleDF = sqlContext.read.format('jdbc').options( 
+                        url = 'jdbc:mysql://localhost', 
+                        dbtable = 'test.people', 
+                        user = 'root', 
+                        password = 'mysql').load() 
+   //Retrieve table data as a DataFrame 
+&gt;&gt;&gt; peopleDF.show() 
++----------+---------+------+----------+----------+---------+ 
+|first_name|last_name|gender|       dob|occupation|person_id| 
++----------+---------+------+----------+----------+---------+ 
+|    Thomas|    Hardy|     M|1840-06-02|    Writer|      101| 
+|     Emily|   Bronte|     F|1818-07-30|    Writer|      102| 
+| Charlotte|   Bronte|     F|1816-04-21|    Writer|      103| 
+|   Charles|  Dickens|     M|1812-02-07|    Writer|      104| 
++----------+---------+------+----------+----------+---------+ 
+</pre><p class="calibre11">
+<span class="strong"><strong class="calibre19">Scala</strong></span>:</p><pre class="programlisting">//Launch shell with driver-class-path as a command line argument 
+spark-shell --driver-class-path /usr/share/   java/mysql-connector-java.jar 
+   //Pass the connection parameters 
+scala&gt; val peopleDF = sqlContext.read.format("jdbc").options( 
+           Map("url" -&gt; "jdbc:mysql://localhost", 
+               "dbtable" -&gt; "test.people", 
+               "user" -&gt; "root", 
+               "password" -&gt; "mysql")).load() 
+peopleDF: org.apache.spark.sql.DataFrame = [first_name: string, last_name: string, gender: string, dob: date, occupation: string, person_id: int] 
+//Retrieve table data as a DataFrame 
+scala&gt; peopleDF.show() 
++----------+---------+------+----------+----------+---------+ 
+|first_name|last_name|gender|       dob|occupation|person_id| 
++----------+---------+------+----------+----------+---------+ 
+|    Thomas|    Hardy|     M|1840-06-02|    Writer|      101| 
+|     Emily|   Bronte|     F|1818-07-30|    Writer|      102| 
+| Charlotte|   Bronte|     F|1816-04-21|    Writer|      103| 
+|   Charles|  Dickens|     M|1812-02-07|    Writer|      104| 
++----------+---------+------+----------+----------+---------+ 
+</pre></div><div class="calibre2" title="Creating DataFrames from Apache Parquet"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec35" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Creating DataFrames from Apache Parquet</h2></div></div></div><p class="calibre11">Apache Parquet is an efficient, compressed columnar data representation available to any project in the Hadoop ecosystem. Columnar data representations store data by column, as opposed to the traditional approach of storing data row by row. Use cases that require frequent querying of two to three columns from several columns benefit greatly from such an arrangement because columns are stored contiguously on the disk and you do not have to read unwanted columns in row-oriented storage. Another advantage is in compression. Data in a single column belongs to a single type. The values tend to be similar, and sometimes identical. These qualities greatly enhance compression and encoding efficiency. Parquet allows compression schemes to be specified on a per-column level and allows adding more encodings as they are invented and implemented.</p><p class="calibre11">Apache Spark provides support for both reading and writing Parquet files that automatically preserves the schema of the original data. The following example writes the people data loaded into a DataFrame in the previous example into Parquet format and then re-reads it into an RDD:</p><p class="calibre11">
+<span class="strong"><strong class="calibre19">Python</strong></span>:</p><pre class="programlisting">//Write DataFrame contents into Parquet format 
+&gt;&gt;&gt; peopleDF.write.parquet('writers.parquet') 
+//Read Parquet data into another DataFrame 
+&gt;&gt;&gt; writersDF = sqlContext.read.parquet('writers.parquet')  
+writersDF: org.apache.spark.sql.DataFrame = [first_name:    string, last_name: string, gender: string, dob:    date, occupation: string, person_id: int]</pre><p class="calibre11">
+<span class="strong"><strong class="calibre19">Scala</strong></span>:</p><pre class="programlisting">//Write DataFrame contents into Parquet format 
+scala&gt; peopleDF.write.parquet("writers.parquet") 
+//Read Parquet data into another DataFrame 
+scala&gt; val writersDF = sqlContext.read.parquet("writers.parquet")  
+writersDF: org.apache.spark.sql.DataFrame = [first_name:    string, last_name: string, gender: string, dob:    date, occupation: string, person_id: int]</pre></div><div class="calibre2" title="Creating DataFrames from other data sources"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec36" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Creating DataFrames from other data sources</h2></div></div></div><p class="calibre11">Spark provides built-in support for multiple data sources such as JSON, JDBC, HDFS, Parquet, MYSQL, Amazon S3, and so on. In addition, it provides a Data Source API that provides a pluggable mechanism for accessing structured data through Spark SQL. There are several libraries built on top of this pluggable component, for example, CSV, Avro, Cassandra, and MongoDB, to name a few. These libraries are not part of the Spark code base. These are built for individual data sources and hosted on a community site, Spark packages.</p></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="DataFrame operations"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch03lvl1sec24" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>DataFrame operations</h1></div></div></div><p class="calibre11">In the previous section of this chapter, we learnt many different ways of creating DataFrames. In this section, we will focus on various operations that can be performed on DataFrames. Developers chain multiple operations to filter, transform, aggregate, and sort data in the DataFrames. The underlying Catalyst optimizer ensures efficient execution of these operations. These functions you find here are similar to those you commonly find in SQL operations on tables:</p><p class="calibre11">
+<span class="strong"><strong class="calibre19">Python</strong></span>:</p><pre class="programlisting">//Create a local collection of colors first 
+&gt;&gt;&gt; colors = ['white','green','yellow','red','brown','pink'] 
+//Distribute the local collection to form an RDD 
+//Apply map function on that RDD to get another RDD containing colour, length tuples and convert that RDD to a DataFrame 
+&gt;&gt;&gt; color_df = sc.parallelize(colors) 
+        .map(lambda x:(x,len(x))).toDF(['color','length']) 
+//Check the object type 
+&gt;&gt;&gt; color_df 
+DataFrame[color: string, length: bigint] 
+//Check the schema 
+&gt;&gt;&gt; color_df.dtypes 
+[('color', 'string'), ('length', 'bigint')] 
+ 
+//Check row count 
+&gt;&gt;&gt; color_df.count() 
+6 
+//Look at the table contents. You can limit displayed rows by passing parameter to show 
+color_df.show() 
++------+------+ 
+| color|length| 
++------+------+ 
+| white|     5| 
+| green|     5| 
+|yellow|     6| 
+|   red|     3| 
+| brown|     5| 
+|  pink|     4| 
++------+------+ 
+ 
+//List out column names 
+&gt;&gt;&gt; color_df.columns 
+[u'color', u'length'] 
+ 
+//Drop a column. The source DataFrame color_df remains the same. //Spark returns a new DataFrame which is being passed to show 
+&gt;&gt;&gt; color_df.drop('length').show() 
++------+ 
+| color| 
++------+ 
+| white| 
+| green| 
+|yellow| 
+|   red| 
+| brown| 
+|  pink| 
++------+ 
+//Convert to JSON format 
+&gt;&gt;&gt; color_df.toJSON().first() 
+u'{"color":"white","length":5}' 
+//filter operation is similar to WHERE clause in SQL 
+//You specify conditions to select only desired columns and rows 
+//Output of filter operation is another DataFrame object that is usually passed on to some more operations 
+//The following example selects the colors having a length of four or five only and label the column as "mid_length" 
+filter 
+------ 
+&gt;&gt;&gt; color_df.filter(color_df.length.between(4,5)) 
+      .select(color_df.color.alias("mid_length")).show() 
++----------+ 
+|mid_length| 
++----------+ 
+|     white| 
+|     green| 
+|     brown| 
+|      pink| 
++----------+ 
+ 
+//This example uses multiple filter criteria 
+&gt;&gt;&gt; color_df.filter(color_df.length &gt; 4) 
+     .filter(color_df[0]!="white").show() 
++------+------+ 
+| color|length| 
++------+------+ 
+| green|     5| 
+|yellow|     6| 
+| brown|     5| 
++------+------+ 
+ 
+//Sort the data on one or more columns 
+sort 
+---- 
+//A simple single column sorting in default (ascending) order 
+&gt;&gt;&gt; color_df.sort("color").show() 
++------+------+ 
+| color|length| 
++------+------+ 
+| brown|     5| 
+| green|     5| 
+|  pink|     4| 
+|   red|     3| 
+| white|     5| 
+|yellow|     6| 
++------+------+ 
+//First filter colors of length more than 4 and then sort on multiple columns 
+//The Filtered rows are sorted first on the column length in default ascending order. Rows with same length are sorted on color in descending order   
+&gt;&gt;&gt; color_df.filter(color_df['length']&gt;=4).sort("length", 'color',ascending=False).show()
++------+------+ 
+| color|length| 
++------+------+ 
+|yellow|     6| 
+| white|     5| 
+| green|     5| 
+| brown|     5| 
+|  pink|     4| 
++------+------+ 
+ 
+//You can use orderBy instead, which is an alias to sort 
+&gt;&gt;&gt; color_df.orderBy('length','color').take(4)
+[Row(color=u'red', length=3), Row(color=u'pink', length=4), Row(color=u'brown', length=5), Row(color=u'green', length=5)]
+ 
+//Alternative syntax, for single or multiple columns.  
+&gt;&gt;&gt; color_df.sort(color_df.length.desc(),   color_df.color.asc()).show() 
++------+------+ 
+| color|length| 
++------+------+ 
+|yellow|     6| 
+| brown|     5| 
+| green|     5| 
+| white|     5| 
+|  pink|     4| 
+|   red|     3| 
++------+------+ 
+//All the examples until now have been acting on one row at a time, filtering or transforming or reordering.  
+//The following example deals with regrouping the data 
+//These operations require "wide dependency" and often involve shuffling.  
+groupBy 
+------- 
+&gt;&gt;&gt; color_df.groupBy('length').count().show() 
++------+-----+ 
+|length|count| 
++------+-----+ 
+|     3|    1| 
+|     4|    1| 
+|     5|    3| 
+|     6|    1| 
++------+-----+ 
+//Data often contains missing information or null values. We may want to drop such rows or replace with some filler information. dropna is provided for dropping such rows 
+//The following json file has names of famous authors. Firstname data is missing in one row. 
+dropna 
+------ 
+&gt;&gt;&gt; df1 = sqlContext.read.json('./authors_missing.json')
+&gt;&gt;&gt; df1.show() 
++----------+---------+ 
+|first_name|last_name| 
++----------+---------+ 
+|      Mark|    Twain| 
+|   Charles|  Dickens| 
+|      null|    Hardy| 
++----------+---------+ 
+ 
+//Let us drop the row with incomplete information 
+&gt;&gt;&gt; df2 = df1.dropna() 
+&gt;&gt;&gt; df2.show()  //Unwanted row is dropped 
++----------+---------+ 
+|first_name|last_name| 
++----------+---------+ 
+|      Mark|    Twain| 
+|   Charles|  Dickens| 
++----------+---------+ 
+</pre><p class="calibre11">
+<span class="strong"><strong class="calibre19">Scala</strong></span>:</p><pre class="programlisting">//Create a local collection of colors first 
+Scala&gt; val colors = List("white","green","yellow","red","brown","pink") 
+//Distribute a local collection to form an RDD 
+//Apply map function on that RDD to get another RDD containing color, length tuples and convert that RDD to a DataFrame 
+Scala&gt; val color_df = sc.parallelize(colors) 
+        .map(x =&gt; (x,x.length)).toDF("color","length") 
+//Check the object type 
+Scala&gt; color_df 
+res0: org.apache.spark.sql.DataFrame = [color: string, length: int] 
+//Check the schema 
+Scala&gt; color_df.dtypes 
+res1: Array[(String, String)] = Array((color,StringType), (length,IntegerType)) 
+//Check row count 
+Scala&gt; color_df.count() 
+res4: Long = 6 
+//Look at the table contents. You can limit displayed rows by passing parameter to show 
+color_df.show() 
++------+------+ 
+| color|length| 
++------+------+ 
+| white|     5| 
+| green|     5| 
+|yellow|     6| 
+|   red|     3| 
+| brown|     5| 
+|  pink|     4| 
++------+------+ 
+//List out column names 
+Scala&gt; color_df.columns 
+res5: Array[String] = Array(color, length) 
+//Drop a column. The source DataFrame color_df remains the same. 
+//Spark returns a new DataFrame which is being passed to show 
+Scala&gt; color_df.drop("length").show() 
++------+ 
+| color| 
++------+ 
+| white| 
+| green| 
+|yellow| 
+|   red| 
+| brown| 
+|  pink| 
++------+ 
+//Convert to JSON format 
+color_df.toJSON.first() 
+res9: String = {"color":"white","length":5} 
+ 
+ 
+//filter operation is similar to WHERE clause in SQL 
+//You specify conditions to select only desired columns and rows 
+//Output of filter operation is another DataFrame object that is usually passed on to some more operations 
+//The following example selects the colors having a length of four or five only and label the column as "mid_length" 
+filter 
+------ 
+Scala&gt; color_df.filter(color_df("length").between(4,5)) 
+       .select(color_df("color").alias("mid_length")).show() 
++----------+ 
+|mid_length| 
++----------+ 
+|     white| 
+|     green| 
+|     brown| 
+|      pink| 
++----------+ 
+ 
+ 
+//This example uses multiple filter criteria. Notice the not equal to operator having double equal to symbols  
+Scala&gt; color_df.filter(color_df("length") &gt; 4).filter(color_df( "color")!=="white").show() 
++------+------+ 
+| color|length| 
++------+------+ 
+| green|     5| 
+|yellow|     6| 
+| brown|     5| 
++------+------+ 
+//Sort the data on one or more columns 
+sort 
+---- 
+//A simple single column sorting in default (ascending) order 
+Scala&gt; color_df..sort("color").show() 
++------+------+                                                                  
+| color|length| 
++------+------+ 
+| brown|     5| 
+| green|     5| 
+|  pink|     4| 
+|   red|     3| 
+| white|     5| 
+|yellow|     6| 
++------+------+ 
+//First filter colors of length more than 4 and then sort on multiple columns 
+//The filtered rows are sorted first on the column length in default ascending order. Rows with same length are sorted on color in descending order  
+Scala&gt; color_df.filter(color_df("length")&gt;=4).sort($"length", $"color".desc).show() 
++------+------+ 
+| color|length| 
++------+------+ 
+|  pink|     4| 
+| white|     5| 
+| green|     5| 
+| brown|     5| 
+|yellow|     6| 
++------+------+ 
+//You can use orderBy instead, which is an alias to sort. 
+scala&gt; color_df.orderBy("length","color").take(4) 
+res19: Array[org.apache.spark.sql.Row] = Array([red,3], [pink,4], [brown,5], [green,5]) 
+//Alternative syntax, for single or multiple columns 
+scala&gt; color_df.sort(color_df("length").desc, color_df("color").asc).show() 
++------+------+ 
+| color|length| 
++------+------+ 
+|yellow|     6| 
+| brown|     5| 
+| green|     5| 
+| white|     5| 
+|  pink|     4| 
+|   red|     3| 
++------+------+ 
+//All the examples until now have been acting on one row at a time, filtering or transforming or reordering. 
+//The following example deals with regrouping the data.  
+//These operations require "wide dependency" and often involve shuffling. 
+groupBy 
+------- 
+Scala&gt; color_df.groupBy("length").count().show() 
++------+-----+ 
+|length|count| 
++------+-----+ 
+|     3|    1| 
+|     4|    1| 
+|     5|    3| 
+|     6|    1| 
++------+-----+ 
+//Data often contains missing information or null values.  
+//The following json file has names of famous authors. Firstname data is missing in one row. 
+dropna 
+------ 
+Scala&gt; val df1 = sqlContext.read.json("./authors_missing.json") 
+Scala&gt; df1.show() 
++----------+---------+ 
+|first_name|last_name| 
++----------+---------+ 
+|      Mark|    Twain| 
+|   Charles|  Dickens| 
+|      null|    Hardy| 
++----------+---------+ 
+//Let us drop the row with incomplete information 
+Scala&gt; val df2 = df1.na.drop() 
+Scala&gt; df2.show()  //Unwanted row is dropped 
++----------+---------+ 
+|first_name|last_name| 
++----------+---------+ 
+|      Mark|    Twain| 
+|   Charles|  Dickens| 
++----------+---------+ 
+</pre><div class="calibre2" title="Under the hood"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h2 class="title3"><a id="ch03lvl2sec37" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Under the hood</h2></div></div></div><p class="calibre11">You already know by now that the DataFrame API is empowered by Spark SQL and that the Spark SQL's Catalyst optimizer plays a crucial role in optimizing the performance.</p><p class="calibre11">Though the query is executed lazily, it uses the <span class="strong"><em class="calibre22">catalog</em></span> component of Catalyst to identify whether the column names used in the program or expressions exist in the table being used and the data types are proper, and also takes many other such precautionary actions. The advantage to this approach is that, instead of waiting till program execution, an error pops up as soon as the user types an invalid expression.</p></div></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="Summary"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch03lvl1sec25" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>Summary</h1></div></div></div><p class="calibre11">In this chapter, we explained the motivation behind the development of the DataFrame API in Spark and how development in Spark has become easier than ever. We briefly covered the design aspect of the DataFrame API and how it is built on top of Spark SQL. We discussed various ways of creating DataFrames from different data sources such as RDDs, JSON, Parquet, and JDBC. At the end of this chapter, we just gave you a heads-up on how to perform operations on DataFrames. We will discuss DataFrame operations in the context of data science and machine learning in more detail in the upcoming chapters.</p><p class="calibre11">In the next chapter, we will learn how Spark supports unified data access and discuss on Dataset and Structured Stream  components in details.</p></div></div>
+
+
+
+  
+<div id="sbo-rt-content" class="calibre1"><div class="calibre2" title="References"><div class="titlepage"><div class="calibre2"><div class="calibre2"><h1 class="title1"><a id="ch03lvl1sec26" class="pcalibre pcalibre3 pcalibre2 pcalibre1 calibre9"/>References</h1></div></div></div><p class="calibre11">DataFrame reference on the SQL programming guide of Apache Spark official resource:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://spark.apache.org/docs/latest/sql-programming-guide.html#creating-dataframes">https://spark.apache.org/docs/latest/sql-programming-guide.html#creating-dataframes</a></li></ul></div><p class="calibre11">Databricks: Introducing DataFrames in Apache Spark for Large Scale Data Science:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://databricks.com/blog/2015/02/17/introducing-dataframes-in-spark-for-large-scale-data-science.html">https://databricks.com/blog/2015/02/17/introducing-dataframes-in-spark-for-large-scale-data-science.html</a></li></ul></div><p class="calibre11">Databricks: From Pandas to Apache Spark's DataFrame:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://databricks.com/blog/2015/08/12/from-pandas-to-apache-sparks-dataframe.html">https://databricks.com/blog/2015/08/12/from-pandas-to-apache-sparks-dataframe.html</a></li></ul></div><p class="calibre11">API reference guide on Scala for Spark DataFrames:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="https://spark.apache.org/docs/1.5.1/api/java/org/apache/spark/sql/DataFrame.html">https://spark.apache.org/docs/1.5.1/api/java/org/apache/spark/sql/DataFrame.html</a></li></ul></div><p class="calibre11">A Cloudera blogpost on Parquet - an efficient general-purpose columnar file format for Apache Hadoop:</p><div class="calibre2"><ul class="itemizedlist"><li class="listitem"><a class="calibre4 pcalibre3 pcalibre pcalibre1 pcalibre2" href="http://blog.cloudera.com/blog/2013/03/introducing-parquet-columnar-storage-for-apache-hadoop/">http://blog.cloudera.com/blog/2013/03/introducing-parquet-columnar-storage-for-apache-hadoop/</a></li></ul></div></div></div>
+
+
+
+  </body></html>

@@ -1,29 +1,39 @@
 - en: Chapter 8. Network Analysis
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第8章 网络分析
 - en: '|   | *"The enemy of my enemy is my friend."* |   |'
+  id: totrans-1
   prefs: []
   type: TYPE_TB
+  zh: '|   | *"敌人的敌人就是我的朋友。"* |   |'
 - en: '|   | --*Ancient proverb* |'
+  id: totrans-2
   prefs: []
   type: TYPE_TB
+  zh: '|   | --*古老的谚语* |'
 - en: 'This chapter concerns itself with graphs in the mathematical rather than the
     visual sense. A graph is simply a set of vertices connected by the edges and the
     simplicity of this abstraction means that graphs are everywhere. They are an effective
     model for structures as diverse as the hyperlink structure of the web, the physical
     structure of the internet, and all sorts of networks: roads, telecommunications,
     and social networks.'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章关注的是数学意义上的图，而非视觉意义上的图。图只是由顶点和边连接组成的集合，这种抽象的简洁性使得图无处不在。它们是各种结构的有效模型，包括网页的超链接结构、互联网的物理结构，以及各种网络：道路、通信、社交网络等。
 - en: Thus, network analysis is hardly new, but it has become particularly popular
     with the rise of social network analysis. Among the largest sites on the web are
     social networks, and Google, Facebook, Twitter, and LinkedIn all make use of large-scale
     graph processing to mine their users' data. The huge importance of targeted advertising
     for the monetization of websites means that there is a large financial reward
     for companies that effectively infer internet users' interests.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，网络分析并不是什么新鲜事，但随着社交网络分析的兴起，它变得尤为流行。网络上最大的站点之一就是社交网络，Google、Facebook、Twitter和LinkedIn都利用大规模图处理来挖掘用户数据。针对网站变现的精准广告需求使得公司在有效推断互联网用户兴趣方面获得了巨大的财务回报。
 - en: In this chapter, we'll use publicly available Twitter data to demonstrate the
     principles of network analysis. We'll apply pattern matching techniques such as
     triangle counting to look for a structure within the graph and apply whole-graph
@@ -32,49 +42,71 @@
     the interests of a set of Twitter communities from their most influential members.
     We'll do all of this using Spark and a library called GraphX which uses the Spark
     distributed computation model to process very large graphs.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们将使用公开的Twitter数据来演示网络分析的原理。我们将应用如三角计数这样的模式匹配技术，在图中寻找结构，并应用如标签传播和PageRank这样的整体图处理算法，以揭示图的网络结构。最终，我们将使用这些技术从Twitter社区中最具影响力的成员识别出它们的兴趣。我们将使用Spark和一个名为GraphX的库来完成这些操作，GraphX利用Spark分布式计算模型来处理非常大的图。
 - en: 'But before we scale up, we''ll begin our exploration of graphs by considering
     a different sort of problem: that of graph traversal. For this, we''ll make use
     of the Clojure library Loom.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 但在我们扩展规模之前，我们将通过考虑一种不同类型的问题来开始对图的探索：图遍历问题。为此，我们将使用Clojure库Loom。
 - en: Download the data
+  id: totrans-7
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 下载数据
 - en: This chapter makes use of the data of follower data from the Twitter social
     network. The data is provided as a part of the Stanford Large Network Dataset
     Collection. You can download the Twitter data from [https://snap.stanford.edu/data/egonets-Twitter.html](https://snap.stanford.edu/data/egonets-Twitter.html).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章使用来自Twitter社交网络的关注者数据。这些数据是作为斯坦福大规模网络数据集的一部分提供的。你可以从[https://snap.stanford.edu/data/egonets-Twitter.html](https://snap.stanford.edu/data/egonets-Twitter.html)下载Twitter数据。
 - en: We'll be making use of both the `twitter.tar.gz` file and the `twitter_combined.txt.gz`
     files. Both of these files should be downloaded and decompressed inside the sample
     code's data directory.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用`twitter.tar.gz`文件和`twitter_combined.txt.gz`文件。这两个文件应该被下载并解压到示例代码的data目录中。
 - en: Note
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: The sample code for this chapter is available at [https://github.com/clojuredatascience/ch8-network-analysis](https://github.com/clojuredatascience/ch8-network-analysis).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章的示例代码可在[https://github.com/clojuredatascience/ch8-network-analysis](https://github.com/clojuredatascience/ch8-network-analysis)找到。
 - en: 'As usual, a script has been provided that will do this for you. You can run
     it by executing the following command line from within the project directory:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如常所示，我们提供了一个脚本，可以为你完成这项工作。你可以通过在项目目录中执行以下命令来运行它：
 - en: '[PRE0]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: If you'd like to run this chapter's examples, make sure you download the data
     before continuing.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想运行本章的示例，请确保在继续之前下载数据。
 - en: Inspecting the data
+  id: totrans-15
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 检查数据
 - en: 'Let''s look at one of the files in the Twitter directory, specifically the
     `twitter/98801140.edges` file. If you open it in a text editor, you''ll see that
     each line of the file consists of a pair of integers separated by a space. The
@@ -82,143 +114,206 @@
     ways of storing graphs (the other being the adjacency list format, which we''ll
     come to later). The following code uses Clojure''s `line-seq` function to read
     the file one line at a time and convert it into a tuple:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们来看一下Twitter目录中的一个文件，特别是`twitter/98801140.edges`文件。如果你在文本编辑器中打开它，你会看到文件的每一行都是由一对整数组成，并且它们之间用空格分隔。这些数据采用的是所谓的边列表格式。这是存储图的两种主要方式之一（另一种是邻接表格式，我们稍后会讲到）。下面的代码使用Clojure的`line-seq`函数逐行读取文件，并将其转换为元组：
 - en: '[PRE1]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'If you execute `(ex-8-1)` in the REPL or run the following on the command line,
     you should see the following sequence:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你在REPL中执行`(ex-8-1)`，或在命令行中运行以下命令，你应该看到以下序列：
 - en: '[PRE2]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: This simple sequence of pairs of numbers, each representing an edge, is already
     enough to represent the essence of the graph. It's not intuitive to see how the
     edges relate to each other, so let's visualize it.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这组简单的数字对，每个都表示一条边，已经足够表示图的本质。虽然不直观地看到边与边之间的关系，但我们可以通过可视化来帮助理解。
 - en: Visualizing graphs with Loom
+  id: totrans-21
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用Loom可视化图形
 - en: For the first half of this chapter, we'll be using Loom ([https://github.com/aysylu/loom](https://github.com/aysylu/loom))
     to process our graphs. Loom defines an API to create and manipulate graphs. It
     also contains many built-in graph traversal algorithms. We'll come to these shortly.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章的前半部分，我们将使用Loom（[https://github.com/aysylu/loom](https://github.com/aysylu/loom)）来处理我们的图形。Loom定义了一个API，用于创建和操作图形。它还包含许多内建的图遍历算法。我们很快会介绍这些。
 - en: 'Firstly, we''ll want to visualize our graph. For this, Loom relies on a system-level
     library called GraphViz. If you like to be able to replicate many of the images
     in this chapter, you''ll need to install GraphViz now. If you''re not sure that
     you have it installed, try running the following on the command line:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们要可视化我们的图。为此，Loom依赖于一个名为GraphViz的系统级库。如果你想复制本章中的许多图像，你需要先安装GraphViz。如果你不确定是否已经安装，可以尝试在命令行中运行以下命令：
 - en: '[PRE3]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Note
+  id: totrans-25
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: GraphViz is available from [http://graphviz.org/](http://graphviz.org/) and
     there are installers for Linux, MacOS, and Windows. GraphViz isn't a requirement
     to run all the examples in this chapter, just the ones that visualize the graphs.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: GraphViz可以从[http://graphviz.org/](http://graphviz.org/)下载，并且提供了适用于Linux、MacOS和Windows的安装程序。GraphViz不是运行本章所有示例的必需工具，只是那些需要可视化图形的示例。
 - en: 'Loom is able to create a graph from a sequence of edges like the ones we have
     when we apply the `loom/graph` function to the sequence. We''ll require `loom.graph`
     as `loom` and `loom.io` as `lio` in the following examples. If you have GraphViz
     installed, run the following example:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: Loom能够从一系列边创建图，就像我们在将`loom/graph`函数应用于该序列时所做的那样。接下来，我们将需要将`loom.graph`引用为`loom`，并将`loom.io`引用为`lio`。如果你安装了GraphViz，可以运行以下示例：
 - en: '[PRE4]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'You should see a result like the following schematic representation:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 你应该看到类似以下示意图的结果：
 - en: '![Visualizing graphs with Loom](img/7180OS_08_100.jpg)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![使用Loom可视化图形](img/7180OS_08_100.jpg)'
 - en: Depending on your version of GraphViz, you may not get exactly the same layout
     as the previous version, but it doesn't matter. The relative positions of the
     nodes and the edges in the image aren't important. The only important fact about
     the graph is which nodes are connected to which other nodes.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据你安装的GraphViz版本，你可能无法获得与之前版本完全相同的布局，但这没关系。图中节点和边的相对位置并不重要。图的唯一重要事实是哪些节点连接到哪些其他节点。
 - en: 'As a Clojure programmer, you''re familiar with tree structures as the nested
     structure of S-expressions and you''ve probably noticed that this graph looks
     a lot like a tree. In fact, a tree is just a special kind of graph: one that contains
     no loops. We refer to such graphs as **acyclic**.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一个Clojure程序员，你熟悉树结构作为S表达式的嵌套结构，你可能已经注意到这个图看起来像一棵树。事实上，树只是图的一种特殊形式：它不包含环。我们称这样的图为**无环图**。
 - en: 'In this graph there are only four edges, whereas there were five in the edge
     list we saw in the first example. This is because edges can be directed. They
     go from a node to another node. We can load directed graphs with Loom using the
     `loom/digraph` function:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个图中，只有四条边，而在我们在第一个例子中看到的边列表中有五条边。这是因为边可以是有向的。它们从一个节点指向另一个节点。我们可以使用`loom/digraph`函数加载有向图：
 - en: '[PRE5]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'This code generates the following image:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码生成了以下图像：
 - en: '![Visualizing graphs with Loom](img/7180OS_08_110.jpg)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![使用 Loom 可视化图形](img/7180OS_08_110.jpg)'
 - en: Notice how the act of adding directions to our edges has fundamentally altered
     the way we read the graph. In particular, the graph is clearly no longer a tree.
     Directed graphs are extremely important in cases where we want to represent an
     action that's performed on something by something else.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意到为我们的边添加方向的行为已经从根本上改变了我们阅读图形的方式。特别是，图形显然不再是树形结构。有向图在我们希望表示某种操作由某个事物对另一个事物执行的情况下非常重要。
 - en: 'For example, in Twitter''s social graph, an account may follow one account,
     but the act may not be reciprocal. Using Twitter''s terminology, we can refer
     to either the followers or the friends of an account. A follow represents an outgoing
     edge, whereas a friend is an incoming edge. In the previous graph, for example,
     account **382951** has two followers: accounts **35432131** and **100873813**.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，在 Twitter 的社交图中，一个账户可以关注另一个账户，但这一行为不一定是互惠的。使用 Twitter 的术语，我们可以指一个账户的粉丝或朋友。关注表示出边，而朋友表示入边。例如，在之前的图中，账户
+    **382951** 有两个粉丝：账户 **35432131** 和 **100873813**。
 - en: There are now two edges between nodes **27475761** and **35432131**. This means
     that it's possible to get from one node back to the other. We call this a cycle.
     The technical term for a graph such as the earlier one is a directed, **cyclic**
     graph.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在节点 **27475761** 和 **35432131** 之间有两条边。这意味着可以从一个节点回到另一个节点。我们称之为一个环。像之前的图这样的图的技术术语是有向**环形**图。
 - en: Note
+  id: totrans-40
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: A cycle in a graph means that it's possible to get back to a node by moving
     only in the direction of edges. If a graph contains no such loops, then the graph
     is said to be acyclic. A **Directed** **Acyclic Graph** (**DAG**), is a model
     for a huge variety of hierarchical or ordered phenomena such as dependency graphs,
     family trees, and file system hierarchies.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 图中的一个环表示可以仅通过沿边的方向移动而返回到某个节点。如果图中没有这样的环路，那么图就被称为无环图。**有向无环图**（**DAG**）是许多层次结构或有序现象的模型，例如依赖关系图、家谱树和文件系统层次结构。
 - en: We've seen that graphs can be directed or undirected. The third main type of
     graph is the **weighted** graph. A weight may be usefully associated with an edge
     to represent the strength of a connection between two nodes. For example, if the
     graph represents a social network, the weight between two accounts might be the
     strength of their connection (for example, their frequency of communication).
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经看到，图形可以是有向的或无向的。图形的第三种主要类型是**加权图**。可以将权重有用地关联到边上，以表示两个节点之间连接的强度。例如，如果图形表示社交网络，则两个账户之间的权重可能表示它们的连接强度（例如，它们的沟通频率）。
 - en: 'We can load a weighted graph in `loom` with either the `loom/weighted-graph`
     or `loom/weighted-digraph` functions:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用 `loom` 中的 `loom/weighted-graph` 或 `loom/weighted-digraph` 函数加载加权图：
 - en: '[PRE6]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Our input graph doesn't actually specify the weight of the edges. Loom's default
     weight for all the edges is **1**.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的输入图形实际上并没有指定边的权重。Loom 的所有边的默认权重是**1**。
 - en: '![Visualizing graphs with Loom](img/7180OS_08_120.jpg)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![使用 Loom 可视化图形](img/7180OS_08_120.jpg)'
 - en: 'Another aspect in which graphs can differ is whether its vertices and edges
     are typed, representing different entities or connections between them. For example,
     the Facebook graph contains many types of entities: notably "pages" and "people".
@@ -227,33 +322,47 @@
     (but never to each other), the graph is said to be **bipartite**. Bipartite graphs
     can be represented as two disjoint sets, where nodes in one set only ever link
     to the nodes in the other set.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 图形的另一个区别在于其顶点和边是否有类型，表示它们之间不同的实体或连接。例如，Facebook 图形包含多种类型的实体：特别是“页面”和“人”。人可以“点赞”页面，但不能“点赞”其他人。在异构图中，当类型为“A”的节点总是连接到类型为“B”的节点，而类型“A”的节点从不与其他类型的“A”节点连接时，这种图被称为**二分图**。二分图可以表示为两个不相交的集合，其中一个集合中的节点仅与另一个集合中的节点链接。
 - en: Graph traversal with Loom
+  id: totrans-48
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 Loom 进行图遍历
 - en: Traversal algorithms concern themselves with the ways of exploring the graph
     in a systematic way. Given the huge variety of phenomena that can be modeled with
     graphs, such algorithms could have a huge variety of uses.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 遍历算法关注的是以系统化的方式探索图形的方法。鉴于图形能够建模的现象种类繁多，这些算法可能有多种不同的用途。
 - en: 'The algorithms we''ll consider in the next few sections concern some of the
     most common tasks such as:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在接下来的几个章节中讨论一些最常见的任务，例如：
 - en: Determining whether a path exists that traces each edge exactly once
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确定是否存在一条恰好经过每条边一次的路径
 - en: Determining the shortest path between two vertices
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确定两个顶点之间的最短路径
 - en: Determining the shortest tree that connects all the vertices
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确定连接所有顶点的最短树
 - en: 'If the graph in question represented the road network covered by a delivery
     driver''s round, the vertices could represent intersections. Finding a path that
     traces each edge exactly once would be the way a delivery driver would travel
@@ -262,48 +371,64 @@
     one address to the next delivery. Finally, the shortest tree connecting all the
     vertices would be the most effective way to connect all of the vertices: perhaps,
     to lay a roadside power line for the lights at each intersection.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果所讨论的图表示的是一个快递员的送货路线，那么顶点可以代表交叉口。找到一条恰好经过每条边一次的路径，就是快递员在不返回或重复经过相同地址的情况下，走遍所有道路的方式。两个顶点之间的最短路径将是从一个地址到下一个送货地址的最有效路线。最终，连接所有顶点的最短树将是连接所有顶点的最有效方式：例如，可能是为每个交叉口铺设路边电力线。
 - en: The seven bridges of Königsberg
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 昆士堡的七座桥
 - en: The city of Königsberg in Prussia (now Kaliningrad, Russia) was set on both
     sides of the Pregel River, and included two large islands that were connected
     to each other and the mainland by seven bridges. The Seven bridges of Königsberg
     is a historically notable problem in mathematics that laid the foundation for
     graph theory and prefigured the idea of topology. The name Pregel will appear
     again later in this chapter.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 普鲁士的昆士堡（现在的俄罗斯加尔东格勒）坐落在普雷格尔河的两岸，包含两座大岛，这两座岛通过七座桥与彼此和大陆相连。昆士堡的七座桥是一个历史上著名的数学问题，它为图论奠定了基础，并预示了拓扑学的思想。普雷格尔这个名字稍后将在本章中再次出现。
 - en: '![The seven bridges of Königsberg](img/7180OS_08_150.jpg)'
+  id: totrans-57
   prefs: []
   type: TYPE_IMG
+  zh: '![昆士堡的七座桥](img/7180OS_08_150.jpg)'
 - en: The problem was to find a walk through the city that would cross each bridge
     once and only once. The islands could not be reached by any route other than the
     bridges and the bridges had to be crossed completely every time; one could not
     walk halfway onto the bridge and then turn around and later cross the other half
     from the other side (though the walk need not start and end at the same spot).
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个问题是要找到一条穿越城市的路线，这条路线每座桥只经过一次且仅经过一次。岛屿不能通过除桥梁之外的任何路线到达，而且每座桥都必须完全经过；不能走到桥的一半然后转身，再从另一侧走过另一半（虽然这条路线不必从同一个地方开始和结束）。
 - en: 'Euler realized that the problem has no solution: that there could be no non-retracing
     route via the bridges, and the difficulty led to the development of a technique
     that established this assertion with mathematical rigor. The only structure of
     the problem that mattered were the connections between the bridges and landmasses.
     The essence of the problem could be preserved by representing the bridges as edges
     in a graph.'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 欧拉意识到这个问题没有解：通过这些桥梁无法找到一条不重复的路线，这一难题促使了一个技术的发展，该技术通过数学严格性建立了这一断言。问题中唯一重要的结构是桥梁和陆地之间的连接。这个问题的本质可以通过将桥梁表示为图中的边来保留。
 - en: '![The seven bridges of Königsberg](img/7180OS_08_160.jpg)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![昆士堡的七座桥](img/7180OS_08_160.jpg)'
 - en: Euler observed that (except at the endpoints of the walk) one enters a vertex
     by one edge and leaves the vertex by a different edge. If every edge has been
     traversed exactly once, it follows that the number of connecting edges for each
     node must be even (half of them will have been traversed "inwards" and the other
     half will have been traversed "outwards").
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 欧拉观察到（除了行走的起点和终点），一个人通过一条边进入一个顶点，并通过另一条边离开该顶点。如果每条边都恰好经过一次，那么每个节点的连接边数必须是偶数（其中一半是“向内”经过，另一半是“向外”经过）。
 - en: 'Therefore, for an Euler tour to exist in a graph, all the nodes (with the possible
     exception of the start and end node) must have an even number of connecting edges.
     We refer to the number of connecting edges as the degree of the node. Determining
@@ -312,87 +437,125 @@
     then an Euler tour can be constructed from the graph. The following function makes
     use of two utility functions provided by Loom, `out-degree` and `nodes`, to check
     for the presence of an Euler tour:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，要在图中存在欧拉巡回，所有节点（除了起始和结束节点外）必须有偶数条连接边。我们将连接边的数量称为节点的度数。确定图中是否存在欧拉巡回，实际上就是计算奇数度节点的数量。如果存在零个或两个奇数度的节点，则可以从图中构建欧拉巡回。以下函数利用了Loom提供的两个实用函数`out-degree`和`nodes`，来检查图中是否存在欧拉巡回：
 - en: '[PRE7]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: In this code, we used Loom's `out-degree` function to calculate the degree of
     each node in the graph. We filter just the `odd` degree vertices and verify that
     the count is either `0` or `2`. If it is, an Euler tour exists.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这段代码中，我们使用了Loom的`out-degree`函数来计算图中每个节点的度数。我们仅筛选出`奇数`度数的节点，并验证计数是否为`0`或`2`。如果是，则图中存在欧拉巡回。
 - en: Breadth-first and depth-first search
+  id: totrans-65
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 广度优先和深度优先搜索
 - en: The previous example is historically notable, but a more common desire in graph
     traversal is to find a node within the graph starting from some other node. There
     are several ways of addressing this challenge. For unweighted graphs such as our
     Twitter follow graph, the most common are breadth first and depth first search.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的示例在历史上很有意义，但在图遍历中更常见的需求是从图中的某个节点开始，查找图内的另一个节点。有几种方法可以解决这个问题。对于像我们的Twitter关注图这样的无权图，最常见的方法是广度优先搜索和深度优先搜索。
 - en: Breadth first search starts with a particular vertex and then searches each
     of its neighbors for the target vertex. If the vertex isn't found, it searches
     each of the neighbor's neighbors in turn, until either the vertex is found or
     the entire graph has been traversed.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 广度优先搜索从一个特定的顶点开始，然后搜索其每个邻居以查找目标顶点。如果没有找到该顶点，它会依次搜索每个邻居的邻居，直到找到顶点或整个图遍历完成为止。
 - en: 'The following diagram shows the order in which the vertices are traversed,
     beginning at the top and working down in tiers, from left to right:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 下图展示了顶点被遍历的顺序，从上到下按层次从左到右进行：
 - en: '![Breadth-first and depth-first search](img/7180OS_08_130.jpg)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![广度优先和深度优先搜索](img/7180OS_08_130.jpg)'
 - en: 'Loom contains a variety of traversal algorithms in the `loom.alg` namespace.
     Let''s perform breadth first search on the same Twitter followers graph we have
     been studying, which is repeated for convenience:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: Loom包含了`loom.alg`命名空间中的多种遍历算法。我们将对之前一直在研究的Twitter关注者图执行广度优先搜索，为了方便起见，图再次被重复展示：
 - en: '![Breadth-first and depth-first search](img/7180OS_08_135.jpg)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![广度优先和深度优先搜索](img/7180OS_08_135.jpg)'
 - en: 'Breadth-first traversal is provided as the `bf-traverse` function. This will
     return a sequence of vertices in the order that they were visited which will allow
     us to see how breadth-first search traverses the graph:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 广度优先遍历作为`bf-traverse`函数提供。该函数将返回一个顶点序列，按照访问的顺序排列，这将帮助我们查看广度优先搜索是如何遍历图的：
 - en: '[PRE8]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: We're using the `bf-traverse` function to perform a traversal of the graph,
     beginning at node `100742942`. Notice how the response does not contain the node
     `100873813`. There's no way of traversing the graph to this vertex, following
     only the direction of the edges. The only way to get to vertex `100742942` would
     be to start there.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们正在使用`bf-traverse`函数执行图的遍历，起始节点为`100742942`。注意，响应中没有包含节点`100873813`。沿着边的方向无法遍历到此顶点。要到达顶点`100742942`，必须从该点开始。
 - en: Also, note that `35432131` is only listed once, even though it's connected to
     both `27475761` and `3829151`. Loom's implementation of breadth first search maintains
     a set of the visited vertices in memory. Once a vertex is visited, it need not
     be visited again.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，注意到`35432131`只列出了一次，尽管它与`27475761`和`3829151`都相连。Loom实现的广度优先搜索在内存中维护了一个已访问节点的集合。一旦一个节点被访问，就不需要再访问它。
 - en: 'An alternative approach to breadth-first search is depth-first search. This
     algorithm proceeds immediately to the bottom of the tree and visits the nodes
     in the order shown in the following diagram:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 广度优先搜索的另一种替代方法是深度优先搜索。该算法立即向树的底部推进，并按照下图所示的顺序访问节点：
 - en: '![Breadth-first and depth-first search](img/7180OS_08_140.jpg)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![广度优先和深度优先搜索](img/7180OS_08_140.jpg)'
 - en: 'Loom includes a depth-first search as `pre-traverse`:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: Loom 包括一个深度优先搜索，作为 `pre-traverse`：
 - en: '[PRE9]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: The advantage of depth-first search is that it has a much lower memory requirement
     than breadth-first search, because it's not necessary to store all of the nodes
     at each tier. This may make it less memory-intensive for large graphs.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 深度优先搜索的优点在于它的内存需求远低于广度优先搜索，因为它不需要在每一层存储所有节点。这可能使得它在处理大型图时，内存消耗更少。
 - en: However, depending on the circumstances, either a depth-first or breadth-first
     search may be more convenient. For example, if we were traversing a family tree,
     looking for a living relative, we could assume that person would be near the bottom
@@ -400,87 +563,126 @@
     were looking for an ancient ancestor, then a depth first search might waste its
     time checking a large number of more recent relatives and take much longer to
     reach the target.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，根据具体情况，深度优先搜索或广度优先搜索可能更方便。例如，如果我们在遍历家谱，寻找一位在世的亲戚，我们可以假设那个人会在家谱的底部，那么深度优先搜索可能会更快找到目标。如果我们在寻找一位古老的祖先，那么深度优先搜索可能会浪费时间检查许多较近的亲戚，花费更长时间才能到达目标。
 - en: Finding the shortest path
+  id: totrans-82
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 查找最短路径
 - en: The algorithms presented earlier traversed the graph vertex by vertex and returned
     a lazy sequence of all the nodes in the graph. They were convenient for illustrating
     the two primary ways of navigating the graph structures. However, a more common
     task would be to find the shortest path from one vertex to another. This means
     that we'll be interested only in the sequence of nodes that lie between them.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 前面介绍的算法逐个遍历图的每个节点，并返回一个懒加载的节点序列。它们适合用来演示两种主要的图结构导航方式。然而，常见的任务是寻找从一个顶点到另一个顶点的最短路径。这意味着我们只关心那些位于这两个节点之间的路径。
 - en: 'If we have an unweighted graph, such as the previous graphs, we''ll usually
     count the distance as the number of "hops": a hop being the step between two neighboring
     nodes. The shortest path will have the fewest number of hops. Breadth-first search
     is, in general, a more efficient algorithm to use in this case.'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们有一个无权图，比如前面提到的图，我们通常将距离计算为“跳数”：一跳是两个邻接节点之间的步长。最短路径将有最少的跳数。一般来说，广度优先搜索在这种情况下是一个更高效的算法。
 - en: 'Loom implements the breadth-first shortest path as the `bf-path` function.
     To demonstrate it, let''s load a more complex Twitter graph:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: Loom 实现了广度优先最短路径算法，作为 `bf-path` 函数。为了演示这一点，让我们加载一个更复杂的 Twitter 图：
 - en: '[PRE10]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'This code generates the following graph:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码生成了以下图：
 - en: '![Finding the shortest path](img/7180OS_08_145.jpg)'
+  id: totrans-88
   prefs: []
   type: TYPE_IMG
+  zh: '![查找最短路径](img/7180OS_08_145.jpg)'
 - en: 'Let''s see if we can identify the shortest path between the top and bottom
     nodes: **75914648** and **32122637**. There are many paths that the algorithm
     could return, but we want to identify the path that goes through points **28719244**
     and **163629705**. This is the one with the fewest hops.'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看能否找出顶端和底端节点之间的最短路径：**75914648** 和 **32122637**。算法可能返回许多路径，但我们想找到通过 **28719244**
+    和 **163629705** 两个点的路径。这是经过的跳数最少的路径。
 - en: '[PRE11]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Indeed it does.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 确实是这样。
 - en: Note
+  id: totrans-92
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注
 - en: Loom also implements a bidirectional breadth-first shortest path algorithm as
     `bf-path-bi`. This searches in parallel from both the source and the destination
     and may find the shortest path much faster on certain types of graphs.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: Loom 还实现了一个双向广度优先最短路径算法，作为 `bf-path-bi`。它从源点和目的地同时开始搜索，在某些类型的图上，这种方法可以更快地找到最短路径。
 - en: 'What if the graph is weighted? In this case, the fewest hops might not correspond
     to the shortest path between two nodes, because this path might be associated
     with a large weight. In this case, Dijkstra''s algorithm is a method to find the
     shortest cost path between two nodes. The path may take a larger number of hops,
     but the sum of the edge weights traversed would be the lowest:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果图是加权图怎么办？在这种情况下，最少的跳数可能并不等于最短路径，因为该路径可能与较大的权重相关联。在这种情况下，Dijkstra 算法是一种用于查找两个节点之间最短代价路径的方法。该路径可能需要更多的跳数，但所经过的边的权重总和会是最低的：
 - en: '[PRE12]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: In this code, we loaded the graph as a weighted digraph and updated the edge
     between node `28719244` and `163629705` to have a weight of `100`. All the other
     edges have a default weight of 1\. This has the effect of assigning a very high
     cost to the most direct path, and so an alternative path is found.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这段代码中，我们将图加载为一个加权有向图，并将节点 `28719244` 和 `163629705` 之间的边的权重更新为 `100`。所有其他边的默认权重为
+    1。这会导致为最直接的路径分配一个非常高的成本，因此找到了一条替代路径。
 - en: Dijkstra's algorithm is particularly valuable for route finding. For example,
     if the graph models the road network, the best route may be the one that takes
     major roads, rather than the one which takes the fewest number of steps. Or, depending
     on the time of day and the amount of traffic on the roads, the cost associated
     with particular routes may change. In this case, Dijkstra's algorithm would be
     able to determine the best route at any time of the day.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: Dijkstra 算法在路线寻找中尤为有价值。例如，如果图表示的是道路网络，最佳路线可能是通过主要道路，而不是走步数最少的路线。或者，根据一天中的时间和道路上的交通量，特定路线的成本可能会发生变化。在这种情况下，Dijkstra
+    算法可以随时确定最佳路线。
 - en: Note
+  id: totrans-98
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: An algorithm called **A*** (pronounced A-star) optimizes Dijkstra's algorithm
     by allowing a heuristic function. It's implemented as `alg/astar-path` in Loom.
     The heuristic function returns an expected cost to the destination. Any function
@@ -488,24 +690,33 @@
     The use of this heuristic allows the A* algorithm to avoid making an exhaustive
     search of the graph and thus, it can be much quicker. For more information on
     A* algorithm, refer to [https://en.wikipedia.org/wiki/A*_search_algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm).
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种名为**A\***（读作 A-star）的算法通过允许启发式函数优化了 Dijkstra 算法。它在 Loom 中实现为 `alg/astar-path`。启发式函数返回预期的目标成本。任何函数都可以作为启发式函数，只要它不会高估真实的成本。使用此启发式函数可以使
+    A\* 算法避免对图进行穷尽性搜索，从而大大加快速度。有关 A\* 算法的更多信息，请参考 [https://en.wikipedia.org/wiki/A*_search_algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm)。
 - en: Let's continue to consider weighted graphs and ask how we could construct a
     tree that connects all the nodes with the shortest cost. Such a tree is referred
     to as the minimum spanning tree.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们继续考虑带权图，并探讨如何构建一棵树，以最短成本连接所有节点。这样的树被称为最小生成树。
 - en: Minimum spanning trees
+  id: totrans-101
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最小生成树
 - en: With the help of the previous algorithms, we considered how to traverse the
     graph between two points. However, what if we want to discover a route that connects
     all the nodes in the graph? In this case, we could use a minimum spanning tree.
     We can think of a minimum spanning tree as a hybrid of the full-graph traversal
     algorithms we have considered and the shortest path algorithm we saw recently.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 借助前面提到的算法，我们考虑了如何在两点之间遍历图。然而，如果我们想发现一条连接图中所有节点的路径呢？在这种情况下，我们可以使用最小生成树。我们可以将最小生成树视为我们之前考虑的完全图遍历算法和最近看到的最短路径算法的结合体。
 - en: Minimum spanning trees are particularly useful for weighted graphs. If the weight
     represents the cost of connecting two vertices, the minimum spanning tree finds
     the minimum cost of connecting the whole graph. They occur in problems such as
@@ -513,311 +724,455 @@
     represent the cost of phone lines between offices, the minimum spanning tree will
     provide the set of phone lines that connect all the offices with the lowest total
     cost.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 最小生成树特别适用于带权图。如果权重表示连接两个顶点的成本，最小生成树则找到连接整个图的最小成本。它们在诸如网络设计等问题中很有用。例如，如果节点表示办公室，而边的权重表示办公室之间电话线的费用，那么最小生成树将提供一组电话线路，以最低的总成本连接所有办公室。
 - en: 'Loom''s implementation of minimum spanning trees makes use of Prim''s algorithm
     and is available as the `prim-mst` function:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: Loom 实现的最小生成树使用了普里姆算法，并作为 `prim-mst` 函数提供：
 - en: '[PRE13]'
+  id: totrans-105
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'This will return the following graph:'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将返回以下图表：
 - en: '![Minimum spanning trees](img/7180OS_08_180.jpg)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![最小生成树](img/7180OS_08_180.jpg)'
 - en: 'If, once again, we update the edge between vertices **28719244** and **163629705**
     to be 100, we will be able to observe the difference it makes to the minimum spanning
     tree:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们再次将顶点 **28719244** 和 **163629705** 之间的边更新为 100，我们将能够观察到它对最小生成树的影响：
 - en: '[PRE14]'
+  id: totrans-109
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'This code returns the following chart:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码返回以下图表：
 - en: '![Minimum spanning trees](img/7180OS_08_185.jpg)'
+  id: totrans-111
   prefs: []
   type: TYPE_IMG
+  zh: '![最小生成树](img/7180OS_08_185.jpg)'
 - en: The tree has been reconfigured to bypass the edge with the highest cost.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 该树已被重新配置，以绕过具有最高成本的边缘。
 - en: Subgraphs and connected components
+  id: totrans-113
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 子图和连通分量
 - en: A minimum spanning tree can only be specified for *connected* graphs, where
     all the nodes are connected to all the others by at least one path. Where the
     graphs are not connected, we're clearly unable to construct a minimum spanning
     tree (although we could construct a minimum spanning forest instead).
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 最小生成树只能为*连通*图指定，其中所有节点通过至少一条路径连接到其他所有节点。在图形不连通的情况下，显然无法构建最小生成树（尽管我们可以构建最小生成森林）。
 - en: '![Subgraphs and connected components](img/7180OS_08_190.jpg)'
+  id: totrans-115
   prefs: []
   type: TYPE_IMG
+  zh: '![子图和连通分量](img/7180OS_08_190.jpg)'
 - en: 'If a graph contains a set of subgraphs that are internally connected but are
     not connected to each other, then the subgraphs are referred to as connected components.
     We can observe the connected components if we load a still more complicated network:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一个图包含一组内部相连但彼此之间没有连接的子图，那么这些子图被称为连通分量。我们可以通过加载一个更复杂的网络来观察连通分量：
 - en: '[PRE15]'
+  id: totrans-117
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'This example generates the following image:'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个示例生成了以下图像：
 - en: '![Subgraphs and connected components](img/7180OS_08_200.jpg)'
+  id: totrans-119
   prefs: []
   type: TYPE_IMG
+  zh: '![子图和连通分量](img/7180OS_08_200.jpg)'
 - en: 'Thanks to the layout of the graph, we can easily see that there are three connected
     components and Loom will calculate these for us with the `connected-components`
     function. We''ll see later in this chapter how we can implement an algorithm to
     calculate this for ourselves:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于图形的布局，我们可以轻松看到存在三个连通分量，Loom 将通过 `connected-components` 函数为我们计算这些分量。我们将在本章稍后看到如何实现一个算法来为我们自己计算这个：
 - en: '[PRE16]'
+  id: totrans-121
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: A directed graph is strongly connected if there is a path from every node to
     every other node. A directed graph is weakly connected if, only treating all the
     edges as being undirected, there is a path from every node to every other node.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一个有向图从每个节点到每个其他节点都有路径，那么它是强连通的。如果一个有向图仅将所有边视为无向边时，从每个节点到每个其他节点有路径，则它是弱连通的。
 - en: '![Subgraphs and connected components](img/7180OS_08_210.jpg)'
+  id: totrans-123
   prefs: []
   type: TYPE_IMG
+  zh: '![子图和连通分量](img/7180OS_08_210.jpg)'
 - en: 'Let''s load the same graph as a directed graph to see if there are any strongly
     connected components:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将相同的图加载为有向图，以查看是否存在任何强连通分量：
 - en: '[PRE17]'
+  id: totrans-125
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'This example generates the following image:'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个示例生成了以下图像：
 - en: '![Subgraphs and connected components](img/7180OS_08_220.jpg)'
+  id: totrans-127
   prefs: []
   type: TYPE_IMG
+  zh: '![子图和连通分量](img/7180OS_08_220.jpg)'
 - en: 'There are three weakly connected components as before. It''s quite difficult
     to visually determine how many strongly connected components there are by just
     looking at the graph. Kosaraju''s algorithm will calculate the number of strongly
     connected components in a graph. It''s implemented by Loom as the `alg/scc` function:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，存在三个弱连通分量。仅通过观察图形，确定有多少个强连通分量是相当困难的。Kosaraju 算法将计算图中强连通分量的数量。它由 Loom 实现为
+    `alg/scc` 函数：
 - en: '[PRE18]'
+  id: totrans-129
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'Kosaraju''s algorithm makes use of the interesting property that the transpose
     graph—one with all the edges reversed—has exactly the same number of connected
     components as the input graph. The response contains all the strongly connected
     components (even the degenerate cases containing only one node) as sequence vectors.
     If we sort by length in descending order the first component will be the largest:'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: Kosaraju 算法利用了一个有趣的性质，即转置图——即所有边都被反转的图——与输入图具有完全相同数量的连通分量。响应包含所有强连通分量（即使是仅包含一个节点的退化情况），作为序列向量。如果按长度降序排序，第一个分量将是最大的：
 - en: '[PRE19]'
+  id: totrans-131
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: The largest strongly connected component is merely three nodes.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 最大的强连通分量仅包含三个节点。
 - en: SCC and the bow-tie structure of the web
+  id: totrans-133
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: SCC 和网页的蝴蝶结结构
 - en: Weakly and strongly connected components can provide an informative way of understanding
     the structure of a directed graph. For example, research performed on the link
     structure of the internet has shown that strongly connected components can grow
     very large indeed.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 弱连通和强连通分量提供了一种了解有向图结构的有益方式。例如，关于互联网链接结构的研究表明，强连通分量可以非常大。
 - en: Note
+  id: totrans-135
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: The paper from which the following numbers are quoted is available online at
     [http://www9.org/w9cdrom/160/160.html](http://www9.org/w9cdrom/160/160.html).
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下数字引用的论文可以在线访问 [http://www9.org/w9cdrom/160/160.html](http://www9.org/w9cdrom/160/160.html)。
 - en: Although the following numbers are from a study undertaken in 1999 and so they
     are therefore very out of date, we can see that at the center of the web was one
     large strongly connected component consisting of 56 million pages. This meant
     that from any page within the strongly connected component, you could reach any
     other within the strongly connected component only by following the outbound hyperlinks.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管以下数字来源于1999年进行的一项研究，因此已经非常过时，但我们可以看到，在网络的中心有一个大型的强连通分量，由5600万页面组成。这意味着从强连通分量中的任何页面出发，只能通过跟随外向超链接来访问强连通分量中的任何其他页面。
 - en: '![SCC and the bow-tie structure of the web](img/7180OS_08_230.jpg)'
+  id: totrans-138
   prefs: []
   type: TYPE_IMG
+  zh: '![SCC与网络的蝴蝶结结构](img/7180OS_08_230.jpg)'
 - en: 44 million pages linked into the SCC, but were not linked from it, and 44 million
     pages were linked from the SCC, but did not link back. Only very few links bypassed
     the SCC entirely (the "tubes" in the preceding illustration).
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 4400万页面链接到强连通分量（SCC）中，但没有从中链接出去，另外4400万页面从SCC中链接出去，但没有再链接回去。只有极少数链接完全绕过了SCC（前面插图中的“管道”）。
 - en: Whole-graph analysis
+  id: totrans-140
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 整体图分析
 - en: Let's turn our attention away from the smaller graphs we've been working with
     towards the larger graph of followers provided by the `twitter_combined.txt` file.
     This contains over 2.4 million edges and will provide a more interesting sample
     to work with.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们把注意力从之前处理的较小图转向更大的图，即由`twitter_combined.txt`文件提供的关注者图。该文件包含超过240万个边，并将提供一个更有趣的样本来处理。
 - en: One of the simplest metrics to determine about a whole graph is its density.
     For directed graphs, this is defined as the number of edges *|E|*, over the number
     of vertices *|V|* multiplied by one less than itself.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 衡量一个图的最简单指标之一是它的密度。对于有向图，密度定义为边数 *|E|* 除以顶点数 *|V|* 乘以比自身少1的数。
 - en: '![Whole-graph analysis](img/7180OS_08_01.jpg)'
+  id: totrans-143
   prefs: []
   type: TYPE_IMG
+  zh: '![整体图分析](img/7180OS_08_01.jpg)'
 - en: 'For a connected graph (one where every vertex is connected to every other vertex
     by an edge), the density would be 1\. By contrast, a disconnected graph (one with
     no edges) would have a density of 0\. Loom implements graph density as the `alg/density`
     function. Let''s calculate the density of the larger Twitter graph:'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于一个连通图（每个顶点通过边与其他每个顶点相连），其密度为1。相比之下，一个断开图（没有边的图）密度为0。Loom实现了图的密度计算函数 `alg/density`。我们来计算一下更大Twitter图的密度：
 - en: '[PRE20]'
+  id: totrans-145
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: This seems very sparse, but bear in mind that a value of 1 would correspond
     to every account following every other account, which is clearly not the case
     on social networks. Some accounts may have many connections, while others may
     have none at all.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来很稀疏，但请记住，值为1意味着每个账户都关注每个其他账户，而这显然不是社交网络的情况。一些账户可能有很多连接，而另一些账户则可能完全没有连接。
 - en: 'Let''s see how the edges are distributed among nodes. We can re-use Loom''s
     `out-degree` function to count the number of outgoing edges from each node and
     plot a histogram of the distribution using the following code:'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看边如何在节点之间分布。我们可以重用Loom的`out-degree`函数来统计每个节点的外向边数，并使用以下代码绘制分布的直方图：
 - en: '[PRE21]'
+  id: totrans-148
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: 'This generates the following histogram:'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将生成以下直方图：
 - en: '![Whole-graph analysis](img/7180OS_08_240.jpg)'
+  id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![整体图分析](img/7180OS_08_240.jpg)'
 - en: The distribution of out-degrees looks a lot like the exponential distribution
     we first encountered in [Chapter 2](ch02.xhtml "Chapter 2. Inference"), *Inference*.
     Notice how most people have very few out-degrees, but a handful have over a thousand.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 出度分布看起来很像我们在[第二章](ch02.xhtml "第2章 推理")中首次遇到的*指数分布*。请注意，大多数账户的出度非常少，但有少数账户的出度超过了一千。
 - en: Let's also plot the histogram of in-degrees. On Twitter, the in-degree corresponds
     to the number of followers an account has.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们也绘制一下入度的直方图。在Twitter中，入度对应于一个账户拥有的粉丝数量。
 - en: '![Whole-graph analysis](img/7180OS_08_250.jpg)'
+  id: totrans-153
   prefs: []
   type: TYPE_IMG
+  zh: '![整体图分析](img/7180OS_08_250.jpg)'
 - en: 'The distribution of in-degrees is even more extreme: the tail extends further
     to the right than the previous histogram and the first bar is even taller than
     before. This corresponds to most accounts having very few followers but a handful
     having several thousand.'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 入度的分布更为极端：尾部延伸得比之前的直方图更远，第一根柱状比之前还要高。这对应于大多数账户粉丝非常少，但少数账户粉丝超过几千。
 - en: 'Contrast the previous histograms to the degree distribution we get when we
     generate a random graph of edges and nodes. Next, we use Loom''s `gen-rand` function
     to generate a random graph with 10,000 nodes and 1,000,000 edges:'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 将之前的直方图与生成的随机图的度数分布进行对比。接下来，我们使用Loom的`gen-rand`函数生成一个包含10,000个节点和1,000,000条边的随机图：
 - en: '[PRE22]'
+  id: totrans-156
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: 'This generates the following histogram:'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码生成以下直方图：
 - en: '![Whole-graph analysis](img/7180OS_08_260.jpg)'
+  id: totrans-158
   prefs: []
   type: TYPE_IMG
+  zh: '![全图分析](img/7180OS_08_260.jpg)'
 - en: The random graph shows that the mean number of out-degrees for a graph of ten
     thousand vertices connected by a million edges is around 200\. The distribution
     of the degrees is approximately normal. It's very apparent that the Twitter graph
     hasn't been generated by a random process.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机图显示，连接一万个顶点和一百万条边的图的平均外度数大约为200。度数的分布大致符合正态分布。显然，Twitter图并不是通过随机过程生成的。
 - en: Scale-free networks
+  id: totrans-160
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 无标度网络
 - en: The Twitter degree histograms are a characteristic of power-law degree distributions.
     Unlike the normally distributed, randomly generated graph, the Twitter histograms
     show that a few vertices are connected to a large majority of the edges.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: Twitter的度数直方图呈现出幂律度分布的特点。与常规分布的随机生成图不同，Twitter的直方图显示出少数顶点连接到大量的边。
 - en: Note
+  id: totrans-162
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: The term "scale-free network" was coined by researchers at the University of
     Notre Dame in 1999 to describe the structure they observed on the World Wide Web.
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: “无标度网络”这一术语是由圣母大学的研究人员在1999年提出，用以描述他们在万维网中观察到的结构。
 - en: In the graphs that model human interactions, we'll often observe a power law
     of connectedness. This is also called the **Zipf** scale and it indicates the
     so-called "law of preferential attachment", where a popular vertex is more likely
     to develop additional connections. Social media sites are prime examples of this
     sort of a process, where new users tend to follow already popular users.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 在模拟人类互动的图中，我们经常会观察到一种连接的幂律现象。这也被称为**Zipf**定律，它揭示了所谓的“优先连接法则”，即受欢迎的顶点更容易发展出更多的连接。社交媒体网站是这一过程的典型例子，新的用户往往会关注已经受欢迎的用户。
 - en: 'In [Chapter 2](ch02.xhtml "Chapter 2. Inference"), *Inference*, we identified
     the exponential distribution by looking for a straight line when the data was
     plotted on log-linear axes. We can most easily determine a power-law relationship
     by looking for a straight line on log-log axes:'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[第2章](ch02.xhtml "第2章 推断")中，*推断*部分，我们通过在对数-线性坐标轴上绘制数据并寻找直线来识别指数分布。我们可以通过在对数-对数坐标轴上寻找直线，最容易地确定幂律关系：
 - en: '[PRE23]'
+  id: totrans-166
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: 'This code returns the following plot:'
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码返回以下图形：
 - en: '![Scale-free networks](img/7180OS_08_270.jpg)'
+  id: totrans-168
   prefs: []
   type: TYPE_IMG
+  zh: '![无标度网络](img/7180OS_08_270.jpg)'
 - en: Although not perfectly linear, the earlier chart is enough to show that a power
     law distribution is at work in the Twitter graph. If we visualize the connections
     between the nodes and edges in the graph, scale-free networks will be recognizable
     because of their characteristic "clustered" shape. Popular vertices tend to have
     a halo of other vertices around them.
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管并非完全线性，但前面的图表足以表明Twitter图中存在幂律分布。如果我们可视化图中的节点与边之间的连接，无标度网络将因其典型的“聚集”形状而显现出来。受欢迎的顶点通常会围绕着一圈其他顶点。
 - en: '![Scale-free networks](img/7180OS_08_280.jpg)'
+  id: totrans-170
   prefs: []
   type: TYPE_IMG
+  zh: '![无标度网络](img/7180OS_08_280.jpg)'
 - en: Scaling up to the full Twitter combined dataset has caused the previous examples
     to run much more slowly, even though this graph is tiny in comparison to many
     social networks. The rest of this chapter will be devoted to a graph library that
     runs on top of the Spark framework called **GraphX**. GraphX expresses many of
     the algorithms we've covered already this chapter, but can take advantage of the
     Spark distributed computation model to process much larger graphs.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 将计算扩展到完整的Twitter合并数据集导致之前的示例运行速度显著变慢，尽管与许多社交网络相比，这个图形非常小。本章的其余部分将介绍一个基于Spark框架的图形库，叫做**GraphX**。GraphX表达了本章已介绍的许多算法，但能够利用Spark的分布式计算模型来处理更大规模的图形。
 - en: Distributed graph computation with GraphX
+  id: totrans-172
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用GraphX进行分布式图计算
 - en: GraphX ([https://spark.apache.org/graphx/](https://spark.apache.org/graphx/))
     is a distributed graph processing library that is designed to work with Spark.
     Like the MLlib library we used in the previous chapter, GraphX provides a set
     of abstractions that are built on top of Spark's RDDs. By representing the vertices
     and edges of a graph as RDDs, GraphX is able to process very large graphs in a
     scalable way.
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
 - en: 'We''ve seen in previous chapters how to process a large dataset using MapReduce
     and Hadoop. Hadoop is an example of a data-parallel system: the dataset is divided
     into groups that are processed in parallel. Spark is also a data-parallel system:
     RDDs are distributed across the cluster and processed in parallel.'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
 - en: '![Distributed graph computation with GraphX](img/7180OS_08_300.jpg)'
+  id: totrans-175
   prefs: []
   type: TYPE_IMG
 - en: Data-parallel systems are appropriate ways of scaling data processing when your
@@ -826,6 +1181,7 @@
     as edge lists, as we've seen, processing a graph stored in this way may involve
     complex joins and excessive data movement around the cluster because of how interconnected
     the data is.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
 - en: The growing scale and significance of graph data has driven the development
@@ -833,22 +1189,27 @@
     that can be expressed and introducing techniques to partition and distribute graphs,
     these systems can efficiently execute sophisticated graph algorithms orders of
     a magnitude faster than general data-parallel systems.
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-178
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: Several libraries bring graph-parallel computation to Hadoop, including Hama,
     ([https://hama.apache.org/](https://hama.apache.org/)) and Giraph ([http://giraph.apache.org/](http://giraph.apache.org/)).
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
 - en: The GraphX library brings graph-parallel computation to Spark. One of the advantages
     of using Spark as the engine for graph processing is that its in-memory computation
     model is well-suited to the iterative nature of many graph algorithms.
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
 - en: '![Distributed graph computation with GraphX](img/7180OS_08_310.jpg)'
+  id: totrans-181
   prefs: []
   type: TYPE_IMG
 - en: This diagram illustrates the challenge of processing graphs in parallel where
@@ -856,9 +1217,11 @@
     GraphX avoids excessive data movement and duplication. GraphX extends Spark's
     RDD abstraction by introducing the Resilient Distributed Graph, or RDG, and a
     set of functions to query and transform the graph in a structurally-aware way.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
 - en: Creating RDGs with Glittering
+  id: totrans-183
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -866,6 +1229,7 @@
     chapter, we'll be using the Clojure library Glittering ([https://github.com/henrygarner/glittering](https://github.com/henrygarner/glittering))
     to interact with GraphX. In much the same way that Sparkling provides a thin Clojure
     wrapper around Spark, Glittering provides a thin Clojure wrapper around GraphX.
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
 - en: 'Our first task will be to create a graph. Graphs can be instantiated in two
@@ -873,8 +1237,10 @@
     the other the vertices), or simply by supplying an RDD of edges. If only the edges
     are supplied, then we will supply a default value for each node. We''ll see how
     to do this next.'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的第一个任务是创建一个图。图可以通过两种方式实例化：一种是提供两个RDD表示（一个包含边，另一个包含顶点），另一种是仅提供一个边的RDD。如果仅提供边，则需要为每个节点提供一个默认值。接下来我们将看到如何实现这一点。
 - en: 'Since GraphX leverages Spark, every job requires an associated Spark context.
     In the previous chapter, we used Sparkling''s `sparkling.conf/conf` default configuration.
     However, in this chapter, we''ll use the default configuration provided by Glittering.
@@ -882,72 +1248,96 @@
     and deserialize GraphX types. In the following code, we''ll include `glittering.core`
     as `g` and create a small graph of only three edges using Glittering''s graph
     constructor:'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于GraphX利用Spark，每个作业都需要一个关联的Spark上下文。在上一章中，我们使用了Sparkling的`spakling.conf/conf`默认配置。然而，在本章中，我们将使用Glittering提供的默认配置。Glittering在Sparkling的默认设置基础上，添加了序列化和反序列化GraphX类型所需的配置。在以下代码中，我们将包含`glittering.core`作为`g`，并使用Glittering的图构造函数创建一个只有三条边的小图：
 - en: '[PRE24]'
+  id: totrans-187
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: 'The result is a GraphX graph object. Note that edges are provided as an RDD
     of `g/edges`: the `g/edge` function will create an edge type given a source ID,
     destination ID, and an optional edge attribute. Edge attributes can be any object
     that Spark can serialize. Note that vertices can have attributes too ("A", "B",
     and "C" in the previous example).'
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是一个GraphX图对象。请注意，边是通过`g/edges`的RDD提供的：`g/edge`函数将根据源ID、目标ID和可选的边属性创建一个边类型。边的属性可以是Spark可以序列化的任何对象。注意，顶点也可以有属性（例如前面示例中的"A"、"B"和"C"）。
 - en: 'An alternative way of constructing a graph is to use the `g/graph-from-edges`
     constructor. This will return a graph based solely on the RDD of edges. The Twitter
     data is supplied in the edge list format, so this is the function we''ll use to
     load it. In the next code, we''ll load the full `twitter_combined.txt` as a text
     file and create an edge list from it by mapping over the lines of the file. From
     each line, we''ll create an edge of weight 1.0:'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 构造图的另一种方法是使用`g/graph-from-edges`构造函数。这将仅根据边的RDD返回一个图。Twitter数据以边列表格式提供，因此我们将使用此函数加载它。在接下来的代码中，我们将加载完整的`twitter_combined.txt`文本文件，并通过映射文件中的每一行来创建一个边列表。从每一行，我们将创建一个权重为1.0的边：
 - en: '[PRE25]'
+  id: totrans-190
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: 'The second argument to the `graph-from-edges` function is a default value to
     use as each vertex''s attribute: the vertex attributes can''t be provided in an
     edge list.'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: '`graph-from-edges`函数的第二个参数是每个顶点属性的默认值：在边列表中无法提供顶点属性。'
 - en: Measuring graph density with triangle counting
+  id: totrans-192
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用三角计数衡量图的密度
 - en: GraphX comes with a small selection of built-in graph algorithms, which Glittering
     makes available in the `glittering.algorithms` namespace. Before covering Glittering's
     API in more detail, let's run one of these on the Twitter follows graph. We'll
     show how to use Glittering to create a simple graph processing job, and then show
     how to use more of Glittering's API to implement the algorithm ourselves using
     GraphX's graph-parallel primitives.
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: GraphX自带了一些内置的图算法，Glittering将其提供在`glittering.algorithms`命名空间中。在详细介绍Glittering的API之前，让我们在Twitter关注图上运行其中一个算法。我们将展示如何使用Glittering创建一个简单的图处理作业，然后展示如何使用更多Glittering的API，结合GraphX的图并行原语，自己实现算法。
 - en: 'Triangle counting is an algorithm to measure the density of the graph in the
     vicinity of each node. It''s similar in principle to counting degrees, but also
     accounts for how well our neighbors are connected to each other. We can picture
     the process using this very simple graph:'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 三角计数是一种算法，用来衡量图中每个节点附近的密度。它在原理上类似于计算度数，但还考虑了邻居之间的连接情况。我们可以用这个非常简单的图来形象化这个过程：
 - en: '![Measuring graph density with triangle counting](img/7180OS_08_330.jpg)'
+  id: totrans-195
   prefs: []
   type: TYPE_IMG
+  zh: '![使用三角计数衡量图的密度](img/7180OS_08_330.jpg)'
 - en: In this example, we can see that vertices A, B, and C all participate in one
     triangle, and vertex D participates in none. Both B and C follow A, but C also
     follows B. In the context of social network analysis, triangle counting is a measure
     of how many friends of friends also know each other. In tight-knit communities,
     we would expect the number of triangles to be high.
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
 - en: 'Triangle counting is already implemented by GraphX and is accessible as the
     `triangle-count` function in the `glittering.algorithms` namespace. Before we
     use this particular algorithm, GraphX requires us to do two things:'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
 - en: Point the edges in the "canonical" direction.
+  id: totrans-198
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Ensure the graph is partitioned.
+  id: totrans-199
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -956,23 +1346,29 @@
     triangle counting seeks only to count the distinct edges. The previous two steps
     ensure that GraphX is able to efficiently calculate the distinct edges before
     performing the algorithm.
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
 - en: 'The canonical direction of an edge always points from a smaller node ID to
     a larger node ID. We can achieve this by ensuring all the edges are created in
     this direction when we first construct our edge RDD:'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE26]'
+  id: totrans-202
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: By sorting the `from` and `to` IDs before we create the edge, we ensure that
     the `from` ID is always lower than the `to` ID. This is the first step towards
     making duplicate edge removal more efficient. The second is to choose a partitioning
     strategy for the graph. The next section describes our options.
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
 - en: GraphX partitioning strategies
+  id: totrans-204
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -980,9 +1376,11 @@
     across multiple machines. In general, there are two approaches that you could
     take while partitioning graphs: the ''edge cut'' and ''vertex cut'' approach.
     Each makes a different trade-off.'
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
 - en: '![GraphX partitioning strategies](img/7180OS_08_340.jpg)'
+  id: totrans-206
   prefs: []
   type: TYPE_IMG
 - en: The edge cut strategy may seem the most "natural" way to partition a graph.
@@ -991,6 +1389,7 @@
     for the representation of edges that span partitions though. Any computation along
     the edge will necessarily need to be sent from one partition to another, and minimizing
     network communication is key to the implementation of efficient graph algorithms.
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
 - en: GraphX implements the "vertex cut" approach, which ensures that the edges are
@@ -999,11 +1398,13 @@
     graph—from the edges to the vertices—but GraphX provides a number of strategies
     that allow us to ensure that vertices are partitioned in the most appropriate
     way for the algorithm we wish to apply.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
 - en: Glittering provides the `partition-by` function, which accepts a keyword representing
     the strategy to partition the graph. Accepted values are `:edge-partition-1d`,
     `:edge-partition-2d`, `:canonical-random-vertex-cut`, and `:random-vertex-cut`.
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
 - en: Your choice about which partitioning strategy to use is based on the structure
@@ -1013,6 +1414,7 @@
     outgoing edges) have all the data they require on an individual machine. Although
     this minimizes network traffic, it also means that with power-law graphs a few
     partitions may receive a significant proportion of the overall number of edges.
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
 - en: The `:random-vertex-cut` partitioning strategy splits a graph into edges based
@@ -1021,6 +1423,7 @@
     node may be spread across many machines in the cluster. Even the edges that connect
     the same pair of nodes may be spread across two machines depending on the direction
     of the edge. To group edges regardless of direction, we can use `:canonical-random-vertex-cut`.
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
 - en: Finally, `:edge-partition-2d` partitions edges by both their source and destination
@@ -1030,9 +1433,11 @@
     each node will be spread across. Where an algorithm aggregates information about
     edges sharing both a source and a destination node, and also by source or destination
     independently, this may be the most efficient strategy to use.
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
 - en: Running the built-in triangle counting algorithm
+  id: totrans-213
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1040,87 +1445,108 @@
     step is to choose a partitioning strategy, and we''ll go for `:random-vertex-cut`.
     The following example shows the full sequence of loading and partitioning the
     graph, performing triangle counting and visualizing the results using Incanter:'
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE27]'
+  id: totrans-215
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: The output of `triangle-count` is a new graph where the attribute of each vertex
     is a count of the number of triangles that the vertex participates in. The ID
     of the vertex is unchanged. We're only interested in the triangle counts themselves—the
     vertex attributes of the returned graph—so we extract `values` from the vertices.
     The `spark/collect` function gathers all the values into a single Clojure sequence,
     so it's not something we'd want to do on a very large graph.
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
 - en: 'Having gathered the count of triangles, we calculate the frequency of each
     count and visualize the result on a log-log scatter plot using Incanter. The output
     is shown next:'
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
 - en: '![Running the built-in triangle counting algorithm](img/7180OS_08_350.jpg)'
+  id: totrans-218
   prefs: []
   type: TYPE_IMG
 - en: Once again, we see the effect of a power law distribution. A few nodes connect
     a very large number of triangles.
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
 - en: Running a built-in algorithm has allowed us to see how to create and manipulate
     a graph, but the real power of GraphX is the way it allows us to express this
     sort of computation efficiently for ourselves. In the next section, we'll see
     how to accomplish triangle counting using lower-level functions.
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
 - en: Implement triangle counting with Glittering
+  id: totrans-221
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'There are many ways to count the number of triangles in a graph, but GraphX
     implements the algorithm in the following way:'
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
 - en: Compute the set of neighbors for each vertex.
+  id: totrans-223
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: For each edge, compute the intersection of the vertices at either end.
+  id: totrans-224
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Send the count of the intersection to both vertices.
+  id: totrans-225
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Compute the sum of the counts for each vertex.
+  id: totrans-226
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Divide by two, since each triangle is counted twice.
+  id: totrans-227
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'The following diagram shows the steps on our simple graph consisting of only
     one triangle:'
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
 - en: '![Implement triangle counting with Glittering](img/7180OS_08_355.jpg)'
+  id: totrans-229
   prefs: []
   type: TYPE_IMG
 - en: The algorithm ignores the direction of the edges and, as mentioned previously,
     expects the edges between any two nodes to be distinct. We'll therefore continue
     to work on the partitioned graph with the canonical edges we defined in the previous
     section.
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
 - en: 'The full code to perform triangle counting isn''t very long, so it''s presented
     in full next. It''s representative of most of the algorithms we''ll cover for
     the rest of the chapter so, once we''ve presented the code, we''ll walk through
     each of the steps one at a time:'
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE28]'
+  id: totrans-232
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: For the algorithm to work, the input graph needs to have distinct edges. Once
     the canonical graph has been partitioned, we make sure the edges are distinct
     by calling `(g/group-edges (fn [a b] a) graph)` on the graph. The `group-edges`
@@ -1128,9 +1554,11 @@
     share the same start and end node. We're simply choosing to keep the first edge.
     The attributes of the edge don't factor into triangle counting, only the fact
     that there is one.
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
 - en: Step one – collecting neighbor IDs
+  id: totrans-234
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1138,6 +1566,7 @@
     makes this operation available as the `g/collect-neighbor-ids` function. We can
     choose to collect only the incoming or outgoing edges with `:in` or `:out`, respectively,
     or the edges in either direction with `:either`.
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
 - en: The `g/collect-neighbor-ids` function returns a pair RDD with the key being
@@ -1148,15 +1577,18 @@
     of the values in the pair RDD. The result of step one is a PairRDD containing
     the of node ID and set of neighbor IDs, so we've flattened the graph to a series
     of sets stored as the value of `adjacent`.
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-237
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: This graph representation, as a sequence of sets of connected vertices, is commonly
     known as an adjacency list. Along with the edge list, it's one of the two primary
     means of representing graphs.
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
 - en: 'Step two requires us to assign values to the graph edges though, so we''ll
@@ -1168,9 +1600,11 @@
     value associated with the vertex ID in the pair RDD being outer joined to the
     graph. In the earlier code, we return the set of adjacent vertices as the new
     vertex attribute.'
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
 - en: Steps two, three, and four – aggregate messages
+  id: totrans-240
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1179,9 +1613,11 @@
     two arguments: a message sending function and a message combining function. In
     the way they work together, these two functions are like map and reduce adapted
     for the vertex-centric view of graph-parallel computation.'
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
 - en: '![Steps two, three, and four – aggregate messages](img/7180OS_08_360.jpg)'
+  id: totrans-242
   prefs: []
   type: TYPE_IMG
 - en: The send message function is responsible for sending messages along edges. The
@@ -1191,15 +1627,18 @@
     is a key/value pair where the key is one of `:src` or `:dst` and the value is
     the message to be sent. In the previous example, this is implemented as a map
     with the `:src` and `:dst` keys.
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
 - en: The merge message function is responsible for combining all the messages for
     a particular vertex. In the earlier code, each message is a number and therefore
     the merge function has a sequence of numbers to merge. We can achieve this simply
     by passing `+` as the merge function.
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
 - en: Step five – dividing the counts
+  id: totrans-245
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1207,34 +1646,44 @@
     for each vertex ID by two, since each triangle is counted twice. In the earlier
     code, we do this while simultaneously updating the vertex attributes with the
     triangle count using `outer-join-vertices`.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
 - en: Running the custom triangle counting algorithm
+  id: totrans-247
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'With all of the earlier steps in place, we can run our custom triangle counting
     algorithm using Glittering. Let''s first run it on one of our Twitter follow graphs
     from the beginning of the chapter to see the result we get:'
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE29]'
+  id: totrans-249
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: The result is a series of tuples with the vertex ID as the key and number of
     connected triangles as the value.
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
 - en: 'If we want to see how many triangles were there in the entire Twitter dataset,
     we could extract the values from the resulting graph (the values), add them up,
     and then divide them by three. Let''s do this now:'
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE30]'
+  id: totrans-252
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: The algorithm shouldn't take too long to run. Our custom triangle counting code
     will be performant enough to run on the entire combined Twitter dataset.
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
 - en: If `aggregate-messages` is like a single step of MapReduce programming, we'll
@@ -1242,9 +1691,11 @@
     to convergence. In fact, GraphX provides an alternative function that we will
     be able to use in this case called the **Pregel API**. We'll discuss it in detail
     in the next section.
+  id: totrans-254
   prefs: []
   type: TYPE_NORMAL
 - en: The Pregel API
+  id: totrans-255
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1252,6 +1703,7 @@
     computation. It's named after Google's internal system for running large-scale
     graph processing, about which they published a paper in 2010\. You may remember
     that it was also the river upon which the town of Königsberg was built.
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
 - en: Google's Pregel paper popularized the "think like a vertex" approach to graph
@@ -1262,12 +1714,14 @@
     function has the opportunity to process each of these messages and send messages
     to other vertices in turn. Vertices can also "vote to halt" the computation and,
     when all the vertices have voted to halt, the computation will terminate.
+  id: totrans-257
   prefs: []
   type: TYPE_NORMAL
 - en: 'The `pregel` function implemented by Glittering implements a very similar approach
     to graph processing. The primary difference is that the vertices don''t vote to
     halt: the computation terminates either when there are no more messages being
     sent or when a specified number of iterations has been exceeded.'
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
 - en: 'While the aggregate-messages function introduced in the previous section makes
@@ -1277,45 +1731,56 @@
     before, the third is the "vertex program": a function that processes the incoming
     messages for each vertex. The return value of this function is assigned as the
     vertex attribute for the next superstep.'
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
 - en: 'Let''s see how the `pregel` function works in practice by implementing an algorithm
     we''ve already covered in this chapter: connected components.'
+  id: totrans-260
   prefs: []
   type: TYPE_NORMAL
 - en: Connected components with the Pregel API
+  id: totrans-261
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Connected components can be expressed as an iterative algorithm in the following
     way:'
+  id: totrans-262
   prefs: []
   type: TYPE_NORMAL
 - en: Initialize all vertex attributes to the vertex ID.
+  id: totrans-263
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: For each edge, determine whether the source or destination vertex attribute
     is the lowest.
+  id: totrans-264
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Down each edge, send the lower of the two attributes to the opposite vertex.
+  id: totrans-265
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: For each vertex, update attribute to be the lowest of the incoming messages.
+  id: totrans-266
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Repeat until the node attributes no longer change.
+  id: totrans-267
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: As before, we can visualize the process on a simple graph of four nodes.
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
 - en: '![Connected components with the Pregel API](img/7180OS_08_370.jpg)'
+  id: totrans-269
   prefs: []
   type: TYPE_IMG
 - en: 'We can see how in six steps the graph has converged to a state where all the
@@ -1325,16 +1790,21 @@
     has converged will therefore be a part of the same connected component. Let''s
     see the finished code first and we''ll walk through the code in steps immediately
     afterwards:'
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE31]'
+  id: totrans-271
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: Using the `g/pregel` function is all that's required to implement an iterative
     connected components algorithm.
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
 - en: Step one – map vertices
+  id: totrans-273
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1342,9 +1812,11 @@
     the `pregel` function by the `g/map-vertices` function. We pass it a function
     of two arguments, the vertex ID and vertex attribute, and it returns the vertex
     ID to be assigned as the vertex attribute.
+  id: totrans-274
   prefs: []
   type: TYPE_NORMAL
 - en: Steps two and three – the message function
+  id: totrans-275
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1354,6 +1826,7 @@
     these is responsible for steps two and three: for each edge, determining which
     connected node has the lower attribute and sending this value to the opposing
     node.'
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
 - en: 'We introduced the message function along with the custom triangle counting
@@ -1362,14 +1835,17 @@
     message is sent: the `src-attr` attribute to the destination node if the source
     attribute is lower or the `dst-attr` attribute to the source node if the destination
     attribute is lower.'
+  id: totrans-277
   prefs: []
   type: TYPE_NORMAL
 - en: 'The combiner function aggregates all the incoming messages for a vertex. The
     combiner function for the connected components is simply the `min` function: we''re
     only interested in the minimum value sent to each vertex.'
+  id: totrans-278
   prefs: []
   type: TYPE_NORMAL
 - en: Step four – update the attributes
+  id: totrans-279
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1378,15 +1854,18 @@
     is lower than its current attribute, it will update its attribute to equal the
     lowest. This step is handled by the vertex program, the third of Pregel's three
     symbiotic functions.
+  id: totrans-280
   prefs: []
   type: TYPE_NORMAL
 - en: 'The vertex function for connected components is also trivial: for each vertex,
     we want to return the lower of the current vertex attribute and the lowest incoming
     message (as determined by the combiner function in the previous step). The return
     value will be used as the vertex attribute for the next superstep.'
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
 - en: Step five – iterate to convergence
+  id: totrans-282
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1397,68 +1876,85 @@
     sends messages when it needs to. This is why our `cond` value in the earlier message
     function ensures we don't send a message if the source and destination attributes
     are already equal.
+  id: totrans-283
   prefs: []
   type: TYPE_NORMAL
 - en: Running connected components
+  id: totrans-284
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Having implemented the previous connected components function, we use it in
     the following example:'
+  id: totrans-285
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE32]'
+  id: totrans-286
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: By converting the graph back into an RDD, we can perform analysis in a data-parallel
     way. For example, we could determine the size of all of the connected components
     by counting the number of nodes that share the same attribute.
+  id: totrans-287
   prefs: []
   type: TYPE_NORMAL
 - en: Calculating the size of the largest connected component
+  id: totrans-288
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'In the next example, we''ll use the same connected components function, but
     count the size of each connected component. We''ll achieve this with Sparkling''s
     `count-by-value` function:'
+  id: totrans-289
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE33]'
+  id: totrans-290
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: 'Code such as the previous example is one of the great benefits of using GraphX
     and Glittering. We can take flat data represented as an edge list, convert it
     into a graph structure to perform an iterative graph algorithm, and then convert
     the results back into a flat structure to calculate aggregates: all in a single
     pipeline.'
+  id: totrans-291
   prefs: []
   type: TYPE_NORMAL
 - en: The example's response indicates that all of our vertices—81,306 of them—are
     in one large connected component. This shows that everyone in the graph is connected
     to everyone else, either as a friend or a follower.
+  id: totrans-292
   prefs: []
   type: TYPE_NORMAL
 - en: While it's useful to know that there are no isolated groups of users, it would
     be more interesting to understand how the users are organized within the connected
     component. If certain groups of users tend to be more densely connected to each
     other, then we could think of these users as forming a community.
+  id: totrans-293
   prefs: []
   type: TYPE_NORMAL
 - en: Detecting communities with label propagation
+  id: totrans-294
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: A community can be defined informally as a group of vertices that are more strongly
     connected to each other than they are to the vertices outside the community.
+  id: totrans-295
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-296
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: If every vertex is connected to every other vertex within the community, then
     we would call the community a clique.
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
 - en: Communities therefore correspond to increased density in the graph. We could
@@ -1466,6 +1962,7 @@
     to also follow each other's followers. Smaller communities might correspond to
     friendship groups, while larger communities are more likely to correspond to shared
     interest groups.
+  id: totrans-298
   prefs: []
   type: TYPE_NORMAL
 - en: Community detection is a general technique and there are many algorithms that
@@ -1473,68 +1970,86 @@
     may overlap so that a user could be associated with more than one community. The
     algorithm we'll be looking at next is called **label propagation** and it assigns
     each user to a maximum of one community.
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
 - en: 'Label propagation can be implemented iteratively with the following steps:'
+  id: totrans-300
   prefs: []
   type: TYPE_NORMAL
 - en: Initialize all the vertex attributes to equal the vertex ID.
+  id: totrans-301
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: For each edge, send the source and destination attributes to the opposing node.
+  id: totrans-302
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: For each vertex, calculate the frequency of each incoming attribute.
+  id: totrans-303
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: For each vertex, update the attribute to be the most frequent of the incoming
     attributes.
+  id: totrans-304
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Repeat until convergence or until maximum iteration count is reached.
+  id: totrans-305
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: The steps of the algorithm are shown next on a graph with two communities. Each
     community is also a clique, but this is not a requirement for label propagation
     to work in general.
+  id: totrans-306
   prefs: []
   type: TYPE_NORMAL
 - en: '![Detecting communities with label propagation](img/7180OS_08_380.jpg)'
+  id: totrans-307
   prefs: []
   type: TYPE_IMG
 - en: 'The code for label propagation using the `pregel` function is as follows:'
+  id: totrans-308
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE34]'
+  id: totrans-309
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: As before, let's walk through the code step by step.
+  id: totrans-310
   prefs: []
   type: TYPE_NORMAL
 - en: Step one – map vertices
+  id: totrans-311
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: Step one for label propagation is identical to step one for the connected components
     algorithm we defined earlier. We use the `g/map-vertices` function to update each
     vertex attribute to equal the vertex ID.
+  id: totrans-312
   prefs: []
   type: TYPE_NORMAL
 - en: Step two – send the vertex attribute
+  id: totrans-313
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: In step two, we send the opposing vertex attribute along each edge. Step three
     will require us to count the most frequent of the incoming attributes, so each
     message is a map of attribute to the value "1".
+  id: totrans-314
   prefs: []
   type: TYPE_NORMAL
 - en: Step three – aggregate value
+  id: totrans-315
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1542,9 +2057,11 @@
     aggregate value. Since the messages are maps of attribute value to the number
     "1", we can use Clojure's `merge-with` function to combine the messages together
     with `+`. The result will be a map of attribute to frequency.
+  id: totrans-316
   prefs: []
   type: TYPE_NORMAL
 - en: Step four – vertex function
+  id: totrans-317
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1553,9 +2070,11 @@
     val msg)` expression returns the key/value pair from the map associated with the
     greatest value (the highest frequency). We pass this value to `key` to return
     the attribute associated with this value.
+  id: totrans-318
   prefs: []
   type: TYPE_NORMAL
 - en: Step five – set the maximum iterations count
+  id: totrans-319
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1564,9 +2083,11 @@
     components algorithm, we don't have a conditional clause in the earlier `message`
     function. In order to avoid an infinite loop, we pass `:max-iterations` of 10
     in the map of options to `pregel`.
+  id: totrans-320
   prefs: []
   type: TYPE_NORMAL
 - en: Running label propagation
+  id: totrans-321
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1575,15 +2096,20 @@
     `count-by-value` function and calculate the frequencies of the counts. The resulting
     histogram is then visualized on a log-log scatterplot using Incanter to show the
     distribution of community sizes:'
+  id: totrans-322
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE35]'
+  id: totrans-323
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: 'This code generates the following chart:'
+  id: totrans-324
   prefs: []
   type: TYPE_NORMAL
 - en: '![Running label propagation](img/7180OS_08_390.jpg)'
+  id: totrans-325
   prefs: []
   type: TYPE_IMG
 - en: 'As we may have come to expect, the distribution of community sizes is also
@@ -1593,6 +2119,7 @@
     graph: we have a sense of how users are distributed into groups and we can hypothesize
     that the larger communities are likely to represent groups united by a shared
     interest.'
+  id: totrans-326
   prefs: []
   type: TYPE_NORMAL
 - en: In the final pages of this chapter, let's see whether we can establish what
@@ -1601,15 +2128,18 @@
     of the kind we performed in [Chapter 6](ch06.xhtml "Chapter 6. Clustering"), *Clustering*
     to see whether there were particular words—or particular languages—more frequently
     used among these groups.
+  id: totrans-327
   prefs: []
   type: TYPE_NORMAL
 - en: This chapter is about network analysis though, so let's just use the structure
     of the graph to identify the most influential accounts in each community. The
     list of the top ten most influential accounts might give us some indication of
     what resonates with their followers.
+  id: totrans-328
   prefs: []
   type: TYPE_NORMAL
 - en: Measuring community influence using PageRank
+  id: totrans-329
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1617,15 +2147,18 @@
     how many incoming edges a particular vertex has. On Twitter, this would correspond
     to an account with a large number of followers. Such accounts represent the most
     "popular" within the network.
+  id: totrans-330
   prefs: []
   type: TYPE_NORMAL
 - en: Counting incoming edges is a simplistic way to measure influence because it
     treats all the incoming edges as being equal. In social graphs, this is often
     not the case, as certain followers will themselves be popular accounts and therefore
     their follow carries more importance than a follower who has no followers themselves.
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-332
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1633,6 +2166,7 @@
     Brin as part of the research project that ultimately became Google. PageRank works
     by counting both the number and quality of links to a page to determine a rough
     estimate of how important the website is.
+  id: totrans-333
   prefs: []
   type: TYPE_NORMAL
 - en: 'The importance of an account is therefore based on two things: the number of
@@ -1640,9 +2174,11 @@
     follower is calculated in the same way. PageRank therefore has a recursive definition:
     it appears that we must calculate the importance of the followers before we can
     calculate the importance of the account, and so on.'
+  id: totrans-334
   prefs: []
   type: TYPE_NORMAL
 - en: The flow formulation
+  id: totrans-335
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1653,6 +2189,7 @@
     sum of all the weights will equal one. Although it doesn't change the fundamental
     algorithm, the latter is often preferred, as it means the results of PageRank
     can be interpreted as probabilities. We'll be implementing the former.
+  id: totrans-336
   prefs: []
   type: TYPE_NORMAL
 - en: 'This initial weight is the PageRank *r* of each account at the start of the
@@ -1660,14 +2197,17 @@
     rank to all the pages it follows. After this step, the rank of account *j* and
     *r*j is defined as the sum of all the incoming ranks. We can express this with
     the following equation:'
+  id: totrans-337
   prefs: []
   type: TYPE_NORMAL
 - en: '![The flow formulation](img/7180OS_08_03.jpg)'
+  id: totrans-338
   prefs: []
   type: TYPE_IMG
 - en: Here, *r*[i] is the rank of a follower and *ni* is the count of accounts they
     follow. Account *j* receives a proportion of the rank, ![The flow formulation](img/7180OS_08_04.jpg),
     from all of their followers.
+  id: totrans-339
   prefs: []
   type: TYPE_NORMAL
 - en: 'If this were all there was to PageRank, then the accounts with no followers
@@ -1676,19 +2216,24 @@
     This factor ensures that even the least popular accounts retain some weight and
     that the algorithm can converge to stable values. This can be expressed by modifying
     the previous equation:'
+  id: totrans-340
   prefs: []
   type: TYPE_NORMAL
 - en: '![The flow formulation](img/7180OS_08_05.jpg)'
+  id: totrans-341
   prefs: []
   type: TYPE_IMG
 - en: Here, *d* is the damping factor. A common damping factor to use is 85 percent.
+  id: totrans-342
   prefs: []
   type: TYPE_NORMAL
 - en: 'The effect of the damping factor for a group of eleven accounts is visualized
     in the following diagram:'
+  id: totrans-343
   prefs: []
   type: TYPE_NORMAL
 - en: '![The flow formulation](img/7180OS_08_400.jpg)'
+  id: totrans-344
   prefs: []
   type: TYPE_IMG
 - en: Without the damping factor, all the weight would eventually accrue on accounts
@@ -1696,25 +2241,31 @@
     no follows continue to receive a small percentage of the overall weight. Even
     though account **E** has more followers, account **C** has a higher rank, because
     it is followed by high-ranking account.
+  id: totrans-345
   prefs: []
   type: TYPE_NORMAL
 - en: Implementing PageRank with Glittering
+  id: totrans-346
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
 - en: 'We implement PageRank with the `pregel` function in the following example code.
     The structure of the code should be familiar to you by now, although we will be
     making use of several new Glittering functions:'
+  id: totrans-347
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE36]'
+  id: totrans-348
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE36]'
 - en: We begin in the usual way, using `outer-join-vertices` to join `out-degrees`
     of every node to itself. After this step, every node's attribute is equal to its
     number of outgoing links. Then, we use `map-triplets` to set all the `edge` attributes
     to be the inverse of their source vertex's attribute. The net effect is that each
     vertex's rank is split equally among all of its outgoing edges.
+  id: totrans-349
   prefs: []
   type: TYPE_NORMAL
 - en: 'After this initialization step, we use `map-edges` to set the attribute of
@@ -1722,9 +2273,11 @@
     current page rank and the difference between this iteration''s rank and the previous
     iteration''s rank. Based on the size of the difference, our `message` function
     is able to decide whether or not to keep iterating.'
+  id: totrans-350
   prefs: []
   type: TYPE_NORMAL
 - en: Sort by highest influence
+  id: totrans-351
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1732,28 +2285,37 @@
     we''ll implement a utility function to list just the top 10 accounts in descending
     order of their ranks. The `top-n-by-pagerank` function will allow us to only show
     the accounts with the largest rank:'
+  id: totrans-352
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE37]'
+  id: totrans-353
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE37]'
 - en: Once again, the fact that we can easily convert between graph and table representations
     of our data to enable this sort of data manipulation is one of the major benefits
     of using Glittering and Sparkling together for the graph analysis.
+  id: totrans-354
   prefs: []
   type: TYPE_NORMAL
 - en: 'Finally, it will also be useful to have a function that returns the most frequently
     occurring node attributes appearing in the first line:'
+  id: totrans-355
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE38]'
+  id: totrans-356
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE38]'
 - en: Given the output of label propagation, this function will return the community
     IDs as a sequence in the order of descending sizes.
+  id: totrans-357
   prefs: []
   type: TYPE_NORMAL
 - en: Running PageRank to determine community influencers
+  id: totrans-358
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -1763,26 +2325,34 @@
     in the direction of follow rather than in the canonical direction. Therefore in
     the next example, we''ll load the graph with `load-edgelist`, which preserves
     the follow direction:'
+  id: totrans-359
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE39]'
+  id: totrans-360
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE39]'
 - en: 'This code will take a little while to run, but will eventually return a sequence
     of the most important nodes in each of the ten most popular community graphs as
     shown in the following example:'
+  id: totrans-361
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE40]'
+  id: totrans-362
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE40]'
 - en: The first element of each tuple is the PageRank we've calculated for the vertex
     and the second element of each tuple is the node ID. The Twitter vertex IDs correspond
     to Twitter's own IDs. The accounts haven't been anonymized, so we can look up
     the Twitter accounts they correspond to.
+  id: totrans-363
   prefs: []
   type: TYPE_NORMAL
 - en: Note
+  id: totrans-364
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -1790,6 +2360,7 @@
     Intent API available at `https://twitter.com/intent/user?user_id={$USER_ID}`.
     Substituting `{$USER_ID}` for Twitter's numeric ID will return the basic profile
     information.
+  id: totrans-365
   prefs: []
   type: TYPE_NORMAL
 - en: The accounts with the highest PageRank in community one are American comic and
@@ -1797,25 +2368,30 @@
     Harris. We could broadly categorize these people as American celebrities. It's
     not entirely surprising that on Twitter, the largest community is gathered around
     some of the largest accounts with the broadest general appeal.
+  id: totrans-366
   prefs: []
   type: TYPE_NORMAL
 - en: Moving down the list, the second-largest community features among its top influencers
     the band Paramore, its members Hayley and Taylor, as well as Lady Gaga. This community
     clearly has a very specific set of musical interests.
+  id: totrans-367
   prefs: []
   type: TYPE_NORMAL
 - en: Communities three and four both appear to have a strong gaming bias featuring
     X-Box, PlayStation, Steam, and Markus Persson (the creator of Minecraft) as their
     top influencers.
+  id: totrans-368
   prefs: []
   type: TYPE_NORMAL
 - en: Bear in mind that we've already established that the whole graph is a part of
     one connected component, so we're not looking at disjoint sets of users. Using
     a combination of label propagation and PageRank, we are able to determine the
     groups of Twitter users with related interests.
+  id: totrans-369
   prefs: []
   type: TYPE_NORMAL
 - en: Summary
+  id: totrans-370
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -1827,6 +2403,7 @@
     algorithm and Prim''s algorithm. We also looked at the density of the whole graph
     and plotted the degree distributions to observe the difference between random
     and scale-free graphs.'
+  id: totrans-371
   prefs: []
   type: TYPE_NORMAL
 - en: 'We introduced GraphX and the Clojure library Glittering as a means of processing
@@ -1837,6 +2414,7 @@
     connected components, label propagation, and finally PageRank algorithms, and
     chained our label propagation and PageRank steps together to determine the top
     influencers for a set of Twitter communities.'
+  id: totrans-372
   prefs: []
   type: TYPE_NORMAL
 - en: This was our last chapter using parallel computing techniques. In the next chapter,
@@ -1844,5 +2422,6 @@
     analysis. We'll cover methods to deal with time series data—ordered sequences
     of observations in time—and demonstrate how recursive functions can be used to
     produce forecasts.
+  id: totrans-373
   prefs: []
   type: TYPE_NORMAL

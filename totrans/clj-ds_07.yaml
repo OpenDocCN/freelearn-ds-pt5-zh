@@ -1901,6 +1901,8 @@
   id: totrans-271
   prefs: []
   type: TYPE_NORMAL
+  zh: Bloom filter 是一种概率数据结构，用于确定一个项目是否是集合的成员。在比较用户或项目相似度时，我们通常关心的是集合之间的交集，而不是它们的精确内容。MinHash
+    是一种技术，它可以将一个大集合压缩成一个较小的集合，同时我们仍然能够在压缩后的表示上执行 Jaccard 相似度计算。
 - en: 'Let''s see how it works with a reference to two of the most prolific raters
     in the MovieLens dataset. Users 405 and 655 have rated 727 and 675 movies respectively.
     In the following code, we extract their ratings and convert them into sets before
@@ -1909,6 +1911,8 @@
   id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看它是如何工作的，参考 MovieLens 数据集中两个最 prolific 的评分用户。用户 405 和 655 分别评分了 727 和 675
+    部电影。在下面的代码中，我们提取他们的评分并将其转换为集合，再传递给 Incanter 的 `jaccard-index` 函数。回顾一下，这个函数返回他们共同评分的电影占所有他们评分的电影的比例：
 - en: '[PRE34]'
   id: totrans-273
   prefs: []
@@ -1920,6 +1924,7 @@
   id: totrans-274
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个大的评分集合之间的近似相似度为 29%。让我们看看如何在使用 MinHash 的同时减少这些集合的大小，同时保持它们之间的相似性。
 - en: The MinHash algorithm shares much in common with the Bloom filter. Our first
     task is to pick *k* hash functions. Rather than hashing the set representation
     itself, these *k* hash functions are used to hash each element within the set.
@@ -1930,15 +1935,20 @@
   id: totrans-275
   prefs: []
   type: TYPE_NORMAL
+  zh: MinHash 算法与 Bloom filter 有很多相似之处。我们的第一个任务是选择 *k* 个哈希函数。不同于直接对集合表示进行哈希，这些 *k*
+    个哈希函数用于对集合中的每个元素进行哈希。对于每个 *k* 个哈希函数，MinHash 算法存储由任何集合元素生成的最小值。因此，输出是一个包含 *k* 个数字的集合；每个数字都等于该哈希函数的最小哈希值。输出被称为
+    MinHash 签名。
 - en: 'The following diagram illustrates the process for two sets, each containing
     three elements, being converted into MinHash signatures with a *k* of 2:'
   id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: 下图展示了将两个包含三个元素的集合转换为 *k* 为 2 的 MinHash 签名的过程：
 - en: '![Jaccard similarity for large sets with MinHash](img/7180OS_07_210.jpg)'
   id: totrans-277
   prefs: []
   type: TYPE_IMG
+  zh: '![使用 MinHash 处理大集合的 Jaccard 相似度](img/7180OS_07_210.jpg)'
 - en: The input sets share two elements out of a total of four unique elements, which
     equates to Jaccard index of 0.5\. The MinHash signatures for the two sets are
     `#{3, 0}` and `#{3, 55}` respectively, which equates to a Jaccard Index of 0.33\.
@@ -1947,12 +1957,15 @@
   id: totrans-278
   prefs: []
   type: TYPE_NORMAL
+  zh: 输入集合中有两个元素与四个唯一元素中的总数相比，这相当于 Jaccard 指数为 0.5。两个集合的 MinHash 签名分别是 `#{3, 0}` 和
+    `#{3, 55}`，这相当于 Jaccard 指数为 0.33。因此，MinHash 在保持它们之间近似相似性的同时，缩小了输入集合的大小（在此情况下减少了一个元素）。
 - en: 'As with the Bloom filter, an appropriate choice of *k* allows you to specify
     the loss of precision that it is acceptable to tolerate. We can implement the
     MinHash algorithm using the following Clojure code:'
   id: totrans-279
   prefs: []
   type: TYPE_NORMAL
+  zh: 与 Bloom filter 类似，合适的 *k* 选择允许你指定可以容忍的精度损失。我们可以使用以下 Clojure 代码实现 MinHash 算法：
 - en: '[PRE35]'
   id: totrans-280
   prefs: []
@@ -1964,6 +1977,8 @@
   id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的代码中，我们定义了一个 *k* 为 10 的 `minhasher` 函数，并使用它对用户 405 和 655 的压缩评分进行集合测试，计算 Jaccard
+    指数：
 - en: '[PRE36]'
   id: totrans-282
   prefs: []
@@ -1975,6 +1990,8 @@
   id: totrans-283
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于我们的 MinHash 签名计算的 Jaccard 指数与原始集合的 Jaccard 指数非常接近——25% 对比 29%——尽管我们将集合压缩到了只有
+    10 个元素。
 - en: 'The benefit of much smaller sets is twofold: clearly storage space is much
     reduced, but so is the computational complexity required to check the similarity
     between the two sets as well. It''s much less work to check the similarity of
@@ -1985,6 +2002,7 @@
   id: totrans-284
   prefs: []
   type: TYPE_NORMAL
+  zh: 更小集合的好处是双重的：显然，存储空间大大减少，但检查两个集合之间相似度所需的计算复杂度也大大降低。检查只包含10个元素的集合相似度，比检查包含数百个元素的集合要轻松得多。因此，MinHash不仅是一个节省空间的算法，还是一个节省时间的算法，特别是在我们需要进行大量集合相似度测试的情况下；例如，在推荐系统中就经常会遇到这种情况。
 - en: 'If we''re trying to establish a user neighborhood for the purposes of recommending
     items, we''ll still need to perform a large number of set tests in order to determine
     which the most similar users are. In fact, for a large number of users, it may
@@ -1995,11 +2013,13 @@
   id: totrans-285
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们试图为推荐项目建立用户邻域，我们仍然需要执行大量的集合测试，以确定哪些用户最相似。事实上，对于大量用户来说，即使我们已经计算了MinHash签名，逐一检查每个其他用户仍可能耗费大量时间。因此，最终的概率技术将着眼于解决这个具体问题：如何在寻找相似项时减少必须比较的候选数量。
 - en: Reducing pair comparisons with locality-sensitive hashing
   id: totrans-286
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通过局部敏感哈希减少配对比较
 - en: In the previous chapter, we computed the similarity matrix for a large number
     of documents. With the 20,000 documents in the Reuters corpus, this was already
     a time-consuming process. As the size of the dataset doubles, the length of time
@@ -2008,6 +2028,7 @@
   id: totrans-287
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一章中，我们计算了大量文档的相似度矩阵。对于路透社语料库中的20,000个文档来说，这已经是一个耗时的过程。随着数据集大小的翻倍，检查每对项目所需的时间将增加四倍。因此，在大规模进行这种分析时，可能会变得耗时且不可行。
 - en: For example, suppose we had a million documents and that we computed MinHash
     signatures of length 250 for each of them. This means we use 1,000 bytes to store
     each document. As all the signatures can be stored in a Gigabyte, they can all
@@ -2019,6 +2040,7 @@
   id: totrans-288
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，假设我们有一百万个文档，并且我们为每个文档计算了长度为250的MinHash签名。这意味着我们使用1,000字节来存储每个文档。由于所有签名可以存储在1GB的内存中，它们都可以存储在主系统内存中以提高速度。然而，存在![通过局部敏感哈希减少配对比较](img/7180OS_07_34.jpg)的文档对，或者需要检查499,999,500,000对组合。即使比较两个签名只需微秒级的时间，计算所有相似度的过程仍然需要将近6天。
 - en: '**Locality-sensitive hashing** (**LSH**), addresses this problem by significantly
     reducing the number of pairwise comparisons that have to be made. It does this
     by bucketing sets that are likely to have a minimum threshold of similarity together;
@@ -2026,11 +2048,13 @@
   id: totrans-289
   prefs: []
   type: TYPE_NORMAL
+  zh: '**局部敏感哈希**（**LSH**）通过显著减少必须进行的配对比较次数来解决这个问题。它通过将可能具有最小相似度阈值的集合分到同一个桶中来实现；只有分到同一桶中的集合才需要进行相似度检查。'
 - en: Bucketing signatures
   id: totrans-290
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 签名分桶
 - en: We consider any pair of items that hash to the same bucket a candidate pair
     and check only the candidate pairs for similarity. The aim is that only similar
     items should become candidate pairs. Dissimilar pairs that happen to hash to the
@@ -2040,16 +2064,19 @@
   id: totrans-291
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们认为任何哈希到同一桶的项对都是候选对，并且仅检查候选对的相似度。目标是让只有相似的项成为候选对。哈希到同一桶的不同项将是误报，我们力求将这些误报最小化。哈希到不同桶的相似项将是漏报，我们同样力求将这些漏报最小化。
 - en: 'If we have computed MinHash signatures for the items, an effective way to bucket
     them would be to divide the signature matrix into *b* bands consisting of *r*
     elements each. This is illustrated in the following diagram:'
   id: totrans-292
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们已经为项计算了MinHash签名，那么一种有效的分桶方法是将签名矩阵划分为由*r*个元素组成的*b*个带。下图说明了这一点：
 - en: '![Bucketing signatures](img/7180OS_07_220.jpg)'
   id: totrans-293
   prefs: []
   type: TYPE_IMG
+  zh: '![分桶签名](img/7180OS_07_220.jpg)'
 - en: 'Having already written the code to produce the MinHash signatures in the previous
     section, performing LSH in Clojure is simply a matter of partitioning the signature
     into a certain number of bands, each of length *r*. Each band is hashed (for simplicity,
@@ -2057,6 +2084,7 @@
   id: totrans-294
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前一部分中，我们已经编写了生成MinHash签名的代码，在Clojure中执行LSH只是将签名分成一定数量的带，每个带的长度为*r*。每个带都会被哈希（为简单起见，我们对每个带使用相同的哈希函数），并且哈希到特定的桶中：
 - en: '[PRE37]'
   id: totrans-295
   prefs: []
@@ -2071,6 +2099,7 @@
   id: totrans-296
   prefs: []
   type: TYPE_NORMAL
+  zh: 早期的例子将局部敏感哈希定义为一个简单的映射，包含空的带和一些值*r*。当我们通过`lsh-assoc`将一项与LSH关联时，我们根据*r*的值将签名拆分为带，并确定每个带的桶。该项的ID会被添加到每个桶中。桶按带ID分组，以便在不同带中共享同一个桶的项不会被一起分桶：
 - en: '[PRE38]'
   id: totrans-297
   prefs: []
@@ -2082,6 +2111,7 @@
   id: totrans-298
   prefs: []
   type: TYPE_NORMAL
+  zh: 前面的例子展示了对用户13的签名执行LSH的结果，*k=27*且*r=3*。返回了9个带的桶。接下来，我们向局部敏感哈希中添加更多的项：
 - en: '[PRE39]'
   id: totrans-299
   prefs: []
@@ -2093,6 +2123,7 @@
   id: totrans-300
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面的例子中，我们可以看到用户ID`655`和`13`在带`8`中被放置在同一个桶中，尽管它们在其他所有带中都在不同的桶中。
 - en: The probability that the signatures agree for one particular band is *s*^r,
     where *s* is the true similarity of the sets and *r* is the length of each band.
     It follows that the probability that the signatures do not agree in at least one
@@ -2103,6 +2134,7 @@
   id: totrans-301
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个特定带上签名一致的概率是*s*^r，其中*s*是集合的真实相似度，*r*是每个带的长度。因此，至少在一个特定带上签名不一致的概率是![分桶签名](img/7180OS_07_35.jpg)，因此，所有带上签名不一致的概率是![分桶签名](img/7180OS_07_36.jpg)。因此，我们可以说，两项成为候选对的概率是![分桶签名](img/7180OS_07_37.jpg)。
 - en: Regardless of the specific values of *b* and *r*, this equation describes an
     S-curve. The threshold (the value of the similarity at which the probability of
     becoming a candidate is 0.5) is a function of *b* and *r*. Around the threshold,
@@ -2112,16 +2144,19 @@
   id: totrans-302
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论*b*和*r*的具体值是多少，这个方程描述了一个S曲线。阈值（即相似度值，使得成为候选项的概率为0.5）是*b*和*r*的函数。在阈值附近，S曲线急剧上升。因此，相似度超过阈值的对非常可能成为候选项，而低于阈值的对则相应不太可能成为候选项。
 - en: '![Bucketing signatures](img/7180OS_07_230.jpg)'
   id: totrans-303
   prefs: []
   type: TYPE_IMG
+  zh: '![分桶签名](img/7180OS_07_230.jpg)'
 - en: 'To search for candidate pairs, we now only need to perform the same process
     on a target signature and see which other items hash to the same buckets in the
     same bands:'
   id: totrans-304
   prefs: []
   type: TYPE_NORMAL
+  zh: 要搜索候选对，我们现在只需对目标签名执行相同的过程，并查看哪些其他项哈希到相同的桶中，在相同的带内：
 - en: '[PRE40]'
   id: totrans-305
   prefs: []
@@ -2132,6 +2167,7 @@
   id: totrans-306
   prefs: []
   type: TYPE_NORMAL
+  zh: 前面的代码返回了与目标签名至少在一个带内共享一个桶的不同项列表：
 - en: '[PRE41]'
   id: totrans-307
   prefs: []
@@ -2260,16 +2296,19 @@
   id: totrans-325
   prefs: []
   type: TYPE_IMG
+  zh: '![绘制鸢尾花数据集](img/7180OS_07_250.jpg)'
 - en: 'We can see how one of the species is quite different from the other two while
     comparing these two attributes, but two of the species are barely distinguishable:
     the widths and heights for several of the points are evenly overlaid.'
   id: totrans-326
   prefs: []
   type: TYPE_NORMAL
+  zh: 在比较这两个属性时，我们可以看到其中一个物种与另外两个物种有很大不同，但两个物种几乎无法区分：几个点的宽度和高度几乎重叠。
 - en: 'Let''s instead plot the petal width and height to see how these compare:'
   id: totrans-327
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们改为绘制花瓣的宽度和高度，看看它们的比较情况：
 - en: '[PRE45]'
   id: totrans-328
   prefs: []
@@ -2279,10 +2318,12 @@
   id: totrans-329
   prefs: []
   type: TYPE_NORMAL
+  zh: 这应该生成以下图表：
 - en: '![Plotting the Iris dataset](img/7180OS_07_255.jpg)'
   id: totrans-330
   prefs: []
   type: TYPE_IMG
+  zh: '![绘制鸢尾花数据集](img/7180OS_07_255.jpg)'
 - en: This does a much better job of distinguishing between the different species.
     This is partly because the variance of the petal width and length is greater—the
     length, for example, stretches a full 6 units on the *y* axis. A useful side effect
@@ -2291,11 +2332,13 @@
   id: totrans-331
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样做可以更好地区分不同的物种。这部分是因为花瓣的宽度和长度的方差更大——例如，长度在*y*轴上延伸了6个单位。这个更大范围的一个有用副作用是，它让我们能更清晰地分辨鸢尾花的物种之间的差异。
 - en: Principle component analysis
   id: totrans-332
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 主成分分析
 - en: In principle component analysis, often abbreviated to PCA, we're looking to
     find a rotation of data that maximizes the variance. In the previous scatter plot,
     we identified a way of looking at the data that provided a high degree of variance
@@ -2303,6 +2346,7 @@
   id: totrans-333
   prefs: []
   type: TYPE_NORMAL
+  zh: 在主成分分析（Principle Component Analysis，简称PCA）中，我们的目标是找到一个旋转数据的方法，以最大化方差。在之前的散点图中，我们找到了一个观察数据的方式，它在*y*轴上提供了较高的方差，但*x*轴的方差并不大。
 - en: We have four dimensions available in the Iris dataset, each representing the
     value of the length and width of a petal or a sepal. Principle component analysis
     allows us to determine whether there is a another basis, which is some linear
@@ -2311,12 +2355,14 @@
   id: totrans-334
   prefs: []
   type: TYPE_NORMAL
+  zh: 在鸢尾花数据集中，我们有四个维度可用，每个维度表示花瓣或萼片的长度和宽度。主成分分析可以帮助我们确定是否存在一个新的基，它是所有可用维度的线性组合，能最好地重新表达我们的数据，以最大化方差。
 - en: 'We can apply principle component analysis with the Incanter.stats'' `principle-components`
     function. In the following code, we pass it a matrix of data and plot the first
     two returned rotations:'
   id: totrans-335
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过Incanter.stats的`principle-components`函数应用主成分分析。在以下代码中，我们传递给它一个数据矩阵，并绘制返回的前两个旋转：
 - en: '[PRE46]'
   id: totrans-336
   prefs: []
@@ -2326,10 +2372,12 @@
   id: totrans-337
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述例子生成了以下图表：
 - en: '![Principle component analysis](img/7180OS_07_280.jpg)'
   id: totrans-338
   prefs: []
   type: TYPE_IMG
+  zh: '![主成分分析](img/7180OS_07_280.jpg)'
 - en: Notice how the axes can no longer be identified as being sepals or petals—the
     components have been derived as a linear combination of the values across all
     the dimensions and define a new basis to view the data that maximizes the variance
@@ -2338,15 +2386,18 @@
   id: totrans-339
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，轴不再能被标识为萼片或花瓣——这些成分已经通过所有维度的值的线性组合来推导出来，并定义了一个新的基，用来查看数据，从而在每个成分中最大化方差。事实上，`principle-component`函数返回了每个维度的`:std-dev`以及`:rotation`。
 - en: Note
   id: totrans-340
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: For interactive examples demonstrating principle component analysis, see [http://setosa.io/ev/principal-component-analysis/](http://setosa.io/ev/principal-component-analysis/).
   id: totrans-341
   prefs: []
   type: TYPE_NORMAL
+  zh: 若要查看演示主成分分析的互动示例，请访问 [http://setosa.io/ev/principal-component-analysis/](http://setosa.io/ev/principal-component-analysis/)。
 - en: As a result of taking the principle components of the data, the variance across
     the *x* and the *y* axis is greater than even the previous scatter plot showing
     petal width and length. The points corresponding to the different species of iris
@@ -2355,36 +2406,43 @@
   id: totrans-342
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过对数据进行主成分分析，*x*轴和*y*轴的方差比之前显示花瓣宽度和长度的散点图还要大。因此，对应于不同鸢尾花物种的点分布尽可能地展开，这样物种之间的相对差异就清晰可见。
 - en: Singular value decomposition
   id: totrans-343
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 奇异值分解
 - en: A technique that's closely related to PCA is **Singular Value Decomposition**
     (**SVD**). SVD is, in fact, a more general technique than PCA which also seeks
     to change the basis of a matrix.
   id: totrans-344
   prefs: []
   type: TYPE_NORMAL
+  zh: 与PCA密切相关的一个技术是**奇异值分解**（**SVD**）。事实上，SVD比PCA更通用，它也旨在改变矩阵的基。
 - en: Note
   id: totrans-345
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: An excellent mathematical description of PCA and its relationship to SVD is
     available at [http://arxiv.org/pdf/1404.1100.pdf](http://arxiv.org/pdf/1404.1100.pdf).
   id: totrans-346
   prefs: []
   type: TYPE_NORMAL
+  zh: PCA及其与SVD的关系有一个很好的数学描述，可以参考[http://arxiv.org/pdf/1404.1100.pdf](http://arxiv.org/pdf/1404.1100.pdf)。
 - en: 'As its name implies, SVD decomposes a matrix into three related matrices, commonly
     referred to as the *U*, *Σ* (or *S*), and *V* matrices, such that:'
   id: totrans-347
   prefs: []
   type: TYPE_NORMAL
+  zh: 顾名思义，SVD将一个矩阵分解为三个相关的矩阵，通常称为*U*、*Σ*（或*S*）和*V*矩阵，满足以下条件：
 - en: '![Singular value decomposition](img/7180OS_07_38.jpg)'
   id: totrans-348
   prefs: []
   type: TYPE_IMG
+  zh: '![奇异值分解](img/7180OS_07_38.jpg)'
 - en: If *X* is an m x n matrix, *U* is an m x m matrix, *Σ* is an m x n matrix, and
     *V* is an n x n matrix. *Σ* is, in fact, a diagonal matrix, meaning that all the
     cells with the exception of those on the main diagonal (top left to bottom right)
@@ -2395,12 +2453,14 @@
   id: totrans-349
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果*X*是一个m x n矩阵，*U*是一个m x m矩阵，*Σ*是一个m x n矩阵，*V*是一个n x n矩阵。*Σ*实际上是一个对角矩阵，意味着除了主对角线（从左上角到右下角）上的元素外，所有单元格都是零。显然，它不一定是方阵。SVD返回的矩阵的列是按奇异值排序的，最重要的维度排在最前面。因此，SVD使我们能够通过丢弃最不重要的维度来更近似地表示矩阵*X*。
 - en: For example, the decomposition of our 150 x 4 Iris matrix will result in a *U*
     of 150 x 150, *Σ* of 150 x 4 and *V* of 4 x 4\. Multiplying these matrices together
     will yield our original Iris matrix.
   id: totrans-350
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，我们150 x 4的鸢尾花矩阵的分解会得到一个150 x 150的*U*，一个150 x 4的*Σ*和一个4 x 4的*V*。将这些矩阵相乘将得到原始的鸢尾花矩阵。
 - en: 'However, we could choose instead to take only the top two singular values and
     adjust our matrices such that *U* is 150 x 2, *Σ* is 2 x 2, and *V* is 2 x 4\.
     Let''s construct a function that takes a matrix and projects it into a specified
@@ -2409,6 +2469,7 @@
   id: totrans-351
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们也可以选择只取前两个奇异值，并调整矩阵，使得*U*是150 x 2，*Σ*是2 x 2，*V*是2 x 4。让我们构建一个函数，该函数接受一个矩阵，并通过从每个*U*、*Σ*和*V*矩阵中取出指定数量的列，将其投影到指定的维度中：
 - en: '[PRE47]'
   id: totrans-352
   prefs: []
@@ -2420,6 +2481,7 @@
   id: totrans-353
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里，*d*是我们想要保留的维度数量。我们通过一个简单的示例来演示这一点，假设我们用Incanter生成一个多变量正态分布（使用`s/sample-mvn`），并将其减少到仅一维：
 - en: '[PRE48]'
   id: totrans-354
   prefs: []
@@ -2433,6 +2495,7 @@
   id: totrans-355
   prefs: []
   type: TYPE_NORMAL
+  zh: 上一个示例的输出包含了数据中最重要的方面，这些方面被减少到只有一维。为了在二维中重新创建原始数据集的近似值，我们可以简单地将三个矩阵相乘。在下面的代码中，我们将分布的一维近似值投影回二维：
 - en: '[PRE49]'
   id: totrans-356
   prefs: []
@@ -2442,10 +2505,12 @@
   id: totrans-357
   prefs: []
   type: TYPE_NORMAL
+  zh: 这会生成以下图表：
 - en: '![Singular value decomposition](img/7180OS_07_290.jpg)'
   id: totrans-358
   prefs: []
   type: TYPE_IMG
+  zh: '![奇异值分解](img/7180OS_07_290.jpg)'
 - en: Notice how SVD has preserved the primary feature of the multivariate distribution,
     the strong diagonal, but has collapsed the variance of the off-diagonal points.
     In this way, SVD preserves the most important structure in the data while discarding
@@ -2455,11 +2520,13 @@
   id: totrans-359
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，SVD保留了多变量分布的主要特征，即强对角线，但将非对角点的方差压缩了。通过这种方式，SVD保留了数据中最重要的结构，同时丢弃了不太重要的信息。希望前面的示例比PCA示例更清楚地说明，保留的特征不一定在原始数据中显式存在。在这个示例中，强对角线是数据的*潜在*特征。
 - en: Note
   id: totrans-360
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: Latent features are those which are not directly observable, but which can be
     inferred from other features. Sometimes, latent features refer to aspects that
     could be measured directly, such as the correlation in the previous example or—in
@@ -2468,11 +2535,13 @@
   id: totrans-361
   prefs: []
   type: TYPE_NORMAL
+  zh: 潜在特征是那些不能直接观察到的特征，但可以通过其他特征推断出来。有时，潜在特征指的是那些可以直接测量的方面，比如前面示例中的相关性，或者在推荐系统的背景下，它们可以代表潜在的偏好或态度。
 - en: 'Having observed the principle of SVD at work on the earlier synthetic data,
     let''s see how it performs on the Iris dataset:'
   id: totrans-362
   prefs: []
   type: TYPE_NORMAL
+  zh: 在之前观察到的合成数据上已经看到了 SVD 的原理，现在让我们看看它在 Iris 数据集上的表现：
 - en: '[PRE50]'
   id: totrans-363
   prefs: []
@@ -2482,16 +2551,19 @@
   id: totrans-364
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码生成了以下图表：
 - en: '![Singular value decomposition](img/7180OS_07_300.jpg)'
   id: totrans-365
   prefs: []
   type: TYPE_IMG
+  zh: '![奇异值分解](img/7180OS_07_300.jpg)'
 - en: After comparing the Iris charts for PCA and SVD, it should be clear that the
     two approaches are closely related. This scatter plot looks a lot like an inverted
     version of the PCA plot that we saw previously.
   id: totrans-366
   prefs: []
   type: TYPE_NORMAL
+  zh: 在比较了 PCA 和 SVD 的 Iris 图后，应该清楚这两种方法是密切相关的。这个散点图看起来非常像我们之前看到的 PCA 图的倒转版本。
 - en: Let's return to the problem of movie recommendation now, and see how dimensionality
     reduction could assist. In the next section, we'll make use of the Apache Spark
     distributed computing framework and an associated machine learning library, MLlib,
@@ -2499,17 +2571,21 @@
   id: totrans-367
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们回到电影推荐的问题，看看降维如何提供帮助。在下一节中，我们将利用 Apache Spark 分布式计算框架和相关的机器学习库 MLlib，在降维后的数据上进行电影推荐。
 - en: Large-scale machine learning with Apache Spark and MLlib
   id: totrans-368
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 Apache Spark 和 MLlib 进行大规模机器学习
 - en: The Spark project ([https://spark.apache.org/](https://spark.apache.org/)) is
     a cluster computing framework that emphasizes low-latency job execution. It's
     a relatively recent project, growing out of UC Berkley's AMP Lab in 2009.
   id: totrans-369
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark 项目（[https://spark.apache.org/](https://spark.apache.org/)）是一个集群计算框架，强调低延迟作业执行。它是一个相对较新的项目，起源于
+    2009 年 UC 伯克利的 AMP 实验室。
 - en: Although Spark is able to coexist with Hadoop (by connecting to the files stored
     on **Hadoop Distributed File System** (**HDFS**), for example), it targets much
     faster job execution times by keeping much of the computation in memory. In contrast
@@ -2520,6 +2596,8 @@
   id: totrans-370
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 Spark 可以与 Hadoop 共存（例如，通过连接存储在 **Hadoop 分布式文件系统** (**HDFS**) 上的文件），但它通过将大部分计算保存在内存中，目标是实现更快的作业执行时间。与
+    Hadoop 的两阶段 MapReduce 模式不同，后者在每次迭代之间将文件存储在磁盘上，Spark 的内存模型在某些应用中，特别是那些对数据执行多次迭代的应用中，可以提高数十倍甚至数百倍的速度。
 - en: In [Chapter 5](ch05.xhtml "Chapter 5. Big Data"), *Big Data*, we discovered
     the value of iterative algorithms to the implementation of optimization techniques
     on large quantities of data. This makes Spark an excellent choice for large-scale
@@ -2529,6 +2607,9 @@
   id: totrans-371
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[第五章](ch05.xhtml "第5章 大数据")，*大数据*中，我们发现迭代算法在大数据量的优化技术实现中的价值。这使得 Spark 成为大规模机器学习的优秀选择。实际上，MLlib
+    库（[https://spark.apache.org/mllib/](https://spark.apache.org/mllib/)）就是建立在 Spark
+    之上的，内置了多种机器学习算法。
 - en: We won't provide an in-depth account of Spark here, but will explain just enough
     on the key concepts required to run a Spark job using the Clojure library, Sparkling
     ([https://github.com/gorillalabs/sparkling](https://github.com/gorillalabs/sparkling)).
@@ -2539,26 +2620,33 @@
   id: totrans-372
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在这里不会对 Spark 进行深入讲解，只会解释运行 Spark 作业所需的关键概念，使用的是 Clojure 库 Sparkling（[https://github.com/gorillalabs/sparkling](https://github.com/gorillalabs/sparkling)）。Sparkling
+    将 Spark 的大部分功能封装在一个友好的 Clojure 接口背后。特别是，使用 `->>` 线程最后宏来将 Spark 操作链式组合，使得使用 Sparkling
+    编写的 Spark 作业看起来更像我们用 Clojure 自身的序列抽象处理数据时写的代码。
 - en: Note
   id: totrans-373
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: 'Be sure also to check out Flambo, which makes use of the thread-first macro
     to chain tasks: [https://github.com/yieldbot/flambo](https://github.com/yieldbot/flambo).'
   id: totrans-374
   prefs: []
   type: TYPE_NORMAL
+  zh: 还要确保查看 Flambo，它利用线程优先宏来链式组合任务：[https://github.com/yieldbot/flambo](https://github.com/yieldbot/flambo)。
 - en: We're going to be producing recommendations based on the MovieLens ratings,
     so the first step will be to load this data with Sparkling.
   id: totrans-375
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将基于 MovieLens 的评分数据生成推荐，所以第一步是用 Sparkling 加载这些数据。
 - en: Loading data with Sparkling
   id: totrans-376
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 Sparkling 加载数据
 - en: Spark can load data from any storage source supported by Hadoop, including the
     local file system and HDFS, as well as other data sources such as Cassandra, HBase,
     and Amazon S3\. Let's start with the basics by writing a job to simply count the
@@ -2566,6 +2654,7 @@
   id: totrans-377
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark可以从Hadoop支持的任何存储源加载数据，包括本地文件系统和HDFS，以及其他数据源，如Cassandra、HBase和Amazon S3。让我们从基础开始，编写一个作业来简单地统计评分数量。
 - en: 'The MovieLens ratings are stored as a text file, which can be loaded in Sparkling
     using the `text-file` function in the `sparkling.core` namespace (referred to
     as `spark` in the code). To tell Spark where the file is located, we pass a URI
@@ -2575,6 +2664,7 @@
   id: totrans-378
   prefs: []
   type: TYPE_NORMAL
+  zh: MovieLens的评分存储为文本文件，可以通过`sparkling.core`命名空间中的`text-file`函数在Sparkling中加载（在代码中称为`spark`）。为了告诉Spark文件的位置，我们传递一个URI，指向一个远程源，如`hdfs://...`、`s3n://...`。由于我们在本地模式下运行Spark，它也可以是一个本地文件路径。一旦我们获得文本文件，就会调用`spark/count`来获取行数：
 - en: '[PRE51]'
   id: totrans-379
   prefs: []
@@ -2586,6 +2676,7 @@
   id: totrans-380
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你运行前面的示例，可能会看到很多来自Spark的日志打印到控制台。最后几行中会显示已计算的计数。
 - en: Notice that we have to pass a Spark context as the first argument to the `text-file`
     function. The Spark context tells Spark how to access your cluster. The most basic
     configuration specifies the location of the Spark master and the application name
@@ -2594,11 +2685,13 @@
   id: totrans-381
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，我们必须将Spark上下文作为第一个参数传递给`text-file`函数。Spark上下文告诉Spark如何访问你的集群。最基本的配置指定了Spark主节点的位置和Spark应该为此作业使用的应用程序名称。对于本地运行，Spark主节点为`"local"`，这对于基于REPL的交互式开发非常有用。
 - en: Mapping data
   id: totrans-382
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 映射数据
 - en: Sparkling provides analogues to many of the Clojure core sequence functions
     you would expect such as map, reduce, and filter. At the beginning of this chapter,
     we stored our ratings as a map with the `:item`, `:user`, and `:rating` keys.
@@ -2608,6 +2701,7 @@
   id: totrans-383
   prefs: []
   type: TYPE_NORMAL
+  zh: Sparkling提供了许多Clojure核心序列函数的类比，如map、reduce和filter。在本章开始时，我们将评分存储为一个包含`:item`、`:user`和`:rating`键的映射。虽然我们可以再次将数据解析为映射，但让我们改为将每个评分解析为`Rating`对象。这将使我们更容易在本章后面与MLlib进行交互。
 - en: 'The `Rating` class is defined in the `org.apache.spark.mllib.recommendation`
     package. The constructor takes three numeric arguments: representations of the
     user, the item, and the user''s rating for the item. As well as creating a `Rating`
@@ -2616,6 +2710,7 @@
   id: totrans-384
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Rating`类定义在`org.apache.spark.mllib.recommendation`包中。构造函数接受三个数字参数：用户、项目的表示，以及用户对该项目的评分。除了创建一个`Rating`对象外，我们还计算了时间模`10`，返回一个介于0和9之间的数字，并创建一个包含这两个值的`tuple`：'
 - en: '[PRE52]'
   id: totrans-385
   prefs: []
@@ -2627,17 +2722,20 @@
   id: totrans-386
   prefs: []
   type: TYPE_NORMAL
+  zh: 返回的值是一个元组，包含一个整数键（定义为时间模`10`）和一个评分作为值。拥有一个将数据分为十个组的键，在我们将数据拆分为测试集和训练集时将会非常有用。
 - en: Distributed datasets and tuples
   id: totrans-387
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分布式数据集和元组
 - en: Tuples are used extensively by Spark to represent pairs of keys and values.
     In the preceding example the key was an integer, but this is not a requirement—keys
     and values can be any type serializable by Spark.
   id: totrans-388
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark广泛使用元组来表示键值对。在前面的示例中，键是一个整数，但这不是必须的——键和值可以是任何Spark可序列化的类型。
 - en: 'Datasets in Spark are represented as **Resilient Distributed Datasets** (**RDDs**).
     In fact, RDDs are the core abstraction that Spark provides—a fault-tolerant collection
     of records partitioned across all the nodes in your cluster that can be operated
@@ -2647,6 +2745,8 @@
   id: totrans-389
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Spark 中，数据集被表示为 **弹性分布式数据集**（**RDDs**）。事实上，RDD 是 Spark 提供的核心抽象——它是一个容错的记录集合，分布在集群中的所有节点上，可以并行操作。RDD
+    有两种基本类型：一种表示任意对象的序列（例如 `text-file` 返回的那种——一系列行），另一种表示键/值对的序列。
 - en: We can convert between plain RDDs and pair RDDs simply, and this is accomplished
     in the previous example with the `map-to-pair` function. The tuple returned by
     our `parse-rating` function specifies the key and the value that should be used
@@ -2656,11 +2756,14 @@
   id: totrans-390
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以简单地在普通 RDD 和配对 RDD 之间进行转换，这在前面的示例中通过 `map-to-pair` 函数实现。我们 `parse-rating`
+    函数返回的元组指定了每对序列中的键和值。与 Hadoop 一样，键在数据集中不要求是唯一的。实际上，正如我们将看到的，键通常是将相似记录分组在一起的有用手段。
 - en: Filtering data
   id: totrans-391
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 过滤数据
 - en: Let's now filter our data based on the value of the key and create a subset
     of the overall data that we can use for training. Like the core Clojure function
     of the same name, Sparkling provides a `filter` function that will keep only those
@@ -2668,12 +2771,14 @@
   id: totrans-392
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们根据键的值来过滤数据，并创建一个可以用于训练的子集。与同名的 Clojure 核心函数类似，Sparkling 提供了一个`filter`函数，它只保留那些谓词返回逻辑真值的行。
 - en: 'Given our pair RDD of ratings, we can filter only those ratings that have a
     key value less than 8\. Since the keys roughly and uniformly distributed integers
     0-9, this will retain approximately 80 percent of the dataset:'
   id: totrans-393
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定我们评分的配对 RDD，我们可以仅过滤出那些键值小于 8 的评分。由于这些键大致是均匀分布在 0 到 9 之间的整数，这样会保留大约 80% 的数据集：
 - en: '[PRE53]'
   id: totrans-394
   prefs: []
@@ -2687,11 +2792,14 @@
   id: totrans-395
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的评分存储在一个配对 RDD 中，因此 `filter` 的结果也是一个配对 RDD。我们在结果上调用 `values`，以便得到一个只包含 `Rating`
+    对象的普通 RDD。这将是我们传递给机器学习算法的 RDD。我们进行完全相同的过程，但对于键值大于或等于 8 的情况，得到我们将用作测试数据的数据集。
 - en: Persistence and caching
   id: totrans-396
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 持久化与缓存
 - en: Spark's actions are lazy and won't be calculated until they're needed. Similarly,
     once data has been calculated, it won't be explicitly cached. Sometimes, we'd
     like to keep data around though. In particular, if we're running an iterative
@@ -2704,6 +2812,8 @@
   id: totrans-397
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark 的操作是惰性执行的，只有在需要时才会计算。同样，一旦数据被计算，Spark 不会显式地缓存这些数据。不过，有时我们希望保留数据，特别是当我们运行一个迭代算法时，我们不希望每次执行迭代时都从源头重新计算数据集。在需要保存转换后的数据集结果以便在作业中后续使用的情况下，Spark
+    提供了持久化 RDD 的能力。与 RDD 本身一样，持久化是容错的，这意味着如果任何分区丢失，它将使用最初创建它的转换重新计算。
 - en: 'We can persist an RDD using the `spark/persist` function, which expects us
     to pass the RDD and also configure the storage level most appropriate for our
     application. In most cases, this will be in-memory storage. But in cases where
@@ -2714,6 +2824,7 @@
   id: totrans-398
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用` spark/persist`函数持久化一个RDD，该函数要求我们传递RDD并配置最适合我们应用的存储级别。在大多数情况下，这将是内存存储。但在需要重新计算数据会非常耗费计算资源的情况下，我们可以将数据溢出到磁盘，甚至在多个磁盘之间复制缓存以实现快速的故障恢复。内存存储是最常见的，因此Sparkling提供了`spark/cache`函数简写，可以在RDD上设置该存储级别：
 - en: '[PRE54]'
   id: totrans-399
   prefs: []
@@ -2727,26 +2838,32 @@
   id: totrans-400
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面的示例中，我们缓存了对`parse-ratings`函数的调用结果。这意味着加载和解析评分的操作只执行一次，训练和测试评分函数都使用缓存的数据来筛选和执行计数。调用`cache`优化了作业的性能，并允许Spark避免不必要的重复计算。
 - en: Machine learning on Spark with MLlib
   id: totrans-401
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Spark上的机器学习与MLlib
 - en: We've covered enough of the basics of Spark now to use our RDDs for machine
     learning. While Spark handles the infrastructure, the actual work of performing
     machine learning is handled by an apache Spark subproject called MLlib.
   id: totrans-402
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在已经掌握了Spark的基础知识，可以使用我们的RDD进行机器学习。虽然Spark处理基础设施，但执行机器学习的实际工作由一个名为MLlib的Apache
+    Spark子项目来完成。
 - en: Note
   id: totrans-403
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: An overview of all the capabilities of the MLlib library are at [https://spark.apache.org/docs/latest/mllib-guide.html](https://spark.apache.org/docs/latest/mllib-guide.html).
   id: totrans-404
   prefs: []
   type: TYPE_NORMAL
+  zh: MLlib库的所有功能概览可以参考[https://spark.apache.org/docs/latest/mllib-guide.html](https://spark.apache.org/docs/latest/mllib-guide.html)。
 - en: 'MLlib provides a wealth of machine learning algorithms for use on Spark, including
     those for regression, classification, and clustering covered elsewhere in this
     book. In this chapter, we''ll be using the algorithm MLlib provides for performing
@@ -2754,11 +2871,13 @@
   id: totrans-405
   prefs: []
   type: TYPE_NORMAL
+  zh: MLlib提供了丰富的机器学习算法供Spark使用，包括回归、分类和聚类算法，这些算法在本书其他部分中都有介绍。在本章中，我们将使用MLlib提供的算法来执行协同过滤：交替最小二乘法。
 - en: Movie recommendations with alternating least squares
   id: totrans-406
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用交替最小二乘法进行电影推荐
 - en: In [Chapter 5](ch05.xhtml "Chapter 5. Big Data"), *Big Data*, we discovered
     how to use gradient descent to identify the parameters that minimize a cost function
     for a large quantity of data. In this chapter, we've seen how SVD can be used
@@ -2766,6 +2885,7 @@
   id: totrans-407
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[第5章](ch05.xhtml "第5章。大数据")，*大数据*中，我们发现如何使用梯度下降法来识别最小化成本函数的大量数据的参数。在本章中，我们看到如何使用SVD通过分解来计算数据矩阵中的潜在因子。
 - en: 'The **alternating least squares** (**ALS**) algorithm can be thought of as
     a combination of both of these approaches. It is an iterative algorithm that uses
     least-squares estimates to decompose the user-movies matrix of rankings into two
@@ -2773,10 +2893,12 @@
   id: totrans-408
   prefs: []
   type: TYPE_NORMAL
+  zh: '**交替最小二乘法**（**ALS**）算法可以看作是这两种方法的结合。它是一个迭代算法，使用最小二乘法估计来将用户-电影评分矩阵分解成两个潜在因子矩阵：用户因子和电影因子。'
 - en: '![Movie recommendations with alternating least squares](img/7180OS_07_310.jpg)'
   id: totrans-409
   prefs: []
   type: TYPE_IMG
+  zh: '![使用交替最小二乘法进行电影推荐](img/7180OS_07_310.jpg)'
 - en: Alternating least squares is therefore based on the assumption that the users'
     ratings are based on some latent property of the movie that can't be measured
     directly, but can be inferred from the ratings matrix. The earlier diagram shows
@@ -2787,22 +2909,26 @@
   id: totrans-410
   prefs: []
   type: TYPE_NORMAL
+  zh: 交替最小二乘法基于假设，用户的评分是基于某种电影的潜在属性，而这种属性无法直接衡量，但可以从评分矩阵中推断出来。前面的图表显示了如何将用户-电影评分的稀疏矩阵分解成包含用户因子和电影因子的两个矩阵。该图表为每个用户和电影关联了三个因子，但我们可以通过使用两个因子来简化这个过程。
 - en: 'We could hypothesize that all the movies exist in a two-dimensional space identified
     by their level of action, romance, and how realistic (or not) they may be. We
     visualize such a space as follows:'
   id: totrans-411
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以假设所有电影存在于一个二维空间中，由它们的动作水平、浪漫元素以及它们的现实主义程度（或非现实主义程度）来标定。我们可以将这种空间可视化如下：
 - en: '![Movie recommendations with alternating least squares](img/7180OS_07_320.jpg)'
   id: totrans-412
   prefs: []
   type: TYPE_IMG
+  zh: '![交替最小二乘法的电影推荐](img/7180OS_07_320.jpg)'
 - en: We could likewise imagine all the users represented in an equivalent two-dimensional
     space, where their tastes were simply expressed as their relative preference for
     **Romance**/**Action** and **Realist**/**Escapist**.
   id: totrans-413
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们同样可以将所有用户想象成一个等效的二维空间，在这个空间中，他们的口味仅仅通过他们对**浪漫**/**动作**和**现实主义**/**逃避现实**的相对偏好来表达。
 - en: Once we've reduced all the movies and users to their factor representation,
     the problem of prediction is reduced to a simple matrix multiplication—our predicted
     rating for a user, given a movie, is simply the product of their factors. The
@@ -2810,11 +2936,13 @@
   id: totrans-414
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们将所有电影和用户降维为它们的因子表示，预测问题就简化为一个简单的矩阵乘法——给定一部电影和一个用户，我们的预测评分就是它们因子的乘积。对于ALS来说，挑战就在于计算这两个因子矩阵。
 - en: ALS with Spark and MLlib
   id: totrans-415
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用Spark和MLlib进行ALS
 - en: 'At the time of writing, no Clojure wrapper exists for the MLlib library, so
     we''ll be using Clojure''s interop capabilities to access it directly. MLlib''s
     implementation of alternating least squares is provided by the ALS class in the
@@ -2823,6 +2951,7 @@
   id: totrans-416
   prefs: []
   type: TYPE_NORMAL
+  zh: 在撰写本文时，MLlib库没有Clojure包装器，因此我们将使用Clojure的互操作能力直接访问它。MLlib中交替最小二乘法的实现由`org.apache.spark.mllib.recommendation`包中的ALS类提供。训练ALS几乎就像调用该类的`train`静态方法，传入我们的RDD和提供的参数一样简单：
 - en: '[PRE55]'
   id: totrans-417
   prefs: []
@@ -2837,6 +2966,8 @@
   id: totrans-418
   prefs: []
   type: TYPE_NORMAL
+  zh: 一点复杂性在于，我们之前Sparkling任务返回的训练数据RDD是以`JavaRDD`类型表示的。由于MLlib没有Java API，它期望接收标准的Spark
+    `RDD`类型。将两者之间进行转换是一个相对简单的过程，尽管稍微有点繁琐。以下函数可以在RDD类型之间来回转换；将数据转换成MLlib可以使用的`RDDs`，然后再转换回`JavaRDDs`以供Sparkling使用：
 - en: '[PRE56]'
   id: totrans-419
   prefs: []
@@ -2848,21 +2979,25 @@
   id: totrans-420
   prefs: []
   type: TYPE_NORMAL
+  zh: '`from-mllib-rdd`中的第二个参数是一个在`scalaInterop`命名空间中定义的值。这是与Scala函数定义生成的JVM字节码交互所必需的。'
 - en: Note
   id: totrans-421
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 注意
 - en: For more on Clojure/Scala interop consult the excellent from the `scala` library
     by Tobias Kortkamp at [http://t6.github.io/from-scala/](http://t6.github.io/from-scala/).
   id: totrans-422
   prefs: []
   type: TYPE_NORMAL
+  zh: 如需了解更多关于Clojure/Scala互操作的信息，请查阅Tobias Kortkamp提供的出色资料，来源于`scala`库：[http://t6.github.io/from-scala/](http://t6.github.io/from-scala/)。
 - en: 'With the previous boilerplate out of the way, we can finally perform ALS on
     the training ratings. We do this in the following example:'
   id: totrans-423
   prefs: []
   type: TYPE_NORMAL
+  zh: 在完成前面的模板代码之后，我们终于可以在训练评分上执行ALS了。我们在以下示例中进行此操作：
 - en: '[PRE57]'
   id: totrans-424
   prefs: []
@@ -2874,17 +3009,20 @@
   id: totrans-425
   prefs: []
   type: TYPE_NORMAL
+  zh: 该函数接受几个参数—`rank`、`num-iter`和`lambda`，并返回一个MLlib的`MatrixFactorisationModel`函数。rank是用于因子矩阵的特征数量。
 - en: Making predictions with ALS
   id: totrans-426
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用ALS进行预测
 - en: 'Once we''ve calculated `MatrixFactorisationModel`, we can use it to make predictions
     with the `recommendProducts` method. This expects to receive the ID of the user
     to recommend to and the number of recommendations to return:'
   id: totrans-427
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们计算了`MatrixFactorisationModel`，就可以使用它通过`recommendProducts`方法进行预测。该方法期望接收推荐目标用户的ID以及要返回的推荐数量：
 - en: '[PRE58]'
   id: totrans-428
   prefs: []
@@ -2897,6 +3035,7 @@
   id: totrans-429
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以看到，模型的输出像输入一样，是`Rating`对象。它们包含用户ID、项目ID和预测评分，该评分是因子矩阵的乘积。我们可以利用在本章开始时定义的函数，为这些评分命名：
 - en: '[PRE59]'
   id: totrans-430
   prefs: []
@@ -2907,17 +3046,20 @@
   id: totrans-431
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这些推荐看起来并不特别好。为此，我们需要评估ALS模型的性能。
 - en: Evaluating ALS
   id: totrans-432
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 评估ALS
 - en: Unlike Mahout, Spark doesn't include a built-in evaluator for the model, so
     we're going to have to write our own. One of the simplest evaluators, and one
     we've used already in this chapter, is the root mean square error (RMSE) evaluator.
   id: totrans-433
   prefs: []
   type: TYPE_NORMAL
+  zh: 与Mahout不同，Spark没有内置的模型评估器，因此我们需要自己编写一个。最简单的评估器之一，也是我们在本章中已经使用过的，就是均方根误差（RMSE）评估器。
 - en: 'The first step for our evaluation is to use the model to predict ratings for
     all of our training set. Spark''s implementation of ALS includes a predict function
     that we can use, which will accept an RDD containing all of the user IDs and item
@@ -2925,6 +3067,7 @@
   id: totrans-434
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们评估的第一步是使用模型预测我们所有训练集的评分。Spark的ALS实现包括一个`predict`函数，我们可以使用它，该函数接受一个包含所有用户ID和商品ID的RDD，并返回预测值：
 - en: '[PRE60]'
   id: totrans-435
   prefs: []
@@ -2936,21 +3079,25 @@
   id: totrans-436
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们之前调用的`.recommendProducts`方法使用模型为特定用户返回产品推荐。相比之下，`.predict`方法将同时预测多个用户和商品的评分。
 - en: '![Evaluating ALS](img/7180OS_07_330.jpg)'
   id: totrans-437
   prefs: []
   type: TYPE_IMG
+  zh: '![评估ALS](img/7180OS_07_330.jpg)'
 - en: The result of our call to the `.predict` function is a pair RDD, where the key
     is itself a tuple of user and product. The value of the pair RDD is the predicted
     rating.
   id: totrans-438
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们调用`.predict`函数的结果是一个键值对RDD，其中键本身是一个包含用户和产品的元组。该对RDD的值是预测评分。
 - en: Calculating the sum of squared errors
   id: totrans-439
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 计算平方误差之和
 - en: 'To calculate the difference between the predicted rating and the actual rating
     given to the product by the user, we''ll need to join the `predictions` and the
     `actuals` together based on a matching user/product tuple. As the keys will be
@@ -2959,6 +3106,7 @@
   id: totrans-440
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了计算预测评分与用户给出的实际评分之间的差异，我们需要根据匹配的用户/商品元组将`predictions`和`actuals`连接起来。由于这两个RDD的键是相同的，我们可以直接将它们传递给Sparkling的`join`函数：
 - en: '[PRE61]'
   id: totrans-441
   prefs: []
@@ -2969,15 +3117,18 @@
   id: totrans-442
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将整个`sum-squared-errors`函数可视化为以下流程，比较预测评分和实际评分：
 - en: '![Calculating the sum of squared errors](img/7180OS_07_340.jpg)'
   id: totrans-443
   prefs: []
   type: TYPE_IMG
+  zh: '![计算平方误差之和](img/7180OS_07_340.jpg)'
 - en: 'Once we''ve calculated the `sum-squared-errors`, calculating the root mean
     square is simply a matter of dividing it by the count and taking the square root:'
   id: totrans-444
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们计算了`sum-squared-errors`，计算均方根误差就只是将其除以计数并取平方根的过程：
 - en: '[PRE62]'
   id: totrans-445
   prefs: []
@@ -2990,6 +3141,7 @@
   id: totrans-446
   prefs: []
   type: TYPE_NORMAL
+  zh: '`rmse`函数将接受一个模型和一些数据，并计算预测值与实际评分之间的RMSE。在本章之前，我们绘制了随着用户推荐器邻域大小变化，RMSE的不同值。现在让我们使用相同的技巧，但改变因子矩阵的秩：'
 - en: '[PRE63]'
   id: totrans-447
   prefs: []
@@ -2999,10 +3151,12 @@
   id: totrans-448
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前的代码生成了如下图表：
 - en: '![Calculating the sum of squared errors](img/7180OS_07_350.jpg)'
   id: totrans-449
   prefs: []
   type: TYPE_IMG
+  zh: '![计算平方误差之和](img/7180OS_07_350.jpg)'
 - en: Observe how, as we increase the rank of the factor matrix, the ratings returned
     by our model become closer and closer to the ratings that the model was trained
     on. As the dimensions of the factor matrix grow, it can capture more of the variation
@@ -3010,6 +3164,7 @@
   id: totrans-450
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，随着因子矩阵的秩增加，我们模型返回的评分越来越接近于模型训练时使用的评分。随着因子矩阵维度的增长，它可以捕捉到更多个体用户评分中的变异。
 - en: 'What we''d really like to do though is to see how well the recommender performs
     against the test set—the data it hasn''t already seen. The final example in this
     chapter, `ex-7-41`, runs the preceding analysis again, but tests the RMSE of the
@@ -3018,10 +3173,12 @@
   id: totrans-451
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们真正想做的是看看推荐系统在测试集上的表现——即它之前没有见过的数据。本章的最后一个示例`ex-7-41`再次执行前面的分析，但测试的是模型在测试集上的RMSE，而不是训练集上的RMSE。该示例生成了如下图表：
 - en: '![Calculating the sum of squared errors](img/7180OS_07_355.jpg)'
   id: totrans-452
   prefs: []
   type: TYPE_IMG
+  zh: '![计算平方误差之和](img/7180OS_07_355.jpg)'
 - en: As we would hope, the RMSE of the predictions fall as the rank of the factor
     matrix is increased. A larger factor matrix is able to capture more of the latent
     features that lie within the ratings, and more accurately predict the rating a
@@ -3029,17 +3186,20 @@
   id: totrans-453
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所期望的那样，随着因子矩阵的秩增加，预测的RMSE逐渐下降。较大的因子矩阵能够捕捉到评分中的更多潜在特征，从而更准确地预测用户给电影的评分。
 - en: Summary
   id: totrans-454
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 概述
 - en: We've covered a lot of ground in this chapter. Although the subject was principally
     recommender systems, we've also discussed dimensionality reduction and introduced
     the Spark distributed computation framework as well.
   id: totrans-455
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章我们讨论了很多内容。尽管主题主要是推荐系统，我们也涉及了降维技术，并介绍了Spark分布式计算框架。
 - en: We started by discussing the difference between content- and collaborative filtering-based
     approaches to the problem of recommendation. Within the context of collaborative
     filtering, we discussed item-item recommenders and built a Slope One recommender.
@@ -3050,6 +3210,7 @@
   id: totrans-456
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先讨论了基于内容过滤和协同过滤两种推荐方法的区别。在协同过滤的背景下，我们讨论了物品-物品推荐器，并构建了一个Slope One推荐器。我们还讨论了用户-用户推荐器，并使用Mahout的各种相似度度量和评估器的实现来实现并测试了几种基于用户的推荐器。评估的挑战为我们提供了一个引入信息检索统计学的机会。
 - en: We spent a lot of time in this chapter covering several different types of dimensionality
     reduction. For example, we learned about the probabilistic methods offered by
     Bloom filters and MinHash, and the analytic methods offered by principle component
@@ -3059,6 +3220,7 @@
   id: totrans-457
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章我们花了很多时间讨论不同类型的降维方法。例如，我们学习了Bloom过滤器和MinHash提供的概率方法，以及主成分分析和奇异值分解提供的分析方法。虽然这些方法并非专门针对推荐系统，但我们看到这些技术如何帮助实现更高效的相似度比较。
 - en: Finally, we introduced the distributed computation framework Spark and learned
     how the alternating least squares algorithm uses dimensionality reduction to discover
     latent factors in a matrix of ratings. We implemented ALS and a RMSE evaluator
@@ -3066,9 +3228,11 @@
   id: totrans-458
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们介绍了分布式计算框架Spark，并学习了交替最小二乘算法如何利用降维技术在评分矩阵中发现潜在因子。我们使用Spark、MLlib和Clojure库Sparkling实现了ALS和RMSE评估器。
 - en: 'Many of the techniques we learned this chapter are very general, and the next
     chapter will be no different. We''ll continue to explore the Spark and Sparkling
     libraries as we learn about network analysis: the study of connections and relationships.'
   id: totrans-459
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章所学的许多技术非常通用，下一章也不会例外。我们将继续探索Spark和Sparkling库，学习网络分析：即连接和关系的研究。

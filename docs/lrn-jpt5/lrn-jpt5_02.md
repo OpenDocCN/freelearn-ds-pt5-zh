@@ -1,4 +1,4 @@
-# Jupyter Python 脚本编写
+# 第二章：Jupyter Python 脚本编写
 
 Jupyter 最初是 IPython，一个交互式版本的 Python，用作开发环境。因此，当你在开发 Notebook 时，大多数 Python 的特性都可以使用。
 

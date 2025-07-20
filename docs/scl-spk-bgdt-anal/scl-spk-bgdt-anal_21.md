@@ -1,4 +1,4 @@
-# 使用 Apache Zeppelin 进行交互式数据分析
+# 第二十一章：使用 Apache Zeppelin 进行交互式数据分析
 
 从数据科学的角度来看，数据分析的交互式可视化同样重要。Apache Zeppelin 是一个基于 Web 的笔记本，用于交互式和大规模的数据分析，支持多种后端和解释器，如 Spark、Scala、Python、JDBC、Flink、Hive、Angular、Livy、Alluxio、PostgreSQL、Ignite、Lens、Cassandra、Kylin、Elasticsearch、JDBC、HBase、BigQuery、Pig、Markdown、Shell 等。
 

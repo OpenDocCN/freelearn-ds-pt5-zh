@@ -1,4 +1,4 @@
-# 优化 Jupyter Notebook
+# 第十章：优化 Jupyter Notebook
 
 在开发 Jupyter Notebook 之前，你应该处理在公众开始访问之前需要进行的优化。这些优化包括从特定语言问题（使用最佳实践的 R 编码风格）到将笔记本部署到高可用环境中的一系列选项。
 

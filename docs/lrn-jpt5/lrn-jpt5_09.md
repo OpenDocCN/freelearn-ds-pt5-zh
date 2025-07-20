@@ -1,4 +1,4 @@
-# 交互式小部件
+# 第九章：交互式小部件
 
 Jupyter 有一个机制可以在脚本运行时收集用户的输入。为了实现这一点，我们在脚本中使用小部件或用户界面控制进行编码。本章中我们将使用的小部件定义在[`ipywidgets.readthedocs.io/en/latest/`](http://ipywidgets.readthedocs.io/en/latest/)
 

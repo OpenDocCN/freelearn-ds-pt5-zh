@@ -1,4 +1,4 @@
-# 多用户 Jupyter Notebooks
+# 第十一章：多用户 Jupyter Notebooks
 
 Jupyter Notebooks 本身具有可被用户修改的能力，当用户输入数据或做出选择时，Notebook 会做出相应变化。然而，标准的 Notebook 服务器软件存在一个问题，它没有考虑到同时有多个用户在同一个 Notebook 上工作。Notebook 服务器软件是底层的 Jupyter 软件，负责显示页面并与用户交互——它根据你的 Notebook 中的指令进行显示和交互。
 

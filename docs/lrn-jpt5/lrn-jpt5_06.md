@@ -1,4 +1,4 @@
-# Jupyter JavaScript 编程
+# 第六章：Jupyter JavaScript 编程
 
 JavaScript 是一种高级、动态、无类型并且解释型的编程语言。许多基于 JavaScript 的衍生语言应运而生。对于 Jupyter 来说，底层的 JavaScript 实际上是 Node.js。Node.js 是一个基于事件的框架，使用 JavaScript，可以用于开发大型可扩展的应用程序。需要注意的是，这与本书前面介绍的主要用于数据分析的语言不同（虽然 Python 也是一种通用语言，但它有着明确的数据分析能力）。
 

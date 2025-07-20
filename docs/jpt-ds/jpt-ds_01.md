@@ -1,4 +1,4 @@
-# Jupyter 与数据科学
+# 第一章：Jupyter 与数据科学
 
 Jupyter 产品源自 IPython 项目。IPython 项目用于提供 Python 的交互式在线访问。随着时间的推移，它变得可以用相同的方式与其他编程语言（如 R）进行交互。由于这种从仅限 Python 的分离，这个工具发展成了当前的 Jupyter。IPython 仍然是一个可以使用的活跃工具。
 

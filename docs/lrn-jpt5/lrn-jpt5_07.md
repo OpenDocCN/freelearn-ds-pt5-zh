@@ -1,4 +1,4 @@
-# Jupyter Scala
+# 第七章：Jupyter Scala
 
 Scala 已经变得非常流行。它是建立在 Java 之上的（因此具有完全的互操作性，包括在 Scala 代码中嵌入 Java）。然而，它的语法更加简洁直观，改进了 Java 中的一些怪异之处。
 

@@ -1,6 +1,6 @@
 1
 
-# Jupyter 基础
+# 第一章：Jupyter 基础
 
 ## 学习目标
 

@@ -1,4 +1,4 @@
-# 开始使用 Spark – REPL 和 RDDs
+# 第六章：开始使用 Spark – REPL 和 RDDs
 
 “所有这些现代技术只会让人们试图同时做所有事情。”
 

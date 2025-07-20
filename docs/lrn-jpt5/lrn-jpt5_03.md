@@ -1,4 +1,4 @@
-# Jupyter R 脚本
+# 第三章：Jupyter R 脚本
 
 Jupyter 的本地语言是 Python。自从 Jupyter（在改名之前本质上是 IPython）因数据分析而变得流行后，许多人对在 Jupyter Notebook 中使用 R 编程分析工具套件产生了兴趣。
 

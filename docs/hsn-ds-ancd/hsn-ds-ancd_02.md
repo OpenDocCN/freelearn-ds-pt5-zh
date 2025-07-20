@@ -1,4 +1,4 @@
-# Anaconda 安装
+# 第二章：Anaconda 安装
 
 本章将讨论如何安装 Anaconda 并使用其各种组件，如 Python、IPython、Jupyter 和 Spyder。在本书中，我们不会教授 R、Python、Julia 或 Octave。因此，我们假设读者已具备与这些编程语言相关的基础知识，特别是 Python 和 R。市面上有许多相关书籍，如 Yan（2017 年，第 2 版）的《Python 金融》以及 Yan（2016 年）的《使用 R 进行金融建模》。
 

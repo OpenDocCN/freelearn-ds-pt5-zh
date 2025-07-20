@@ -1,6 +1,6 @@
-# Github DevOps 加速指南
+# R 和 Hadoop 大数据分析
 
-> 原文：[`annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e`](https://annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e)
+> 原文：[`annas-archive.org/md5/b7f3a14803c1b4d929732471e0b28932`](https://annas-archive.org/md5/b7f3a14803c1b4d929732471e0b28932)
 > 
 > 译者：[飞龙](https://github.com/wizardforcel)
 > 

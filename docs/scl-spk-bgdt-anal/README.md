@@ -1,6 +1,6 @@
-# Github DevOps 加速指南
+# Scala 和 Spark 大数据分析
 
-> 原文：[`annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e`](https://annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e)
+> 原文：[`annas-archive.org/md5/39eecc62e023387ee8c22ca10d1a221a`](https://annas-archive.org/md5/39eecc62e023387ee8c22ca10d1a221a)
 > 
 > 译者：[飞龙](https://github.com/wizardforcel)
 > 

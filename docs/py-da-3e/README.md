@@ -1,6 +1,6 @@
-# Github DevOps 加速指南
+# Python 数据分析第三版
 
-> 原文：[`annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e`](https://annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e)
+> 原文：[`annas-archive.org/md5/74a7b24994c40ad3a90c290c07b529df`](https://annas-archive.org/md5/74a7b24994c40ad3a90c290c07b529df)
 > 
 > 译者：[飞龙](https://github.com/wizardforcel)
 > 

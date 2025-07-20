@@ -1,4 +1,4 @@
-NumPy 和 pandas
+# 第二章：NumPy 和 pandas
 
 现在我们已经理解了数据分析、数据分析过程以及在不同平台上的安装，是时候学习 NumPy 数组和 `pandas` DataFrames 了。本章将带你了解 NumPy 数组和 `pandas` DataFrames 的基础知识。在本章结束时，你将对 NumPy 数组、`pandas` DataFrames 及其相关函数有基本的理解。
 
@@ -42,7 +42,7 @@ NumPy 和 pandas
 
 +   处理日期
 
-# 第四章：技术要求
+# 技术要求
 
 本章具有以下技术要求：
 

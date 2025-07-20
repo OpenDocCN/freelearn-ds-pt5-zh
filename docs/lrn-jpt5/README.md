@@ -1,6 +1,6 @@
-# Github DevOps 加速指南
+# Jupyter5 学习指南
 
-> 原文：[`annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e`](https://annas-archive.org/md5/677f27c30764b3701bc2b6cf6de3a30e)
+> 原文：[`annas-archive.org/md5/9a12d92ec3c259b9feace22b7716b78f`](https://annas-archive.org/md5/9a12d92ec3c259b9feace22b7716b78f)
 > 
 > 译者：[飞龙](https://github.com/wizardforcel)
 > 
